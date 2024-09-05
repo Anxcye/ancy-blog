@@ -1,7 +1,10 @@
 package com.anxcye.service;
 
 import com.anxcye.domin.entity.Article;
+import com.anxcye.domin.vo.HotArticleVo;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
 * @author axy
@@ -10,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface ArticleService extends IService<Article> {
 
+    List<HotArticleVo> hot();
 }

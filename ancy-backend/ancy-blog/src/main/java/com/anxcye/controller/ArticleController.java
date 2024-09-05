@@ -1,5 +1,6 @@
 package com.anxcye.controller;
 
+import com.anxcye.domin.ResponseResult;
 import com.anxcye.domin.entity.Article;
 import com.anxcye.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
 
 @RestController
-@RequestMapping("/article")
+@RequestMapping("/articles")
 public class ArticleController {
 
     @Autowired
@@ -19,5 +20,10 @@ public class ArticleController {
     @GetMapping("/list")
     public List<Article> list() {
         return articleService.list();
+    }
+
+    @GetMapping("/hot")
+    public ResponseResult hot() {
+        return ResponseResult.okResult(articleService.hot());
     }
 }

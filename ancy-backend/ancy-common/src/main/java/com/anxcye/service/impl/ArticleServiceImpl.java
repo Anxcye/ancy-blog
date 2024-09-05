@@ -1,11 +1,21 @@
 package com.anxcye.service.impl;
 
 
+import com.anxcye.constants.SystemConstants;
 import com.anxcye.domin.entity.Article;
+import com.anxcye.domin.vo.HotArticleVo;
 import com.anxcye.mapper.ArticleMapper;
 import com.anxcye.service.ArticleService;
+import com.anxcye.utils.BeanCopyUtils;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.fasterxml.jackson.databind.util.BeanUtil;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author axy
@@ -16,4 +26,15 @@ import org.springframework.stereotype.Service;
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         implements ArticleService {
 
+    @Override
+    public List<HotArticleVo> hot() {
+        LambdaQueryWrapper<Article> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.eq(Article::getStatus, SystemConstants.ARTICLE_STATUS_NORMAL);
+        lambdaQueryWrapper.orderByDesc(Article::getViewCount);
+
+        Page<Article> page = new Page<>(1, 10);
+        page(page, lambdaQueryWrapper);
+
+        return BeanCopyUtils.copyList(page.getRecords(), HotArticleVo.class);
+    }
 }
