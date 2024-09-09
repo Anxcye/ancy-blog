@@ -1,4 +1,4 @@
-package com.anxcye.domin.enums;
+package com.anxcye.domain.enums;
 
 import lombok.Getter;
 

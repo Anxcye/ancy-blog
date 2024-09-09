@@ -1,7 +1,7 @@
 package com.anxcye.service;
 
-import com.anxcye.domin.entity.Article;
-import com.anxcye.domin.vo.HotArticleVo;
+import com.anxcye.domain.entity.Article;
+import com.anxcye.domain.vo.HotArticleVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;

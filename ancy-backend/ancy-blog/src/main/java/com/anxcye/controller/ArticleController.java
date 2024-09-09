@@ -1,7 +1,7 @@
 package com.anxcye.controller;
 
-import com.anxcye.domin.ResponseResult;
-import com.anxcye.domin.entity.Article;
+import com.anxcye.domain.ResponseResult;
+import com.anxcye.domain.entity.Article;
 import com.anxcye.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,27 +1,24 @@
-package com.anxcye.domin.entity;
+package com.anxcye.domain.entity;
 
-import java.io.Serializable;
-import java.util.Date;
-
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.AllArgsConstructor;
+import java.io.Serializable;
+import java.util.Date;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 /**
  * 文章表
  * @TableName ancy_article
  */
+@TableName(value ="ancy_article")
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
-@TableName(value = "ancy_article")
 public class Article implements Serializable {
     /**
      * 
      */
-    @TableId
+    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -94,4 +91,6 @@ public class Article implements Serializable {
      */
     private Integer deleted;
 
+    @TableField(exist = false)
+    private static final long serialVersionUID = 1L;
 }

@@ -1,8 +1,7 @@
 package com.anxcye.mapper;
 
-import com.anxcye.domin.entity.Article;
+import com.anxcye.domain.entity.Article;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
-import org.apache.ibatis.annotations.Mapper;
 
 /**
 * @author axy
@@ -10,7 +9,6 @@ import org.apache.ibatis.annotations.Mapper;
 * @createDate 2024-09-05 11:29:50
 * @Entity .entity.Article
 */
-@Mapper
 public interface ArticleMapper extends BaseMapper<Article> {
 
 

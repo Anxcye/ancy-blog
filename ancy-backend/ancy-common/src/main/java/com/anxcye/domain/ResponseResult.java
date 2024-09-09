@@ -1,9 +1,11 @@
-package com.anxcye.domin;
+package com.anxcye.domain;
 
-import com.anxcye.domin.enums.AppHttpCodeEnum;
+import com.anxcye.domain.entity.Category;
+import com.anxcye.domain.enums.AppHttpCodeEnum;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 import java.io.Serializable;
+import java.util.List;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ResponseResult<T> implements Serializable {
