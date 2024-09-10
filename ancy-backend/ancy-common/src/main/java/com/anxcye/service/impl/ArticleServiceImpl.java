@@ -5,13 +5,17 @@ import com.anxcye.constants.SystemConstants;
 import com.anxcye.domain.entity.Article;
 import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.vo.ArticleCardVo;
+import com.anxcye.domain.vo.ArticleDetailVo;
 import com.anxcye.domain.vo.HotArticleVo;
 import com.anxcye.mapper.ArticleMapper;
 import com.anxcye.service.ArticleService;
+import com.anxcye.service.CategoryService;
 import com.anxcye.utils.BeanCopyUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -25,6 +29,9 @@ import java.util.Objects;
 @Service
 public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         implements ArticleService {
+
+    @Autowired
+    private CategoryService categoryService;
 
     @Override
     public List<HotArticleVo> hot() {
@@ -49,9 +56,30 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         page(page, articleLambdaQueryWrapper);
         List<ArticleCardVo> articleCardVos = BeanCopyUtils.copyList(page.getRecords(), ArticleCardVo.class);
 
+        articleCardVos.forEach(articleCardVo -> {
+            articleCardVo.setCategoryName(categoryService.getById(articleCardVo.getCategoryId()).getName());
+        });
+
         PageResult pageResult = new PageResult(page.getTotal(), articleCardVos);
 
 
         return pageResult;
+    }
+
+    @Override
+    public ArticleDetailVo getArticleById(Long id) {
+        Article article = this.getById(id);
+
+        if (Objects.isNull(article)) {
+            return null;
+        }
+
+        ArticleDetailVo articleDetailVo = BeanCopyUtils.copyBean(article, ArticleDetailVo.class);
+
+        Objects.requireNonNull(articleDetailVo)
+                .setCategoryName(categoryService.getById(article.getCategoryId()).getName());
+
+        return articleDetailVo;
+
     }
 }

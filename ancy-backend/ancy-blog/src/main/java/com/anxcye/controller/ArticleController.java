@@ -24,4 +24,9 @@ public class ArticleController {
     public ResponseResult hot() {
         return ResponseResult.okResult(articleService.hot());
     }
+
+    @GetMapping("/{id}")
+    public ResponseResult getArticleDetail(@PathVariable Long id) {
+        return ResponseResult.okResult(articleService.getArticleById(id));
+    }
 }

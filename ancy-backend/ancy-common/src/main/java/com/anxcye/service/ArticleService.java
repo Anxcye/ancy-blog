@@ -2,6 +2,7 @@ package com.anxcye.service;
 
 import com.anxcye.domain.entity.Article;
 import com.anxcye.domain.result.PageResult;
+import com.anxcye.domain.vo.ArticleDetailVo;
 import com.anxcye.domain.vo.HotArticleVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -17,4 +18,6 @@ public interface ArticleService extends IService<Article> {
     List<HotArticleVo> hot();
 
     PageResult getList(Integer pageNum, Integer pageSize, Integer categoryId);
+
+    ArticleDetailVo getArticleById(Long id);
 }
