@@ -1,14 +1,10 @@
 package com.anxcye.controller;
 
-import com.anxcye.domain.ResponseResult;
-import com.anxcye.domain.entity.Article;
+import com.anxcye.domain.result.ResponseResult;
 import com.anxcye.service.ArticleService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
 
 @RestController
 @RequestMapping("/articles")
@@ -18,8 +14,10 @@ public class ArticleController {
     private ArticleService articleService;
 
     @GetMapping("/list")
-    public List<Article> list() {
-        return articleService.list();
+    public ResponseResult list(Integer pageNum,
+                               Integer pageSize,
+                               @RequestParam(required = false) Integer categoryId) {
+        return ResponseResult.okResult(articleService.getList(pageNum, pageSize, categoryId));
     }
 
     @GetMapping("/hot")

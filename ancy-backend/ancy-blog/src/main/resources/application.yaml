@@ -20,3 +20,20 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
       id-type: auto
+
+# springdoc-openapiÏîÄ¿ÅäÖÃ
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'default'
+      paths-to-match: '/**'
+      packages-to-scan: com.anxcye.controller
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn

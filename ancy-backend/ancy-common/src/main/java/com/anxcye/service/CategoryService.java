@@ -1,7 +1,10 @@
 package com.anxcye.service;
 
 import com.anxcye.domain.entity.Category;
+import com.anxcye.domain.vo.categoryVo;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
 * @author axy
@@ -10,4 +13,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface CategoryService extends IService<Category> {
 
+    List<categoryVo> getList();
 }

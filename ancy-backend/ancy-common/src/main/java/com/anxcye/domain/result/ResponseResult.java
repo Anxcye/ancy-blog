@@ -1,4 +1,4 @@
-package com.anxcye.domain;
+package com.anxcye.domain.result;
 
 import com.anxcye.domain.entity.Category;
 import com.anxcye.domain.enums.AppHttpCodeEnum;
