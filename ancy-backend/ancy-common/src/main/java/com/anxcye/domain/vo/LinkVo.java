@@ -1,38 +1,30 @@
-package com.anxcye.domain.entity;
+package com.anxcye.domain.vo;
 
 import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
-import java.io.Serializable;
-import java.util.Date;
 import lombok.Data;
 
-/**
- * 友链
- * @TableName ancy_link
- */
+import java.util.Date;
 @Data
-@TableName(value ="ancy_link")
-public class Link implements Serializable {
-    /**
-     * 
+public class LinkVo {
+       /**
+     *
      */
     @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
-     * 
+     *
      */
     private String name;
 
     /**
-     * 
+     *
      */
     private String logo;
 
     /**
-     * 
+     *
      */
     private String description;
 
@@ -47,22 +39,22 @@ public class Link implements Serializable {
     private String status;
 
     /**
-     * 
+     *
      */
     private Long createBy;
 
     /**
-     * 
+     *
      */
     private Date createTime;
 
     /**
-     * 
+     *
      */
     private Long updateBy;
 
     /**
-     * 
+     *
      */
     private Date updateTime;
 
@@ -70,7 +62,4 @@ public class Link implements Serializable {
      * 删除标志（0代表未删除，1代表已删除）
      */
     private Integer deleted;
-
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
 }

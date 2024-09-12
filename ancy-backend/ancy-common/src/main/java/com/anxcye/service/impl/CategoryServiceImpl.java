@@ -39,15 +39,15 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
         List<Long> categoryIds = articles.stream().map(Article::getCategoryId).distinct().collect(Collectors.toList());
 
-        if (categoryIds.isEmpty()) {
-            return List.of();
-        }
+        if (categoryIds.isEmpty()) return List.of();
+
         LambdaQueryWrapper<Category> categoryWrapper = new LambdaQueryWrapper<>();
         categoryWrapper.in(Category::getId, categoryIds);
 
-        List<Category> categories =  list(categoryWrapper).stream()
+        List<Category> categories = this.list(categoryWrapper).stream()
                 .filter(category -> Objects.equals(category.getStatus(), SystemConstants.CATEGORY_STATUS_NORMAL))
                 .collect(Collectors.toList());
+
 
         return BeanCopyUtils.copyList(categories, categoryVo.class);
     }

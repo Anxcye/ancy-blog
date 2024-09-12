@@ -57,6 +57,8 @@ public class webConfig implements WebMvcConfigurer {
 
         FastJsonConfig fastJsonConfig = new FastJsonConfig();
         fastJsonConfig.setSerializerFeatures(SerializerFeature.PrettyFormat);
+        fastJsonConfig.setSerializerFeatures(SerializerFeature.WriteMapNullValue);
+
         fastJsonConfig.setDateFormat("yyyy-MM-dd HH:mm:ss");
         SerializeConfig.globalInstance.put(Long.class, ToStringSerializer.instance);
         fastJsonConfig.setSerializeConfig(SerializeConfig.globalInstance);

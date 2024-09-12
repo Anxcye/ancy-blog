@@ -18,8 +18,6 @@ import lombok.NoArgsConstructor;
  * @TableName ancy_category
  */
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 @TableName(value = "ancy_category")
 public class Category implements Serializable {
     /**

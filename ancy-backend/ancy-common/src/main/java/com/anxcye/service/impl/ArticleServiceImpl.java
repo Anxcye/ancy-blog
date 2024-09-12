@@ -60,24 +60,20 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
             articleCardVo.setCategoryName(categoryService.getById(articleCardVo.getCategoryId()).getName());
         });
 
-        PageResult pageResult = new PageResult(page.getTotal(), articleCardVos);
-
-
-        return pageResult;
+        return new PageResult(page.getTotal(), articleCardVos);
     }
 
     @Override
     public ArticleDetailVo getArticleById(Long id) {
         Article article = this.getById(id);
 
-        if (Objects.isNull(article)) {
+        ArticleDetailVo articleDetailVo = BeanCopyUtils.copyBean(article, ArticleDetailVo.class);
+
+        if (Objects.isNull(articleDetailVo)) {
             return null;
         }
 
-        ArticleDetailVo articleDetailVo = BeanCopyUtils.copyBean(article, ArticleDetailVo.class);
-
-        Objects.requireNonNull(articleDetailVo)
-                .setCategoryName(categoryService.getById(article.getCategoryId()).getName());
+        articleDetailVo.setCategoryName(categoryService.getById(article.getCategoryId()).getName());
 
         return articleDetailVo;
 
