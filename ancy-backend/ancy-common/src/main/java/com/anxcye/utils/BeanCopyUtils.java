@@ -1,6 +1,5 @@
 package com.anxcye.utils;
 
-import org.apache.poi.ss.formula.functions.T;
 import org.springframework.beans.BeanUtils;
 
 import java.util.List;
@@ -16,7 +15,7 @@ public class BeanCopyUtils {
             return null;
         }
         try {
-            T t = target.newInstance();
+            T t = target.getDeclaredConstructor().newInstance();
             BeanUtils.copyProperties(source, t);
             return t;
         } catch (Exception e) {

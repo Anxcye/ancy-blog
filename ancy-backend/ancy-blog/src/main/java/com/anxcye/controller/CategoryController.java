@@ -14,8 +14,8 @@ public class CategoryController {
     private CategoryService categoryService;
 
     @GetMapping("/list")
-    public ResponseResult list() {
-        return ResponseResult.okResult(categoryService.getList());
+    public ResponseResult<?> list() {
+        return ResponseResult.success(categoryService.getList());
 
     }
 }

@@ -1,9 +1,7 @@
 package com.anxcye.domain.vo;
 
 import com.baomidou.mybatisplus.annotation.TableId;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
 public class HotArticleVo {

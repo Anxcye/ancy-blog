@@ -28,11 +28,11 @@
             <artifactId>spring-boot-starter-test</artifactId>
             <scope>test</scope>
         </dependency>
-        <!--        &lt;!&ndash;SpringSecurity&ndash;&gt;-->
-        <!--        <dependency>-->
-        <!--            <groupId>org.springframework.boot</groupId>-->
-        <!--            <artifactId>spring-boot-starter-security</artifactId>-->
-        <!--        </dependency>-->
+        <!--SpringSecurity-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-security</artifactId>
+        </dependency>
         <!--redis-->
         <dependency>
             <groupId>org.springframework.boot</groupId>

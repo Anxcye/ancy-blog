@@ -15,8 +15,8 @@ public class LinkController {
     private LinkService linkService;
 
     @GetMapping("/list")
-    public ResponseResult list() {
-        return ResponseResult.okResult(linkService.getApprovedLinks());
+    public ResponseResult<?> list() {
+        return ResponseResult.success(linkService.getApprovedLinks());
     }
 
 }
