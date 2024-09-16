@@ -2,23 +2,24 @@ package com.anxcye.exception;
 
 import com.anxcye.domain.enums.AppHttpCodeEnum;
 
-public class SystemException extends RuntimeException{
-    private int code;
-
-    private String msg;
+public class SystemException extends RuntimeException {
+    private AppHttpCodeEnum appHttpCodeEnum;
 
     public int getCode() {
-        return code;
+        return appHttpCodeEnum.getCode();
     }
 
     public String getMsg() {
-        return msg;
+        return appHttpCodeEnum.getMsg();
+    }
+
+    public AppHttpCodeEnum getAppHttpCodeEnum() {
+        return appHttpCodeEnum;
     }
 
     public SystemException(AppHttpCodeEnum httpCodeEnum) {
         super(httpCodeEnum.getMsg());
-        this.code = httpCodeEnum.getCode();
-        this.msg = httpCodeEnum.getMsg();
+        this.appHttpCodeEnum = httpCodeEnum;
     }
 
 }
