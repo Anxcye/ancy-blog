@@ -13,8 +13,10 @@ public enum AppHttpCodeEnum {
     USERNAME_EXIST(501, "用户名已存在"),
     PHONE_NUMBER_EXIST(502, "手机号已存在"),
     EMAIL_EXIST(503, "邮箱已存在"),
-    REQUIRE_USERNAME(504, "必需填写用户名"),
-    LOGIN_ERROR(505, "用户名或密码错误");
+    REQUIRE_USERNAME(504, "请提供用户名和密码"),
+    LOGIN_ERROR(505, "用户名密码错误或用户被禁用"),
+    AUTH_ERROR(506, "认证失败");
+
     final int code;
     final String msg;
 

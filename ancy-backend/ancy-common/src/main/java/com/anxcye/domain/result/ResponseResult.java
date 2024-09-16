@@ -1,5 +1,6 @@
 package com.anxcye.domain.result;
 
+import com.anxcye.domain.enums.AppHttpCodeEnum;
 import lombok.Data;
 
 import java.io.Serializable;
@@ -11,23 +12,31 @@ public class ResponseResult<T> implements Serializable {
     private String msg;
     private T data;
 
-    public static <T> ResponseResult<T> success() {
+
+    public static <T> ResponseResult<T> success(AppHttpCodeEnum appHttpCodeEnum, T data) {
         ResponseResult<T> result = new ResponseResult<>();
-        result.code = 200;
+        result.code = appHttpCodeEnum.getCode();
+        result.msg = appHttpCodeEnum.getMsg();
+        result.data = data;
         return result;
+    }
+
+    public static <T> ResponseResult<T> success() {
+        return success(AppHttpCodeEnum.SUCCESS, null);
     }
 
     public static <T> ResponseResult<T> success(T object) {
-        ResponseResult<T> result = new ResponseResult<>();
-        result.data = object;
-        result.code = 200;
-        return result;
+        return success(AppHttpCodeEnum.SUCCESS, object);
     }
 
-    public static <T> ResponseResult<T> error(String msg) {
+    public static <T> ResponseResult<T> error(AppHttpCodeEnum appHttpCodeEnum) {
+        return error(appHttpCodeEnum.getCode(), appHttpCodeEnum.getMsg());
+    }
+
+    public static <T> ResponseResult<T> error(Integer code, String msg) {
         ResponseResult<T> result = new ResponseResult<>();
         result.msg = msg;
-        result.code = 0;
+        result.code = code;
         return result;
     }
 

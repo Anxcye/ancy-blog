@@ -41,7 +41,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
 
         if (Objects.isNull(authenticate)) {
-            throw new RuntimeException("用户名或密码错误");
+            throw new RuntimeException("用户名密码错误");
         }
 
         LoginUser loginUser =  (LoginUser) authenticate.getPrincipal();

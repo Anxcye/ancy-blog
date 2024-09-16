@@ -14,7 +14,6 @@ public class WebUtils
      * 
      * @param response 渲染对象
      * @param string 待渲染的字符串
-     * @return null
      */
     public static void renderString(HttpServletResponse response, String string) {
         try
