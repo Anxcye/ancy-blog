@@ -1,6 +1,7 @@
 package com.anxcye.service;
 
 import com.anxcye.domain.entity.User;
+import com.anxcye.domain.vo.BlogUserVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -10,4 +11,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface UserService extends IService<User> {
 
+    BlogUserVo login(User user);
 }
