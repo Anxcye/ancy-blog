@@ -54,6 +54,7 @@ public class securityConfig {
                 .authorizeHttpRequests(
                         auth -> auth
                                 .requestMatchers("/login").anonymous()
+                                .requestMatchers("/logout").authenticated()
                                 .requestMatchers("/link/list").authenticated()
                                 .anyRequest().permitAll()
                 )

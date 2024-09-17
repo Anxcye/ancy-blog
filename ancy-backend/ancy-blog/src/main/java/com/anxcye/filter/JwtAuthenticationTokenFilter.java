@@ -36,19 +36,17 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             filterChain.doFilter(request, response);
             return;
         }
-        Claims claims = null;
+        LoginUser loginUser;
         try {
-            claims = JwtUtil.parseJWT(token);
+            Claims claims = JwtUtil.parseJWT(token);
+            String userId = claims.getSubject();
+            JSONObject jsonObject = redisCache.getCacheObject(RedisConstant.BLOG_TOKEN_PREFIX + userId);
+            loginUser = jsonObject.toJavaObject(LoginUser.class);
         } catch (Exception e) {
-
             ResponseResult<Object> error = ResponseResult.error(AppHttpCodeEnum.NEED_LOGIN);
             WebUtils.renderString(response, JSON.toJSONString(error));
             return;
         }
-        String userId = claims.getSubject();
-        JSONObject jsonObject = redisCache.getCacheObject(RedisConstant.BLOG_TOKEN_PREFIX + userId);
-
-        LoginUser loginUser = jsonObject.toJavaObject(LoginUser.class);
 
         UsernamePasswordAuthenticationToken authenticationToken =
                 new UsernamePasswordAuthenticationToken(loginUser, null, null);

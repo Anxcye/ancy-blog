@@ -25,4 +25,10 @@ public class UserController {
         }
         return ResponseResult.success(userService.login(user));
     }
+
+    @PostMapping("/logout")
+    public ResponseResult<?> logout() {
+        userService.logout();
+        return ResponseResult.success();
+    }
 }

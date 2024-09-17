@@ -2,8 +2,10 @@ package com.anxcye.service.impl;
 
 import com.anxcye.constants.RedisConstant;
 import com.anxcye.domain.entity.LoginUser;
+import com.anxcye.domain.enums.AppHttpCodeEnum;
 import com.anxcye.domain.vo.BlogUserVo;
 import com.anxcye.domain.vo.UserInfoVo;
+import com.anxcye.exception.SystemException;
 import com.anxcye.utils.BeanCopyUtils;
 import com.anxcye.utils.JwtUtil;
 import com.anxcye.utils.RedisCache;
@@ -15,6 +17,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -41,10 +44,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
 
         if (Objects.isNull(authenticate)) {
-            throw new RuntimeException("用户名密码错误");
+            throw new SystemException(AppHttpCodeEnum.LOGIN_ERROR);
         }
 
-        LoginUser loginUser =  (LoginUser) authenticate.getPrincipal();
+        LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
         String id = loginUser.getUser().getId().toString();
         String jwt = JwtUtil.createJWT(id);
 
@@ -54,6 +57,15 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
         return new BlogUserVo(jwt, userInfoVo);
 
+    }
+
+    @Override
+    public void logout() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        LoginUser loginUser = (LoginUser) authentication.getPrincipal();
+
+        Long id = loginUser.getUser().getId();
+        redisCache.deleteObject(RedisConstant.BLOG_TOKEN_PREFIX + id);
     }
 }
 

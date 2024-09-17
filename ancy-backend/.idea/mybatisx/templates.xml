@@ -13,7 +13,7 @@
             <option name="extraClassSuffix" value="" />
             <option name="ignoreFieldPrefix" value="" />
             <option name="ignoreFieldSuffix" value="" />
-            <option name="ignoreTablePrefix" value="sys_" />
+            <option name="ignoreTablePrefix" value="ancy_" />
             <option name="ignoreTableSuffix" value="" />
             <option name="moduleName" value="ancy-common" />
             <option name="modulePath" value="$PROJECT_DIR$/ancy-common" />
@@ -68,8 +68,8 @@
             <option name="tableUIInfoList">
               <list>
                 <TableUIInfo>
-                  <option name="className" value="User" />
-                  <option name="tableName" value="sys_user" />
+                  <option name="className" value="Comment" />
+                  <option name="tableName" value="ancy_comment" />
                 </TableUIInfo>
               </list>
             </option>
