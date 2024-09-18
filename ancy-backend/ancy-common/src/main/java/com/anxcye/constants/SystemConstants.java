@@ -25,4 +25,14 @@ public class SystemConstants
      *  友链状态正常
      */
     public static final String LINK_STATUS_NORMAL = STATUS_NORMAL;
+
+    /**
+     *  评论状态正常
+     */
+    public static final String COMMENT_STATUS_NORMAL = STATUS_NORMAL;
+
+    /**
+     *  评论是根评论
+     */
+    public static final long COMMENT_IS_ROOT = -1;
 }
