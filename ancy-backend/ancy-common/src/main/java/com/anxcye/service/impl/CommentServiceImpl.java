@@ -1,9 +1,13 @@
 package com.anxcye.service.impl;
 
+import com.alibaba.excel.util.StringUtils;
 import com.anxcye.constants.SystemConstants;
+import com.anxcye.domain.dto.CommentDto;
 import com.anxcye.domain.entity.Comment;
+import com.anxcye.domain.enums.AppHttpCodeEnum;
 import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.vo.CommentVo;
+import com.anxcye.exception.SystemException;
 import com.anxcye.mapper.CommentMapper;
 import com.anxcye.mapper.UserMapper;
 import com.anxcye.service.CommentService;
@@ -15,6 +19,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author axy
@@ -46,11 +51,12 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
     }
 
     @Override
-    public PageResult selectCommentByArticleId(Long articleId, Integer pageNum, Integer pageSize) {
+    public PageResult selectComment(String commentType, Long articleId, Integer pageNum, Integer pageSize) {
         LambdaQueryWrapper<Comment> commentLambdaQueryWrapper = new LambdaQueryWrapper<>();
         commentLambdaQueryWrapper.eq(Comment::getStatus, SystemConstants.COMMENT_STATUS_NORMAL);
-        commentLambdaQueryWrapper.eq(Comment::getArticleId, articleId);
+        commentLambdaQueryWrapper.eq(Objects.nonNull(articleId), Comment::getArticleId, articleId);
         commentLambdaQueryWrapper.eq(Comment::getRootId, SystemConstants.COMMENT_IS_ROOT);
+        commentLambdaQueryWrapper.eq(Comment::getType, commentType);
         commentLambdaQueryWrapper.orderByAsc(Comment::getCreateTime);
 
         Page<Comment> commentPage = new Page<>(pageNum, pageSize);
@@ -71,6 +77,16 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         page(commentPage, commentLambdaQueryWrapper);
         List<CommentVo> commentVos = toCommentVoList(commentPage.getRecords());
         return new PageResult(commentPage.getTotal(), commentVos);
+    }
+
+    @Override
+    public void add(CommentDto commentDto) {
+        if (StringUtils.isEmpty(commentDto.getType())) {
+            throw new SystemException(AppHttpCodeEnum.CONTENT_NOT_NULL);
+        }
+        Comment comment = BeanCopyUtils.copyBean(commentDto, Comment.class);
+        comment.setStatus(SystemConstants.COMMENT_STATUS_NORMAL);
+        save(comment);
     }
 }
 

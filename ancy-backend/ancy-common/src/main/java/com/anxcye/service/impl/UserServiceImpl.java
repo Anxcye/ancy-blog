@@ -2,22 +2,22 @@ package com.anxcye.service.impl;
 
 import com.anxcye.constants.RedisConstant;
 import com.anxcye.domain.entity.LoginUser;
+import com.anxcye.domain.entity.User;
 import com.anxcye.domain.enums.AppHttpCodeEnum;
 import com.anxcye.domain.vo.BlogUserVo;
 import com.anxcye.domain.vo.UserInfoVo;
 import com.anxcye.exception.SystemException;
+import com.anxcye.mapper.UserMapper;
+import com.anxcye.service.UserService;
 import com.anxcye.utils.BeanCopyUtils;
 import com.anxcye.utils.JwtUtil;
 import com.anxcye.utils.RedisCache;
+import com.anxcye.utils.SecurityUtil;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.anxcye.domain.entity.User;
-import com.anxcye.service.UserService;
-import com.anxcye.mapper.UserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -61,8 +61,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public void logout() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        LoginUser loginUser = (LoginUser) authentication.getPrincipal();
+//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        LoginUser loginUser = SecurityUtil.getLoginUser();
 
         Long id = loginUser.getUser().getId();
         redisCache.deleteObject(RedisConstant.BLOG_TOKEN_PREFIX + id);

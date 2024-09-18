@@ -35,4 +35,8 @@ public class SystemConstants
      *  评论是根评论
      */
     public static final long COMMENT_IS_ROOT = -1;
+
+    public static final String COMMENT_TYPE_ARTICLE = "0";
+
+    public static final String COMMENT_TYPE_LINK = "1";
 }

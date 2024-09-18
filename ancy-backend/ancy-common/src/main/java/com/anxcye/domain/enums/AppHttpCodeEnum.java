@@ -15,7 +15,8 @@ public enum AppHttpCodeEnum {
     EMAIL_EXIST(503, "邮箱已存在"),
     REQUIRE_USERNAME(504, "请提供用户名和密码"),
     LOGIN_ERROR(505, "用户名密码错误或用户被禁用"),
-    AUTH_ERROR(506, "认证失败");
+    AUTH_ERROR(506, "认证失败"),
+    CONTENT_NOT_NULL(507, "内容不能为空");
 
     final int code;
     final String msg;

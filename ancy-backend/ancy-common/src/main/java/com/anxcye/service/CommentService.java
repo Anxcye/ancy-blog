@@ -1,5 +1,6 @@
 package com.anxcye.service;
 
+import com.anxcye.domain.dto.CommentDto;
 import com.anxcye.domain.entity.Comment;
 import com.anxcye.domain.result.PageResult;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -11,7 +12,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface CommentService extends IService<Comment> {
 
-    PageResult selectCommentByArticleId(Long articleId, Integer pageNum, Integer pageSize);
+    PageResult selectComment(String commentType, Long articleId, Integer pageNum, Integer pageSize);
 
     PageResult getChildren(Long parentId, Integer pageNum, Integer pageSize);
+
+    void add(CommentDto commentDto);
+
 }

@@ -55,7 +55,7 @@ public class securityConfig {
                         auth -> auth
                                 .requestMatchers("/login").anonymous()
                                 .requestMatchers("/logout").authenticated()
-                                .requestMatchers("/link/list").authenticated()
+                                .requestMatchers("/comment").authenticated()
                                 .anyRequest().permitAll()
                 )
                 .logout(AbstractHttpConfigurer::disable)
