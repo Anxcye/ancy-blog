@@ -1,7 +1,11 @@
+package com.anxcye;
+
 import com.anxcye.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
 import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
 
+@SpringBootTest
 public class TestJwt {
 
     @Test

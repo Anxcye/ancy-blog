@@ -14,6 +14,8 @@ spring:
   data:
     redis:
       password: 123456
+  profiles:
+    active: dev
 
 
 mybatis-plus:
@@ -42,3 +44,9 @@ knife4j:
   enable: true
   setting:
     language: zh_cn
+aliyun:
+  oss:
+    access-key-id: ${ancy.aliyun.oss.access-key-id}
+    endpoint: ${ancy.aliyun.oss.endpoint}
+    bucket-name: ${ancy.aliyun.oss.bucket-name}
+    access-key-secret: ${ancy.aliyun.oss.access-key-secret}

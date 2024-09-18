@@ -67,6 +67,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         Long id = loginUser.getUser().getId();
         redisCache.deleteObject(RedisConstant.BLOG_TOKEN_PREFIX + id);
     }
+
+    @Override
+    public UserInfoVo getUserInfo() {
+        Long userId = SecurityUtil.getUserId();
+        User user = getById(userId);
+        UserInfoVo userInfoVo = BeanCopyUtils.copyBean(user, UserInfoVo.class);
+        return userInfoVo;
+    }
 }
 
 

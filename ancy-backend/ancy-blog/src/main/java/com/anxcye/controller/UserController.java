@@ -7,6 +7,7 @@ import com.anxcye.domain.result.ResponseResult;
 import com.anxcye.exception.SystemException;
 import com.anxcye.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -30,5 +31,10 @@ public class UserController {
     public ResponseResult<?> logout() {
         userService.logout();
         return ResponseResult.success();
+    }
+
+    @GetMapping("/info")
+    public ResponseResult<?> getUserInfo() {
+        return ResponseResult.success(userService.getUserInfo());
     }
 }

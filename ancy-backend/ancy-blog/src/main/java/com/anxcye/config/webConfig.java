@@ -7,7 +7,6 @@ import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.MediaType;
@@ -21,7 +20,6 @@ import java.util.List;
 
 @Configuration
 @EnableWebMvc
-@Slf4j
 public class webConfig implements WebMvcConfigurer {
     @Bean
     public OpenAPI ancyOpenAPI() {
@@ -34,7 +32,6 @@ public class webConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        log.info("addResourceHandlers...");
         registry.addResourceHandler("/doc.html").addResourceLocations("classpath:/META-INF/resources/");
         registry.addResourceHandler("/swagger-ui.html").addResourceLocations("classpath:/META-INF/resources/");
         registry.addResourceHandler("/swagger-resources").addResourceLocations("classpath:/META-INF/resources/");
