@@ -43,7 +43,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             JSONObject jsonObject = redisCache.getCacheObject(RedisConstant.BLOG_TOKEN_PREFIX + userId);
             loginUser = jsonObject.toJavaObject(LoginUser.class);
         } catch (Exception e) {
-            ResponseResult<Object> error = ResponseResult.error(AppHttpCodeEnum.NEED_LOGIN);
+            ResponseResult<Object> error = ResponseResult.error(AppHttpCodeEnum.TOKEN_INVALID);
             WebUtils.renderString(response, JSON.toJSONString(error));
             return;
         }

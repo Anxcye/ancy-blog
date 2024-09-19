@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anxcye.mapper.OperateLogMapper">
+
+    <resultMap id="BaseResultMap" type="com.anxcye.domain.entity.OperateLog">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="operateUser" column="operate_user" jdbcType="BIGINT"/>
+            <result property="ip" column="ip" jdbcType="VARCHAR"/>
+            <result property="address" column="address" jdbcType="VARCHAR"/>
+            <result property="ua" column="ua" jdbcType="VARCHAR"/>
+            <result property="operateTime" column="operate_time" jdbcType="TIMESTAMP"/>
+            <result property="className" column="class_name" jdbcType="VARCHAR"/>
+            <result property="methodName" column="method_name" jdbcType="VARCHAR"/>
+            <result property="methodParams" column="method_params" jdbcType="VARCHAR"/>
+            <result property="returnValue" column="return_value" jdbcType="VARCHAR"/>
+            <result property="costTime" column="cost_time" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,operate_user,ip,
+        address,ua,operate_time,
+        class_name,method_name,method_params,
+        return_value,cost_time
+    </sql>
+</mapper>

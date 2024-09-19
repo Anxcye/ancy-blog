@@ -17,7 +17,9 @@ public enum AppHttpCodeEnum {
     LOGIN_ERROR(505, "用户名密码错误或用户被禁用"),
     AUTH_ERROR(506, "认证失败"),
     CONTENT_NOT_NULL(507, "内容不能为空"),
-    UPLOAD_ERROR(508, "上传失败");
+    UPLOAD_ERROR(508, "上传失败"),
+    USERINFO_NOT_NULL(509, "用户信息不完整"),
+    TOKEN_INVALID(510, "无效的token");
 
     final int code;
     final String msg;

@@ -14,7 +14,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(SystemException.class)
     public ResponseResult<?> systemExceptionHandler(SystemException e) {
-        log.error("SystemException: ", e);
+        log.error("SystemException: ", e.getAppHttpCodeEnum().getMsg());
         return ResponseResult.error(e.getAppHttpCodeEnum());
     }
 

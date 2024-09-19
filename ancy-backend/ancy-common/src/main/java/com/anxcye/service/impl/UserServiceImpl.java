@@ -1,6 +1,9 @@
 package com.anxcye.service.impl;
 
 import com.anxcye.constants.RedisConstant;
+import com.anxcye.domain.dto.LoginDto;
+import com.anxcye.domain.dto.RegisterDto;
+import com.anxcye.domain.dto.UserDto;
 import com.anxcye.domain.entity.LoginUser;
 import com.anxcye.domain.entity.User;
 import com.anxcye.domain.enums.AppHttpCodeEnum;
@@ -13,11 +16,14 @@ import com.anxcye.utils.BeanCopyUtils;
 import com.anxcye.utils.JwtUtil;
 import com.anxcye.utils.RedisCache;
 import com.anxcye.utils.SecurityUtil;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Objects;
@@ -37,10 +43,18 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Autowired
     private RedisCache redisCache;
 
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
     @Override
-    public BlogUserVo login(User user) {
-        UsernamePasswordAuthenticationToken authenticationToken =
-                new UsernamePasswordAuthenticationToken(user.getUserName(), user.getPassword());
+    public BlogUserVo login(LoginDto user) {
+        if (Objects.isNull(user.getUserName())) {
+            user.setUserName(
+                    getOne(new LambdaQueryWrapper<User>().eq(User::getEmail, user.getUserName())).getUserName());
+        }
+
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
+                user.getUserName(), user.getPassword());
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
 
         if (Objects.isNull(authenticate)) {
@@ -61,7 +75,8 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public void logout() {
-//        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        // Authentication authentication =
+        // SecurityContextHolder.getContext().getAuthentication();
         LoginUser loginUser = SecurityUtil.getLoginUser();
 
         Long id = loginUser.getUser().getId();
@@ -75,8 +90,42 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         UserInfoVo userInfoVo = BeanCopyUtils.copyBean(user, UserInfoVo.class);
         return userInfoVo;
     }
+
+    @Override
+    public UserInfoVo updateUserInfo(UserDto userDto) {
+        if (SecurityUtil.getUserId() != userDto.getId()) {
+            throw new SystemException(AppHttpCodeEnum.NO_OPERATOR_AUTH);
+        }
+        User user = BeanCopyUtils.copyBean(userDto, User.class);
+        updateById(user);
+        return getUserInfo();
+    }
+
+    private boolean userInfoExists(SFunction<User, String> getter, String value) {
+        return getOne(new LambdaQueryWrapper<User>().eq(getter, value)) != null;
+    }
+
+    @Override
+    public BlogUserVo register(RegisterDto userDto) {
+        if (Objects.isNull(userDto.getUserName()) ||
+                Objects.isNull(userDto.getPassword()) ||
+                Objects.isNull(userDto.getEmail()) ||
+                Objects.isNull(userDto.getNickName())) {
+            throw new SystemException(AppHttpCodeEnum.USERINFO_NOT_NULL);
+        }
+        if (userInfoExists(User::getUserName, userDto.getUserName())) {
+            throw new SystemException(AppHttpCodeEnum.USERNAME_EXIST);
+        }
+        if (userInfoExists(User::getEmail, userDto.getEmail())) {
+            throw new SystemException(AppHttpCodeEnum.EMAIL_EXIST);
+        }
+
+        User user = BeanCopyUtils.copyBean(userDto, User.class);
+        String encodedPassword = passwordEncoder.encode(userDto.getPassword());
+        user.setPassword(encodedPassword);
+
+        save(user);
+        LoginDto loginDto = BeanCopyUtils.copyBean(userDto, LoginDto.class);
+        return login(loginDto);
+    }
 }
-
-
-
-

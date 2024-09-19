@@ -17,7 +17,6 @@ spring:
   profiles:
     active: dev
 
-
 mybatis-plus:
   configuration:
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
@@ -28,7 +27,7 @@ mybatis-plus:
       logic-not-delete-value: 0
       id-type: auto
 
-# springdoc-openapiÏîÄ¿ÅäÖÃ
+# springdoc-openapi
 springdoc:
   swagger-ui:
     path: /swagger-ui.html
@@ -40,10 +39,12 @@ springdoc:
     - group: 'user'
       paths-to-match: '/**'
       packages-to-scan: com.anxcye.controller
+
 knife4j:
   enable: true
   setting:
     language: zh_cn
+
 aliyun:
   oss:
     access-key-id: ${ancy.aliyun.oss.access-key-id}

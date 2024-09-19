@@ -39,4 +39,6 @@ public class SystemConstants
     public static final String COMMENT_TYPE_ARTICLE = "0";
 
     public static final String COMMENT_TYPE_LINK = "1";
+
+    public static final long SUPER_ADMIN_ID = 1L;
 }

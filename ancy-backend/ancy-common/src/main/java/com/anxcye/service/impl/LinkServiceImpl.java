@@ -1,5 +1,6 @@
 package com.anxcye.service.impl;
 
+import com.anxcye.annotation.Log;
 import com.anxcye.constants.SystemConstants;
 import com.anxcye.domain.vo.LinkVo;
 import com.anxcye.utils.BeanCopyUtils;
@@ -21,6 +22,7 @@ import java.util.List;
 public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link>
         implements LinkService {
 
+    @Log
     @Override
     public List<LinkVo> getApprovedLinks() {
         LambdaQueryWrapper<Link> linkLambdaQueryWrapper = new LambdaQueryWrapper<>();
