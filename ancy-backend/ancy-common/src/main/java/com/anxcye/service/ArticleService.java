@@ -7,7 +7,6 @@ import com.anxcye.domain.vo.HotArticleVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
-import java.util.Map;
 
 /**
 * @author axy
@@ -22,7 +21,7 @@ public interface ArticleService extends IService<Article> {
 
     ArticleDetailVo getArticleById(Long id);
 
-    Map<String, Integer> getViewCount();
+    void syncFromRedisToDB();
 
-    void updateViewCount(Map<String, Integer> viewCountMap);
+    void initViewCount();
 }

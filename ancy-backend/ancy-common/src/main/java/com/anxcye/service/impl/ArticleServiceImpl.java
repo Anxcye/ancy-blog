@@ -1,6 +1,5 @@
 package com.anxcye.service.impl;
 
-
 import com.anxcye.constants.RedisConstant;
 import com.anxcye.constants.SystemConstants;
 import com.anxcye.domain.entity.Article;
@@ -40,10 +39,46 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     @Autowired
     private RedisCache redisCache;
 
-
     private void updateViewCount(Long id) {
         redisCache.incrementCacheMapValue(RedisConstant.ARTICLE_VIEW_COUNT, id.toString(), 1);
-     
+
+    }
+
+    private Long getViewCount(Long id) {
+        Integer viewCount = redisCache.getCacheMapValue(RedisConstant.ARTICLE_VIEW_COUNT, id.toString());
+        return viewCount.longValue();
+    }
+
+    private Map<String, Integer> getViewCount() {
+        LambdaQueryWrapper<Article> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.select(Article::getId, Article::getViewCount);
+        lambdaQueryWrapper.orderByAsc(Article::getId);
+        List<Article> articles = list(lambdaQueryWrapper);
+        Map<String, Integer> viewCountMap = new HashMap<>();
+        articles.forEach(article -> {
+            viewCountMap.put(article.getId().toString(), article.getViewCount().intValue());
+        });
+        return viewCountMap;
+    }
+
+    @Override
+    public void syncFromRedisToDB() {
+        Map<String, Integer> viewCountMap = redisCache.getCacheMap(RedisConstant.ARTICLE_VIEW_COUNT);
+        List<Article> articles = viewCountMap.entrySet().stream()
+                .map(entry -> new Article(Long.valueOf(entry.getKey()), entry.getValue().longValue()))
+                .collect(Collectors.toList());
+
+        updateBatchById(articles);
+    }
+
+    @Override
+    public void initViewCount() {
+        Map<String, Integer> viewCountMap = redisCache.getCacheMap(RedisConstant.ARTICLE_VIEW_COUNT);
+        if (!viewCountMap.isEmpty()) {
+            syncFromRedisToDB();
+        }
+        viewCountMap = getViewCount();
+        redisCache.setCacheMap(RedisConstant.ARTICLE_VIEW_COUNT, viewCountMap);
     }
 
     @Override
@@ -55,7 +90,13 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         Page<Article> page = new Page<>(1, 10);
         page(page, lambdaQueryWrapper);
 
-        return BeanCopyUtils.copyList(page.getRecords(), HotArticleVo.class);
+        List<HotArticleVo> hotArticleVos = BeanCopyUtils.copyList(page.getRecords(), HotArticleVo.class);
+
+        hotArticleVos.forEach(hotArticleVo -> {
+            hotArticleVo.setViewCount(getViewCount(hotArticleVo.getId()));
+        });
+
+        return hotArticleVos;
     }
 
     @Override
@@ -71,6 +112,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
 
         articleCardVos.forEach(articleCardVo -> {
             articleCardVo.setCategoryName(categoryService.getById(articleCardVo.getCategoryId()).getName());
+            articleCardVo.setViewCount(getViewCount(articleCardVo.getId()));
         });
 
         return new PageResult(page.getTotal(), articleCardVos);
@@ -88,31 +130,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
 
         updateViewCount(id);
 
+        articleDetailVo.setViewCount(getViewCount(id));
+
         articleDetailVo.setCategoryName(categoryService.getById(article.getCategoryId()).getName());
 
         return articleDetailVo;
 
     }
 
-    @Override
-    public Map<String, Integer> getViewCount() {
-        LambdaQueryWrapper<Article> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.select(Article::getId, Article::getViewCount);
-        lambdaQueryWrapper.orderByAsc(Article::getId);
-        List<Article> articles = list(lambdaQueryWrapper);
-        Map<String, Integer> viewCountMap = new HashMap<>();
-        articles.forEach(article -> {
-            viewCountMap.put(article.getId().toString(), article.getViewCount().intValue());
-        });
-        return viewCountMap;
-    }
-
-    @Override
-    public void updateViewCount(Map<String, Integer> viewCountMap) {
-        List<Article> articles = viewCountMap.entrySet().stream()
-                .map(entry -> new Article(Long.valueOf(entry.getKey()), entry.getValue().longValue()))
-                .collect(Collectors.toList());
-
-        updateBatchById(articles);
-    }
 }
