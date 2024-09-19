@@ -1,6 +1,7 @@
 package com.anxcye.service.impl;
 
 
+import com.anxcye.constants.RedisConstant;
 import com.anxcye.constants.SystemConstants;
 import com.anxcye.domain.entity.Article;
 import com.anxcye.domain.result.PageResult;
@@ -11,15 +12,18 @@ import com.anxcye.mapper.ArticleMapper;
 import com.anxcye.service.ArticleService;
 import com.anxcye.service.CategoryService;
 import com.anxcye.utils.BeanCopyUtils;
+import com.anxcye.utils.RedisCache;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * @author axy
@@ -32,6 +36,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
 
     @Autowired
     private CategoryService categoryService;
+
+    @Autowired
+    private RedisCache redisCache;
+
+
+    private void updateViewCount(Long id) {
+        redisCache.incrementCacheMapValue(RedisConstant.ARTICLE_VIEW_COUNT, id.toString(), 1);
+     
+    }
 
     @Override
     public List<HotArticleVo> hot() {
@@ -65,7 +78,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
 
     @Override
     public ArticleDetailVo getArticleById(Long id) {
-        Article article = this.getById(id);
+        Article article = getById(id);
 
         ArticleDetailVo articleDetailVo = BeanCopyUtils.copyBean(article, ArticleDetailVo.class);
 
@@ -73,9 +86,33 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
             return null;
         }
 
+        updateViewCount(id);
+
         articleDetailVo.setCategoryName(categoryService.getById(article.getCategoryId()).getName());
 
         return articleDetailVo;
 
+    }
+
+    @Override
+    public Map<String, Integer> getViewCount() {
+        LambdaQueryWrapper<Article> lambdaQueryWrapper = new LambdaQueryWrapper<>();
+        lambdaQueryWrapper.select(Article::getId, Article::getViewCount);
+        lambdaQueryWrapper.orderByAsc(Article::getId);
+        List<Article> articles = list(lambdaQueryWrapper);
+        Map<String, Integer> viewCountMap = new HashMap<>();
+        articles.forEach(article -> {
+            viewCountMap.put(article.getId().toString(), article.getViewCount().intValue());
+        });
+        return viewCountMap;
+    }
+
+    @Override
+    public void updateViewCount(Map<String, Integer> viewCountMap) {
+        List<Article> articles = viewCountMap.entrySet().stream()
+                .map(entry -> new Article(Long.valueOf(entry.getKey()), entry.getValue().longValue()))
+                .collect(Collectors.toList());
+
+        updateBatchById(articles);
     }
 }

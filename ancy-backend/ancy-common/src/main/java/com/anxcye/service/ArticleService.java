@@ -7,6 +7,7 @@ import com.anxcye.domain.vo.HotArticleVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;
+import java.util.Map;
 
 /**
 * @author axy
@@ -20,4 +21,8 @@ public interface ArticleService extends IService<Article> {
     PageResult getList(Integer pageNum, Integer pageSize, Integer categoryId);
 
     ArticleDetailVo getArticleById(Long id);
+
+    Map<String, Integer> getViewCount();
+
+    void updateViewCount(Map<String, Integer> viewCountMap);
 }

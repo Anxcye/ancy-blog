@@ -172,4 +172,14 @@ public class RedisCache {
     public Collection<String> keys(final String pattern) {
         return redisTemplate.keys(pattern);
     }
+
+    /**
+     * 自增
+     * @param key
+     * @param hKey
+     * @param value
+     */
+    public void incrementCacheMapValue(String key, String hKey, Integer value) {
+        redisTemplate.opsForHash().increment(key, hKey, value);
+    }
 }
