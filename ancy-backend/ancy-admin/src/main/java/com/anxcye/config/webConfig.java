@@ -1,8 +1,8 @@
 package com.anxcye.config;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.serializer.SerializeConfig;
 import com.alibaba.fastjson.serializer.SerializerFeature;
-import com.alibaba.fastjson.serializer.ToStringSerializer;
 import com.alibaba.fastjson.support.config.FastJsonConfig;
 import com.alibaba.fastjson.support.spring.FastJsonHttpMessageConverter;
 import io.swagger.v3.oas.models.OpenAPI;
@@ -39,6 +39,10 @@ public class webConfig implements WebMvcConfigurer {
         registry.addResourceHandler("/webjars/**").addResourceLocations("classpath:/META-INF/resources/webjars/");
     }
 
+    static {
+        // 全局配置关闭Fastjson重复引用，避免出现$ref
+        JSON.DEFAULT_GENERATE_FEATURE |= SerializerFeature.DisableCircularReferenceDetect.getMask();
+    }
 
     @Override
     public void configureMessageConverters(List<HttpMessageConverter<?>> converters) {
@@ -50,7 +54,7 @@ public class webConfig implements WebMvcConfigurer {
         fastJsonConfig.setSerializerFeatures(SerializerFeature.WriteMapNullValue);
 
         fastJsonConfig.setDateFormat("yyyy-MM-dd HH:mm:ss");
-        SerializeConfig.globalInstance.put(Long.class, ToStringSerializer.instance);
+//        SerializeConfig.globalInstance.put(Long.class, ToStringSerializer.instance);
         fastJsonConfig.setSerializeConfig(SerializeConfig.globalInstance);
 
         FastJsonHttpMessageConverter fastConverter = new FastJsonHttpMessageConverter();

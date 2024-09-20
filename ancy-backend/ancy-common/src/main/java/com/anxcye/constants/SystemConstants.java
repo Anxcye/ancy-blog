@@ -43,4 +43,6 @@ public class SystemConstants
     public static final long SUPER_ADMIN_ID = 1L;
     public static final String MENU_TABLE_MENU = "C";
     public static final String MENU_TABLE_BUTTON = "F";
+    public static final String MENU_TABLE_CATALOG = "M";
+    public static final Long ROOT_MENU_PARENT_ID = 0L;
 }

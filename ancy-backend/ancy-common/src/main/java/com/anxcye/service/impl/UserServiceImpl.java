@@ -9,6 +9,7 @@ import com.anxcye.domain.entity.User;
 import com.anxcye.domain.enums.AppHttpCodeEnum;
 import com.anxcye.domain.vo.AdminUserVo;
 import com.anxcye.domain.vo.BlogUserVo;
+import com.anxcye.domain.vo.RouterVo;
 import com.anxcye.domain.vo.UserInfoVo;
 import com.anxcye.exception.SystemException;
 import com.anxcye.mapper.UserMapper;
@@ -150,5 +151,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
 
         return new AdminUserVo(jwt, permissions, role, userInfoVo);
+    }
+
+    @Override
+    public RouterVo getRouters() {
+        Long userId = SecurityUtil.getUserId();
+        return new RouterVo(menuService.selectMenuTreeByUserId(userId));
     }
 }

@@ -6,6 +6,7 @@ import com.anxcye.domain.dto.UserDto;
 import com.anxcye.domain.entity.User;
 import com.anxcye.domain.vo.AdminUserVo;
 import com.anxcye.domain.vo.BlogUserVo;
+import com.anxcye.domain.vo.RouterVo;
 import com.anxcye.domain.vo.UserInfoVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -28,4 +29,5 @@ public interface UserService extends IService<User> {
 
     AdminUserVo adminLogin(LoginDto loginDto);
 
+    RouterVo getRouters();
 }

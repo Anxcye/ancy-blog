@@ -46,4 +46,22 @@
             sm.status = 0 AND
             sm.deleted = 0
     </select>
+
+    <select id="selectRoutersByUserId" resultType="com.anxcye.domain.entity.Menu">
+        SELECT
+            DISTINCT sm.id, sm.parent_id, sm.menu_name, sm.path, sm.component, sm.visible, sm.status,
+                     IFNULL(sm.perms,'') AS perms, sm.is_frame, sm.menu_type, sm.icon, sm.order_num,
+                     sm.create_time, sm.create_by, sm.update_time, sm.update_by
+        FROM
+            sys_user_role sur
+                LEFT JOIN sys_role_menu srm on  sur.role_id = srm.role_id
+                LEFT JOIN sys_menu sm on srm.menu_id = sm.id
+        WHERE
+            sur.user_id = #{userId} AND
+            sm.menu_type IN  ('C', 'M') AND
+            sm.status = 0 AND
+            sm.deleted = 0
+        ORDER BY
+            sm.parent_id, sm.order_num
+    </select>
 </mapper>
