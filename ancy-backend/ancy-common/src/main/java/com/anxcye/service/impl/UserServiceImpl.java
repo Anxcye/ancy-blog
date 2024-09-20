@@ -7,10 +7,13 @@ import com.anxcye.domain.dto.UserDto;
 import com.anxcye.domain.entity.LoginUser;
 import com.anxcye.domain.entity.User;
 import com.anxcye.domain.enums.AppHttpCodeEnum;
+import com.anxcye.domain.vo.AdminUserVo;
 import com.anxcye.domain.vo.BlogUserVo;
 import com.anxcye.domain.vo.UserInfoVo;
 import com.anxcye.exception.SystemException;
 import com.anxcye.mapper.UserMapper;
+import com.anxcye.service.MenuService;
+import com.anxcye.service.RoleService;
 import com.anxcye.service.UserService;
 import com.anxcye.utils.BeanCopyUtils;
 import com.anxcye.utils.JwtUtil;
@@ -26,6 +29,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 
 /**
@@ -34,8 +38,7 @@ import java.util.Objects;
  * @createDate 2024-09-12 13:57:34
  */
 @Service
-public class UserServiceImpl extends ServiceImpl<UserMapper, User>
-        implements UserService {
+public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements UserService {
 
     @Autowired
     private AuthenticationManager authenticationManager;
@@ -46,27 +49,37 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    @Override
-    public BlogUserVo login(LoginDto user) {
-        if (Objects.isNull(user.getUserName())) {
-            user.setUserName(
-                    getOne(new LambdaQueryWrapper<User>().eq(User::getEmail, user.getUserName())).getUserName());
+    @Autowired
+    private MenuService menuService;
+
+    @Autowired
+    private RoleService roleService;
+
+    private LoginUser getLoginUserByLoginDto(LoginDto loginDto) {
+        if (Objects.isNull(loginDto.getUserName())) {
+            loginDto.setUserName(getOne(new LambdaQueryWrapper<User>().eq(User::getEmail, loginDto.getUserName())).getUserName());
         }
 
-        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(
-                user.getUserName(), user.getPassword());
+        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(loginDto.getUserName(), loginDto.getPassword());
         Authentication authenticate = authenticationManager.authenticate(authenticationToken);
 
         if (Objects.isNull(authenticate)) {
             throw new SystemException(AppHttpCodeEnum.LOGIN_ERROR);
         }
 
-        LoginUser loginUser = (LoginUser) authenticate.getPrincipal();
+        return (LoginUser) authenticate.getPrincipal();
+    }
+
+    @Override
+    public BlogUserVo login(LoginDto loginDto) {
+
+        LoginUser loginUser = getLoginUserByLoginDto(loginDto);
+
         String id = loginUser.getUser().getId().toString();
-        String jwt = JwtUtil.createJWT(id);
 
         redisCache.setCacheObject(RedisConstant.BLOG_TOKEN_PREFIX + id, loginUser);
 
+        String jwt = JwtUtil.createJWT(id);
         UserInfoVo userInfoVo = BeanCopyUtils.copyBean(loginUser.getUser(), UserInfoVo.class);
 
         return new BlogUserVo(jwt, userInfoVo);
@@ -75,8 +88,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public void logout() {
-        // Authentication authentication =
-        // SecurityContextHolder.getContext().getAuthentication();
         LoginUser loginUser = SecurityUtil.getLoginUser();
 
         Long id = loginUser.getUser().getId();
@@ -87,13 +98,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public UserInfoVo getUserInfo() {
         Long userId = SecurityUtil.getUserId();
         User user = getById(userId);
-        UserInfoVo userInfoVo = BeanCopyUtils.copyBean(user, UserInfoVo.class);
-        return userInfoVo;
+        return BeanCopyUtils.copyBean(user, UserInfoVo.class);
     }
 
     @Override
     public UserInfoVo updateUserInfo(UserDto userDto) {
-        if (SecurityUtil.getUserId() != userDto.getId()) {
+        if (!Objects.equals(SecurityUtil.getUserId(), userDto.getId())) {
             throw new SystemException(AppHttpCodeEnum.NO_OPERATOR_AUTH);
         }
         User user = BeanCopyUtils.copyBean(userDto, User.class);
@@ -107,10 +117,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
     @Override
     public BlogUserVo register(RegisterDto userDto) {
-        if (Objects.isNull(userDto.getUserName()) ||
-                Objects.isNull(userDto.getPassword()) ||
-                Objects.isNull(userDto.getEmail()) ||
-                Objects.isNull(userDto.getNickName())) {
+        if (Objects.isNull(userDto.getUserName()) || Objects.isNull(userDto.getPassword()) || Objects.isNull(userDto.getEmail()) || Objects.isNull(userDto.getNickName())) {
             throw new SystemException(AppHttpCodeEnum.USERINFO_NOT_NULL);
         }
         if (userInfoExists(User::getUserName, userDto.getUserName())) {
@@ -127,5 +134,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         save(user);
         LoginDto loginDto = BeanCopyUtils.copyBean(userDto, LoginDto.class);
         return login(loginDto);
+    }
+
+    @Override
+    public AdminUserVo adminLogin(LoginDto loginDto) {
+
+        LoginUser loginUser = getLoginUserByLoginDto(loginDto);
+        Long id = loginUser.getUser().getId();
+        redisCache.setCacheObject(RedisConstant.ADMIN_TOKEN_PREFIX + id, loginUser);
+
+        String jwt = JwtUtil.createJWT(id.toString());
+        UserInfoVo userInfoVo = BeanCopyUtils.copyBean(loginUser.getUser(), UserInfoVo.class);
+        List<String> permissions = menuService.getPermissionsByUserId(id);
+        List<String> role = roleService.getRoleByUserId(id);
+
+
+        return new AdminUserVo(jwt, permissions, role, userInfoVo);
     }
 }

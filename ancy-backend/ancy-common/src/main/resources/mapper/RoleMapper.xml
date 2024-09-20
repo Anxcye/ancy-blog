@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anxcye.mapper.RoleMapper">
+
+    <resultMap id="BaseResultMap" type="com.anxcye.domain.entity.Role">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="roleName" column="role_name" jdbcType="VARCHAR"/>
+            <result property="roleKey" column="role_key" jdbcType="VARCHAR"/>
+            <result property="roleSort" column="role_sort" jdbcType="INTEGER"/>
+            <result property="status" column="status" jdbcType="CHAR"/>
+            <result property="deleted" column="deleted" jdbcType="CHAR"/>
+            <result property="createBy" column="create_by" jdbcType="BIGINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateBy" column="update_by" jdbcType="BIGINT"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="remark" column="remark" jdbcType="VARCHAR"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,role_name,role_key,
+        role_sort,status,deleted,
+        create_by,create_time,update_by,
+        update_time,remark
+    </sql>
+    <select id="getRolesByUserId" resultType="com.anxcye.domain.entity.Role">
+        SELECT
+            sr.role_key
+        FROM
+            sys_role sr
+        LEFT JOIN sys_user_role sur ON  sr.id = sur.role_id
+        WHERE
+            sur.user_id = #{userId} AND
+            sr.status = 0 AND
+            sr.deleted = 0
+
+    </select>
+</mapper>

@@ -41,4 +41,6 @@ public class SystemConstants
     public static final String COMMENT_TYPE_LINK = "1";
 
     public static final long SUPER_ADMIN_ID = 1L;
+    public static final String MENU_TABLE_MENU = "C";
+    public static final String MENU_TABLE_BUTTON = "F";
 }
