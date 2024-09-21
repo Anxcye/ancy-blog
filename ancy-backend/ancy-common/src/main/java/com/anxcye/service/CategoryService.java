@@ -1,9 +1,11 @@
 package com.anxcye.service;
 
 import com.anxcye.domain.entity.Category;
-import com.anxcye.domain.vo.categoryVo;
+import com.anxcye.domain.vo.CategoryVo;
 import com.baomidou.mybatisplus.extension.service.IService;
+import jakarta.servlet.http.HttpServletResponse;
 
+import java.io.IOException;
 import java.util.List;
 
 /**
@@ -13,7 +15,9 @@ import java.util.List;
 */
 public interface CategoryService extends IService<Category> {
 
-    List<categoryVo> getUsingCategories();
+    List<CategoryVo> getUsingCategories();
 
-    List<categoryVo> getAllCategories();
+    List<CategoryVo> getAllCategories();
+
+    void exportToXlsx(HttpServletResponse response) throws IOException;
 }

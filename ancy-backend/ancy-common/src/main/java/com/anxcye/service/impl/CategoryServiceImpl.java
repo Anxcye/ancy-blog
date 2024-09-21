@@ -1,19 +1,24 @@
 package com.anxcye.service.impl;
 
+import com.alibaba.excel.EasyExcel;
 import com.anxcye.constants.SystemConstants;
 import com.anxcye.domain.entity.Article;
-import com.anxcye.domain.vo.categoryVo;
+import com.anxcye.domain.entity.Category;
+import com.anxcye.domain.vo.CategoryVo;
+import com.anxcye.domain.vo.ExcelCategoryVo;
+import com.anxcye.mapper.CategoryMapper;
 import com.anxcye.service.ArticleService;
+import com.anxcye.service.CategoryService;
 import com.anxcye.utils.BeanCopyUtils;
+import com.anxcye.utils.WebUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import com.anxcye.domain.entity.Category;
-import com.anxcye.service.CategoryService;
-import com.anxcye.mapper.CategoryMapper;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -31,7 +36,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     private ArticleService articleService;
 
     @Override
-    public List<categoryVo> getUsingCategories() {
+    public List<CategoryVo> getUsingCategories() {
         LambdaQueryWrapper<Article> articleWrapper = new LambdaQueryWrapper<>();
         articleWrapper.select(Article::getId, Article::getCategoryId);
         articleWrapper.eq(Article::getStatus, SystemConstants.ARTICLE_STATUS_NORMAL);
@@ -54,15 +59,27 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
                 .collect(Collectors.toList());
 
 
-        return BeanCopyUtils.copyList(categories, categoryVo.class);
+        return BeanCopyUtils.copyList(categories, CategoryVo.class);
     }
 
     @Override
-    public List<categoryVo> getAllCategories() {
+    public List<CategoryVo> getAllCategories() {
         LambdaQueryWrapper<Category> categoryWrapper = new LambdaQueryWrapper<>();
         categoryWrapper.eq(Category::getStatus, SystemConstants.CATEGORY_STATUS_NORMAL);
         List<Category> categories = list(categoryWrapper);
-        return BeanCopyUtils.copyList(categories, categoryVo.class);
+        return BeanCopyUtils.copyList(categories, CategoryVo.class);
+    }
+
+    @Override
+    public void exportToXlsx(HttpServletResponse response) throws IOException {
+        WebUtils.setDownLoadHeader(SystemConstants.EXPORT_CATEGORY_FILE_NAME, response);
+
+        List<Category> categories = list();
+        List<ExcelCategoryVo> excelCategoryVos = BeanCopyUtils.copyList(categories, ExcelCategoryVo.class);
+        EasyExcel.write(response.getOutputStream(), ExcelCategoryVo.class)
+                .autoCloseStream(Boolean.FALSE)
+                .sheet()
+                .doWrite(excelCategoryVos);
     }
 }
 

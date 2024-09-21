@@ -17,8 +17,10 @@ public class ArticleController {
     private ArticleService articleService;
 
     @PostMapping
-    public ResponseResult<?> addArticle(@RequestBody AddArticleDto articleDto){
+    public ResponseResult<?> addArticle(@RequestBody AddArticleDto articleDto) {
         return ResponseResult.success(articleService.addArticle(articleDto));
     }
+    
+
 
 }

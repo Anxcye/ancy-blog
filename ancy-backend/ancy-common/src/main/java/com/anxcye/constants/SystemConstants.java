@@ -45,4 +45,5 @@ public class SystemConstants
     public static final String MENU_TABLE_BUTTON = "F";
     public static final String MENU_TABLE_CATALOG = "M";
     public static final Long ROOT_MENU_PARENT_ID = 0L;
+    public static final String EXPORT_CATEGORY_FILE_NAME = "分类.xlsx";
 }
