@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anxcye.mapper.ArticleTagMapper">
+
+    <resultMap id="BaseResultMap" type="com.anxcye.domain.entity.ArticleTag">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="articleId" column="article_id" jdbcType="BIGINT"/>
+            <result property="tagId" column="tag_id" jdbcType="BIGINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,article_id,tag_id
+    </sql>
+</mapper>

@@ -1,6 +1,5 @@
 package com.anxcye.domain.vo;
 
-import com.anxcye.domain.vo.MenuVo.MenuVo;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;

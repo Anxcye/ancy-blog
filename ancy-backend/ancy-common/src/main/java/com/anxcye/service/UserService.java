@@ -30,4 +30,6 @@ public interface UserService extends IService<User> {
     AdminUserVo adminLogin(LoginDto loginDto);
 
     RouterVo getRouters();
+
+    void adminLogout();
 }

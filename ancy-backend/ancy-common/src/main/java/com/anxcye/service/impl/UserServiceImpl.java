@@ -89,9 +89,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Override
     public void logout() {
-        LoginUser loginUser = SecurityUtil.getLoginUser();
-
-        Long id = loginUser.getUser().getId();
+        Long id = SecurityUtil.getUserId();
         redisCache.deleteObject(RedisConstant.BLOG_TOKEN_PREFIX + id);
     }
 
@@ -157,5 +155,11 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public RouterVo getRouters() {
         Long userId = SecurityUtil.getUserId();
         return new RouterVo(menuService.selectMenuTreeByUserId(userId));
+    }
+
+    @Override
+    public void adminLogout() {
+        Long id = SecurityUtil.getUserId();
+        redisCache.deleteObject(RedisConstant.ADMIN_TOKEN_PREFIX + id);
     }
 }

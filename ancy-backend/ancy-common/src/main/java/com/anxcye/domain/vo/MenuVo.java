@@ -1,4 +1,4 @@
-package com.anxcye.domain.vo.MenuVo;
+package com.anxcye.domain.vo;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

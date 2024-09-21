@@ -1,6 +1,8 @@
 package com.anxcye.service;
 
+import com.anxcye.domain.dto.TagListDto;
 import com.anxcye.domain.entity.Tag;
+import com.anxcye.domain.result.PageResult;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -10,4 +12,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface TagService extends IService<Tag> {
 
+    PageResult pageList(TagListDto tagListDto);
 }

@@ -1,7 +1,7 @@
 package com.anxcye.service;
 
 import com.anxcye.domain.entity.Menu;
-import com.anxcye.domain.vo.MenuVo.MenuVo;
+import com.anxcye.domain.vo.MenuVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 import java.util.List;

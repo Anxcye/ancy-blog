@@ -14,12 +14,18 @@ public class UserController {
     private UserService userService;
 
     @PostMapping("/login")
-    public ResponseResult<?>login(@RequestBody LoginDto loginDto){
-        return  ResponseResult.success(userService.adminLogin(loginDto));
+    public ResponseResult<?> login(@RequestBody LoginDto loginDto) {
+        return ResponseResult.success(userService.adminLogin(loginDto));
     }
 
     @GetMapping("/routers")
-    public ResponseResult<?>  getRouters(){
+    public ResponseResult<?> getRouters() {
         return ResponseResult.success(userService.getRouters());
+    }
+
+    @PostMapping("/logout")
+    public ResponseResult<?> logout() {
+        userService.adminLogout();
+        return ResponseResult.success();
     }
 }

@@ -2,7 +2,7 @@ package com.anxcye.service.impl;
 
 import com.anxcye.constants.SystemConstants;
 import com.anxcye.domain.entity.Menu;
-import com.anxcye.domain.vo.MenuVo.MenuVo;
+import com.anxcye.domain.vo.MenuVo;
 import com.anxcye.mapper.MenuMapper;
 import com.anxcye.service.MenuService;
 import com.anxcye.utils.AdminUtil;
