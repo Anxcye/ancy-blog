@@ -1,10 +1,14 @@
 package com.anxcye.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.anxcye.domain.entity.ArticleTag;
-import com.anxcye.service.ArticleTagService;
 import com.anxcye.mapper.ArticleTagMapper;
+import com.anxcye.service.ArticleTagService;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
 * @author axy
@@ -15,6 +19,14 @@ import org.springframework.stereotype.Service;
 public class ArticleTagServiceImpl extends ServiceImpl<ArticleTagMapper, ArticleTag>
     implements ArticleTagService{
 
+    @Override
+    @Transactional
+    public void saveArticleTag(Long id, List<Long> tagIds) {
+        List<ArticleTag> articleTags = tagIds.stream()
+                .map(tagId -> new ArticleTag(id, tagId))
+                .collect(Collectors.toList());
+        saveBatch(articleTags);
+    }
 }
 
 

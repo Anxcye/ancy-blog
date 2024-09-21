@@ -3,6 +3,8 @@ package com.anxcye.service;
 import com.anxcye.domain.entity.ArticleTag;
 import com.baomidou.mybatisplus.extension.service.IService;
 
+import java.util.List;
+
 /**
 * @author axy
 * @description 针对表【ancy_article_tag(文章标签关联表)】的数据库操作Service
@@ -10,4 +12,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface ArticleTagService extends IService<ArticleTag> {
 
+    void saveArticleTag(Long id, List<Long> tagIds);
 }

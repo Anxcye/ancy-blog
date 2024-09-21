@@ -13,5 +13,7 @@ import java.util.List;
 */
 public interface CategoryService extends IService<Category> {
 
-    List<categoryVo> getList();
+    List<categoryVo> getUsingCategories();
+
+    List<categoryVo> getAllCategories();
 }

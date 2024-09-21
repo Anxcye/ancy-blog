@@ -15,7 +15,6 @@ public class CategoryController {
 
     @GetMapping("/list")
     public ResponseResult<?> list() {
-        return ResponseResult.success(categoryService.getUsingCategories());
-
+        return ResponseResult.success(categoryService.getAllCategories());
     }
 }

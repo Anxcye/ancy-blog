@@ -2,6 +2,7 @@ package com.anxcye.service.impl;
 
 import com.anxcye.constants.RedisConstant;
 import com.anxcye.constants.SystemConstants;
+import com.anxcye.domain.dto.AddArticleDto;
 import com.anxcye.domain.entity.Article;
 import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.vo.ArticleCardVo;
@@ -9,6 +10,7 @@ import com.anxcye.domain.vo.ArticleDetailVo;
 import com.anxcye.domain.vo.HotArticleVo;
 import com.anxcye.mapper.ArticleMapper;
 import com.anxcye.service.ArticleService;
+import com.anxcye.service.ArticleTagService;
 import com.anxcye.service.CategoryService;
 import com.anxcye.utils.BeanCopyUtils;
 import com.anxcye.utils.RedisCache;
@@ -17,6 +19,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +41,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
 
     @Autowired
     private RedisCache redisCache;
+
+    @Autowired
+    private ArticleTagService articleTagService;
 
     private void updateViewCount(Long id) {
         redisCache.incrementCacheMapValue(RedisConstant.ARTICLE_VIEW_COUNT, id.toString(), 1);
@@ -62,6 +68,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     }
 
     @Override
+    @Transactional
     public void syncFromRedisToDB() {
         Map<String, Integer> viewCountMap = redisCache.getCacheMap(RedisConstant.ARTICLE_VIEW_COUNT);
         List<Article> articles = viewCountMap.entrySet().stream()
@@ -72,6 +79,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     }
 
     @Override
+    @Transactional
     public void initViewCount() {
         Map<String, Integer> viewCountMap = redisCache.getCacheMap(RedisConstant.ARTICLE_VIEW_COUNT);
         if (!viewCountMap.isEmpty()) {
@@ -79,6 +87,21 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         }
         viewCountMap = getViewCount();
         redisCache.setCacheMap(RedisConstant.ARTICLE_VIEW_COUNT, viewCountMap);
+    }
+
+    @Override
+    @Transactional
+    public boolean addArticle(AddArticleDto articleDto) {
+        Article article = BeanCopyUtils.copyBean(articleDto, Article.class);
+        save(article);
+
+        List<Long> tagIds = articleDto.getTags();
+        if (tagIds != null) {
+            articleTagService.saveArticleTag(article.getId(), tagIds);
+        }
+
+        return true;
+
     }
 
     @Override

@@ -31,13 +31,16 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     private ArticleService articleService;
 
     @Override
-    public List<categoryVo> getList() {
+    public List<categoryVo> getUsingCategories() {
         LambdaQueryWrapper<Article> articleWrapper = new LambdaQueryWrapper<>();
         articleWrapper.select(Article::getId, Article::getCategoryId);
         articleWrapper.eq(Article::getStatus, SystemConstants.ARTICLE_STATUS_NORMAL);
         List<Article> articles = articleService.list(articleWrapper);
 
-        List<Long> categoryIds = articles.stream().map(Article::getCategoryId).distinct().collect(Collectors.toList());
+        List<Long> categoryIds = articles.stream()
+                .map(Article::getCategoryId)
+                .distinct()
+                .collect(Collectors.toList());
 
         if (categoryIds.isEmpty()) return List.of();
 
@@ -45,10 +48,20 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         categoryWrapper.in(Category::getId, categoryIds);
 
         List<Category> categories = this.list(categoryWrapper).stream()
-                .filter(category -> Objects.equals(category.getStatus(), SystemConstants.CATEGORY_STATUS_NORMAL))
+                .filter(
+                        category ->
+                                Objects.equals(category.getStatus(), SystemConstants.CATEGORY_STATUS_NORMAL))
                 .collect(Collectors.toList());
 
 
+        return BeanCopyUtils.copyList(categories, categoryVo.class);
+    }
+
+    @Override
+    public List<categoryVo> getAllCategories() {
+        LambdaQueryWrapper<Category> categoryWrapper = new LambdaQueryWrapper<>();
+        categoryWrapper.eq(Category::getStatus, SystemConstants.CATEGORY_STATUS_NORMAL);
+        List<Category> categories = list(categoryWrapper);
         return BeanCopyUtils.copyList(categories, categoryVo.class);
     }
 }
