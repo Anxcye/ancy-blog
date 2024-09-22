@@ -13,7 +13,7 @@ import java.util.List;
 */
 public interface ArticleTagService extends IService<ArticleTag> {
 
-    void saveArticleTag(Long id, List<Long> tagIds);
+    boolean saveArticleTag(Long id, List<Long> tagIds);
 
     @Transactional
     boolean deleteByArticleId(Long articleId);

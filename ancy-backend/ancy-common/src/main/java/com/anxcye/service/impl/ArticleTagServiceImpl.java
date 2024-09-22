@@ -22,11 +22,15 @@ public class ArticleTagServiceImpl extends ServiceImpl<ArticleTagMapper, Article
 
     @Override
     @Transactional
-    public void saveArticleTag(Long id, List<Long> tagIds) {
+    public boolean saveArticleTag(Long id, List<Long> tagIds) {
+        if (tagIds == null || tagIds.isEmpty()) {
+            return true;
+        }
         List<ArticleTag> articleTags = tagIds.stream()
                 .map(tagId -> new ArticleTag(id, tagId))
                 .collect(Collectors.toList());
         saveBatch(articleTags);
+        return true;
     }
 
     @Transactional
