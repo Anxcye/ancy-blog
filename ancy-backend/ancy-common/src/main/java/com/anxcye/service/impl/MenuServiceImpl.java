@@ -1,8 +1,12 @@
 package com.anxcye.service.impl;
 
 import com.anxcye.constants.SystemConstants;
+import com.anxcye.domain.dto.MenuDto;
+import com.anxcye.domain.dto.MenuListDto;
 import com.anxcye.domain.entity.Menu;
+import com.anxcye.domain.enums.AppHttpCodeEnum;
 import com.anxcye.domain.vo.MenuVo;
+import com.anxcye.exception.SystemException;
 import com.anxcye.mapper.MenuMapper;
 import com.anxcye.service.MenuService;
 import com.anxcye.utils.AdminUtil;
@@ -10,8 +14,11 @@ import com.anxcye.utils.BeanCopyUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.Objects;
+
 
 /**
  * @author axy
@@ -20,6 +27,20 @@ import java.util.List;
  */
 @Service
 public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements MenuService {
+
+    private List<MenuVo> buildMenuTree(List<MenuVo> allMenus, Long parentId) {
+        return allMenus.stream()
+                .filter(menuVo -> menuVo.getParentId().equals(parentId))
+                .peek(menuVo -> menuVo.setChildren(buildMenuTree(allMenus, menuVo.getId())))
+                .toList();
+    }
+
+    @Override
+    public boolean hasChild(Long id) {
+        LambdaQueryWrapper<Menu> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Menu::getParentId, id);
+        return count(wrapper) > 0;
+    }
 
     @Override
     public List<String> getPermissionsByUserId(Long userId) {
@@ -40,13 +61,6 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
 
     }
 
-    private List<MenuVo> buildMenuTree(List<MenuVo> allMenus, Long parentId) {
-        return allMenus.stream()
-                .filter(menuVo -> menuVo.getParentId().equals(parentId))
-                .peek(menuVo -> menuVo.setChildren(buildMenuTree(allMenus, menuVo.getId())))
-                .toList();
-    }
-
     @Override
     public List<MenuVo> selectMenuTreeByUserId(Long userId) {
         List<Menu> menus;
@@ -62,7 +76,46 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         }
 
         List<MenuVo> menuVos = BeanCopyUtils.copyList(menus, MenuVo.class);
-        List<MenuVo> menuVos1 = buildMenuTree(menuVos, SystemConstants.ROOT_MENU_PARENT_ID);
-        return menuVos1;
+        return buildMenuTree(menuVos, SystemConstants.ROOT_MENU_PARENT_ID);
     }
+
+    @Override
+    public List<MenuVo> listMenus(MenuListDto menuListDto) {
+        LambdaQueryWrapper<Menu> wrapper = new LambdaQueryWrapper<>();
+
+        wrapper.like(StringUtils.hasText(menuListDto.getName()), Menu::getMenuName, menuListDto.getName());
+        wrapper.eq(StringUtils.hasText(menuListDto.getStatus()), Menu::getStatus, menuListDto.getStatus());
+
+        wrapper.orderByAsc(Menu::getParentId, Menu::getOrderNum);
+        List<Menu> menus = list(wrapper);
+        return BeanCopyUtils.copyList(menus, MenuVo.class);
+    }
+
+    @Override
+    public boolean addMenu(MenuDto menuDto) {
+        Menu menu = BeanCopyUtils.copyBean(menuDto, Menu.class);
+        save(menu);
+        return true;
+    }
+
+    @Override
+    public boolean updateMenu(Long id, MenuDto menuDto) {
+        if (Objects.equals(menuDto.getParentId(), id)) {
+            throw new SystemException(AppHttpCodeEnum.SELF_PARENT_ERROR);
+        }
+        Menu menu = BeanCopyUtils.copyBean(menuDto, Menu.class);
+        menu.setId(id);
+        updateById(menu);
+        return true;
+    }
+
+    @Override
+    public boolean deleteMenu(Long id) {
+        if (hasChild(id)) {
+            throw new SystemException(AppHttpCodeEnum.HAS_CHILD_DELETE_FAILED);
+        }
+        removeById(id);
+        return true;
+    }
+
 }

@@ -1,5 +1,7 @@
 package com.anxcye.service;
 
+import com.anxcye.domain.dto.MenuDto;
+import com.anxcye.domain.dto.MenuListDto;
 import com.anxcye.domain.entity.Menu;
 import com.anxcye.domain.vo.MenuVo;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -13,7 +15,17 @@ import java.util.List;
 */
 public interface MenuService extends IService<Menu> {
 
+    boolean hasChild(Long id);
+
     List<String> getPermissionsByUserId(Long id);
 
     List<MenuVo> selectMenuTreeByUserId(Long userId);
+
+    List<MenuVo> listMenus(MenuListDto menuListDto);
+
+    boolean addMenu(MenuDto menuDto);
+
+    boolean updateMenu(Long id, MenuDto menuDto);
+
+    boolean deleteMenu(Long id);
 }

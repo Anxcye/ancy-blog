@@ -2,7 +2,7 @@ package com.anxcye.service.impl;
 
 import com.anxcye.constants.RedisConstant;
 import com.anxcye.constants.SystemConstants;
-import com.anxcye.domain.dto.AddArticleDto;
+import com.anxcye.domain.dto.ArticleDto;
 import com.anxcye.domain.dto.ArticleListDto;
 import com.anxcye.domain.entity.Article;
 import com.anxcye.domain.enums.AppHttpCodeEnum;
@@ -22,10 +22,10 @@ import com.anxcye.utils.SecurityUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
-import org.apache.poi.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.HashMap;
 import java.util.List;
@@ -108,7 +108,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
 
     @Override
     @Transactional
-    public boolean addArticle(AddArticleDto articleDto) {
+    public boolean addArticle(ArticleDto articleDto) {
         Article article = BeanCopyUtils.copyBean(articleDto, Article.class);
 
         save(article);
@@ -127,8 +127,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     public PageResult pageList(ArticleListDto articleListDto) {
         LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
 
-        wrapper.like(StringUtil.isNotBlank(articleListDto.getTitle()), Article::getTitle, articleListDto.getTitle());
-        wrapper.like(StringUtil.isNotBlank(articleListDto.getSummary()), Article::getSummary, articleListDto.getSummary());
+        wrapper.like(StringUtils.hasText(articleListDto.getTitle()), Article::getTitle, articleListDto.getTitle());
+        wrapper.like(StringUtils.hasText(articleListDto.getSummary()), Article::getSummary, articleListDto.getSummary());
 
         Page<Article> page = new Page<>(articleListDto.getPageNum(), articleListDto.getPageSize());
         page(page, wrapper);
@@ -141,7 +141,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
 
     @Override
     @Transactional
-    public boolean updateArticleById(Long id, AddArticleDto addArticleDto) {
+    public boolean updateArticleById(Long id, ArticleDto addArticleDto) {
         Article article = BeanCopyUtils.copyBean(addArticleDto, Article.class);
         article.setId(id);
         updateById(article);

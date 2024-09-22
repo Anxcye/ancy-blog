@@ -1,6 +1,6 @@
 package com.anxcye.controller;
 
-import com.anxcye.domain.dto.AddArticleDto;
+import com.anxcye.domain.dto.ArticleDto;
 import com.anxcye.domain.dto.ArticleListDto;
 import com.anxcye.domain.result.ResponseResult;
 import com.anxcye.service.ArticleService;
@@ -16,7 +16,7 @@ public class ArticleController {
     private ArticleService articleService;
 
     @PostMapping
-    public ResponseResult<?> addArticle(@RequestBody AddArticleDto articleDto) {
+    public ResponseResult<?> addArticle(@RequestBody ArticleDto articleDto) {
         return ResponseResult.success(articleService.addArticle(articleDto));
     }
 
@@ -32,7 +32,7 @@ public class ArticleController {
 
 
     @PutMapping("/{id}")
-    public ResponseResult<?> updateArticle(@PathVariable Long id, @RequestBody AddArticleDto addArticleDto) {
+    public ResponseResult<?> updateArticle(@PathVariable Long id, @RequestBody ArticleDto addArticleDto) {
         return ResponseResult.success(articleService.updateArticleById(id, addArticleDto));
     }
 

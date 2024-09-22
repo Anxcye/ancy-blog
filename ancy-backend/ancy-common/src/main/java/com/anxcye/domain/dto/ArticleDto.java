@@ -9,7 +9,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AddArticleDto {
+public class ArticleDto {
     // 标题
     private String title;
     // 文章内容

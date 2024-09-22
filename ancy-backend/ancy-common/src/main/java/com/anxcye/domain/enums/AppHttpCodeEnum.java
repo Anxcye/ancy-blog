@@ -9,6 +9,7 @@ public enum AppHttpCodeEnum {
     // 登录
     NEED_LOGIN(401, "需要登录后操作"),
     NO_OPERATOR_AUTH(403, "无权限操作"),
+    NOT_FOUND(404, "没有资源"),
     SYSTEM_ERROR(500, "出现错误"),
     USERNAME_EXIST(501, "用户名已存在"),
     PHONE_NUMBER_EXIST(502, "手机号已存在"),
@@ -21,7 +22,8 @@ public enum AppHttpCodeEnum {
     USERINFO_NOT_NULL(509, "用户信息不完整"),
     TOKEN_INVALID(510, "无效的token"),
     EXPORT_FAILED(511, "导出失败"),
-    NOT_FOUND(404, "没有资源");
+    SELF_PARENT_ERROR(512, "父菜单不能是自己"),
+    HAS_CHILD_DELETE_FAILED(513, "存在子菜单不允许删除");
 
     final int code;
     final String msg;
