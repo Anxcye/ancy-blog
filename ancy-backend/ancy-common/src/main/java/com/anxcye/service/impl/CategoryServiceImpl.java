@@ -2,8 +2,11 @@ package com.anxcye.service.impl;
 
 import com.alibaba.excel.EasyExcel;
 import com.anxcye.constants.SystemConstants;
+import com.anxcye.domain.dto.CategoryDto;
+import com.anxcye.domain.dto.CategoryListDto;
 import com.anxcye.domain.entity.Article;
 import com.anxcye.domain.entity.Category;
+import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.vo.CategoryVo;
 import com.anxcye.domain.vo.ExcelCategoryVo;
 import com.anxcye.mapper.CategoryMapper;
@@ -12,11 +15,13 @@ import com.anxcye.service.CategoryService;
 import com.anxcye.utils.BeanCopyUtils;
 import com.anxcye.utils.WebUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.io.IOException;
 import java.util.List;
@@ -80,6 +85,42 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
                 .autoCloseStream(Boolean.FALSE)
                 .sheet()
                 .doWrite(excelCategoryVos);
+    }
+
+    @Override
+    public PageResult pageList(CategoryListDto categoryListDto) {
+        LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
+
+        queryWrapper.like(StringUtils.hasText(categoryListDto.getName()),Category::getName, categoryListDto.getName());
+        queryWrapper.eq(Objects.nonNull(categoryListDto.getStatus()),Category::getStatus, categoryListDto.getStatus());
+
+        Page<Category> page = new Page<>(categoryListDto.getPageNum(),categoryListDto.getPageSize());
+        page(page,queryWrapper);
+
+        List<Category> categories = page.getRecords();
+        List<CategoryVo> categoryVos = BeanCopyUtils.copyList(categories, CategoryVo.class);
+        return new PageResult(page.getTotal(),categoryVos);
+    }
+
+    @Override
+    public boolean addCategory(CategoryDto categoryDto) {
+        Category category = BeanCopyUtils.copyBean(categoryDto, Category.class);
+        save(category);
+        return true;
+    }
+
+    @Override
+    public boolean updateCategory(Long id, CategoryDto categoryDto) {
+        Category category = BeanCopyUtils.copyBean(categoryDto, Category.class);
+        category.setId(id);
+        updateById(category);
+        return true;
+    }
+
+    @Override
+    public boolean deleteCategory(Long id) {
+        removeById(id);
+        return true;
     }
 }
 

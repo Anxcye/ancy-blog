@@ -1,6 +1,9 @@
 package com.anxcye.service;
 
+import com.anxcye.domain.dto.CategoryDto;
+import com.anxcye.domain.dto.CategoryListDto;
 import com.anxcye.domain.entity.Category;
+import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.vo.CategoryVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 import jakarta.servlet.http.HttpServletResponse;
@@ -20,4 +23,12 @@ public interface CategoryService extends IService<Category> {
     List<CategoryVo> getAllCategories();
 
     void exportToXlsx(HttpServletResponse response) throws IOException;
+
+    PageResult pageList(CategoryListDto categoryListDto);
+
+    boolean addCategory(CategoryDto categoryDto);
+
+    boolean updateCategory(Long id, CategoryDto categoryDto);
+
+    boolean deleteCategory(Long id);
 }
