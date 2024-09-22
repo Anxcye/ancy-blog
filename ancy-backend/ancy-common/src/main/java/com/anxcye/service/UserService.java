@@ -1,13 +1,9 @@
 package com.anxcye.service;
 
-import com.anxcye.domain.dto.LoginDto;
-import com.anxcye.domain.dto.RegisterDto;
-import com.anxcye.domain.dto.UserDto;
+import com.anxcye.domain.dto.*;
 import com.anxcye.domain.entity.User;
-import com.anxcye.domain.vo.AdminUserVo;
-import com.anxcye.domain.vo.BlogUserVo;
-import com.anxcye.domain.vo.RouterVo;
-import com.anxcye.domain.vo.UserInfoVo;
+import com.anxcye.domain.result.PageResult;
+import com.anxcye.domain.vo.*;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -32,4 +28,14 @@ public interface UserService extends IService<User> {
     RouterVo getRouters();
 
     void adminLogout();
+
+    PageResult getPage(UserListDto userListDto);
+
+    boolean addAdmin(AdminUserDto adminUserDto);
+
+    UserVo getAdminById(Long id);
+
+    boolean updateAdmin(Long id, AdminUserDto adminUserDto);
+
+    boolean deleteUser(Long id);
 }

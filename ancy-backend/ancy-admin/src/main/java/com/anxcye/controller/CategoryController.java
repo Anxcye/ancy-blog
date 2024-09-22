@@ -23,6 +23,26 @@ public class CategoryController {
         return ResponseResult.success(categoryService.getAllCategories());
     }
 
+//    @GetMapping("/page")
+//    public ResponseResult<?> pageList(@ParameterObject CategoryListDto categoryListDto) {
+//        return ResponseResult.success(categoryService.pageList(categoryListDto));
+//    }
+//
+//    @PostMapping
+//    public ResponseResult<?> addCategory(@RequestBody CategoryDto categoryDto) {
+//        return ResponseResult.success(categoryService.addCategory(categoryDto));
+//    }
+//
+//    @PutMapping("/{id}")
+//    public ResponseResult<?> updateCategory(@PathVariable Long id, @RequestBody CategoryDto categoryDto) {
+//        return ResponseResult.success(categoryService.updateCategory(id, categoryDto));
+//    }
+//
+//    @DeleteMapping("/{id}")
+//    public ResponseResult<?> deleteCategory(@PathVariable Long id) {
+//        return ResponseResult.success(categoryService.deleteCategory(id));
+//    }
+
     @GetMapping("/export/xlsx")
     public void exportToXlsx(HttpServletResponse response) {
         try {

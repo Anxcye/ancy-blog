@@ -23,7 +23,8 @@ public enum AppHttpCodeEnum {
     TOKEN_INVALID(510, "无效的token"),
     EXPORT_FAILED(511, "导出失败"),
     SELF_PARENT_ERROR(512, "父菜单不能是自己"),
-    HAS_CHILD_DELETE_FAILED(513, "存在子菜单不允许删除");
+    HAS_CHILD_DELETE_FAILED(513, "存在子菜单不允许删除"),
+    USER_NOT_EXIST(514, "用户不存在");
 
     final int code;
     final String msg;

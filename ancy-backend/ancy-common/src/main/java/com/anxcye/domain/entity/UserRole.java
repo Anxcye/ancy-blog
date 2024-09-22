@@ -4,8 +4,11 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.io.Serializable;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
 
 /**
  * 用户和角色关联表
@@ -13,6 +16,8 @@ import lombok.Data;
  */
 @TableName(value ="sys_user_role")
 @Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserRole implements Serializable {
     /**
      * ID
@@ -32,4 +37,9 @@ public class UserRole implements Serializable {
 
     @TableField(exist = false)
     private static final long serialVersionUID = 1L;
+
+    public UserRole(Long userId, Long roleId) {
+        this.userId = userId;
+        this.roleId = roleId;
+    }
 }

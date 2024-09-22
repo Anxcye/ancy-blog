@@ -16,12 +16,11 @@ public class TagController {
     private TagService tagService;
 
     @GetMapping("/list")
-
     public ResponseResult<?> listAll() {
         return ResponseResult.success(tagService.list());
     }
 
-    @GetMapping("/pageList")
+    @GetMapping("/page")
     public ResponseResult<?> pageList(@ParameterObject TagListDto tagListDto) {
         return ResponseResult.success(tagService.pageList(tagListDto));
     }

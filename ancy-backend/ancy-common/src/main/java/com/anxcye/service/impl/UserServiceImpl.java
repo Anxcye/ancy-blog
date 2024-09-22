@@ -1,20 +1,18 @@
 package com.anxcye.service.impl;
 
 import com.anxcye.constants.RedisConstant;
-import com.anxcye.domain.dto.LoginDto;
-import com.anxcye.domain.dto.RegisterDto;
-import com.anxcye.domain.dto.UserDto;
+import com.anxcye.constants.SystemConstants;
+import com.anxcye.domain.dto.*;
 import com.anxcye.domain.entity.LoginUser;
 import com.anxcye.domain.entity.User;
 import com.anxcye.domain.enums.AppHttpCodeEnum;
-import com.anxcye.domain.vo.AdminUserVo;
-import com.anxcye.domain.vo.BlogUserVo;
-import com.anxcye.domain.vo.RouterVo;
-import com.anxcye.domain.vo.UserInfoVo;
+import com.anxcye.domain.result.PageResult;
+import com.anxcye.domain.vo.*;
 import com.anxcye.exception.SystemException;
 import com.anxcye.mapper.UserMapper;
 import com.anxcye.service.MenuService;
 import com.anxcye.service.RoleService;
+import com.anxcye.service.UserRoleService;
 import com.anxcye.service.UserService;
 import com.anxcye.utils.BeanCopyUtils;
 import com.anxcye.utils.JwtUtil;
@@ -22,6 +20,7 @@ import com.anxcye.utils.RedisCache;
 import com.anxcye.utils.SecurityUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.support.SFunction;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -29,6 +28,8 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
@@ -55,6 +56,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     @Autowired
     private RoleService roleService;
+
+    @Autowired
+    private UserRoleService userRoleService;
 
     private LoginUser getLoginUserByLoginDto(LoginDto loginDto) {
         if (Objects.isNull(loginDto.getUserName())) {
@@ -161,5 +165,76 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public void adminLogout() {
         Long id = SecurityUtil.getUserId();
         redisCache.deleteObject(RedisConstant.ADMIN_TOKEN_PREFIX + id);
+    }
+
+    @Override
+    public PageResult getPage(UserListDto userListDto) {
+        LambdaQueryWrapper<User> queryWrapper = new LambdaQueryWrapper<>();
+
+        queryWrapper.like(StringUtils.hasText(userListDto.getUserName()), User::getUserName, userListDto.getUserName());
+        queryWrapper.like(StringUtils.hasText(userListDto.getPhonenumber()), User::getPhonenumber, userListDto.getPhonenumber());
+        queryWrapper.eq(StringUtils.hasText(userListDto.getStatus()), User::getStatus, userListDto.getStatus());
+        queryWrapper.eq(StringUtils.hasText(userListDto.getType()), User::getType, userListDto.getType());
+        queryWrapper.eq(StringUtils.hasText(userListDto.getNickName()), User::getNickName, userListDto.getNickName());
+        queryWrapper.eq(StringUtils.hasText(userListDto.getEmail()), User::getEmail, userListDto.getEmail());
+        queryWrapper.eq(StringUtils.hasText(userListDto.getSex()), User::getSex, userListDto.getSex());
+
+        Page<User> page = new Page<>(userListDto.getPageNum(), userListDto.getPageSize());
+
+        page(page, queryWrapper);
+
+        List<UserVo> userVos = BeanCopyUtils.copyList(page.getRecords(), UserVo.class);
+
+        return new PageResult(page.getTotal(), userVos);
+
+
+    }
+
+    @Override
+    public boolean addAdmin(AdminUserDto adminUserDto) {
+        if (Objects.isNull(adminUserDto.getUserName()) || Objects.isNull(adminUserDto.getPassword()) || Objects.isNull(adminUserDto.getEmail()) || Objects.isNull(adminUserDto.getNickName())) {
+            throw new SystemException(AppHttpCodeEnum.USERINFO_NOT_NULL);
+        }
+        if (userInfoExists(User::getUserName, adminUserDto.getUserName())) {
+            throw new SystemException(AppHttpCodeEnum.USERNAME_EXIST);
+        }
+        if (userInfoExists(User::getEmail, adminUserDto.getEmail())) {
+            throw new SystemException(AppHttpCodeEnum.EMAIL_EXIST);
+        }
+        User user = BeanCopyUtils.copyBean(adminUserDto, User.class);
+        user.setType(SystemConstants.USER_ADMIN);
+        String encodedPassword = passwordEncoder.encode(user.getPassword());
+        user.setPassword(encodedPassword);
+        save(user);
+        userRoleService.addByUserId(user.getId(), adminUserDto.getRoleIds());
+        return true;
+    }
+
+    @Override
+    public UserVo getAdminById(Long id) {
+        User user = getById(id);
+        if (Objects.isNull(user)) {
+            throw new SystemException(AppHttpCodeEnum.USER_NOT_EXIST);
+        }
+        UserVo userVo = BeanCopyUtils.copyBean(user, UserVo.class);
+        List<Long> roleIds = userRoleService.selectRoleIdsByUserId(id);
+        userVo.setRoleIds(roleIds);
+        return userVo;
+    }
+
+    @Override
+    @Transactional
+    public boolean updateAdmin(Long id, AdminUserDto adminUserDto) {
+        User user = BeanCopyUtils.copyBean(adminUserDto, User.class);
+        user.setId(id);
+        updateById(user);
+        userRoleService.updateByUserId(id, adminUserDto.getRoleIds());
+        return true;
+    }
+
+    @Override
+    public boolean deleteUser(Long id) {
+        removeById(id);
+        return true;
     }
 }
