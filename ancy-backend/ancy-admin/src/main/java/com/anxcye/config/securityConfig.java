@@ -6,8 +6,10 @@ import com.anxcye.handler.security.AuthenticationEntryPointImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -23,6 +25,7 @@ import java.util.Arrays;
 import java.util.List;
 
 @Configuration
+@EnableMethodSecurity(securedEnabled = true)
 public class securityConfig {
 
     @Autowired
@@ -61,7 +64,8 @@ public class securityConfig {
                                 .requestMatchers("/swagger-resources/**").anonymous()
                                 .requestMatchers("/webjars/**").anonymous()
                                 .requestMatchers("/v3/api-docs/**").anonymous()
-                                .anyRequest().authenticated()
+                                .requestMatchers(HttpMethod.GET).hasAnyRole("admin", "visitor")
+                                .anyRequest().hasRole("admin")
                 )
                 .logout(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))

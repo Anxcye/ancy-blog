@@ -4,6 +4,7 @@ import com.anxcye.domain.enums.AppHttpCodeEnum;
 import com.anxcye.domain.result.ResponseResult;
 import com.anxcye.exception.SystemException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -20,7 +21,9 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(RuntimeException.class)
     public ResponseResult<?> runtimeExceptionHandler(Exception e) throws Exception {
-        if (e instanceof BadCredentialsException) {
+        if (e instanceof BadCredentialsException ||
+                e instanceof AccessDeniedException
+        ) {
             throw e;
         }
         log.error("SystemException: ", e);
