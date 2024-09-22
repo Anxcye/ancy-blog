@@ -2,6 +2,7 @@ package com.anxcye.service;
 
 import com.anxcye.domain.entity.ArticleTag;
 import com.baomidou.mybatisplus.extension.service.IService;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -13,4 +14,9 @@ import java.util.List;
 public interface ArticleTagService extends IService<ArticleTag> {
 
     void saveArticleTag(Long id, List<Long> tagIds);
+
+    @Transactional
+    boolean deleteByArticleId(Long articleId);
+
+    boolean updateByArticleId(Long ArticleId, List<Long> tags);
 }

@@ -21,8 +21,12 @@ public class SecurityUtil {
     }
 
     public static Boolean isAdmin() {
-        Long id = getLoginUser().getUser().getId();
-        return id != null && 1L == id;
+        try {
+            Long id = getLoginUser().getUser().getId();
+            return id != null && 1L == id;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public static Long getUserId() {

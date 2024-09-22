@@ -20,7 +20,8 @@ public enum AppHttpCodeEnum {
     UPLOAD_ERROR(508, "上传失败"),
     USERINFO_NOT_NULL(509, "用户信息不完整"),
     TOKEN_INVALID(510, "无效的token"),
-    EXPORT_FAILED(511, "导出失败");
+    EXPORT_FAILED(511, "导出失败"),
+    NOT_FOUND(404, "没有资源");
 
     final int code;
     final String msg;

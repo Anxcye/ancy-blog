@@ -20,4 +20,14 @@
         create_by,create_time,update_by,
         update_time,deleted
     </sql>
+    <select id="selectTagsByArticleId" resultType="com.anxcye.domain.entity.Tag">
+        SELECT
+            *
+        FROM ancy_tag at
+            LEFT JOIN ancy_article_tag aat ON at.id = aat.tag_id
+        WHERE
+            aat.article_id = #{articleId} AND
+            at.deleted = 0
+
+    </select>
 </mapper>

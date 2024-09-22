@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.TableId;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class ArticleDetailVo {
@@ -48,6 +49,12 @@ public class ArticleDetailVo {
      * 访问量
      */
     private Long viewCount;
+
+
+    /**
+     * tags
+     */
+    private List<TagVo> tags;
 
     /**
      * 是否允许评论 1是，0否

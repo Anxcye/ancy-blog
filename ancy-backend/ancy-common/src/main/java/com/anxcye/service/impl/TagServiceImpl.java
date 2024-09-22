@@ -59,6 +59,14 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag>
         updateById(tag);
         return true;
     }
+
+    @Override
+    public List<TagVo> selectTagsByArticleId(Long articleId) {
+
+        List<Tag> tags = getBaseMapper().selectTagsByArticleId(articleId);
+
+        return BeanCopyUtils.copyList(tags, TagVo.class);
+    }
 }
 
 

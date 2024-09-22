@@ -4,7 +4,10 @@ import com.anxcye.domain.dto.TagDto;
 import com.anxcye.domain.dto.TagListDto;
 import com.anxcye.domain.entity.Tag;
 import com.anxcye.domain.result.PageResult;
+import com.anxcye.domain.vo.TagVo;
 import com.baomidou.mybatisplus.extension.service.IService;
+
+import java.util.List;
 
 /**
 * @author axy
@@ -20,4 +23,6 @@ public interface TagService extends IService<Tag> {
     boolean deleteTag(Long id);
 
     boolean updateTag(Long id, TagDto tagDto);
+
+    List<TagVo> selectTagsByArticleId(Long articleId);
 }

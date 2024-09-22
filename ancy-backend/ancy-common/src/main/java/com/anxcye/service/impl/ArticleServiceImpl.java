@@ -3,20 +3,26 @@ package com.anxcye.service.impl;
 import com.anxcye.constants.RedisConstant;
 import com.anxcye.constants.SystemConstants;
 import com.anxcye.domain.dto.AddArticleDto;
+import com.anxcye.domain.dto.ArticleListDto;
 import com.anxcye.domain.entity.Article;
+import com.anxcye.domain.enums.AppHttpCodeEnum;
 import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.vo.ArticleCardVo;
 import com.anxcye.domain.vo.ArticleDetailVo;
 import com.anxcye.domain.vo.HotArticleVo;
+import com.anxcye.exception.SystemException;
 import com.anxcye.mapper.ArticleMapper;
 import com.anxcye.service.ArticleService;
 import com.anxcye.service.ArticleTagService;
 import com.anxcye.service.CategoryService;
+import com.anxcye.service.TagService;
 import com.anxcye.utils.BeanCopyUtils;
 import com.anxcye.utils.RedisCache;
+import com.anxcye.utils.SecurityUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.apache.poi.util.StringUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -45,6 +51,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     @Autowired
     private ArticleTagService articleTagService;
 
+    @Autowired
+    private TagService tagService;
+
     private void updateViewCount(Long id) {
         redisCache.incrementCacheMapValue(RedisConstant.ARTICLE_VIEW_COUNT, id.toString(), 1);
 
@@ -56,15 +65,23 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     }
 
     private Map<String, Integer> getViewCount() {
-        LambdaQueryWrapper<Article> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.select(Article::getId, Article::getViewCount);
-        lambdaQueryWrapper.orderByAsc(Article::getId);
-        List<Article> articles = list(lambdaQueryWrapper);
+        LambdaQueryWrapper<Article> wrapper = new LambdaQueryWrapper<>();
+        wrapper.select(Article::getId, Article::getViewCount);
+        wrapper.orderByAsc(Article::getId);
+        List<Article> articles = list(wrapper);
         Map<String, Integer> viewCountMap = new HashMap<>();
         articles.forEach(article -> {
             viewCountMap.put(article.getId().toString(), article.getViewCount().intValue());
         });
         return viewCountMap;
+    }
+
+    private LambdaQueryWrapper<Article> getArticleWrapper() {
+        LambdaQueryWrapper<Article> wrapper = new LambdaQueryWrapper<>();
+        if (!SecurityUtil.isAdmin()) {
+            wrapper.eq(Article::getStatus, SystemConstants.ARTICLE_STATUS_NORMAL);
+        }
+        return wrapper;
     }
 
     @Override
@@ -93,7 +110,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     @Transactional
     public boolean addArticle(AddArticleDto articleDto) {
         Article article = BeanCopyUtils.copyBean(articleDto, Article.class);
+
         save(article);
+        initViewCount();
 
         List<Long> tagIds = articleDto.getTags();
         if (tagIds != null) {
@@ -105,13 +124,45 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     }
 
     @Override
+    public PageResult pageList(ArticleListDto articleListDto) {
+        LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
+
+        wrapper.like(StringUtil.isNotBlank(articleListDto.getTitle()), Article::getTitle, articleListDto.getTitle());
+        wrapper.like(StringUtil.isNotBlank(articleListDto.getSummary()), Article::getSummary, articleListDto.getSummary());
+
+        Page<Article> page = new Page<>(articleListDto.getPageNum(), articleListDto.getPageSize());
+        page(page, wrapper);
+
+        List<ArticleCardVo> articleCardVos = BeanCopyUtils.copyList(page.getRecords(), ArticleCardVo.class);
+
+        return new PageResult(page.getTotal(), articleCardVos);
+
+    }
+
+    @Override
+    @Transactional
+    public boolean updateArticleById(Long id, AddArticleDto addArticleDto) {
+        Article article = BeanCopyUtils.copyBean(addArticleDto, Article.class);
+        article.setId(id);
+        updateById(article);
+        articleTagService.updateByArticleId(id, addArticleDto.getTags());
+        return true;
+    }
+
+    @Override
+    public boolean deleteArticleById(Long articleId) {
+        removeById(articleId);
+        return true;
+    }
+
+    @Override
     public List<HotArticleVo> hot() {
-        LambdaQueryWrapper<Article> lambdaQueryWrapper = new LambdaQueryWrapper<>();
-        lambdaQueryWrapper.eq(Article::getStatus, SystemConstants.ARTICLE_STATUS_NORMAL);
-        lambdaQueryWrapper.orderByDesc(Article::getViewCount);
+        LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
+
+        wrapper.orderByDesc(Article::getViewCount);
 
         Page<Article> page = new Page<>(1, 10);
-        page(page, lambdaQueryWrapper);
+        page(page, wrapper);
 
         List<HotArticleVo> hotArticleVos = BeanCopyUtils.copyList(page.getRecords(), HotArticleVo.class);
 
@@ -124,13 +175,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
 
     @Override
     public PageResult getList(Integer pageNum, Integer pageSize, Integer categoryId) {
-        LambdaQueryWrapper<Article> articleLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        articleLambdaQueryWrapper.eq(Article::getStatus, SystemConstants.ARTICLE_STATUS_NORMAL);
-        articleLambdaQueryWrapper.eq(Objects.nonNull(categoryId) && categoryId > 0, Article::getCategoryId, categoryId);
-        articleLambdaQueryWrapper.orderByDesc(Article::getIsTop)
+        LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
+
+        wrapper.eq(Objects.nonNull(categoryId) && categoryId > 0,
+                Article::getCategoryId, categoryId);
+        wrapper.orderByDesc(Article::getIsTop)
                 .orderByDesc(Article::getCreateTime);
         Page<Article> page = new Page<>(pageNum, pageSize);
-        page(page, articleLambdaQueryWrapper);
+        page(page, wrapper);
         List<ArticleCardVo> articleCardVos = BeanCopyUtils.copyList(page.getRecords(), ArticleCardVo.class);
 
         articleCardVos.forEach(articleCardVo -> {
@@ -143,12 +195,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
 
     @Override
     public ArticleDetailVo getArticleById(Long id) {
-        Article article = getById(id);
+        LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
+        wrapper.eq(Article::getId, id);
+
+        Article article = getOne(wrapper);
 
         ArticleDetailVo articleDetailVo = BeanCopyUtils.copyBean(article, ArticleDetailVo.class);
 
         if (Objects.isNull(articleDetailVo)) {
-            return null;
+            throw new SystemException(AppHttpCodeEnum.NOT_FOUND);
         }
 
         updateViewCount(id);
@@ -156,6 +211,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         articleDetailVo.setViewCount(getViewCount(id));
 
         articleDetailVo.setCategoryName(categoryService.getById(article.getCategoryId()).getName());
+
+        articleDetailVo.setTags(tagService.selectTagsByArticleId(id));
 
         return articleDetailVo;
 

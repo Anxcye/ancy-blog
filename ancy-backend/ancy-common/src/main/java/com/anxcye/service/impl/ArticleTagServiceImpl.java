@@ -3,6 +3,7 @@ package com.anxcye.service.impl;
 import com.anxcye.domain.entity.ArticleTag;
 import com.anxcye.mapper.ArticleTagMapper;
 import com.anxcye.service.ArticleTagService;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +27,22 @@ public class ArticleTagServiceImpl extends ServiceImpl<ArticleTagMapper, Article
                 .map(tagId -> new ArticleTag(id, tagId))
                 .collect(Collectors.toList());
         saveBatch(articleTags);
+    }
+
+    @Transactional
+    @Override
+    public boolean deleteByArticleId(Long articleId) {
+        LambdaQueryWrapper<ArticleTag> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ArticleTag::getArticleId, articleId);
+        return remove(wrapper);
+    }
+
+    @Override
+    @Transactional
+    public boolean updateByArticleId(Long articleId, List<Long> tags) {
+        deleteByArticleId(articleId);
+        saveArticleTag(articleId, tags);
+        return true;
     }
 }
 

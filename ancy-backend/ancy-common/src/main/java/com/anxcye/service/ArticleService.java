@@ -1,6 +1,7 @@
 package com.anxcye.service;
 
 import com.anxcye.domain.dto.AddArticleDto;
+import com.anxcye.domain.dto.ArticleListDto;
 import com.anxcye.domain.entity.Article;
 import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.vo.ArticleDetailVo;
@@ -27,4 +28,10 @@ public interface ArticleService extends IService<Article> {
     void initViewCount();
 
     boolean addArticle(AddArticleDto articleDto);
+
+    PageResult pageList(ArticleListDto articleListDto);
+
+    boolean updateArticleById(Long id, AddArticleDto addArticleDto);
+
+    boolean deleteArticleById(Long articleId);
 }
