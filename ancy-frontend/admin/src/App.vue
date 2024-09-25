@@ -1,18 +1,17 @@
 <script setup lang="ts">
-import { RouterView } from 'vue-router'
+import request from '@/utils/request'
+import { onMounted } from 'vue'
+
+onMounted(() => {
+  request.get('/articles/page').then((res) => {
+    console.log(res.data)
+  })
+})
 </script>
 
 <template>
-  <div>
-    <h1>Hello World</h1>
-  </div>
-  <RouterView />
+  <h1>Hello World</h1>
+  <el-button type="primary">Primary Button</el-button>
 </template>
 
-<style scoped lang="scss">
-div {
-  h1 {
-    color: $color;
-  }
-}
-</style>
+<style scoped lang="scss"></style>

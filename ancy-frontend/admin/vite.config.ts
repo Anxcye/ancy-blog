@@ -19,6 +19,7 @@ export default defineConfig({
           prefix: 'Icon',
         }),
       ],
+      eslintrc: { enabled: true },
     }),
     Components({
       resolvers: [
@@ -31,6 +32,12 @@ export default defineConfig({
     Icons({
       autoInstall: true,
     }),
+    // AutoImport({
+    //   // targets to transform
+    //   include: [/\.[tj]sx?$/],
+    //   // global imports to register
+    //   eslintrc: { enabled: true },
+    // }),
   ],
   resolve: {
     alias: {
@@ -42,6 +49,15 @@ export default defineConfig({
       scss: {
         javascriptEnabled: true,
         additionalData: '@import "@/styles/variable.scss";',
+      },
+    },
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'http://localhost:8889',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
   },
