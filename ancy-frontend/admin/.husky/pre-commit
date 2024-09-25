@@ -1,0 +1,1 @@
+cd ancy-frontend/admin && pnpm run format

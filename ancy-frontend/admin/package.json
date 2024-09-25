@@ -12,7 +12,8 @@
         "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore",
         "format": "prettier --write src/",
         "lint:style": "stylelint src/**/*.{css,scss,vue} --cache --fix",
-        "prepare": "cd ../..  && husky ancy-frontend/admin/.husky && husky install"
+        "prepare": "cd ../..  && husky ancy-frontend/admin/.husky",
+        "preinstall": "node ./scripts/preinstall.js"
     },
     "dependencies": {
         "pinia": "^2.1.7",
@@ -29,7 +30,7 @@
         "@vue/tsconfig": "^0.5.1",
         "eslint": "^8.57.0",
         "eslint-plugin-vue": "^9.23.0",
-        "husky": "^8.0.0",
+        "husky": "^9.1.6",
         "npm-run-all2": "^6.2.0",
         "prettier": "^3.2.5",
         "stylelint": "^16.9.0",
