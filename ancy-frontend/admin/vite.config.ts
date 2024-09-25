@@ -1,3 +1,5 @@
+/// <reference types="vite/client" />
+
 import { fileURLToPath, URL } from 'node:url'
 
 import { defineConfig } from 'vite'
@@ -56,6 +58,7 @@ export default defineConfig({
     proxy: {
       '/api': {
         target: 'http://localhost:8889',
+        // target: import.meta.env.VITE_APP_API_URL,
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
