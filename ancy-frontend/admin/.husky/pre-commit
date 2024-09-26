@@ -1,1 +1,2 @@
 cd ancy-frontend/admin && pnpm run format
+git add .
