@@ -42,6 +42,14 @@ module.exports = {
     'block-opening-brace-space-before': 'always', //大括号之前必须有一个空格或不能有空白符
     'value-no-vendor-prefix': null, // 关闭 属性值前缀 --webkit-box
     'property-no-vendor-prefix': null, // 关闭 属性前缀 -webkit-mask
+    // 添加一行空行
+    'rule-empty-line-before': [
+      'always',
+      {
+        except: ['first-nested'],
+        ignore: ['after-comment'],
+      },
+    ],
     'selector-pseudo-class-no-unknown': [
       // 不允许未知的选择器
       true,

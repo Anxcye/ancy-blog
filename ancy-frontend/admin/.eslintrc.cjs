@@ -51,7 +51,7 @@ module.exports = {
     '@typescript-eslint/semi': 'off', // 要求或禁止使用分号代替 ASI
 
     // eslint-plugin-vue (https://eslint.vuejs.org/rules/)
-    'vue/multi-word-component-names': ['error', { ignores: ['index.vue'] }], // 要求组件名称始终为 “-” 链接的单词
+    'vue/multi-word-component-names': ['error', { ignores: ['index'] }], // 要求组件名称始终为 “-” 链接的单词
     'vue/script-setup-uses-vars': 'error', // 防止<script setup>使用的变量<template>被标记为未使用
     'vue/no-mutating-props': 'off', // 不允许组件 prop的改变
     'vue/attribute-hyphenation': 'off', // 对模板中的自定义组件强制执行属性命名样式

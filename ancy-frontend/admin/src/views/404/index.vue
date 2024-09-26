@@ -1,5 +1,5 @@
 <template>
-  <div><RouterView /></div>
+  <div>404</div>
 </template>
 
 <script setup lang="ts"></script>

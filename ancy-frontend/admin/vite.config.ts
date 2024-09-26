@@ -16,7 +16,9 @@ export default defineConfig({
     vue(),
     AutoImport({
       resolvers: [
-        ElementPlusResolver(),
+        ElementPlusResolver({
+          importStyle: 'sass',
+        }),
         IconsResolver({
           prefix: 'Icon',
         }),
@@ -25,7 +27,9 @@ export default defineConfig({
     }),
     Components({
       resolvers: [
-        ElementPlusResolver(),
+        ElementPlusResolver({
+          importStyle: 'sass',
+        }),
         IconsResolver({
           enabledCollections: ['ep'],
         }),
@@ -50,7 +54,10 @@ export default defineConfig({
     preprocessorOptions: {
       scss: {
         javascriptEnabled: true,
-        additionalData: '@import "@/styles/variable.scss";',
+        additionalData: `
+          @use "@/styles/element.scss" as *;
+          @use "@/styles/variable.scss" as *;
+        `,
       },
     },
   },
