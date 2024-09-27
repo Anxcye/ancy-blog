@@ -1,13 +1,20 @@
+import { useUserStore } from '@/stores/modules/user'
 import axios from 'axios'
 
 const request = axios.create({
   baseURL: '/api',
   timeout: 5000,
 })
+
+const noTokenUrl = ['/user/login', '/user/register']
 // 添加请求拦截器
 request.interceptors.request.use(
   function (config) {
-    // 在发送请求之前做些什么
+    const userStore = useUserStore()
+    const token = userStore.getToken()
+    if (token && !noTokenUrl.includes(config.url as string)) {
+      config.headers.token = `${token}`
+    }
     return config
   },
   function (error) {

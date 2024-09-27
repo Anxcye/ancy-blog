@@ -5,16 +5,9 @@
         :class="{ 'mobile-aside': isMobile, 'aside-content': true }"
         :style="{ width: asideWidth }"
       >
-        <slot name="aside" class="aside-content"></slot>
+        <slot name="aside"></slot>
       </el-aside>
-      <el-container class="main-container">
-        <el-header>
-          <slot name="header"></slot>
-        </el-header>
-        <el-main class="main-content">
-          <slot name="main"></slot>
-        </el-main>
-      </el-container>
+      <slot name="main"></slot>
     </el-container>
   </div>
 </template>
@@ -34,7 +27,7 @@ const props = defineProps({
 
 const asideWidth = computed(() => {
   if (isMobile.value) {
-    return props.isAsideVisible ? '80%' : '0'
+    return props.isAsideVisible ? '200px' : '0'
   }
   return '200px'
 })
@@ -57,53 +50,34 @@ onUnmounted(() => {
 </script>
 
 <style scoped lang="scss">
-.aside-content {
-  height: 100vh;
-}
-.main-container {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-}
-.main-content {
-  flex: 1;
-}
-
 .common-layout {
   height: 100vh;
-}
 
-.el-aside {
-  transition: width 0.3s;
-}
-
-.el-header {
-  display: flex;
-  align-items: center;
-}
-
-.mobile-aside {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 100%;
-  z-index: 1000;
-  overflow-x: hidden;
-
-  .aside-content {
-    padding: 20px;
+  .el-container {
+    height: 100%;
   }
 
-  .close-btn {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-  }
-}
-
-@media (max-width: 768px) {
   .el-aside {
-    width: 0;
+    transition: width 0.3s;
+
+    &.aside-content {
+      height: 100vh;
+    }
+
+    &.mobile-aside {
+      position: fixed;
+      top: 0;
+      left: 0;
+      height: 100%;
+      z-index: 1000;
+      overflow-x: hidden;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .el-aside {
+      width: 0;
+    }
   }
 }
 </style>

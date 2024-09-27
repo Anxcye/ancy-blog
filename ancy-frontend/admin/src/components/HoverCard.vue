@@ -9,7 +9,7 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
-const ANGLE = 10
+const ANGLE = 15
 const card = ref<HTMLElement | null>(null)
 
 const handleMouseMove = (e: MouseEvent) => {
@@ -38,7 +38,7 @@ const handleMouseOut = () => {
     rotateY(0deg)
     scale3d(1, 1, 1)
   `
-  content.style.transition = 'all 0.2s ease'
+  content.style.transition = 'all 0.1s ease'
 }
 
 onMounted(() => {
@@ -60,7 +60,7 @@ onUnmounted(() => {
 .hover-card {
   perspective: 1000px;
   .content {
-    transition: transform 0.2s;
+    transition: transform;
     transform-style: preserve-3d;
     transform: translateZ(0);
   }

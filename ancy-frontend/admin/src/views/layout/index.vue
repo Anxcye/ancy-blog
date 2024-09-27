@@ -2,16 +2,24 @@
   <div class="layout-container">
     <ResponsiveLayout :is-aside-visible="isAsideVisible">
       <template #aside>
-        <div class="aside">Aside</div>
-      </template>
-      <template #header>
-        <div class="header">
-          Header
+        <div class="aside">
           <el-button @click="toggleAside" class="menu-button">菜单</el-button>
+          <AsideLogo />
+          <el-scrollbar class="scrollbar">
+            <AsideMenu />
+          </el-scrollbar>
         </div>
       </template>
       <template #main>
-        <div class="main">Main</div>
+        <div class="main-container">
+          <div class="header">
+            Header
+            <el-button @click="toggleAside" class="menu-button">菜单</el-button>
+          </div>
+          <div class="main">
+            <p v-for="item in 200" :key="item">{{ item }}</p>
+          </div>
+        </div>
       </template>
     </ResponsiveLayout>
   </div>
@@ -19,32 +27,59 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
-
+import AsideLogo from './conponents/AsideLogo.vue'
+import AsideMenu from './conponents/AsideMenu.vue'
+import { useRouteStore } from '@/stores/modules/route'
 const isAsideVisible = ref(false)
 
 const toggleAside = () => {
   isAsideVisible.value = !isAsideVisible.value
 }
+
+const routeStore = useRouteStore()
+
+routeStore.setRoutes()
 </script>
 
 <style scoped>
 .layout-container {
   height: 100%;
   width: 100%;
-}
 
-.aside {
-  background-color: #f0f0f0;
-  height: 100%;
-  width: 100%;
-}
+  .aside {
+    background-color: #f0f0f0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
 
-.header {
-  background-color: #d3dce6;
-  height: 100%;
-  width: 100%;
-  .menu-button {
-    float: right;
+    .scrollbar {
+      flex: 1;
+    }
+  }
+
+  .main-container {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 100%;
+
+    .header {
+      background-color: #d3dce6;
+      /* height: 100%; */
+      /* width: 100%; */
+      .menu-button {
+        float: left;
+      }
+    }
+
+    .main {
+      background-color: #e9eef3;
+      /* height: 100%; */
+      /* width: 100%; */
+      flex: 1;
+      overflow: auto;
+    }
   }
 }
 
@@ -52,11 +87,5 @@ const toggleAside = () => {
   .menu-button {
     display: none;
   }
-}
-
-.main {
-  background-color: #e9eef3;
-  height: 100%;
-  width: 100%;
 }
 </style>
