@@ -17,7 +17,7 @@
             <el-button @click="toggleAside" class="menu-button">菜单</el-button>
           </div>
           <div class="main">
-            <p v-for="item in 200" :key="item">{{ item }}</p>
+            <router-view />
           </div>
         </div>
       </template>

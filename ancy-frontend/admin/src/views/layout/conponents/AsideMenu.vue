@@ -47,8 +47,7 @@ const treeData = routeStore.routes
 const handleSelect = (key: string) => {
   // router.push(key)
   const menu = routeStore.getRoutes(key)
-  // console.log(menu)
-  router.push(menu?.path || '')
+  router.replace(`/${menu?.path}`)
 }
 
 const iconComponent = (icon: string) => {

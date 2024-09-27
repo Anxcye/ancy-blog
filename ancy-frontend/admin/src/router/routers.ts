@@ -14,9 +14,9 @@ export const routers = [
     name: '404',
     component: () => import('@/views/404/index.vue'),
   },
-  {
-    path: '/:pathMatch(.*)*',
-    name: 'any',
-    redirect: '/404',
-  },
+  // {
+  //   path: '/:pathMatch(.*)*',
+  //   name: 'any',
+  //   redirect: '/404',
+  // },
 ]
