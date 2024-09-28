@@ -36,9 +36,7 @@
                   v-for="tag in tabStore.historyTabs"
                   :key="tag.path"
                   closable
-                  :type="
-                    tag.path === tabStore.currentTab.path ? 'primary' : 'info'
-                  "
+                  :type="tag.path === tabStore.currentTab ? 'primary' : 'info'"
                   @click="handleTabClick(tag)"
                   @close="removeTab(tag)"
                 >
@@ -96,18 +94,18 @@ import router from '@/router'
 import type { RouteLocationNormalized } from 'vue-router'
 
 const removeTab = (targetName: RouteLocationNormalized) => {
-  tabStore.removeHistoryTab(targetName)
+  tabStore.removeHistoryTab(targetName.path)
 }
 
-watch(
-  () => router.currentRoute.value,
-  (newVal: RouteLocationNormalized) => {
-    if (newVal.path !== '/ancy') {
-      tabStore.addHistoryTab(newVal)
-      tabStore.currentTab = newVal
-    }
-  },
-)
+// watch(
+//   () => router.currentRoute.value.path,
+//   (newVal: string) => {
+//     if (newVal !== '/ancy') {
+//       tabStore.addHistoryTab(newVal)
+//       tabStore.currentTab = newVal
+//     }
+//   },
+// )
 
 const handleTabClick = (tab: RouteLocationNormalized) => {
   router.push(tab.path)

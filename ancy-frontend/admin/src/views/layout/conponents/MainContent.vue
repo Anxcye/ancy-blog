@@ -2,7 +2,7 @@
   <div>
     <router-view v-slot="{ Component }">
       <transition name="fade">
-        <keep-alive :include="tabStore.cacheTabs">
+        <keep-alive>
           <component
             :is="Component"
             v-if="refresh"

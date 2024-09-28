@@ -4,27 +4,37 @@ import NProgress from 'nprogress'
 import 'nprogress/nprogress.css'
 
 import router from '@/router'
+import { useTabStore } from './stores/modules/tab'
 
 const whiteList = ['/login']
 
 router.beforeEach(async (to, from, next) => {
   const routerStore = useRouteStore()
   const userStore = useUserStore()
+  const tabStore = useTabStore()
+
+  const go = (param?: any) => {
+    NProgress.start()
+    if (to.path !== '/ancy') {
+      tabStore.addHistoryTab(to.path)
+      tabStore.currentTab = to.path
+    }
+    next(param)
+  }
 
   if (whiteList.includes(to.path)) {
-    next()
+    go()
   } else {
     if (!userStore.getToken()) {
-      next({ path: '/login' })
+      go({ path: '/login' })
     }
 
     if (routerStore.routesLoaded) {
-      NProgress.start()
-      next()
+      go()
     } else {
       NProgress.start()
       await routerStore.setRoutes()
-      next({ ...to, replace: true })
+      go({ ...to, replace: true })
     }
   }
 })

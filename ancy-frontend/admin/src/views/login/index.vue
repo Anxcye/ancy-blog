@@ -63,10 +63,8 @@ import { UserFilled, Lock } from '@element-plus/icons-vue'
 import HoverCard from '@/components/HoverCard.vue'
 import { useUserStore } from '@/stores/modules/user'
 import router from '@/router'
-import { useRouteStore } from '@/stores/modules/route'
 
 const userStore = useUserStore()
-const routeStore = useRouteStore()
 
 const loginFormRef = ref()
 const loading = ref(false)
