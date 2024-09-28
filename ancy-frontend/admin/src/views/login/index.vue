@@ -8,7 +8,12 @@
         </div>
 
         <div class="login-right">
-          <el-form :model="loginForm" :rules="rules" ref="loginFormRef" class="login-form">
+          <el-form
+            :model="loginForm"
+            :rules="rules"
+            ref="loginFormRef"
+            class="login-form"
+          >
             <el-form-item prop="username">
               <el-input
                 v-model="loginForm.username"
@@ -110,7 +115,15 @@ const handleVisitor = async () => {
   left: 0;
   right: 0;
   bottom: 0;
-  background: linear-gradient(45deg, #ff5ccc, #dc52bf, #b947b1, #973da4, #743296, #512889);
+  background: linear-gradient(
+    45deg,
+    #ff5ccc,
+    #dc52bf,
+    #b947b1,
+    #973da4,
+    #743296,
+    #512889
+  );
   background-size: 400% 400%;
   animation: gradientFlow 15s ease infinite;
 }
@@ -174,7 +187,7 @@ const handleVisitor = async () => {
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  background-color: $primary-color;
+  background-color: $ac-primary-color;
   color: #fff;
   height: 100%;
 

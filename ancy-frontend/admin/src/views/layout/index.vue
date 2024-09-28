@@ -3,21 +3,27 @@
     <ResponsiveLayout :is-aside-visible="isAsideVisible">
       <template #aside>
         <div class="aside">
-          <el-button @click="toggleAside" class="menu-button">菜单</el-button>
-          <AsideLogo />
+          <el-button @click="toggleAside" class="menu-button" type="primary">
+            关闭
+          </el-button>
+          <AsideLogo style="overflow: hidden" />
           <el-scrollbar class="scrollbar">
-            <AsideMenu />
+            <div class="aside-menu">
+              <AsideMenu />
+            </div>
           </el-scrollbar>
         </div>
       </template>
       <template #main>
         <div class="main-container">
           <div class="header">
-            Header
-            <el-button @click="toggleAside" class="menu-button">菜单</el-button>
+            <el-button @click="toggleAside" class="menu-button" type="primary">
+              菜单
+            </el-button>
+            <div class="header-content">Header</div>
           </div>
           <div class="main">
-            <router-view />
+            <MainContent />
           </div>
         </div>
       </template>
@@ -29,32 +35,40 @@
 import { ref } from 'vue'
 import AsideLogo from './conponents/AsideLogo.vue'
 import AsideMenu from './conponents/AsideMenu.vue'
-import { useRouteStore } from '@/stores/modules/route'
+import MainContent from './conponents/MainContent.vue'
 const isAsideVisible = ref(false)
 
 const toggleAside = () => {
   isAsideVisible.value = !isAsideVisible.value
 }
-
-const routeStore = useRouteStore()
-
-routeStore.setRoutes()
 </script>
 
-<style scoped>
+<style scoped lang="scss">
 .layout-container {
-  height: 100%;
-  width: 100%;
-
   .aside {
-    background-color: #f0f0f0;
-    height: 100%;
-    width: 100%;
+    margin: 10px;
+    margin-right: 5px;
+    height: calc(100% - 20px);
+
+    border-radius: 20px;
+    background-color: $ac-background;
     display: flex;
     flex-direction: column;
+    padding: 10px;
+
+    border: 1px solid $ac-border-color;
 
     .scrollbar {
       flex: 1;
+      border-radius: 10px;
+      overflow: hidden;
+      font-size: 14px;
+      font-weight: 600;
+      background-color: white;
+    }
+
+    .menu-button {
+      font-weight: 600;
     }
   }
 
@@ -65,18 +79,38 @@ routeStore.setRoutes()
     width: 100%;
 
     .header {
-      background-color: #d3dce6;
-      /* height: 100%; */
-      /* width: 100%; */
+      margin: 10px;
+      margin-left: 5px;
+      margin-bottom: 5px;
+      border-radius: 10px;
+      padding: 10px;
+
+      background-color: $ac-background;
+      height: 4rem;
+      display: flex;
+      align-items: center;
+      // justify-content: space-between;
+      border: 1px solid $ac-border-color;
+
       .menu-button {
-        float: left;
+        font-weight: 600;
+      }
+
+      .header-content {
+        flex: 1;
+        text-align: center;
       }
     }
 
     .main {
-      background-color: #e9eef3;
-      /* height: 100%; */
-      /* width: 100%; */
+      margin: 10px;
+      margin-left: 5px;
+      margin-top: 5px;
+      border-radius: 10px;
+      padding: 10px;
+
+      background-color: $ac-background;
+      border: 1px solid $ac-border-color;
       flex: 1;
       overflow: auto;
     }

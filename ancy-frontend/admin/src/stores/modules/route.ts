@@ -9,6 +9,7 @@ const modules = import.meta.glob('../../views/layout/**/*.vue')
 
 export const useRouteStore = defineStore('route', () => {
   const routes = ref<GetRoutersData[]>(localGetRoutes())
+  const routesLoaded = ref(false)
 
   const routeArray = computed(() => {
     const result: GetRoutersData[] = []
@@ -24,10 +25,17 @@ export const useRouteStore = defineStore('route', () => {
     return result
   })
 
-  const setRoutes = async () => {
+  const initRoutes = async () => {
     const res = await getRouters()
     localSetRoutes(res.data.menus)
     routes.value = res.data.menus
+    addRouter()
+  }
+
+  const setRoutes = async () => {
+    if (!routeArray.value.length) {
+      await initRoutes()
+    }
     addRouter()
   }
 
@@ -51,14 +59,25 @@ export const useRouteStore = defineStore('route', () => {
       name: 'any',
       redirect: '/404',
     })
+    routesLoaded.value = true
   }
 
-  const getRoutes = (key: string) => {
+  const getRoutes = (key: string): GetRoutersData | undefined => {
     return routeArray.value.find((item) => item.id === parseInt(key))
   }
+
+  const getIdByPath = (path: string): number | undefined => {
+    return (
+      routeArray.value.find((item) => item.path === path.slice(1))?.id || -1
+    )
+  }
+
   return {
     routes,
+    routesLoaded,
+    initRoutes,
     setRoutes,
     getRoutes,
+    getIdByPath,
   }
 })

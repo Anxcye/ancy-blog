@@ -15,6 +15,9 @@ import { logo } from '@/settings'
   align-items: center;
   justify-content: center;
   height: 64px;
+  transition: width 0.3s;
+  width: 100%;
+
   img {
     width: 32px;
     height: 32px;

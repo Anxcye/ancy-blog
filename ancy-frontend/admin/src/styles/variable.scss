@@ -1,1 +1,11 @@
-$primary-color: #0ac1bb;
+@use 'sass:color';
+
+$ac-primary-color: #0ac1bb;
+
+$ac-text-color: white;
+
+// 主题背景色
+$ac-background: color.adjust($ac-primary-color, $lightness: 55%);
+
+// 边框颜色
+$ac-border-color: $ac-primary-color;

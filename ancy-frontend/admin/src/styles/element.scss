@@ -3,7 +3,16 @@
 @forward 'element-plus/theme-chalk/src/common/var.scss' with (
   $colors: (
     'primary': (
-      'base': $primary-color,
+      'base': $ac-primary-color,
     ),
+  ),
+  $menu: (
+    'hover-bg-color': #dcdcdc,
+  ),
+  $border-radius: (
+    'base': 10rem,
+    'small': 10rem,
+    'round': 10rem,
+    'circle': 100%,
   )
 );
