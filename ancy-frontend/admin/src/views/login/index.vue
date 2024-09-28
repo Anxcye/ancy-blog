@@ -87,7 +87,7 @@ const handleLogin = async () => {
   await loginFormRef.value.validate()
   try {
     await userStore.userLogin(loginForm)
-    router.push(`/${routeStore.routes[0].path}`)
+    router.push('/ancy')
   } finally {
     loading.value = false
   }

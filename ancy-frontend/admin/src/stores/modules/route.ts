@@ -56,11 +56,18 @@ export const useRouteStore = defineStore('route', () => {
         path: item.path,
         name: item.path,
         component: modules[`../../views/layout/${item.component}.vue`],
-
+        meta: {
+          title: item.menuName,
+          icon: item.icon,
+        },
         children: item.children?.map((child) => ({
           path: child.path,
           name: child.path,
           component: modules[`../../views/layout/${child.component}.vue`],
+          meta: {
+            title: child.menuName,
+            icon: child.icon,
+          },
         })),
       })
     }

@@ -30,12 +30,27 @@
               <!-- 右侧用户信息  -->
               <UserInfo />
             </div>
-            <div class="function">
-              <FullScreen @click="toggleFullscreen" />
-              <Refresh @click="refresh" />
+            <div class="controller">
+              <div class="tab">
+                <el-tag
+                  v-for="tag in tabStore.historyTabs"
+                  :key="tag.path"
+                  closable
+                  :type="
+                    tag.path === tabStore.currentTab.path ? 'primary' : 'info'
+                  "
+                  @click="handleTabClick(tag)"
+                  @close="removeTab(tag)"
+                >
+                  {{ tag.meta.title }}
+                </el-tag>
+              </div>
+              <div class="function">
+                <FullScreen @click="toggleFullscreen" />
+                <Refresh @click="refresh" />
+              </div>
             </div>
           </div>
-
           <div class="main">
             <MainContent />
           </div>
@@ -46,15 +61,16 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
 import AsideLogo from './conponents/AsideLogo.vue'
 import AsideMenu from './conponents/AsideMenu.vue'
 import UserInfo from './conponents/UserInfo.vue'
 import MainContent from './conponents/MainContent.vue'
 import { Refresh, FullScreen } from '@element-plus/icons-vue'
 import { useLayoutStore } from '@/stores/modules/layout'
+import { useTabStore } from '@/stores/modules/tab'
 
 const layoutStore = useLayoutStore()
+const tabStore = useTabStore()
 
 const isAsideVisible = ref(false)
 
@@ -73,6 +89,29 @@ const toggleFullscreen = () => {
   } else {
     document.documentElement.requestFullscreen()
   }
+}
+
+import { ref, watch } from 'vue'
+import router from '@/router'
+import type { RouteLocationNormalized } from 'vue-router'
+
+const removeTab = (targetName: RouteLocationNormalized) => {
+  tabStore.removeHistoryTab(targetName)
+}
+
+watch(
+  () => router.currentRoute.value,
+  (newVal: RouteLocationNormalized) => {
+    if (newVal.path !== '/ancy') {
+      tabStore.addHistoryTab(newVal)
+      tabStore.currentTab = newVal
+    }
+  },
+)
+
+const handleTabClick = (tab: RouteLocationNormalized) => {
+  router.push(tab.path)
+  tabStore.currentTab = tab.path
 }
 </script>
 
@@ -136,16 +175,35 @@ const toggleFullscreen = () => {
           text-align: center;
         }
       }
-
-      .function {
+      .controller {
         width: 100%;
         display: flex;
-        justify-content: flex-end;
-        margin-top: 10px;
-        gap: 10px;
+        justify-content: space-between;
+        align-items: center;
 
-        svg {
-          height: 1.2rem;
+        .tab {
+          width: 100%;
+          display: flex;
+          justify-content: flex-start;
+          margin-top: 10px;
+          gap: 10px;
+          flex-wrap: wrap;
+          flex: 1;
+
+          .el-tag {
+            cursor: pointer;
+          }
+        }
+
+        .function {
+          display: flex;
+          justify-content: flex-end;
+          margin-top: 10px;
+          gap: 10px;
+
+          svg {
+            height: 1.2rem;
+          }
         }
       }
     }

@@ -8,6 +8,16 @@ export const routers = [
     path: '/',
     name: 'home',
     component: () => import('@/views/layout/index.vue'),
+    children: [
+      {
+        path: '/ancy',
+        name: 'ancy',
+        component: () => import('@/views/layout/conponents/AncyLogo.vue'),
+        meta: {
+          title: 'Ancy',
+        },
+      },
+    ],
   },
   {
     path: '/404',

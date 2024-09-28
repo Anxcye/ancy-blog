@@ -2,7 +2,13 @@
   <div>
     <router-view v-slot="{ Component }">
       <transition name="fade">
-        <component :is="Component" v-if="refresh" />
+        <keep-alive :include="tabStore.cacheTabs">
+          <component
+            :is="Component"
+            v-if="refresh"
+            :key="tabStore.currentTab?.path"
+          />
+        </keep-alive>
       </transition>
     </router-view>
   </div>
@@ -11,9 +17,11 @@
 <script setup lang="ts">
 import { nextTick, ref, watch } from 'vue'
 import { useLayoutStore } from '@/stores/modules/layout'
+import { useTabStore } from '@/stores/modules/tab'
 
 const layoutStore = useLayoutStore()
-const refresh = ref(false)
+const tabStore = useTabStore()
+const refresh = ref(true)
 
 watch(
   () => layoutStore.refresh,

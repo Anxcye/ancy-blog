@@ -9,3 +9,7 @@ $ac-background: color.adjust($ac-primary-color, $lightness: 57.5%);
 
 // 边框颜色
 $ac-border-color: $ac-primary-color;
+
+#nprogress .bar {
+  background: $ac-primary-color !important;
+}
