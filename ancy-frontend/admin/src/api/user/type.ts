@@ -58,3 +58,9 @@ export interface GetRoutersRes {
     menus: GetRoutersData[]
   }
 }
+// Response interface
+export interface LogoutRes {
+  code: number
+  msg: string
+  data: boolean
+}

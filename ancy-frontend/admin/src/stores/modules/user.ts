@@ -1,6 +1,5 @@
-import { reqLogin } from '@/api/user'
+import { reqLogin, reqLogout } from '@/api/user'
 import type { LoginData, LoginParams } from '@/api/user/type'
-import router from '@/router'
 
 import {
   getLoginInfo,
@@ -23,6 +22,7 @@ export const useUserStore = defineStore('user', () => {
   }
 
   const logout = async () => {
+    await reqLogout()
     removeLoginInfo()
     userInfo.value = null
     useRouteStore().removeRoutes()
