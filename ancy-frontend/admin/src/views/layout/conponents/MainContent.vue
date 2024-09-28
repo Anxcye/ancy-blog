@@ -2,13 +2,29 @@
   <div>
     <router-view v-slot="{ Component }">
       <transition name="fade">
-        <component :is="Component" />
+        <component :is="Component" v-if="refresh" />
       </transition>
     </router-view>
   </div>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { nextTick, ref, watch } from 'vue'
+import { useLayoutStore } from '@/stores/modules/layout'
+
+const layoutStore = useLayoutStore()
+const refresh = ref(false)
+
+watch(
+  () => layoutStore.refresh,
+  () => {
+    refresh.value = false
+    nextTick(() => {
+      refresh.value = true
+    })
+  },
+)
+</script>
 
 <style scoped lang="scss">
 .fade-enter-active {

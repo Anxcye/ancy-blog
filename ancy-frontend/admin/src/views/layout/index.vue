@@ -17,13 +17,23 @@
       <template #main>
         <div class="main-container">
           <div class="header">
-            <el-button @click="toggleAside" class="menu-button" type="primary">
-              菜单
-            </el-button>
+            <div class="title">
+              <el-button
+                @click="toggleAside"
+                class="menu-button"
+                type="primary"
+              >
+                菜单
+              </el-button>
 
-            <div class="header-content">Header</div>
-            <!-- 右侧用户信息  -->
-            <UserInfo />
+              <div class="header-content">Header</div>
+              <!-- 右侧用户信息  -->
+              <UserInfo />
+            </div>
+            <div class="function">
+              <FullScreen @click="toggleFullscreen" />
+              <Refresh @click="refresh" />
+            </div>
           </div>
 
           <div class="main">
@@ -41,11 +51,28 @@ import AsideLogo from './conponents/AsideLogo.vue'
 import AsideMenu from './conponents/AsideMenu.vue'
 import UserInfo from './conponents/UserInfo.vue'
 import MainContent from './conponents/MainContent.vue'
+import { Refresh, FullScreen } from '@element-plus/icons-vue'
+import { useLayoutStore } from '@/stores/modules/layout'
+
+const layoutStore = useLayoutStore()
 
 const isAsideVisible = ref(false)
 
 const toggleAside = () => {
   isAsideVisible.value = !isAsideVisible.value
+}
+
+const refresh = () => {
+  layoutStore.setRefresh()
+}
+
+const toggleFullscreen = () => {
+  const full = document.fullscreenElement
+  if (full) {
+    document.exitFullscreen()
+  } else {
+    document.documentElement.requestFullscreen()
+  }
 }
 </script>
 
@@ -90,17 +117,36 @@ const toggleAside = () => {
       margin-bottom: 5px;
       border-radius: 10px;
       padding: 10px;
-      height: 4rem;
+      // height: 4rem;
       display: flex;
+      flex-direction: column;
       align-items: center;
 
-      .menu-button {
-        font-weight: 600;
+      .title {
+        display: flex;
+        align-items: center;
+        width: 100%;
+
+        .menu-button {
+          font-weight: 600;
+        }
+
+        .header-content {
+          flex: 1;
+          text-align: center;
+        }
       }
 
-      .header-content {
-        flex: 1;
-        text-align: center;
+      .function {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+        margin-top: 10px;
+        gap: 10px;
+
+        svg {
+          height: 1.2rem;
+        }
       }
     }
 
