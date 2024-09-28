@@ -7,3 +7,7 @@ export const setLoginInfo = (data: LoginData) => {
 export const getLoginInfo = (): LoginData => {
   return JSON.parse(localStorage.getItem('userInfo') || '{}')
 }
+
+export const removeLoginInfo = () => {
+  localStorage.removeItem('userInfo')
+}

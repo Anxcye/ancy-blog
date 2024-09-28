@@ -7,3 +7,7 @@ export const localSetRoutes = (routes: GetRoutersData[]) => {
 export const localGetRoutes = (): GetRoutersData[] => {
   return JSON.parse(localStorage.getItem('routes') || '[]')
 }
+
+export const localRemoveRoutes = () => {
+  localStorage.removeItem('routes')
+}

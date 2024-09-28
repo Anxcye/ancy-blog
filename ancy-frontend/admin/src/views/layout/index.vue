@@ -20,8 +20,12 @@
             <el-button @click="toggleAside" class="menu-button" type="primary">
               菜单
             </el-button>
+
             <div class="header-content">Header</div>
+            <!-- 右侧用户信息  -->
+            <UserInfo />
           </div>
+
           <div class="main">
             <MainContent />
           </div>
@@ -35,7 +39,9 @@
 import { ref } from 'vue'
 import AsideLogo from './conponents/AsideLogo.vue'
 import AsideMenu from './conponents/AsideMenu.vue'
+import UserInfo from './conponents/UserInfo.vue'
 import MainContent from './conponents/MainContent.vue'
+
 const isAsideVisible = ref(false)
 
 const toggleAside = () => {
@@ -84,13 +90,9 @@ const toggleAside = () => {
       margin-bottom: 5px;
       border-radius: 10px;
       padding: 10px;
-
-      background-color: $ac-background;
       height: 4rem;
       display: flex;
       align-items: center;
-      // justify-content: space-between;
-      border: 1px solid $ac-border-color;
 
       .menu-button {
         font-weight: 600;

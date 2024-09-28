@@ -1,7 +1,11 @@
 import { getRouters } from '@/api/user'
 import type { GetRoutersData } from '@/api/user/type'
 import router from '@/router'
-import { localGetRoutes, localSetRoutes } from '@/utils/localStorage/route'
+import {
+  localGetRoutes,
+  localRemoveRoutes,
+  localSetRoutes,
+} from '@/utils/localStorage/route'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
@@ -24,6 +28,12 @@ export const useRouteStore = defineStore('route', () => {
     }
     return result
   })
+
+  const removeRoutes = () => {
+    localRemoveRoutes()
+    routes.value = []
+    router.replace('/login')
+  }
 
   const initRoutes = async () => {
     const res = await getRouters()
@@ -66,7 +76,7 @@ export const useRouteStore = defineStore('route', () => {
     return routeArray.value.find((item) => item.id === parseInt(key))
   }
 
-  const getIdByPath = (path: string): number | undefined => {
+  const getIdByPath = (path: string): number => {
     return (
       routeArray.value.find((item) => item.path === path.slice(1))?.id || -1
     )
@@ -76,6 +86,7 @@ export const useRouteStore = defineStore('route', () => {
     routes,
     routesLoaded,
     initRoutes,
+    removeRoutes,
     setRoutes,
     getRoutes,
     getIdByPath,

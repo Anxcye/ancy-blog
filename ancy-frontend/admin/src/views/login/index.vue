@@ -63,8 +63,10 @@ import { UserFilled, Lock } from '@element-plus/icons-vue'
 import HoverCard from '@/components/HoverCard.vue'
 import { useUserStore } from '@/stores/modules/user'
 import router from '@/router'
+import { useRouteStore } from '@/stores/modules/route'
 
 const userStore = useUserStore()
+const routeStore = useRouteStore()
 
 const loginFormRef = ref()
 const loading = ref(false)
@@ -85,7 +87,7 @@ const handleLogin = async () => {
   await loginFormRef.value.validate()
   try {
     await userStore.userLogin(loginForm)
-    router.push('/')
+    router.push(`/${routeStore.routes[0].path}`)
   } finally {
     loading.value = false
   }
