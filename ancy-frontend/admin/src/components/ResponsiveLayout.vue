@@ -7,7 +7,9 @@
       >
         <slot name="aside"></slot>
       </el-aside>
-      <slot name="main"></slot>
+      <div class="main-content">
+        <slot name="main"></slot>
+      </div>
     </el-container>
   </div>
 </template>
@@ -52,25 +54,34 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .common-layout {
   height: 100vh;
+  width: 100vw;
+  display: flex;
 
   .el-container {
     height: 100%;
-  }
+    flex: 1;
 
-  .el-aside {
-    transition: width 0.3s;
-
-    &.aside-content {
-      height: 100vh;
+    .main-content {
+      height: 100%;
+      width: 100%;
+      flex: 1;
     }
 
-    &.mobile-aside {
-      position: fixed;
-      top: 0;
-      left: 0;
-      height: 100%;
-      z-index: 1000;
-      overflow-x: hidden;
+    .el-aside {
+      transition: width 0.3s;
+
+      &.aside-content {
+        height: 100vh;
+      }
+
+      &.mobile-aside {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100%;
+        z-index: 1000;
+        overflow-x: hidden;
+      }
     }
   }
 
