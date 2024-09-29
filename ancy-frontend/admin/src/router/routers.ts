@@ -8,6 +8,7 @@ export const routers = [
     path: '/',
     name: 'home',
     component: () => import('@/views/layout/index.vue'),
+
     children: [
       {
         path: '/ancy',

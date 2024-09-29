@@ -37,9 +37,11 @@
 <script setup lang="ts">
 import router from '@/router'
 import { useRouteStore } from '@/stores/modules/route'
+import { useTabStore } from '@/stores/modules/tab'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 
 const routeStore = useRouteStore()
+const tabStore = useTabStore()
 const treeData = routeStore.routes
 
 const handleSelect = (key: string) => {
@@ -47,7 +49,7 @@ const handleSelect = (key: string) => {
   router.replace(`/${menu?.path}`)
 }
 
-let initialPath = router.currentRoute.value.path
+let initialPath = tabStore.currentTab
 
 let initialId = routeStore.getIdByPath(initialPath)
 

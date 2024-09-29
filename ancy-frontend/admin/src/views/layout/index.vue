@@ -97,16 +97,6 @@ const removeTab = (targetName: RouteLocationNormalized) => {
   tabStore.removeHistoryTab(targetName.path)
 }
 
-// watch(
-//   () => router.currentRoute.value.path,
-//   (newVal: string) => {
-//     if (newVal !== '/ancy') {
-//       tabStore.addHistoryTab(newVal)
-//       tabStore.currentTab = newVal
-//     }
-//   },
-// )
-
 const handleTabClick = (tab: RouteLocationNormalized) => {
   router.push(tab.path)
   tabStore.currentTab = tab.path
@@ -151,7 +141,7 @@ const handleTabClick = (tab: RouteLocationNormalized) => {
     .header {
       margin: 10px;
       margin-left: 5px;
-      margin-bottom: 5px;
+      margin-bottom: 0px;
       border-radius: 10px;
       padding: 10px;
       // height: 4rem;
@@ -209,7 +199,7 @@ const handleTabClick = (tab: RouteLocationNormalized) => {
     .main {
       margin: 10px;
       margin-left: 5px;
-      margin-top: 5px;
+      margin-top: 0px;
       border-radius: 10px;
       padding: 10px;
 
