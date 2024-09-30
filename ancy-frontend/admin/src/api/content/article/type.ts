@@ -63,7 +63,8 @@ export interface ArticleGetByIdData {
   thumbnail: string
   viewCount: number
   tags: TagData[]
-  isComment: string
+  isComment: '0' | '1'
+  isTop: '0' | '1'
   createBy: number
   createTime: string
   updateBy: number

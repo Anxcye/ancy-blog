@@ -51,6 +51,17 @@
         </template>
       </el-table-column>
       <el-table-column prop="viewCount" label="浏览量" align="center" />
+      <el-table-column prop="isTop" label="置顶" align="center">
+        <template v-slot="scope">
+          <el-switch
+            v-model="scope.row.isTop"
+            active-value="1"
+            inactive-value="0"
+            :loading="loading"
+            @change="handleStatusChange(scope.row)"
+          />
+        </template>
+      </el-table-column>
       <el-table-column prop="status" label="公开" align="center">
         <template v-slot="scope">
           <el-switch
@@ -158,8 +169,8 @@ const handleUpdate = (a: ArticlePageData) => {
 
 const handleStatusChange = async (article: ArticlePageData) => {
   loading.value = true
-  await reqArticleUpdate(article.id, { status: article.status })
-  await getArticlePage()
+  await reqArticleUpdate(article.id, { status: article.status, isTop: article.isTop })
+  await getArticlePage(queryParams.value.pageNum)
   loading.value = false
 }
 </script>

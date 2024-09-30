@@ -159,7 +159,7 @@ const handleSubmit = async () => {
     ElMessage.success('新增成功')
   }
   open.value = false
-  await getCategoryList()
+  await getCategoryList(queryParams.value.pageNum)
 }
 
 const handleCancel = () => {
@@ -173,7 +173,7 @@ const handleDelete = async (row: CategoryListData) => {
     cancelButtonText: '取消',
   }).then(async () => {
     await reqCategoryDelete(row.id)
-    await getCategoryList()
+    await getCategoryList(queryParams.value.pageNum)
   })
 }
 

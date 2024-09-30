@@ -17,7 +17,7 @@ export interface TagListRes extends ApiResponse {
 }
 // tag add
 export interface TagAddParams {
-  name: string
+  name?: string
   remark?: string
 }
 
@@ -34,4 +34,28 @@ export interface TagData {
   createTime: string
   updateBy: number
   updateTime: string
+}
+// tag update
+export interface TagUpdateRes extends ApiResponse {
+  data: boolean
+}
+
+// tag delete
+export interface TagDeleteRes extends ApiResponse {
+  data: boolean
+}
+
+// tag page
+export interface TagPageRes extends ApiResponse {
+  data: {
+    total: number
+    rows: TagListData[]
+  }
+}
+
+export interface TagPageParams {
+  pageNum: number
+  pageSize: number
+  name?: string
+  remark?: string
 }

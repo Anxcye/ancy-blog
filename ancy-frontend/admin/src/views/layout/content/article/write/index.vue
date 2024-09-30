@@ -71,16 +71,18 @@
         <el-col :span="7">
           <el-form-item label="评论" label-width="40px">
             <el-radio-group v-model="article.isComment">
-              <el-radio :key="'0'" :label="'0'">允许</el-radio>
-              <el-radio :key="'1'" :label="'1'">禁止</el-radio>
+              <el-radio key="1" label="1">允许</el-radio>
+              <el-radio key="0" label="0">禁止</el-radio>
             </el-radio-group>
+            {{ article.isComment }}
           </el-form-item>
         </el-col>
         <el-col :span="7" style="text-align: right">
           <el-form-item label="置顶" label-width="40px">
             <el-radio-group v-model="article.isTop">
-              <el-radio :key="'0'" :label="'0'">是</el-radio>
-              <el-radio :key="'1'" :label="'1'">否</el-radio>
+              <el-radio key="1" label="1">是</el-radio>
+              <el-radio key="0" label="0">否</el-radio>
+              {{ article.isTop }}
             </el-radio-group>
           </el-form-item>
         </el-col>
