@@ -16,7 +16,8 @@ export interface TagListRes extends ApiResponse {
   data: TagListData[]
 }
 // tag add
-export interface TagAddParams {
+export interface TagAddData {
+  id?: number
   name?: string
   remark?: string
 }
