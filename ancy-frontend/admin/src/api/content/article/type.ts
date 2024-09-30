@@ -1,5 +1,6 @@
-import type { Response } from '@/api/type'
+import type { ApiResponse } from '@/api/type'
 
+// article page
 export interface ArticlePageData {
   categoryId: number
   categoryName: string
@@ -13,7 +14,7 @@ export interface ArticlePageData {
   viewCount: number
 }
 
-export interface ArticlePageRes extends Response {
+export interface ArticlePageRes extends ApiResponse {
   data: {
     rows: ArticlePageData[]
     total: number
@@ -27,6 +28,23 @@ export interface ArticlePageParams {
   pageSize: number
 }
 
-export interface ArticleDelete extends Response {
+// article delete
+export interface ArticleDeleteRes extends ApiResponse {
+  data: boolean
+}
+export interface ArticleAddParams {
+  title?: string
+  content?: string
+  summary?: string
+  categoryId?: number
+  thumbnail?: string
+  isTop?: string
+  status?: string
+  isComment?: string
+  tags?: number[]
+}
+
+// article add
+export interface ArticleAddRes extends ApiResponse {
   data: boolean
 }

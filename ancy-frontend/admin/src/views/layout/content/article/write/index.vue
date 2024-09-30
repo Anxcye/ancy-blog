@@ -10,7 +10,13 @@
           />
         </el-col>
         <el-col :span="6">
-          <el-select v-model="article.categoryId" placeholder="选择分类">
+          <el-select
+            v-model="article.categoryId"
+            placeholder="选择分类，支持创建"
+            allow-create
+            filterable
+            default-first-option
+          >
             <el-option
               v-for="category in categoryList"
               :key="category.id"
@@ -20,7 +26,14 @@
           </el-select>
         </el-col>
         <el-col :span="6">
-          <el-select v-model="article.tags" placeholder="选择标签" multiple>
+          <el-select
+            v-model="article.tags"
+            placeholder="选择标签，支持创建"
+            multiple
+            allow-create
+            filterable
+            default-first-option
+          >
             <el-option
               v-for="tag in tagList"
               :key="tag.id"
@@ -35,31 +48,33 @@
           <el-input
             v-model="article.summary"
             type="textarea"
+            :autosize="{ minRows: 3, maxRows: 5 }"
             placeholder="文章摘要"
           />
         </el-col>
         <el-col :span="12">
           <el-upload
-            :file-list="article.thumbnail"
+            v-if="!article.thumbnail"
             list-type="picture"
             drag
             name="img"
             action="upload"
-            :on-remove="fileRemove"
             :limit="1"
             :http-request="handleUpload"
-            :on-exceed="onExceed"
+            :show-file-list="false"
           >
-            <i class="el-icon-upload" />
             <div class="el-upload__text">
-              <span>缩略图</span>
-              <span>
-                将文件拖到此处，或
-                <em>点击上传</em>
-              </span>
-              <div class="el-upload__tip">上传jpg/png文件 不超过500kb</div>
+              推拽以添加缩略图，或
+              <em>点击上传</em>
+              <div class="el-upload__tip">jpg/png 不超过500kb</div>
             </div>
           </el-upload>
+          <div v-else class="img-box">
+            <img :src="article.thumbnail" alt="" />
+            <el-button type="text" @click="article.thumbnail = undefined">
+              删除
+            </el-button>
+          </div>
         </el-col>
       </el-row>
 
@@ -99,63 +114,68 @@
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
 import MdEditor from './MdEditor.vue'
+import type { CategoryListData } from '@/api/content/category/type'
+import type { ArticleAddParams } from '@/api/content/article/type'
+import { reqCategoryAdd, reqCategoryList } from '@/api/content/category'
+import type { TagListData } from '@/api/content/tag/type'
+import { reqTagAdd, reqTagList } from '@/api/content/tag'
+import { reqUpload } from '@/api/common'
+import type { UploadRequestOptions } from 'element-plus'
 
-const article = ref<{
-  title: string
-  thumbnail: string
-  isTop: string
-  isComment: string
-  content: string
-  categoryId: string
-  summary: string
-  tags: string[]
-}>({
-  title: '',
-  thumbnail: '',
-  isTop: '1',
-  isComment: '0',
-  content: '# fesdrtwewdrgfdsfgsfdgsfgd',
-  categoryId: '',
-  summary: '',
-  tags: [],
-})
+const article = ref<ArticleAddParams>({})
+const categoryList = ref<CategoryListData[]>([])
+const tagList = ref<TagListData[]>([])
 
 watch(
   article,
   (newVal) => {
-    console.log('newVal', newVal)
     localStorage.setItem('write-content', JSON.stringify(newVal))
   },
   {
     deep: true,
   },
 )
-const categoryList = ref([
-  {
-    id: 1,
-    name: '前端',
+
+watch(
+  () => article.value.categoryId,
+  async (newVal) => {
+    if (!categoryList.value.find((item) => item.id === newVal)) {
+      const res = await reqCategoryAdd({
+        name: newVal!.toString(),
+      })
+      await getCategoryList()
+      article.value.categoryId = res.data
+    }
   },
-  {
-    id: 2,
-    name: '后端',
+)
+
+watch(
+  () => article.value.tags,
+  async (newVal) => {
+    for (const tag of newVal!) {
+      if (!tagList.value.find((item) => item.id === tag)) {
+        const res = await reqTagAdd({
+          name: tag!.toString(),
+        })
+        await getTagList()
+        article.value.tags!.splice(article.value.tags!.indexOf(tag), 1)
+        article.value.tags!.push(res.data)
+      }
+    }
   },
-  {
-    id: 3,
-    name: '数据库',
-  },
-])
-const tagList = ref([
-  {
-    id: 1,
-    name: 'Vue',
-  },
-  {
-    id: 2,
-    name: 'React',
-  },
-])
-const aId = ref(-1)
-const fileList = ref([])
+)
+
+const aId = ref<number | null>(null)
+
+const getCategoryList = async () => {
+  const res = await reqCategoryList()
+  categoryList.value = res.data
+}
+
+const getTagList = async () => {
+  const res = await reqTagList()
+  tagList.value = res.data
+}
 
 const handleSubmit = (a) => {
   console.log('handleSubmit', a)
@@ -165,19 +185,18 @@ const handleSave = () => {
   console.log('handleSave')
 }
 
-const fileRemove = (a) => {
-  console.log('fileRemove', a)
+const handleUpload = async (img: UploadRequestOptions) => {
+  const res = await reqUpload(img.file)
+  console.log('res', res)
+
+  article.value.thumbnail = res.data
+  return res
 }
 
-const onExceed = (a) => {
-  console.log('onExceed', a)
-}
+onMounted(async () => {
+  await getCategoryList()
+  await getTagList()
 
-const handleUpload = (a) => {
-  console.log('handleUpload', a)
-}
-
-onMounted(() => {
   if (localStorage.getItem('write-content')) {
     ElMessageBox.confirm('是否恢复上次编辑内容', '提示', {
       confirmButtonText: '确定',
@@ -193,4 +212,32 @@ onMounted(() => {
 })
 </script>
 
-<style scoped lang="scss"></style>
+<style scoped lang="scss">
+.img-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;
+  border: 1px solid $ac-primary-color;
+
+  img {
+    width: 100%;
+  }
+
+  .el-button {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: none;
+  }
+
+  &:hover {
+    .el-button {
+      display: block;
+    }
+  }
+}
+</style>

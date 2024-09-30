@@ -1,5 +1,11 @@
 import request from '@/utils/request'
-import type { ArticlePageParams, ArticlePageRes, ArticleDelete } from './type'
+import type {
+  ArticlePageParams,
+  ArticlePageRes,
+  ArticleDeleteRes,
+  ArticleAddParams,
+  ArticleAddRes,
+} from './type'
 
 export function reqArticlePage(
   params: ArticlePageParams,
@@ -10,6 +16,10 @@ export function reqArticlePage(
   )
 }
 
-export function reqArticleDelete(id: number): Promise<ArticleDelete> {
+export function reqArticleDelete(id: number): Promise<ArticleDeleteRes> {
   return request.delete(`/article/${id}`)
+}
+
+export function articleAdd(params: ArticleAddParams): Promise<ArticleAddRes> {
+  return request.post(`/article`, params)
 }

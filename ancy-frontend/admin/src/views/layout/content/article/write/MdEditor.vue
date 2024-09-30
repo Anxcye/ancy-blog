@@ -15,6 +15,7 @@
 import { onMounted, onUnmounted, ref } from 'vue'
 import { MdEditor, type ExposeParam, type ToolbarNames } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
+import { reqUpload } from '@/api/common'
 
 const props = defineProps(['modelValue'])
 
@@ -45,23 +46,17 @@ const editorRef = ref<ExposeParam>()
 
 const inputBoxWitdh = ref('50%')
 
-const reqUpdateImg = async (file: File) => {
-  return {
-    url: 'https://www.baidu.com/img/bd_logo1.png',
-  }
-}
-
 const onUploadImg = async (
   files: File[],
   callback: (urls: string[]) => void,
 ) => {
   const res = await Promise.all(
     files.map((file) => {
-      return reqUpdateImg(file)
+      return reqUpload(file)
     }),
   )
 
-  callback(res.map((item) => item.url))
+  callback(res.map((item) => item.data))
 }
 
 const onResize = () => {
