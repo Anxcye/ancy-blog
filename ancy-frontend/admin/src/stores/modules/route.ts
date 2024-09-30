@@ -1,11 +1,7 @@
 import { getRouters } from '@/api/user'
 import type { GetRoutersData } from '@/api/user/type'
 import router from '@/router'
-import {
-  localGetRoutes,
-  localRemoveRoutes,
-  localSetRoutes,
-} from '@/utils/localStorage/route'
+import { localGetRoutes, localRemoveRoutes, localSetRoutes } from '@/utils/localStorage/route'
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 
@@ -84,9 +80,7 @@ export const useRouteStore = defineStore('route', () => {
   }
 
   const getIdByPath = (path: string): number => {
-    return (
-      routeArray.value.find((item) => item.path === path.slice(1))?.id || -1
-    )
+    return routeArray.value.find((item) => item.path === path.slice(1))?.id || -1
   }
 
   return {

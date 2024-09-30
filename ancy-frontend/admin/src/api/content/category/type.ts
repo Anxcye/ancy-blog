@@ -14,8 +14,8 @@ export interface CategoryListRes extends ApiResponse {
 
 // category add
 export interface CategoryAddParams {
-  name: string
-
+  id?: number
+  name?: string
   parentId?: number
   description?: string
   status?: string
@@ -23,4 +23,31 @@ export interface CategoryAddParams {
 
 export interface CategoryAddRes extends ApiResponse {
   data: number
+}
+
+// category page
+export interface CategoryPageParams {
+  name?: string
+  status?: string
+  pageNum: number
+  pageSize: number
+}
+
+export interface CategoryPageRes extends ApiResponse {
+  data: {
+    total: number
+    rows: CategoryListData[]
+  }
+}
+
+export interface CategoryUpdateRes extends ApiResponse {
+  data: boolean
+}
+
+// export to xlsx
+export interface ExportToXlsxRes {}
+
+// category delete
+export interface CategoryDeleteRes extends ApiResponse {
+  data: boolean
 }

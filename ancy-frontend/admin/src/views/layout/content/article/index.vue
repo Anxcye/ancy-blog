@@ -28,21 +28,14 @@
         />
       </el-form-item>
       <el-form-item>
-        <el-button
-          type="primary"
-          :icon="Search"
-          size="small"
-          @click="getArticlePage()"
-        >
+        <el-button type="primary" :icon="Search" size="small" @click="getArticlePage()">
           搜索
         </el-button>
       </el-form-item>
     </el-form>
 
     <el-row :gutter="10">
-      <el-button type="primary" plain :icon="Plus" @click="handleAdd">
-        新增
-      </el-button>
+      <el-button type="primary" plain :icon="Plus" @click="handleAdd">新增</el-button>
     </el-row>
 
     <el-table :data="articleList">
@@ -79,20 +72,10 @@
         fixed="right"
       >
         <template v-slot="scope">
-          <el-button
-            size="small"
-            type="text"
-            :icon="Edit"
-            @click="handleUpdate(scope.row)"
-          >
+          <el-button size="small" type="text" :icon="Edit" @click="handleUpdate(scope.row)">
             修改
           </el-button>
-          <el-button
-            size="small"
-            type="text"
-            :icon="Delete"
-            @click="handleDelete(scope.row)"
-          >
+          <el-button size="small" type="text" :icon="Delete" @click="handleDelete(scope.row)">
             删除
           </el-button>
         </template>
@@ -113,20 +96,13 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { Plus, Delete, Edit, Search } from '@element-plus/icons-vue'
-import {
-  reqArticleDelete,
-  reqArticlePage,
-  reqArticleUpdate,
-} from '@/api/content/article'
-import type {
-  ArticlePageData,
-  ArticlePageParams,
-} from '@/api/content/article/type'
+import { reqArticleDelete, reqArticlePage, reqArticleUpdate } from '@/api/content/article'
+import type { ArticlePageData, ArticlePageParams } from '@/api/content/article/type'
 import router from '@/router'
 
 const queryParams = ref<ArticlePageParams>({
   pageNum: 1,
-  pageSize: 3,
+  pageSize: 5,
   title: '',
   summary: '',
 })

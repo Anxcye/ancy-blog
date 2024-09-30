@@ -3,11 +3,7 @@
     <el-form ref="form" :model="article" label-width="90px">
       <el-row :gutter="20">
         <el-col :span="12">
-          <el-input
-            v-model="article.title"
-            placeholder="文章标题"
-            maxlength="30"
-          />
+          <el-input v-model="article.title" placeholder="文章标题" maxlength="30" />
         </el-col>
         <el-col :span="6">
           <el-select
@@ -34,12 +30,7 @@
             filterable
             default-first-option
           >
-            <el-option
-              v-for="tag in tagList"
-              :key="tag.id"
-              :label="tag.name"
-              :value="tag.id"
-            />
+            <el-option v-for="tag in tagList" :key="tag.id" :label="tag.name" :value="tag.id" />
           </el-select>
         </el-col>
       </el-row>
@@ -71,9 +62,7 @@
           </el-upload>
           <div v-else class="img-box">
             <img :src="article.thumbnail" alt="" />
-            <el-button type="text" @click="article.thumbnail = undefined">
-              删除
-            </el-button>
+            <el-button type="text" @click="article.thumbnail = undefined">删除</el-button>
           </div>
         </el-col>
       </el-row>
@@ -96,9 +85,7 @@
           </el-form-item>
         </el-col>
         <el-col :span="10" style="text-align: right">
-          <el-button v-if="!aId" type="info" @click="handleDraft">
-            保存到草稿箱
-          </el-button>
+          <el-button v-if="!aId" type="info" @click="handleDraft">保存到草稿箱</el-button>
           <el-button type="primary" @click="handleSubmit">
             {{ aId ? '更新' : '发布' }}
           </el-button>
@@ -122,11 +109,7 @@ import { reqTagAdd, reqTagList } from '@/api/content/tag'
 import { reqUpload } from '@/api/common'
 import type { UploadRequestOptions } from 'element-plus'
 import { useRoute, type LocationQueryValue } from 'vue-router'
-import {
-  reqArticleAdd,
-  reqArticleGetById,
-  reqArticleUpdate,
-} from '@/api/content/article'
+import { reqArticleAdd, reqArticleGetById, reqArticleUpdate } from '@/api/content/article'
 
 const route = useRoute()
 const article = ref<ArticleAddParams>({})

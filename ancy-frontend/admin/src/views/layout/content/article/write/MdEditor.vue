@@ -46,10 +46,7 @@ const editorRef = ref<ExposeParam>()
 
 const inputBoxWitdh = ref('50%')
 
-const onUploadImg = async (
-  files: File[],
-  callback: (urls: string[]) => void,
-) => {
+const onUploadImg = async (files: File[], callback: (urls: string[]) => void) => {
   const res = await Promise.all(
     files.map((file) => {
       return reqUpload(file)
@@ -65,9 +62,7 @@ const onResize = () => {
     toolbars.value = [
       'previewOnly',
       '-',
-      ...initialToolbars.filter(
-        (item) => !(['preview', 'previewOnly'] as any).includes(item),
-      ),
+      ...initialToolbars.filter((item) => !(['preview', 'previewOnly'] as any).includes(item)),
     ]
     inputBoxWitdh.value = '100%'
     editorRef.value?.togglePreview(false)

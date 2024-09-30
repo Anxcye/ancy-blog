@@ -3,11 +3,7 @@
     <router-view v-slot="{ Component }">
       <transition name="fade">
         <keep-alive v-if="refresh">
-          <component
-            :is="Component"
-            v-if="refresh"
-            :key="tabStore.currentTab?.path"
-          />
+          <component :is="Component" v-if="refresh" :key="tabStore.currentTab?.path" />
         </keep-alive>
       </transition>
     </router-view>

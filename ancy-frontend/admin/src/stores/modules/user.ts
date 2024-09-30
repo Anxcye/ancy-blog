@@ -1,11 +1,7 @@
 import { reqLogin, reqLogout } from '@/api/user'
 import type { LoginData, LoginParams } from '@/api/user/type'
 
-import {
-  getLoginInfo,
-  removeLoginInfo,
-  setLoginInfo,
-} from '@/utils/localStorage/login'
+import { getLoginInfo, removeLoginInfo, setLoginInfo } from '@/utils/localStorage/login'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useRouteStore } from './route'

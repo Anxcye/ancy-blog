@@ -3,9 +3,7 @@
     <ResponsiveLayout :is-aside-visible="isAsideVisible">
       <template #aside>
         <div class="aside">
-          <el-button @click="toggleAside" class="menu-button" type="primary">
-            关闭
-          </el-button>
+          <el-button @click="toggleAside" class="menu-button" type="primary">关闭</el-button>
           <AsideLogo style="overflow: hidden" />
           <el-scrollbar class="scrollbar">
             <div class="aside-menu">
@@ -18,13 +16,7 @@
         <div class="main-container">
           <div class="header">
             <div class="title">
-              <el-button
-                @click="toggleAside"
-                class="menu-button"
-                type="primary"
-              >
-                菜单
-              </el-button>
+              <el-button @click="toggleAside" class="menu-button" type="primary">菜单</el-button>
 
               <div class="header-content">Header</div>
               <!-- 右侧用户信息  -->
@@ -89,7 +81,7 @@ const toggleFullscreen = () => {
   }
 }
 
-import { ref, watch } from 'vue'
+import { ref } from 'vue'
 import router from '@/router'
 import type { RouteLocationNormalized } from 'vue-router'
 

@@ -28,6 +28,20 @@ request.interceptors.response.use(
   function (response) {
     // 2xx 范围内的状态码都会触发该函数。
     // 对响应数据做点什么
+    if (
+      response.headers['content-type'] ===
+      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=utf-8'
+    ) {
+      // download file
+      const url = window.URL.createObjectURL(new Blob([response.data]))
+      const link = document.createElement('a')
+      link.style.display = 'none'
+      link.href = url
+      link.setAttribute('download', 'file.xlsx')
+      document.body.appendChild(link)
+      link.click()
+      return response.data
+    }
     if (response.data.code !== 200) {
       ElMessage.error(response.data.msg)
       return Promise.reject(response.data)
