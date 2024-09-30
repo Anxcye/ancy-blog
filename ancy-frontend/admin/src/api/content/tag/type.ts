@@ -24,3 +24,14 @@ export interface TagAddParams {
 export interface TagAddRes extends ApiResponse {
   data: number
 }
+
+// tag data
+export interface TagData {
+  id: number
+  name: string
+  remark: string
+  createBy: number
+  createTime: string
+  updateBy: number
+  updateTime: string
+}

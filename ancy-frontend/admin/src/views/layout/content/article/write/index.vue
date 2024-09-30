@@ -96,11 +96,11 @@
           </el-form-item>
         </el-col>
         <el-col :span="10" style="text-align: right">
-          <el-button type="primary" size="medium" @click="handleSubmit">
-            {{ aId ? '更新' : '发布' }}
-          </el-button>
-          <el-button v-if="aId" type="info" @click="handleSave">
+          <el-button v-if="!aId" type="info" @click="handleDraft">
             保存到草稿箱
+          </el-button>
+          <el-button type="primary" @click="handleSubmit">
+            {{ aId ? '更新' : '发布' }}
           </el-button>
         </el-col>
       </el-row>
@@ -121,10 +121,33 @@ import type { TagListData } from '@/api/content/tag/type'
 import { reqTagAdd, reqTagList } from '@/api/content/tag'
 import { reqUpload } from '@/api/common'
 import type { UploadRequestOptions } from 'element-plus'
+import { useRoute, type LocationQueryValue } from 'vue-router'
+import {
+  reqArticleAdd,
+  reqArticleGetById,
+  reqArticleUpdate,
+} from '@/api/content/article'
 
+const route = useRoute()
 const article = ref<ArticleAddParams>({})
 const categoryList = ref<CategoryListData[]>([])
 const tagList = ref<TagListData[]>([])
+const aId = ref<number | null>(null)
+
+watch(
+  () => route.query.id,
+  async (newVal: LocationQueryValue | LocationQueryValue[]) => {
+    aId.value = Number(newVal)
+    if (aId.value) {
+      await getArticleById(aId.value)
+    } else {
+      article.value = {}
+    }
+  },
+  {
+    immediate: true,
+  },
+)
 
 watch(
   article,
@@ -139,9 +162,10 @@ watch(
 watch(
   () => article.value.categoryId,
   async (newVal) => {
+    if (!newVal) return
     if (!categoryList.value.find((item) => item.id === newVal)) {
       const res = await reqCategoryAdd({
-        name: newVal!.toString(),
+        name: newVal.toString(),
       })
       await getCategoryList()
       article.value.categoryId = res.data
@@ -152,6 +176,7 @@ watch(
 watch(
   () => article.value.tags,
   async (newVal) => {
+    if (!newVal) return
     for (const tag of newVal!) {
       if (!tagList.value.find((item) => item.id === tag)) {
         const res = await reqTagAdd({
@@ -165,8 +190,6 @@ watch(
   },
 )
 
-const aId = ref<number | null>(null)
-
 const getCategoryList = async () => {
   const res = await reqCategoryList()
   categoryList.value = res.data
@@ -177,18 +200,29 @@ const getTagList = async () => {
   tagList.value = res.data
 }
 
-const handleSubmit = (a) => {
-  console.log('handleSubmit', a)
+const getArticleById = async (id: number) => {
+  const res = await reqArticleGetById(id)
+  article.value = {
+    ...res.data,
+    tags: res.data.tags.map((item) => item.id),
+  }
 }
 
-const handleSave = () => {
-  console.log('handleSave')
+const handleSubmit = async () => {
+  if (aId.value) {
+    await reqArticleUpdate(aId.value, article.value)
+  } else {
+    await reqArticleAdd(article.value)
+  }
+}
+
+const handleDraft = async () => {
+  article.value.status = '1'
+  await reqArticleAdd(article.value)
 }
 
 const handleUpload = async (img: UploadRequestOptions) => {
   const res = await reqUpload(img.file)
-  console.log('res', res)
-
   article.value.thumbnail = res.data
   return res
 }
@@ -196,10 +230,13 @@ const handleUpload = async (img: UploadRequestOptions) => {
 onMounted(async () => {
   await getCategoryList()
   await getTagList()
+  if (aId.value) {
+    await getArticleById(aId.value)
+  }
 
-  if (localStorage.getItem('write-content')) {
+  if (!aId.value && localStorage.getItem('write-content')) {
     ElMessageBox.confirm('是否恢复上次编辑内容', '提示', {
-      confirmButtonText: '确定',
+      confirmButtonText: '恢复',
       cancelButtonText: '删除本地内容',
     })
       .then(() => {

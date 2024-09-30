@@ -2,7 +2,7 @@
   <div>
     <router-view v-slot="{ Component }">
       <transition name="fade">
-        <keep-alive>
+        <keep-alive v-if="refresh">
           <component
             :is="Component"
             v-if="refresh"

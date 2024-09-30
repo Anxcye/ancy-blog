@@ -1,4 +1,5 @@
 import type { ApiResponse } from '@/api/type'
+import type { TagData } from '../tag/type'
 
 // article page
 export interface ArticlePageData {
@@ -6,8 +7,10 @@ export interface ArticlePageData {
   categoryName: string
   createBy: number
   createTime: string
+  updateTime: string
   id: number
   isTop: string
+  status: '1' | '0'
   summary: string
   thumbnail: string
   title: string
@@ -46,5 +49,34 @@ export interface ArticleAddParams {
 
 // article add
 export interface ArticleAddRes extends ApiResponse {
+  data: boolean
+}
+
+// article get by id
+export interface ArticleGetByIdData {
+  id: number
+  title: string
+  content: string
+  summary: string
+  categoryId: number
+  categoryName: string
+  thumbnail: string
+  viewCount: number
+  tags: TagData[]
+  isComment: string
+  createBy: number
+  createTime: string
+  updateBy: number
+  updateTime: string
+}
+
+export interface ArticleGetByIdRes extends ApiResponse {
+  code: number
+  msg: string
+  data: ArticleGetByIdData
+}
+
+// article update
+export interface ArticleUpdateRes extends ApiResponse {
   data: boolean
 }

@@ -49,8 +49,28 @@
       <el-table-column prop="id" width="80" label="ID" align="center" />
       <el-table-column prop="title" width="200" label="标题" align="center" />
       <el-table-column prop="summary" width="200" label="摘要" align="center" />
+      <el-table-column prop="categoryName" label="分类" align="center" />
+      <el-table-column prop="tags" label="标签" align="center">
+        <template v-slot="scope">
+          <el-tag v-for="tag in scope.row.tags" :key="tag.id" size="small">
+            {{ tag.name }}
+          </el-tag>
+        </template>
+      </el-table-column>
+      <el-table-column prop="viewCount" label="浏览量" align="center" />
+      <el-table-column prop="status" label="公开" align="center">
+        <template v-slot="scope">
+          <el-switch
+            v-model="scope.row.status"
+            active-value="0"
+            inactive-value="1"
+            :loading="loading"
+            @change="handleStatusChange(scope.row)"
+          />
+        </template>
+      </el-table-column>
       <el-table-column prop="createTime" label="创建时间" align="center" />
-
+      <el-table-column prop="updateTime" label="更新时间" align="center" />
       <el-table-column
         label="操作"
         align="center"
@@ -93,7 +113,11 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { Plus, Delete, Edit, Search } from '@element-plus/icons-vue'
-import { reqArticleDelete, reqArticlePage } from '@/api/content/article'
+import {
+  reqArticleDelete,
+  reqArticlePage,
+  reqArticleUpdate,
+} from '@/api/content/article'
 import type {
   ArticlePageData,
   ArticlePageParams,
@@ -106,9 +130,9 @@ const queryParams = ref<ArticlePageParams>({
   title: '',
   summary: '',
 })
-
 const articleList = ref<ArticlePageData[]>([])
 const total = ref(0)
+const loading = ref(false)
 
 const getArticlePage = async (page: number = 1) => {
   queryParams.value.pageNum = page
@@ -147,8 +171,20 @@ const handleDelete = (article: ArticlePageData) => {
     })
 }
 
-const handleUpdate = (a) => {
-  console.log('handleUpdate', a)
+const handleUpdate = (a: ArticlePageData) => {
+  router.push({
+    path: '/write',
+    query: {
+      id: a.id,
+    },
+  })
+}
+
+const handleStatusChange = async (article: ArticlePageData) => {
+  loading.value = true
+  await reqArticleUpdate(article.id, { status: article.status })
+  await getArticlePage()
+  loading.value = false
 }
 </script>
 
