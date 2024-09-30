@@ -98,6 +98,7 @@ import type {
   ArticlePageData,
   ArticlePageParams,
 } from '@/api/content/article/type'
+import router from '@/router'
 
 const queryParams = ref<ArticlePageParams>({
   pageNum: 1,
@@ -121,7 +122,7 @@ onMounted(async () => {
 })
 
 const handleAdd = () => {
-  console.log('handleAdd')
+  router.push('/write')
 }
 
 const handleDelete = (article: ArticlePageData) => {

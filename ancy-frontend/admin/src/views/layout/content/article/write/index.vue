@@ -3,103 +3,90 @@
     <el-form ref="form" :model="article" label-width="90px">
       <el-row :gutter="20">
         <el-col :span="12">
-          <el-form-item label="文章标题" prop="title">
-            <el-input
-              v-model="article.title"
-              placeholder="请输入文章标题"
-              maxlength="30"
+          <el-input
+            v-model="article.title"
+            placeholder="文章标题"
+            maxlength="30"
+          />
+        </el-col>
+        <el-col :span="6">
+          <el-select v-model="article.categoryId" placeholder="选择分类">
+            <el-option
+              v-for="category in categoryList"
+              :key="category.id"
+              :label="category.name"
+              :value="category.id"
             />
-          </el-form-item>
+          </el-select>
         </el-col>
         <el-col :span="6">
-          <el-form-item label="分类">
-            <el-select v-model="article.categoryId" placeholder="请选择">
-              <el-option
-                v-for="category in categoryList"
-                :key="category.id"
-                :label="category.name"
-                :value="category.id"
-              />
-            </el-select>
-          </el-form-item>
-        </el-col>
-        <el-col :span="6">
-          <el-form-item label="标签">
-            <el-select v-model="article.tags" placeholder="请选择" multiple>
-              <el-option
-                v-for="tag in tagList"
-                :key="tag.id"
-                :label="tag.name"
-                :value="tag.id"
-              />
-            </el-select>
-          </el-form-item>
+          <el-select v-model="article.tags" placeholder="选择标签" multiple>
+            <el-option
+              v-for="tag in tagList"
+              :key="tag.id"
+              :label="tag.name"
+              :value="tag.id"
+            />
+          </el-select>
         </el-col>
       </el-row>
-      <el-row :gutter="20">
+      <el-row :gutter="20" style="margin-top: 10px">
         <el-col :span="12">
-          <el-form-item label="文章摘要">
-            <el-input v-model="article.summary" type="textarea" />
-          </el-form-item>
+          <el-input
+            v-model="article.summary"
+            type="textarea"
+            placeholder="文章摘要"
+          />
         </el-col>
-        <el-col :span="6">
-          <el-form-item label="允许评论">
+        <el-col :span="12">
+          <el-upload
+            :file-list="article.thumbnail"
+            list-type="picture"
+            drag
+            name="img"
+            action="upload"
+            :on-remove="fileRemove"
+            :limit="1"
+            :http-request="handleUpload"
+            :on-exceed="onExceed"
+          >
+            <i class="el-icon-upload" />
+            <div class="el-upload__text">
+              <span>缩略图</span>
+              <span>
+                将文件拖到此处，或
+                <em>点击上传</em>
+              </span>
+              <div class="el-upload__tip">上传jpg/png文件 不超过500kb</div>
+            </div>
+          </el-upload>
+        </el-col>
+      </el-row>
+
+      <el-row :gutter="20" style="margin: 10px 0">
+        <el-col :span="7">
+          <el-form-item label="评论" label-width="40px">
             <el-radio-group v-model="article.isComment">
-              <el-radio :key="'0'" :label="'0'">正常</el-radio>
-              <el-radio :key="'1'" :label="'1'">停用</el-radio>
+              <el-radio :key="'0'" :label="'0'">允许</el-radio>
+              <el-radio :key="'1'" :label="'1'">禁止</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-col>
-        <el-col :span="6">
-          <el-form-item label="是否置顶">
+        <el-col :span="7" style="text-align: right">
+          <el-form-item label="置顶" label-width="40px">
             <el-radio-group v-model="article.isTop">
               <el-radio :key="'0'" :label="'0'">是</el-radio>
               <el-radio :key="'1'" :label="'1'">否</el-radio>
             </el-radio-group>
           </el-form-item>
         </el-col>
-      </el-row>
-      <el-row :gutter="20" />
-
-      <el-row :gutter="20">
-        <el-col :span="12">
-          <el-form-item label="缩略图">
-            <el-upload
-              :file-list="article.thumbnail"
-              class="upload-demo"
-              list-type="picture"
-              drag
-              name="img"
-              action="upload"
-              :on-remove="fileRemove"
-              :limit="1"
-              :http-request="handleUpload"
-              :on-exceed="onExceed"
-            >
-              <i class="el-icon-upload" />
-              <div class="el-upload__text">
-                将文件拖到此处，或
-                <em>点击上传</em>
-              </div>
-              <template v-slot:tip>
-                <div class="el-upload__tip">
-                  只能上传jpg/png文件，且不超过500kb
-                </div>
-              </template>
-            </el-upload>
-          </el-form-item>
-        </el-col>
-        <el-col :span="12">
-          <el-form-item>
-            <el-button type="primary" size="medium" @click="handleSubmit">
-              {{ aId ? '更新' : '发布' }}
-            </el-button>
-          </el-form-item>
-          <el-form-item>
-            <el-button v-if="!aId" type="info" @click="handleSave">
-              保存到草稿箱
-            </el-button>
-          </el-form-item>
+        <el-col :span="10" style="text-align: right">
+          <el-button type="primary" size="medium" @click="handleSubmit">
+            {{ aId ? '更新' : '发布' }}
+          </el-button>
+          <el-button v-if="aId" type="info" @click="handleSave">
+            保存到草稿箱
+          </el-button>
         </el-col>
       </el-row>
       <el-row>
@@ -178,26 +165,6 @@ const handleSave = () => {
   console.log('handleSave')
 }
 
-//   const res = await Promise.all(
-//   files.map((file) => {
-//     return new Promise((rev, rej) => {
-//       const form = new FormData();
-//       form.append('file', file);
-
-//       axios
-//         .post('/api/img/upload', form, {
-//           headers: {
-//             'Content-Type': 'multipart/form-data'
-//           }
-//         })
-//         .then((res) => rev(res))
-//         .catch((error) => rej(error));
-//     });
-//   })
-// );
-
-// callback(res.map((item) => item.data.url));
-
 const fileRemove = (a) => {
   console.log('fileRemove', a)
 }
@@ -214,10 +181,14 @@ onMounted(() => {
   if (localStorage.getItem('write-content')) {
     ElMessageBox.confirm('是否恢复上次编辑内容', '提示', {
       confirmButtonText: '确定',
-      cancelButtonText: '取消',
-    }).then(() => {
-      article.value = JSON.parse(localStorage.getItem('write-content')!)
+      cancelButtonText: '删除本地内容',
     })
+      .then(() => {
+        article.value = JSON.parse(localStorage.getItem('write-content')!)
+      })
+      .catch(() => {
+        localStorage.removeItem('write-content')
+      })
   }
 })
 </script>
