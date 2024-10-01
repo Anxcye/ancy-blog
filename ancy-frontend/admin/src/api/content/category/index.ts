@@ -19,12 +19,7 @@ export function reqCategoryAdd(params: CategoryAddParams): Promise<CategoryAddRe
 }
 
 export function reqCategoryPage(params: CategoryPageParams): Promise<CategoryPageRes> {
-  const { name, status, pageNum, pageSize } = params
-  return request.get(
-    `/category/page?${name ? `name=${name}&` : ''}${
-      status ? `status=${status}&` : ''
-    }pageNum=${pageNum}&pageSize=${pageSize}`,
-  )
+  return request.get(`/category/page`, { params })
 }
 
 export function reqCategoryUpdate(

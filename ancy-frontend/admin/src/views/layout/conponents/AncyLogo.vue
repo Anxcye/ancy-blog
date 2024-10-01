@@ -23,20 +23,20 @@ const hello = computed(() => {
 
 <style scoped lang="scss">
 .ancy-logo {
-  font-size: 20rem;
-  font-weight: bold;
-  color: #00000022;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   height: 100%;
+  font-size: 20rem;
+  font-weight: bold;
+  color: #0002;
 
   .ancy-logo-text {
+    align-self: flex-end;
     font-size: 5rem;
     font-weight: lighter;
-    color: #00000022;
-    align-self: flex-end;
+    color: #0002;
   }
 }
 </style>

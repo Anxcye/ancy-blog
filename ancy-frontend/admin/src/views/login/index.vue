@@ -96,20 +96,17 @@ const handleVisitor = async () => {
 <style scoped lang="scss">
 .login-container {
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: 100vw;
   height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
   overflow: hidden;
 }
 
 .gradient-background {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  inset: 0;
   background: linear-gradient(45deg, #ff5ccc, #dc52bf, #b947b1, #973da4, #743296, #512889);
   background-size: 400% 400%;
   animation: gradientFlow 15s ease infinite;
@@ -130,73 +127,76 @@ const handleVisitor = async () => {
 }
 
 .login-card {
-  max-width: 550px;
+  display: flex;
   width: 550px;
-  background-color: rgba(255, 255, 255);
+  max-width: 550px;
+  height: 350px;
+  overflow: hidden;
+  background-color: rgb(255 255 255);
   backdrop-filter: blur(10px);
   border-radius: 15px;
-  height: 350px;
-  display: flex;
-  overflow: hidden;
 }
 
-@media (max-width: 768px) {
+@media (width <= 768px) {
   .login-card {
     flex-direction: column;
     width: 80vw;
     margin: 0 auto;
   }
+
   .login-button-container {
     flex-direction: column;
+
     .visitor-button {
-      margin-bottom: 10px;
       width: 100%;
+      margin-bottom: 10px;
     }
+
     .el-button + .el-button {
-      margin-left: 0px;
+      margin-left: 0;
     }
   }
 }
 
 :deep(.el-input__wrapper) {
-  background-color: rgba(255, 255, 255);
+  background-color: rgb(255 255 255);
 }
 
 :deep(.el-card__body) {
-  padding: 0px;
   height: 100%;
+  padding: 0;
 }
 
 .login-left {
-  flex: 1;
-  text-align: left;
   display: flex;
+  flex: 1;
   flex-direction: column;
-  justify-content: center;
   align-items: center;
-  background-color: $ac-primary-color;
-  color: #fff;
+  justify-content: center;
   height: 100%;
+  color: #fff;
+  text-align: left;
+  background-color: $ac-primary-color;
 
   .login-title {
-    text-align: left;
-    font-weight: 600;
     font-size: 1.2em;
+    font-weight: 600;
+    text-align: left;
   }
 }
 
 .login-right {
-  flex: 1;
-  padding: 15px;
   display: flex;
+  flex: 1;
   align-items: center;
   justify-content: center;
+  padding: 15px;
 
   .login-button-container {
     display: flex;
+    gap: 10px;
     align-items: center;
     width: 100%;
-    gap: 10px;
 
     .login-button {
       flex: 1;
@@ -204,8 +204,8 @@ const handleVisitor = async () => {
     }
 
     .visitor-button {
-      background-color: #fff;
       color: #000;
+      background-color: #fff;
     }
   }
 }

@@ -242,8 +242,8 @@ onMounted(async () => {
   justify-content: center;
   width: 100%;
   height: 100%;
-  border-radius: 5px;
   border: 1px solid $ac-primary-color;
+  border-radius: 5px;
 
   img {
     width: 100%;

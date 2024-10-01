@@ -51,6 +51,7 @@
             v-model="scope.row.status"
             active-value="0"
             inactive-value="1"
+            :loading="statusLoading"
             @change="handleChangeStatus(scope.row)"
           />
         </template>
@@ -170,6 +171,7 @@ const handleSubmit = async () => {
 }
 
 const handleCancel = () => {
+  link.value = {}
   open.value = false
 }
 

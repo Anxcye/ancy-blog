@@ -24,8 +24,5 @@ export function reqTagDelete(id: number): Promise<TagDeleteRes> {
 }
 
 export function reqTagPage(params: TagPageParams): Promise<TagPageRes> {
-  const { pageNum, pageSize, name, remark } = params
-  return request.get(
-    `/tag/page?${name ? `name=${name}&` : ''}${remark ? `remark=${remark}&` : ''}pageNum=${pageNum}&pageSize=${pageSize}`,
-  )
+  return request.get(`/tag/page`, { params })
 }

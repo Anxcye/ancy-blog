@@ -1,4 +1,4 @@
-import type { GetRoutersData } from '@/api/user/type'
+import type { GetRoutersData } from '@/api/system/user/type'
 
 export const localSetRoutes = (routes: GetRoutersData[]) => {
   localStorage.setItem('routes', JSON.stringify(routes))

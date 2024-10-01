@@ -98,25 +98,23 @@ const handleTabClick = (tab: RouteLocationNormalized) => {
 <style scoped lang="scss">
 .layout-container {
   .aside {
-    margin: 10px;
-    margin-right: 5px;
-    height: calc(100% - 20px);
-
-    border-radius: 20px;
-    background-color: $ac-background;
     display: flex;
     flex-direction: column;
+    height: calc(100% - 20px);
     padding: 10px;
-
+    margin: 10px;
+    margin-right: 5px;
+    background-color: $ac-background;
     border: 1px solid $ac-border-color;
+    border-radius: 20px;
 
     .scrollbar {
       flex: 1;
-      border-radius: 10px;
       overflow: hidden;
       font-size: 14px;
       font-weight: 600;
       background-color: white;
+      border-radius: 10px;
     }
 
     .menu-button {
@@ -127,19 +125,19 @@ const handleTabClick = (tab: RouteLocationNormalized) => {
   .main-container {
     display: flex;
     flex-direction: column;
-    height: 100%;
     width: 100%;
+    height: 100%;
 
     .header {
-      margin: 10px;
-      margin-left: 5px;
-      margin-bottom: 0px;
-      border-radius: 10px;
-      padding: 10px;
       // height: 4rem;
       display: flex;
       flex-direction: column;
       align-items: center;
+      padding: 10px;
+      margin: 10px;
+      margin-bottom: 0;
+      margin-left: 5px;
+      border-radius: 10px;
 
       .title {
         display: flex;
@@ -155,20 +153,21 @@ const handleTabClick = (tab: RouteLocationNormalized) => {
           text-align: center;
         }
       }
+
       .controller {
-        width: 100%;
         display: flex;
-        justify-content: space-between;
         align-items: center;
+        justify-content: space-between;
+        width: 100%;
 
         .tab {
-          width: 100%;
           display: flex;
-          justify-content: flex-start;
-          margin-top: 10px;
-          gap: 10px;
-          flex-wrap: wrap;
           flex: 1;
+          flex-wrap: wrap;
+          gap: 10px;
+          justify-content: flex-start;
+          width: 100%;
+          margin-top: 10px;
 
           .el-tag {
             cursor: pointer;
@@ -177,9 +176,9 @@ const handleTabClick = (tab: RouteLocationNormalized) => {
 
         .function {
           display: flex;
+          gap: 10px;
           justify-content: flex-end;
           margin-top: 10px;
-          gap: 10px;
 
           svg {
             height: 1.2rem;
@@ -189,21 +188,20 @@ const handleTabClick = (tab: RouteLocationNormalized) => {
     }
 
     .main {
-      margin: 10px;
-      margin-left: 5px;
-      margin-top: 0px;
-      border-radius: 10px;
+      flex: 1;
       padding: 10px;
-
+      margin: 10px;
+      margin-top: 0;
+      margin-left: 5px;
+      overflow: auto;
       background-color: $ac-background;
       border: 1px solid $ac-border-color;
-      flex: 1;
-      overflow: auto;
+      border-radius: 10px;
     }
   }
 }
 
-@media (min-width: 768px) {
+@media (width >= 768px) {
   .menu-button {
     display: none;
   }

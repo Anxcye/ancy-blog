@@ -1,5 +1,5 @@
-import { getRouters } from '@/api/user'
-import type { GetRoutersData } from '@/api/user/type'
+import { getRouters } from '@/api/system/user'
+import type { GetRoutersData } from '@/api/system/user/type'
 import router from '@/router'
 import { localGetRoutes, localRemoveRoutes, localSetRoutes } from '@/utils/localStorage/route'
 import { defineStore } from 'pinia'

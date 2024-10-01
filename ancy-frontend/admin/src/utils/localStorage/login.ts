@@ -1,4 +1,4 @@
-import type { LoginData } from '@/api/user/type'
+import type { LoginData } from '@/api/system/user/type'
 
 export const setLoginInfo = (data: LoginData) => {
   localStorage.setItem('userInfo', JSON.stringify(data))

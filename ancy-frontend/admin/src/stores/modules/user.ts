@@ -1,5 +1,5 @@
-import { reqLogin, reqLogout } from '@/api/user'
-import type { LoginData, LoginParams } from '@/api/user/type'
+import { reqLogin, reqLogout } from '@/api/system/user'
+import type { LoginData, LoginParams } from '@/api/system/user/type'
 
 import { getLoginInfo, removeLoginInfo, setLoginInfo } from '@/utils/localStorage/login'
 import { defineStore } from 'pinia'

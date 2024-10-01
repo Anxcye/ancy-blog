@@ -53,18 +53,18 @@ onUnmounted(() => {
 
 <style scoped lang="scss">
 .common-layout {
-  height: 100vh;
-  width: 100vw;
   display: flex;
+  width: 100vw;
+  height: 100vh;
 
   .el-container {
-    height: 100%;
     flex: 1;
+    height: 100%;
 
     .main-content {
-      height: 100%;
-      width: 100%;
       flex: 1;
+      width: 100%;
+      height: 100%;
     }
 
     .el-aside {
@@ -78,14 +78,14 @@ onUnmounted(() => {
         position: fixed;
         top: 0;
         left: 0;
-        height: 100%;
         z-index: 1000;
+        height: 100%;
         overflow-x: hidden;
       }
     }
   }
 
-  @media (max-width: 768px) {
+  @media (width <= 768px) {
     .el-aside {
       width: 0;
     }

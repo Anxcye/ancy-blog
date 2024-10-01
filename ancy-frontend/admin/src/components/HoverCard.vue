@@ -59,6 +59,7 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .hover-card {
   perspective: 1000px;
+
   .content {
     transition: transform;
     transform-style: preserve-3d;

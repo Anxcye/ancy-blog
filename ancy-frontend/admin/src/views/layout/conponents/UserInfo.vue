@@ -37,11 +37,12 @@ const logout = () => {
 <style scoped lang="scss">
 .header-user {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  flex-direction: column;
   cursor: pointer;
 }
+
 .user-info {
   display: flex;
   flex-direction: column;
@@ -50,15 +51,17 @@ const logout = () => {
   padding: 10px;
 
   .user-info-name {
-    font-size: 16px;
     margin: 10px 0;
+    font-size: 16px;
     font-weight: bold;
   }
+
   .user-info-email {
-    font-size: 14px;
     margin: 10px 0;
+    font-size: 14px;
     color: #999;
   }
+
   .user-info-role {
     display: flex;
     flex-direction: row;
@@ -67,9 +70,9 @@ const logout = () => {
   }
 
   .logout {
-    text-align: center;
-    justify-content: center;
     display: flex;
+    justify-content: center;
+    text-align: center;
   }
 }
 </style>

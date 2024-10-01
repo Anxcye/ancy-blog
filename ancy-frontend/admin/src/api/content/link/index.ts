@@ -31,10 +31,5 @@ export function reqLinkList(): Promise<LinkListRes> {
 }
 
 export function reqLinkPage(params: LinkPageParams): Promise<LinkPageRes> {
-  const { name, status, pageNum, pageSize } = params
-  return request.get(
-    `/links/page?${name ? `name=${name}&` : ''}${
-      status ? `status=${status}&` : ''
-    }pageNum=${pageNum}&pageSize=${pageSize}`,
-  )
+  return request.get(`/links/page`, { params })
 }

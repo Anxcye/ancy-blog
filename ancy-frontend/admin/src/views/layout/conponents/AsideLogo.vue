@@ -14,18 +14,19 @@ import { logo } from '@/settings'
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 100%;
   height: 64px;
   transition: width 0.3s;
-  width: 100%;
 
   img {
     width: 32px;
     height: 32px;
   }
+
   h1 {
+    margin-left: 10px;
     font-size: 20px;
     font-weight: 600;
-    margin-left: 10px;
   }
 }
 </style>

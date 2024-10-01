@@ -1,4 +1,4 @@
-@import './reset.scss';
+@import './reset';
 
 ::-webkit-scrollbar {
   width: 10px;
@@ -16,9 +16,34 @@
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
 }
+
 .el-table {
   width: 99%;
   margin: 20px auto;
-  border-radius: 20px;
   overflow: hidden;
+  border-radius: 20px;
+}
+
+.dialog-form {
+  .el-dialog__title {
+    font-size: 20px;
+    font-weight: bold;
+  }
+
+  .el-form-item__label {
+    font-size: 14px;
+    font-weight: bold;
+  }
+
+  // pc
+  @media (width >= 768px) {
+    .el-form-item {
+      display: flex;
+    }
+  }
+
+  // mobile
+  @media (width <= 768px) {
+    width: 90% !important;
+  }
 }

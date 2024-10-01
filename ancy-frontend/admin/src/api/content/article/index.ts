@@ -10,12 +10,7 @@ import type {
 } from './type'
 
 export function reqArticlePage(params: ArticlePageParams): Promise<ArticlePageRes> {
-  const { title, summary, pageNum, pageSize } = params
-  return request.get(
-    `/article/page?${title ? `title=${title}&` : ''}${
-      summary ? `summary=${summary}&` : ''
-    }pageNum=${pageNum}&pageSize=${pageSize}`,
-  )
+  return request.get(`/article/page`, { params })
 }
 
 export function reqArticleDelete(id: number): Promise<ArticleDeleteRes> {
