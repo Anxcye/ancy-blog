@@ -77,13 +77,11 @@ public class Article implements Serializable {
     /**
      * 
      */
-    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
      * 
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateBy;
 
     /**

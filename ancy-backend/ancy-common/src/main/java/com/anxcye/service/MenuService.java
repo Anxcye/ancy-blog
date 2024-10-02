@@ -3,6 +3,7 @@ package com.anxcye.service;
 import com.anxcye.domain.dto.MenuDto;
 import com.anxcye.domain.dto.MenuListDto;
 import com.anxcye.domain.entity.Menu;
+import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.vo.MenuVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
@@ -28,4 +29,12 @@ public interface MenuService extends IService<Menu> {
     boolean updateMenu(Long id, MenuDto menuDto);
 
     boolean deleteMenu(Long id);
+
+    PageResult pageMenus(MenuListDto menuListDto);
+
+    List<MenuVo> treeMenus();
+
+    List<MenuVo> selectMenuByRoleId(Long roleId);
+
+    List<MenuVo> selectMenuTreeByRoleId(Long roleId);
 }

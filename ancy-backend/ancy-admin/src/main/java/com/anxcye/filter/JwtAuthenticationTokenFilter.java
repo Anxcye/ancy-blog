@@ -1,12 +1,10 @@
 package com.anxcye.filter;
 
 import com.alibaba.excel.util.StringUtils;
-import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.anxcye.constants.RedisConstant;
 import com.anxcye.domain.entity.LoginUser;
 import com.anxcye.domain.enums.AppHttpCodeEnum;
-import com.anxcye.domain.result.ResponseResult;
 import com.anxcye.utils.JwtUtil;
 import com.anxcye.utils.RedisCache;
 import com.anxcye.utils.WebUtils;
@@ -43,8 +41,7 @@ public class JwtAuthenticationTokenFilter extends OncePerRequestFilter {
             JSONObject jsonObject = redisCache.getCacheObject(RedisConstant.ADMIN_TOKEN_PREFIX + userId);
             loginUser = jsonObject.toJavaObject(LoginUser.class);
         } catch (Exception e) {
-            ResponseResult<Object> error = ResponseResult.error(AppHttpCodeEnum.TOKEN_INVALID);
-            WebUtils.renderString(response, JSON.toJSONString(error));
+            WebUtils.renderString(response, AppHttpCodeEnum.TOKEN_INVALID);
             return;
         }
 

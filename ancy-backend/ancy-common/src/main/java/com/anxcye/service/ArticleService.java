@@ -4,6 +4,7 @@ import com.anxcye.domain.dto.ArticleDto;
 import com.anxcye.domain.dto.ArticleListDto;
 import com.anxcye.domain.entity.Article;
 import com.anxcye.domain.result.PageResult;
+import com.anxcye.domain.vo.ArticleCardVo;
 import com.anxcye.domain.vo.ArticleDetailVo;
 import com.anxcye.domain.vo.HotArticleVo;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -34,4 +35,6 @@ public interface ArticleService extends IService<Article> {
     boolean updateArticleById(Long id, ArticleDto addArticleDto);
 
     boolean deleteArticleById(Long articleId);
+
+    List<ArticleCardVo> getByCategoryId(Long categoryId);
 }

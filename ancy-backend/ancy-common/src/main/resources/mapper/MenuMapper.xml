@@ -64,4 +64,15 @@
         ORDER BY
             sm.parent_id, sm.order_num
     </select>
+    <select id="selectMenuTreeByRoleId" resultType="com.anxcye.domain.entity.Menu">
+        SELECT
+            DISTINCT sm.id, sm.parent_id, sm.menu_name, sm.path, sm.component, sm.visible, sm.status,
+                     IFNULL(sm.perms,'') AS perms, sm.is_frame, sm.menu_type, sm.icon, sm.order_num,
+                     sm.create_time, sm.create_by, sm.update_time, sm.update_by
+        FROM
+            sys_role_menu srm
+                LEFT JOIN sys_menu sm on srm.menu_id = sm.id
+        WHERE
+            srm.role_id = #{roleId}
+    </select>
 </mapper>

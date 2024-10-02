@@ -31,5 +31,17 @@
 		update_time,deleted
     </sql>
 
-
+    <update id="updateViewCountById">
+        UPDATE ancy_article
+        SET view_count = CASE id
+        <foreach collection="list" item="item">
+            WHEN #{item.id} THEN #{item.viewCount}
+        </foreach>
+        END
+        WHERE id IN
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+            #{item.id}
+        </foreach>
+        AND deleted = 0
+    </update>
 </mapper>

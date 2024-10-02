@@ -27,4 +27,6 @@ public interface RoleService extends IService<Role> {
     boolean deleteRole(Long id);
 
     RoleVo getRoleById(Long id);
+
+    List<RoleVo> getList();
 }

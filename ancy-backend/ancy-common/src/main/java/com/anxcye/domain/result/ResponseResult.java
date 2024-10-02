@@ -2,6 +2,8 @@ package com.anxcye.domain.result;
 
 import com.anxcye.domain.enums.AppHttpCodeEnum;
 import lombok.Data;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.io.Serializable;
 
@@ -37,6 +39,11 @@ public class ResponseResult<T> implements Serializable {
         ResponseResult<T> result = new ResponseResult<>();
         result.msg = msg;
         result.code = code;
+        ServletRequestAttributes attributes = ((ServletRequestAttributes) RequestContextHolder.getRequestAttributes());
+        if (attributes != null) {
+            assert attributes.getResponse() != null;
+            attributes.getResponse().setStatus(code);
+        }
         return result;
     }
 

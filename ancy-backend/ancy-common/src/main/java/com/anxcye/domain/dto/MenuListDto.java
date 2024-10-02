@@ -5,7 +5,7 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-public class MenuListDto implements Serializable {
+public class MenuListDto extends PageListDto implements Serializable {
     private String name;
     private String status;
 }

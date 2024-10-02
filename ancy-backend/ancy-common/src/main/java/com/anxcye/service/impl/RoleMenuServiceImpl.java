@@ -56,6 +56,13 @@ public class RoleMenuServiceImpl extends ServiceImpl<RoleMenuMapper, RoleMenu>
                 .map(RoleMenu::getMenuId)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public boolean deleteByMenuId(Long menuId) {
+        LambdaQueryWrapper<RoleMenu> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(RoleMenu::getMenuId, menuId);
+        return remove(wrapper);
+    }
 }
 
 

@@ -6,9 +6,11 @@ import com.anxcye.domain.dto.CategoryDto;
 import com.anxcye.domain.dto.CategoryListDto;
 import com.anxcye.domain.entity.Article;
 import com.anxcye.domain.entity.Category;
+import com.anxcye.domain.enums.AppHttpCodeEnum;
 import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.vo.CategoryVo;
 import com.anxcye.domain.vo.ExcelCategoryVo;
+import com.anxcye.exception.SystemException;
 import com.anxcye.mapper.CategoryMapper;
 import com.anxcye.service.ArticleService;
 import com.anxcye.service.CategoryService;
@@ -70,7 +72,6 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     @Override
     public List<CategoryVo> getAllCategories() {
         LambdaQueryWrapper<Category> categoryWrapper = new LambdaQueryWrapper<>();
-        categoryWrapper.eq(Category::getStatus, SystemConstants.CATEGORY_STATUS_NORMAL);
         List<Category> categories = list(categoryWrapper);
         return BeanCopyUtils.copyList(categories, CategoryVo.class);
     }
@@ -91,22 +92,22 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
     public PageResult pageList(CategoryListDto categoryListDto) {
         LambdaQueryWrapper<Category> queryWrapper = new LambdaQueryWrapper<>();
 
-        queryWrapper.like(StringUtils.hasText(categoryListDto.getName()),Category::getName, categoryListDto.getName());
-        queryWrapper.eq(Objects.nonNull(categoryListDto.getStatus()),Category::getStatus, categoryListDto.getStatus());
+        queryWrapper.like(StringUtils.hasText(categoryListDto.getName()), Category::getName, categoryListDto.getName());
+        queryWrapper.eq(Objects.nonNull(categoryListDto.getStatus()), Category::getStatus, categoryListDto.getStatus());
 
-        Page<Category> page = new Page<>(categoryListDto.getPageNum(),categoryListDto.getPageSize());
-        page(page,queryWrapper);
+        Page<Category> page = new Page<>(categoryListDto.getPageNum(), categoryListDto.getPageSize());
+        page(page, queryWrapper);
 
         List<Category> categories = page.getRecords();
         List<CategoryVo> categoryVos = BeanCopyUtils.copyList(categories, CategoryVo.class);
-        return new PageResult(page.getTotal(),categoryVos);
+        return new PageResult(page.getTotal(), categoryVos);
     }
 
     @Override
-    public boolean addCategory(CategoryDto categoryDto) {
+    public Long addCategory(CategoryDto categoryDto) {
         Category category = BeanCopyUtils.copyBean(categoryDto, Category.class);
         save(category);
-        return true;
+        return category.getId();
     }
 
     @Override
@@ -119,6 +120,9 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
 
     @Override
     public boolean deleteCategory(Long id) {
+        if (!articleService.getByCategoryId(id).isEmpty()){
+            throw new SystemException(AppHttpCodeEnum.CATEGORY_EXIST_ARTICLE);
+        }
         removeById(id);
         return true;
     }

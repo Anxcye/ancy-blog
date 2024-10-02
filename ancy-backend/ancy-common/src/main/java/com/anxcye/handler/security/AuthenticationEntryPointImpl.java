@@ -1,8 +1,6 @@
 package com.anxcye.handler.security;
 
-import com.alibaba.fastjson.JSON;
 import com.anxcye.domain.enums.AppHttpCodeEnum;
-import com.anxcye.domain.result.ResponseResult;
 import com.anxcye.utils.WebUtils;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,14 +19,14 @@ public class AuthenticationEntryPointImpl implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException, ServletException {
         authException.printStackTrace();
 
-        ResponseResult<?> result = null;
+        AppHttpCodeEnum result;
         if (authException instanceof InsufficientAuthenticationException) {
-            result = ResponseResult.error(AppHttpCodeEnum.NEED_LOGIN);
+            result = AppHttpCodeEnum.NEED_LOGIN;
         } else if (authException instanceof BadCredentialsException) {
-            result = ResponseResult.error(AppHttpCodeEnum.LOGIN_ERROR);
+            result = AppHttpCodeEnum.LOGIN_ERROR;
         } else {
-            result = ResponseResult.error(AppHttpCodeEnum.AUTH_ERROR);
+            result = AppHttpCodeEnum.AUTH_ERROR;
         }
-        WebUtils.renderString(response, JSON.toJSONString(result));
+        WebUtils.renderString(response, result);
     }
 }

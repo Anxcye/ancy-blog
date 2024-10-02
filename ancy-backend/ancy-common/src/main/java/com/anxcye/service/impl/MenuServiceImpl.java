@@ -5,20 +5,23 @@ import com.anxcye.domain.dto.MenuDto;
 import com.anxcye.domain.dto.MenuListDto;
 import com.anxcye.domain.entity.Menu;
 import com.anxcye.domain.enums.AppHttpCodeEnum;
+import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.vo.MenuVo;
 import com.anxcye.exception.SystemException;
 import com.anxcye.mapper.MenuMapper;
 import com.anxcye.service.MenuService;
+import com.anxcye.service.RoleMenuService;
 import com.anxcye.utils.AdminUtil;
 import com.anxcye.utils.BeanCopyUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
 import java.util.Objects;
-
 
 /**
  * @author axy
@@ -27,6 +30,9 @@ import java.util.Objects;
  */
 @Service
 public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements MenuService {
+
+    @Autowired
+    private RoleMenuService roleMenuService;
 
     private List<MenuVo> buildMenuTree(List<MenuVo> allMenus, Long parentId) {
         return allMenus.stream()
@@ -82,9 +88,12 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
     @Override
     public List<MenuVo> listMenus(MenuListDto menuListDto) {
         LambdaQueryWrapper<Menu> wrapper = new LambdaQueryWrapper<>();
-
-        wrapper.like(StringUtils.hasText(menuListDto.getName()), Menu::getMenuName, menuListDto.getName());
-        wrapper.eq(StringUtils.hasText(menuListDto.getStatus()), Menu::getStatus, menuListDto.getStatus());
+        if (Objects.nonNull(menuListDto)) {
+            wrapper.like(StringUtils.hasText(menuListDto.getName()),
+                    Menu::getMenuName, menuListDto.getName());
+            wrapper.eq(StringUtils.hasText(menuListDto.getStatus()),
+                    Menu::getStatus, menuListDto.getStatus());
+        }
 
         wrapper.orderByAsc(Menu::getParentId, Menu::getOrderNum);
         List<Menu> menus = list(wrapper);
@@ -115,7 +124,40 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
             throw new SystemException(AppHttpCodeEnum.HAS_CHILD_DELETE_FAILED);
         }
         removeById(id);
+        roleMenuService.deleteByMenuId(id);
         return true;
+    }
+
+    @Override
+    public PageResult pageMenus(MenuListDto menuListDto) {
+        LambdaQueryWrapper<Menu> wrapper = new LambdaQueryWrapper<>();
+
+        wrapper.like(StringUtils.hasText(menuListDto.getName()), Menu::getMenuName, menuListDto.getName());
+        wrapper.eq(StringUtils.hasText(menuListDto.getStatus()), Menu::getStatus, menuListDto.getStatus());
+
+        wrapper.orderByAsc(Menu::getParentId, Menu::getOrderNum);
+        Page<Menu> page = new Page<>(menuListDto.getPageNum(), menuListDto.getPageSize());
+        page(page, wrapper);
+        List<MenuVo> menuVos = BeanCopyUtils.copyList(page.getRecords(), MenuVo.class);
+        return new PageResult(page.getTotal(), menuVos);
+    }
+
+    @Override
+    public List<MenuVo> treeMenus() {
+        List<MenuVo> menuVos = listMenus(null);
+        return buildMenuTree(menuVos, SystemConstants.ROOT_MENU_PARENT_ID);
+    }
+
+    @Override
+    public List<MenuVo> selectMenuByRoleId(Long roleId) {
+        List<Menu> menus = getBaseMapper().selectMenuTreeByRoleId(roleId);
+        return BeanCopyUtils.copyList(menus, MenuVo.class);
+    }
+
+    @Override
+    public List<MenuVo> selectMenuTreeByRoleId(Long roleId) {
+        List<MenuVo> menuVos = selectMenuByRoleId(roleId);
+        return buildMenuTree(menuVos, SystemConstants.ROOT_MENU_PARENT_ID);
     }
 
 }

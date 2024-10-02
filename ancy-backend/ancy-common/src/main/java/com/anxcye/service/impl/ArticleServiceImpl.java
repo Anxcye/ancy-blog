@@ -92,7 +92,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
                 .map(entry -> new Article(Long.valueOf(entry.getKey()), entry.getValue().longValue()))
                 .collect(Collectors.toList());
 
-        updateBatchById(articles);
+//        updateBatchById(articles);
+// avoid auto fill  updatetime by mybatis plus
+        getBaseMapper().updateViewCountById(articles);
     }
 
     @Override
@@ -110,7 +112,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     @Transactional
     public boolean addArticle(ArticleDto articleDto) {
         Article article = BeanCopyUtils.copyBean(articleDto, Article.class);
-
         save(article);
         initViewCount();
 
@@ -128,15 +129,21 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
 
         wrapper.like(StringUtils.hasText(articleListDto.getTitle()), Article::getTitle, articleListDto.getTitle());
-        wrapper.like(StringUtils.hasText(articleListDto.getSummary()), Article::getSummary, articleListDto.getSummary());
+        wrapper.like(StringUtils.hasText(articleListDto.getSummary()), Article::getSummary,
+                articleListDto.getSummary());
 
         Page<Article> page = new Page<>(articleListDto.getPageNum(), articleListDto.getPageSize());
         page(page, wrapper);
 
         List<ArticleCardVo> articleCardVos = BeanCopyUtils.copyList(page.getRecords(), ArticleCardVo.class);
 
-        return new PageResult(page.getTotal(), articleCardVos);
+        articleCardVos.forEach(articleCardVo -> {
+            articleCardVo.setViewCount(getViewCount(articleCardVo.getId()));
+            articleCardVo.setCategoryName(categoryService.getById(articleCardVo.getCategoryId()).getName());
+            articleCardVo.setTags(tagService.selectTagsByArticleId(articleCardVo.getId()));
+        });
 
+        return new PageResult(page.getTotal(), articleCardVos);
     }
 
     @Override
@@ -145,7 +152,9 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         Article article = BeanCopyUtils.copyBean(addArticleDto, Article.class);
         article.setId(id);
         updateById(article);
-        articleTagService.updateByArticleId(id, addArticleDto.getTags());
+        if (addArticleDto.getTags() != null) {
+            articleTagService.updateByArticleId(id, addArticleDto.getTags());
+        }
         return true;
     }
 
@@ -153,6 +162,14 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     public boolean deleteArticleById(Long articleId) {
         removeById(articleId);
         return true;
+    }
+
+    @Override
+    public List<ArticleCardVo> getByCategoryId(Long categoryId) {
+        LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
+        wrapper.eq(Article::getCategoryId, categoryId);
+        List<Article> articles = list(wrapper);
+        return BeanCopyUtils.copyList(articles, ArticleCardVo.class);
     }
 
     @Override

@@ -3,6 +3,8 @@ package com.anxcye.mapper;
 import com.anxcye.domain.entity.Article;
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 
+import java.util.List;
+
 /**
 * @author axy
 * @description 针对表【ancy_article(文章表)】的数据库操作Mapper
@@ -12,4 +14,5 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 public interface ArticleMapper extends BaseMapper<Article> {
 
 
+    void updateViewCountById(List<Article> articles);
 }

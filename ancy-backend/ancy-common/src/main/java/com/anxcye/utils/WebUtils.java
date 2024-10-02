@@ -1,6 +1,9 @@
 package com.anxcye.utils;
 
 
+import com.alibaba.fastjson.JSON;
+import com.anxcye.domain.enums.AppHttpCodeEnum;
+import com.anxcye.domain.result.ResponseResult;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
@@ -13,14 +16,15 @@ public class WebUtils {
      * 将字符串渲染到客户端
      *
      * @param response 渲染对象
-     * @param string   待渲染的字符串
+     * @param appHttpCodeEnum   待渲染的字符串
      */
-    public static void renderString(HttpServletResponse response, String string) {
+    public static void renderString(HttpServletResponse response, AppHttpCodeEnum appHttpCodeEnum) {
         try {
-            response.setStatus(200);
+            String result = JSON.toJSONString(ResponseResult.error(appHttpCodeEnum));
+            response.setStatus(appHttpCodeEnum.getCode());
             response.setContentType("application/json");
             response.setCharacterEncoding("utf-8");
-            response.getWriter().print(string);
+            response.getWriter().print(result);
         } catch (IOException e) {
             e.printStackTrace();
         }

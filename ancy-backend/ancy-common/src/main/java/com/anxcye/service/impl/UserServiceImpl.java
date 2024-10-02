@@ -162,9 +162,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     }
 
     @Override
-    public void adminLogout() {
+    public boolean adminLogout() {
         Long id = SecurityUtil.getUserId();
         redisCache.deleteObject(RedisConstant.ADMIN_TOKEN_PREFIX + id);
+        return true;
     }
 
     @Override
@@ -185,29 +186,34 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
         List<UserVo> userVos = BeanCopyUtils.copyList(page.getRecords(), UserVo.class);
 
+        userVos.forEach(userVo -> {
+            List<Long> roleIds = userRoleService.selectRoleIdsByUserId(userVo.getId());
+            userVo.setRoleIds(roleIds);
+        });
+
         return new PageResult(page.getTotal(), userVos);
 
 
     }
 
     @Override
-    public boolean addAdmin(AdminUserDto adminUserDto) {
-        if (Objects.isNull(adminUserDto.getUserName()) || Objects.isNull(adminUserDto.getPassword()) || Objects.isNull(adminUserDto.getEmail()) || Objects.isNull(adminUserDto.getNickName())) {
+    public Long addAdmin(AdminUserDto adminUserDto) {
+        if (Objects.isNull(adminUserDto.getUserName()) ||
+                Objects.isNull(adminUserDto.getPassword()) ||
+                Objects.isNull(adminUserDto.getNickName())) {
             throw new SystemException(AppHttpCodeEnum.USERINFO_NOT_NULL);
         }
         if (userInfoExists(User::getUserName, adminUserDto.getUserName())) {
             throw new SystemException(AppHttpCodeEnum.USERNAME_EXIST);
         }
-        if (userInfoExists(User::getEmail, adminUserDto.getEmail())) {
-            throw new SystemException(AppHttpCodeEnum.EMAIL_EXIST);
-        }
+
         User user = BeanCopyUtils.copyBean(adminUserDto, User.class);
         user.setType(SystemConstants.USER_ADMIN);
         String encodedPassword = passwordEncoder.encode(user.getPassword());
         user.setPassword(encodedPassword);
         save(user);
         userRoleService.addByUserId(user.getId(), adminUserDto.getRoleIds());
-        return true;
+        return user.getId();
     }
 
     @Override
@@ -227,14 +233,21 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public boolean updateAdmin(Long id, AdminUserDto adminUserDto) {
         User user = BeanCopyUtils.copyBean(adminUserDto, User.class);
         user.setId(id);
+        if (adminUserDto.getPassword() != null) {
+            String encodedPassword = passwordEncoder.encode(user.getPassword());
+            user.setPassword(encodedPassword);
+        }
         updateById(user);
-        userRoleService.updateByUserId(id, adminUserDto.getRoleIds());
+        if (adminUserDto.getRoleIds() != null) {
+            userRoleService.updateByUserId(id, adminUserDto.getRoleIds());
+        }
         return true;
     }
 
     @Override
     public boolean deleteUser(Long id) {
         removeById(id);
+        userRoleService.deleteByUserId(id);
         return true;
     }
 }

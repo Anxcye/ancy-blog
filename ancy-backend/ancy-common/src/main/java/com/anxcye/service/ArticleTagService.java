@@ -19,4 +19,6 @@ public interface ArticleTagService extends IService<ArticleTag> {
     boolean deleteByArticleId(Long articleId);
 
     boolean updateByArticleId(Long ArticleId, List<Long> tags);
+
+    boolean deleteByTagId(Long tagId);
 }

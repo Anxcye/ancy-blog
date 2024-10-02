@@ -62,6 +62,11 @@ public class ArticleDetailVo {
     private String isComment;
 
     /**
+     * 是否置顶（0否，1是）
+     */
+    private String isTop;
+
+    /**
      *
      */
     private Long createBy;

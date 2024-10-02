@@ -222,6 +222,7 @@ const handleSubmit = async () => {
     ElMessage.success('新增成功')
   }
   open.value = false
+  getRolePage()
 }
 
 const handleCancel = () => {

@@ -26,7 +26,7 @@ public interface CategoryService extends IService<Category> {
 
     PageResult pageList(CategoryListDto categoryListDto);
 
-    boolean addCategory(CategoryDto categoryDto);
+    Long addCategory(CategoryDto categoryDto);
 
     boolean updateCategory(Long id, CategoryDto categoryDto);
 

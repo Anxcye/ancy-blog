@@ -12,13 +12,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
-* @author axy
-* @description 针对表【ancy_article_tag(文章标签关联表)】的数据库操作Service实现
-* @createDate 2024-09-21 15:37:49
-*/
+ * @author axy
+ * @description 针对表【ancy_article_tag(文章标签关联表)】的数据库操作Service实现
+ * @createDate 2024-09-21 15:37:49
+ */
 @Service
 public class ArticleTagServiceImpl extends ServiceImpl<ArticleTagMapper, ArticleTag>
-    implements ArticleTagService{
+        implements ArticleTagService {
 
     @Override
     @Transactional
@@ -47,6 +47,13 @@ public class ArticleTagServiceImpl extends ServiceImpl<ArticleTagMapper, Article
         deleteByArticleId(articleId);
         saveArticleTag(articleId, tags);
         return true;
+    }
+
+    @Override
+    public boolean deleteByTagId(Long tagId) {
+        LambdaQueryWrapper<ArticleTag> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(ArticleTag::getTagId, tagId);
+        return remove(wrapper);
     }
 }
 

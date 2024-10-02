@@ -19,4 +19,6 @@ public interface RoleMenuService extends IService<RoleMenu> {
     boolean updateByRoleId(Long roleId, List<Long> menuIds);
 
     List<Long> getMenuIdsByRoleId(Long roleId);
+
+    boolean deleteByMenuId(Long menuId);
 }

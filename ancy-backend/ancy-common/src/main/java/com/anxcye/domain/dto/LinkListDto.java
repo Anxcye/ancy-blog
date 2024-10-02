@@ -6,6 +6,6 @@ import java.io.Serializable;
 
 @Data
 public class LinkListDto extends PageListDto implements Serializable {
-    private String title;
+    private String name;
     private String status;
 }

@@ -11,11 +11,13 @@ import com.anxcye.mapper.LinkMapper;
 import com.anxcye.service.LinkService;
 import com.anxcye.utils.BeanCopyUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author axy
@@ -33,14 +35,17 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link>
         linkLambdaQueryWrapper.eq(Link::getStatus, SystemConstants.LINK_STATUS_NORMAL);
         List<Link> list = this.list(linkLambdaQueryWrapper);
 
-        List<LinkVo> linkVos = BeanCopyUtils.copyList(list, LinkVo.class);
-
-        return linkVos;
+        return BeanCopyUtils.copyList(list, LinkVo.class);
     }
 
     @Override
     public PageResult pageList(LinkListDto linkListDto) {
         LambdaQueryWrapper<Link> linkLambdaQueryWrapper = new LambdaQueryWrapper<>();
+
+        linkLambdaQueryWrapper.like(StringUtils.isNotEmpty(linkListDto.getName()),
+                Link::getName, linkListDto.getName());
+        linkLambdaQueryWrapper.eq(Objects.nonNull(linkListDto.getStatus()),
+                Link::getStatus, linkListDto.getStatus());
 
         Page<Link> page = new Page<>(linkListDto.getPageNum(), linkListDto.getPageSize());
         page(page, linkLambdaQueryWrapper);
@@ -48,10 +53,10 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link>
     }
 
     @Override
-    public boolean addLink(LinkDto linkDto) {
+    public Long addLink(LinkDto linkDto) {
         Link link = BeanCopyUtils.copyBean(linkDto, Link.class);
         save(link);
-        return true;
+        return link.getId();
     }
 
     @Override

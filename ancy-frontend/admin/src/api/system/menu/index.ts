@@ -22,8 +22,8 @@ export function reqMenuDelete(id: number): Promise<MenuDeleteRes> {
   return request.delete(`/menus/${id}`)
 }
 
-export function reqMenuList(): Promise<MenuListRes> {
-  return request.get(`/menus/list`)
+export function reqMenuList(params: MenuPageParams): Promise<MenuListRes> {
+  return request.get(`/menus/list`, { params })
 }
 
 export function reqMenuPage(params: MenuPageParams): Promise<MenuPageRes> {

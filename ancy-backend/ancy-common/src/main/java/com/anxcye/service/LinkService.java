@@ -20,7 +20,7 @@ public interface LinkService extends IService<Link> {
 
     PageResult pageList(LinkListDto linkListDto);
 
-    boolean addLink(LinkDto linkDto);
+    Long addLink(LinkDto linkDto);
 
     boolean deleteLink(Long id);
 

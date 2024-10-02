@@ -3,6 +3,7 @@ package com.anxcye.domain.vo;
 import lombok.Data;
 
 import java.util.Date;
+import java.util.List;
 
 @Data
 public class ArticleCardVo {
@@ -41,7 +42,15 @@ public class ArticleCardVo {
      */
     private String isTop;
 
+    /**
+     * 状态（0已发布，1草稿）
+     */
+    private String status;
 
+    /**
+     * tags
+     */
+    private List<TagVo> tags;
     /**
      * 访问量
      */
@@ -56,4 +65,7 @@ public class ArticleCardVo {
      *
      */
     private Date createTime;
+
+    private Date updateTime;
+
 }

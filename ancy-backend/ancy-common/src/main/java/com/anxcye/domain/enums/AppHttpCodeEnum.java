@@ -24,7 +24,8 @@ public enum AppHttpCodeEnum {
     EXPORT_FAILED(511, "导出失败"),
     SELF_PARENT_ERROR(512, "父菜单不能是自己"),
     HAS_CHILD_DELETE_FAILED(513, "存在子菜单不允许删除"),
-    USER_NOT_EXIST(514, "用户不存在");
+    USER_NOT_EXIST(514, "用户不存在"),
+    CATEGORY_EXIST_ARTICLE(515, "存在文章不允许删除");
 
     final int code;
     final String msg;

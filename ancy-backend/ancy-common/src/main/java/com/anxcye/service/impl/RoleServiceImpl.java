@@ -8,6 +8,7 @@ import com.anxcye.domain.vo.RoleVo;
 import com.anxcye.mapper.RoleMapper;
 import com.anxcye.service.RoleMenuService;
 import com.anxcye.service.RoleService;
+import com.anxcye.service.UserRoleService;
 import com.anxcye.utils.BeanCopyUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -31,6 +32,9 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role>
     @Autowired
     private RoleMenuService roleMenuService;
 
+    @Autowired
+    private UserRoleService userRoleService;
+
     @Override
     public List<String> getRoleByUserId(Long userId) {
         return getBaseMapper().getRolesByUserId(userId).stream()
@@ -44,7 +48,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role>
 
         wrapper.like(StringUtils.hasText(roleListDto.getName()), Role::getRoleName, roleListDto.getName());
         wrapper.eq(StringUtils.hasText(roleListDto.getStatus()), Role::getStatus, roleListDto.getStatus());
-        wrapper.orderByAsc(Role::getRoleSort);
+//        wrapper.orderByAsc(Role::getRoleSort);
 
         Page<Role> page = new Page<>(roleListDto.getPageNum(), roleListDto.getPageSize());
         page(page, wrapper);
@@ -68,13 +72,17 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role>
         Role role = BeanCopyUtils.copyBean(roleDto, Role.class);
         role.setId(id);
         updateById(role);
-        roleMenuService.updateByRoleId(id, roleDto.getMenuIds());
+        if (roleDto.getMenuIds() != null) {
+            roleMenuService.updateByRoleId(id, roleDto.getMenuIds());
+        }
         return true;
     }
 
     @Override
     public boolean deleteRole(Long id) {
         removeById(id);
+        roleMenuService.deleteByRoleId(id);
+        userRoleService.deleteByRoleId(id);
         return true;
     }
 
@@ -84,6 +92,13 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role>
         RoleVo roleVo = BeanCopyUtils.copyBean(role, RoleVo.class);
         roleVo.setMenuIds(roleMenuService.getMenuIdsByRoleId(id));
         return roleVo;
+    }
+
+    @Override
+    public List<RoleVo> getList() {
+        LambdaQueryWrapper<Role> wrapper = new LambdaQueryWrapper<>();
+        List<Role> roleList = list(wrapper);
+        return BeanCopyUtils.copyList(roleList, RoleVo.class);
     }
 }
 

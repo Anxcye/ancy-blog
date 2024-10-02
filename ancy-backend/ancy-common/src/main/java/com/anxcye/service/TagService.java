@@ -18,7 +18,7 @@ public interface TagService extends IService<Tag> {
 
     PageResult pageList(TagListDto tagListDto);
 
-    boolean addTag(TagDto tagDto);
+    Long addTag(TagDto tagDto);
 
     boolean deleteTag(Long id);
 

@@ -7,11 +7,13 @@ import com.anxcye.domain.entity.Tag;
 import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.vo.TagVo;
 import com.anxcye.mapper.TagMapper;
+import com.anxcye.service.ArticleTagService;
 import com.anxcye.service.TagService;
 import com.anxcye.utils.BeanCopyUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -24,6 +26,9 @@ import java.util.List;
 @Service
 public class TagServiceImpl extends ServiceImpl<TagMapper, Tag>
         implements TagService {
+
+    @Autowired
+    ArticleTagService articleTagService;
 
     @Override
     public PageResult pageList(TagListDto tagListDto) {
@@ -40,15 +45,16 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag>
     }
 
     @Override
-    public boolean addTag(TagDto tagDto) {
+    public Long addTag(TagDto tagDto) {
         Tag tag = BeanCopyUtils.copyBean(tagDto, Tag.class);
         save(tag);
-        return true;
+        return tag.getId();
     }
 
     @Override
     public boolean deleteTag(Long id) {
         removeById(id);
+        articleTagService.deleteByTagId(id);
         return true;
     }
 

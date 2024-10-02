@@ -53,10 +53,10 @@ export interface MenuListRes extends ApiResponse {
   data: MenuListData[]
 }
 export interface MenuPageParams {
-  name: string
-  status: string
-  pageNum: number
-  pageSize: number
+  name?: string
+  status?: string
+  pageNum?: number
+  pageSize?: number
 }
 
 export interface MenuPageRes {

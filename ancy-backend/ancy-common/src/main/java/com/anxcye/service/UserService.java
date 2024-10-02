@@ -27,11 +27,11 @@ public interface UserService extends IService<User> {
 
     RouterVo getRouters();
 
-    void adminLogout();
+    boolean adminLogout();
 
     PageResult getPage(UserListDto userListDto);
 
-    boolean addAdmin(AdminUserDto adminUserDto);
+    Long addAdmin(AdminUserDto adminUserDto);
 
     UserVo getAdminById(Long id);
 
