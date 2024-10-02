@@ -11,6 +11,7 @@ import com.anxcye.domain.vo.UserVo;
 import com.anxcye.service.UserService;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -36,26 +37,31 @@ public class UserController {
         return ResponseResult.success(userService.adminLogout());
     }
 
+    @PreAuthorize("@ps.hasPermission('system:user:list')")
     @GetMapping("/page")
     public ResponseResult<PageResult> userPage(@ParameterObject UserListDto userListDto) {
         return ResponseResult.success(userService.getPage(userListDto));
     }
 
+    @PreAuthorize("@ps.hasPermission('system:user:query')")
     @GetMapping("/{id}")
     public ResponseResult<UserVo> userGetById(@PathVariable Long id) {
         return ResponseResult.success(userService.getAdminById(id));
     }
 
+    @PreAuthorize("@ps.hasPermission('system:user:add')")
     @PostMapping
     public ResponseResult<Long> userAdd(@RequestBody AdminUserDto adminUserDto) {
         return ResponseResult.success(userService.addAdmin(adminUserDto));
     }
 
+    @PreAuthorize("@ps.hasPermission('system:user:edit')")
     @PutMapping("/{id}")
     public ResponseResult<Boolean> userUpdate(@PathVariable Long id, @RequestBody AdminUserDto adminUserDto) {
         return ResponseResult.success(userService.updateAdmin(id, adminUserDto));
     }
 
+    @PreAuthorize("@ps.hasPermission('system:user:remove')")
     @DeleteMapping("/{id}")
     public ResponseResult<Boolean> userDelete(@PathVariable Long id) {
         return ResponseResult.success(userService.deleteUser(id));
