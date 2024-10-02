@@ -1,25 +1,17 @@
 <template>
   <div class="app-container">
     <el-form ref="queryForm" :model="queryParams" size="small" class="query-form">
-      <el-row :gutter="10">
-        <el-col :span="6">
-          <el-input
-            v-model="queryParams.name"
-            placeholder="请输入菜单名称"
-            clearable
-            @keyup.enter="getMenuPage()"
-          />
-        </el-col>
-        <el-col :span="6">
-          <el-select v-model="queryParams.status" placeholder="菜单状态" clearable size="small">
-            <el-option key="0" label="正常" value="0" />
-            <el-option key="1" label="停用" value="1" />
-          </el-select>
-        </el-col>
-        <el-col :span="6">
-          <el-button type="primary" :icon="Search" @click="getMenuPage()">搜索</el-button>
-        </el-col>
-      </el-row>
+      <el-input
+        v-model="queryParams.name"
+        placeholder="请输入菜单名称"
+        clearable
+        @keyup.enter="getMenuPage()"
+      />
+      <el-select v-model="queryParams.status" placeholder="菜单状态" clearable size="small">
+        <el-option key="0" label="正常" value="0" />
+        <el-option key="1" label="停用" value="1" />
+      </el-select>
+      <el-button type="primary" :icon="Search" @click="getMenuPage()">搜索</el-button>
     </el-form>
 
     <el-row :gutter="10">
@@ -50,6 +42,13 @@
         </template>
       </el-table-column>
       <el-table-column prop="orderNum" label="排序" align="center" width="60" />
+      <el-table-column prop="menuType" label="类型" align="center" width="60">
+        <template v-slot="scope">
+          <span v-if="scope.row.menuType === 'M'">目录</span>
+          <span v-if="scope.row.menuType === 'C'">菜单</span>
+          <span v-if="scope.row.menuType === 'F'">按钮</span>
+        </template>
+      </el-table-column>
       <el-table-column
         prop="perms"
         label="权限标识"
@@ -64,9 +63,15 @@
         width="160"
         align="center"
       />
-      <el-table-column prop="status" label="状态" width="80" align="center">
+      <el-table-column prop="status" label="启用" width="80" align="center">
         <template v-slot="scope">
-          <el-switch v-model="scope.row.status" active-value="0" inactive-value="1" />
+          <el-switch
+            v-model="scope.row.status"
+            active-value="0"
+            inactive-value="1"
+            :loading="statusLoading"
+            @change="handleStatusChange(scope.row)"
+          />
         </template>
       </el-table-column>
       <el-table-column label="创建时间" align="center" prop="createTime" width="100">
@@ -79,7 +84,13 @@
           <el-button size="small" type="text" :icon="Edit" @click="handleUpdate(scope.row)">
             修改
           </el-button>
-          <el-button size="small" type="text" :icon="Plus" @click="handleAdd(scope.row)">
+          <el-button
+            size="small"
+            type="text"
+            :icon="Plus"
+            @click="handleAdd(scope.row)"
+            :disabled="scope.row.menuType === 'F'"
+          >
             新增
           </el-button>
           <el-button size="small" type="text" :icon="Delete" @click="handleDelete(scope.row)">
@@ -250,10 +261,12 @@ import { onMounted, ref, watch } from 'vue'
 import { Search, Plus, Delete, Edit } from '@element-plus/icons-vue'
 import * as ElementPlusIconsVue from '@element-plus/icons-vue'
 import type { FormRules } from 'element-plus'
+import { toggleStatus } from '@/utils/toggleStatus'
 
 const queryParams = ref<MenuPageParams>({})
 const menuList = ref<MenuListData[]>([])
 const loading = ref<boolean>(false)
+const statusLoading = ref<boolean>(false)
 const open = ref<boolean>(false)
 const title = ref<string>('')
 const menu = ref<MenuAddParams>({})
@@ -297,6 +310,17 @@ const getMenuPage = async (page: number = 1) => {
   const res = await reqMenuList(queryParams.value)
   menuList.value = res.data
   loading.value = false
+}
+
+const handleStatusChange = async (row: MenuListData) => {
+  statusLoading.value = true
+  try {
+    await reqMenuUpdate(row.id, { status: row.status })
+  } catch {
+    toggleStatus(row)
+  } finally {
+    statusLoading.value = false
+  }
 }
 
 const getMenuOptions = async () => {

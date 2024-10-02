@@ -1,19 +1,11 @@
 <template>
-  <div class="container">
-    <el-form
-      ref="queryForm"
-      :model="queryParams"
-      :inline="true"
-      label-width="68px"
-      class="search-form"
-    >
+  <div class="app-container">
+    <el-form ref="queryForm" :model="queryParams" class="query-form" size="small">
       <el-form-item prop="title">
         <el-input
           v-model="queryParams.title"
           placeholder="标题"
           clearable
-          size="small"
-          style="max-width: 200px"
           @keyup.enter="getArticlePage()"
         />
       </el-form-item>
@@ -22,19 +14,15 @@
           v-model="queryParams.summary"
           placeholder="摘要"
           clearable
-          size="small"
-          style="max-width: 200px"
           @keyup.enter="getArticlePage()"
         />
       </el-form-item>
       <el-form-item>
-        <el-button type="primary" :icon="Search" size="small" @click="getArticlePage()">
-          搜索
-        </el-button>
+        <el-button type="primary" :icon="Search" @click="getArticlePage()">搜索</el-button>
       </el-form-item>
     </el-form>
 
-    <el-row :gutter="10">
+    <el-row>
       <el-button type="primary" plain :icon="Plus" @click="handleAdd">新增</el-button>
     </el-row>
 
@@ -57,7 +45,7 @@
             v-model="scope.row.isTop"
             active-value="1"
             inactive-value="0"
-            :loading="loading"
+            :loading="statusLoading"
             @change="handleStatusChange(scope.row)"
           />
         </template>
@@ -68,20 +56,14 @@
             v-model="scope.row.status"
             active-value="0"
             inactive-value="1"
-            :loading="loading"
+            :loading="statusLoading"
             @change="handleStatusChange(scope.row)"
           />
         </template>
       </el-table-column>
       <el-table-column prop="createTime" label="创建时间" align="center" />
       <el-table-column prop="updateTime" label="更新时间" align="center" />
-      <el-table-column
-        label="操作"
-        align="center"
-        width="170px"
-        class-name="small-padding fixed-width"
-        fixed="right"
-      >
+      <el-table-column label="操作" align="center" width="170px" fixed="right">
         <template v-slot="scope">
           <el-button size="small" type="text" :icon="Edit" @click="handleUpdate(scope.row)">
             修改
@@ -113,13 +95,13 @@ import router from '@/router'
 
 const queryParams = ref<ArticlePageParams>({
   pageNum: 1,
-  pageSize: 5,
+  pageSize: 10,
   title: '',
   summary: '',
 })
 const articleList = ref<ArticlePageData[]>([])
 const total = ref(0)
-const loading = ref(false)
+const statusLoading = ref(false)
 
 const getArticlePage = async (page: number = 1) => {
   queryParams.value.pageNum = page
@@ -168,15 +150,15 @@ const handleUpdate = (a: ArticlePageData) => {
 }
 
 const handleStatusChange = async (article: ArticlePageData) => {
-  loading.value = true
-  await reqArticleUpdate(article.id, { status: article.status, isTop: article.isTop })
-  await getArticlePage(queryParams.value.pageNum)
-  loading.value = false
+  statusLoading.value = true
+  try {
+    await reqArticleUpdate(article.id, { status: article.status, isTop: article.isTop })
+  } catch {
+    getArticlePage(queryParams.value.pageNum)
+  } finally {
+    statusLoading.value = false
+  }
 }
 </script>
 
-<style scoped lang="scss">
-.container {
-  width: 100%;
-}
-</style>
+<style scoped lang="scss"></style>

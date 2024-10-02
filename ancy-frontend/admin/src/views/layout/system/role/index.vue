@@ -1,26 +1,17 @@
 <template>
   <div class="app-container">
-    <el-form ref="queryForm" :model="queryParams" size="small" style="margin-bottom: 10px">
-      <el-row :gutter="10">
-        <el-col :span="10">
-          <el-input
-            v-model="queryParams.name"
-            placeholder="角色名称"
-            clearable
-            @keyup.enter="getRolePage()"
-          />
-        </el-col>
-
-        <el-col :span="10">
-          <el-select v-model="queryParams.status" placeholder="角色状态" clearable>
-            <el-option key="0" label="正常" value="0" />
-            <el-option key="1" label="停用" value="1" />
-          </el-select>
-        </el-col>
-        <el-col :span="4">
-          <el-button type="primary" :icon="Search" @click="getRolePage()">搜索</el-button>
-        </el-col>
-      </el-row>
+    <el-form ref="queryForm" :model="queryParams" size="small" class="query-form">
+      <el-input
+        v-model="queryParams.name"
+        placeholder="角色名称"
+        clearable
+        @keyup.enter="getRolePage()"
+      />
+      <el-select v-model="queryParams.status" placeholder="角色状态" clearable>
+        <el-option key="0" label="正常" value="0" />
+        <el-option key="1" label="停用" value="1" />
+      </el-select>
+      <el-button type="primary" :icon="Search" @click="getRolePage()">搜索</el-button>
     </el-form>
 
     <el-row :gutter="10">
@@ -139,6 +130,7 @@ import { Plus, Edit, Delete, Search, QuestionFilled } from '@element-plus/icons-
 import type { FormRules } from 'element-plus'
 import type { MenuListData } from '@/api/system/menu/type'
 import { reqMenuTree, reqMenuListByRoleId } from '@/api/system/menu'
+import { toggleStatus } from '@/utils/toggleStatus'
 const statusLoading = ref<boolean>(false)
 
 const queryParams = ref<RolePageParams>({
@@ -181,8 +173,13 @@ const handleAdd = () => {
 }
 const handleStatusChange = async (row: RoleListData) => {
   statusLoading.value = true
-  await reqRoleUpdate(row.id, { status: row.status })
-  statusLoading.value = false
+  try {
+    await reqRoleUpdate(row.id, { status: row.status })
+  } catch {
+    toggleStatus(row)
+  } finally {
+    statusLoading.value = false
+  }
 }
 
 const handleUpdate = async (row: RoleListData) => {

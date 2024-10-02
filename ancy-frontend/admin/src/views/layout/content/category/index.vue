@@ -1,27 +1,17 @@
 <template>
-  <div class="container">
-    <el-form ref="queryForm" :model="queryParams" size="small" style="margin-bottom: 10px">
-      <el-row :gutter="10">
-        <el-col :span="8">
-          <el-input
-            v-model="queryParams.name"
-            placeholder="分类名"
-            clearable
-            @keyup.enter="getCategoryList()"
-          />
-        </el-col>
-        <el-col :span="8">
-          <el-select v-model="queryParams.status" placeholder="状态" clearable>
-            <el-option key="0" label="正常" value="0" />
-            <el-option key="1" label="禁用" value="1" />
-          </el-select>
-        </el-col>
-        <el-col :span="8">
-          <el-button type="primary" :icon="Search" size="small" @click="getCategoryList()">
-            搜索
-          </el-button>
-        </el-col>
-      </el-row>
+  <div class="app-container">
+    <el-form ref="queryForm" :model="queryParams" class="query-form" size="small">
+      <el-input
+        v-model="queryParams.name"
+        placeholder="分类名"
+        clearable
+        @keyup.enter="getCategoryList()"
+      />
+      <el-select v-model="queryParams.status" placeholder="状态" clearable>
+        <el-option key="0" label="正常" value="0" />
+        <el-option key="1" label="禁用" value="1" />
+      </el-select>
+      <el-button type="primary" :icon="Search" @click="getCategoryList()">搜索</el-button>
     </el-form>
 
     <el-row :gutter="10">
@@ -34,7 +24,6 @@
           type="warning"
           plain
           :icon="Download"
-          size="mini"
           :loading="exportLoading"
           @click="handleExport"
         >
@@ -54,10 +43,10 @@
         fixed="right"
       >
         <template v-slot="scope">
-          <el-button size="mini" type="text" :icon="Edit" @click="handleUpdate(scope.row)">
+          <el-button type="text" :icon="Edit" @click="handleUpdate(scope.row)" size="small">
             修改
           </el-button>
-          <el-button size="mini" type="text" :icon="Delete" @click="handleDelete(scope.row)">
+          <el-button type="text" :icon="Delete" @click="handleDelete(scope.row)" size="small">
             删除
           </el-button>
         </template>
@@ -75,8 +64,8 @@
     />
 
     <!-- 添加或修改分类对话框 -->
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
-      <el-form ref="form" :model="category" :rules="rules" label-width="80px">
+    <el-dialog :title="title" v-model="open" class="dialog-form">
+      <el-form ref="form" :model="category" :rules="rules" label-width="auto" label-position="top">
         <el-form-item label="分类名" prop="name">
           <el-input v-model="category.name" placeholder="请输入分类名" />
         </el-form-item>
@@ -87,8 +76,8 @@
 
       <template v-slot:footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleSubmit">确 定</el-button>
           <el-button @click="handleCancel">取 消</el-button>
+          <el-button type="primary" @click="handleSubmit">确 定</el-button>
         </div>
       </template>
     </el-dialog>

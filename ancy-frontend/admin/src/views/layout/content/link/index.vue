@@ -1,26 +1,18 @@
 <template>
   <div class="app-container">
-    <el-form ref="queryForm" :model="queryParams" :inline="true" size="small">
-      <el-row :gutter="10" style="margin-bottom: 10px">
-        <el-col :span="10">
-          <el-input
-            v-model="queryParams.name"
-            placeholder="名称"
-            clearable
-            @keyup.enter="getLinkPage()"
-          />
-        </el-col>
+    <el-form ref="queryForm" :model="queryParams" class="query-form" size="small">
+      <el-input
+        v-model="queryParams.name"
+        placeholder="名称"
+        clearable
+        @keyup.enter="getLinkPage()"
+      />
 
-        <el-col :span="6">
-          <el-select v-model="queryParams.status" placeholder="公开?" clearable>
-            <el-option :key="'0'" label="公开" :value="'0'" />
-            <el-option :key="'1'" label="隐藏" :value="'1'" />
-          </el-select>
-        </el-col>
-        <el-col :span="6">
-          <el-button type="primary" :icon="Search" @click="getLinkPage()">搜索</el-button>
-        </el-col>
-      </el-row>
+      <el-select v-model="queryParams.status" placeholder="公开?" clearable>
+        <el-option :key="'0'" label="公开" :value="'0'" />
+        <el-option :key="'1'" label="隐藏" :value="'1'" />
+      </el-select>
+      <el-button type="primary" :icon="Search" @click="getLinkPage()">搜索</el-button>
     </el-form>
 
     <el-row :gutter="10">
@@ -35,7 +27,7 @@
       <el-table-column label="描述" align="center" prop="description" />
       <el-table-column label="logo" align="center" width="100" prop="logo" type="img">
         <template v-slot="scope">
-          <el-image style="width: 100px; height: 100px" :src="scope.row.logo" fit="fill" />
+          <el-image style="width: 88px" :src="scope.row.logo" fit="cover" />
         </template>
       </el-table-column>
       <el-table-column prop="address" label="地址" align="center">
@@ -56,10 +48,14 @@
           />
         </template>
       </el-table-column>
-      <el-table-column label="操作" align="center" fixed="right">
+      <el-table-column label="操作" align="center" fixed="right" width="170">
         <template v-slot="scope">
-          <el-button type="text" :icon="Edit" @click="handleUpdate(scope.row)">修改</el-button>
-          <el-button type="text" :icon="Delete" @click="handleDelete(scope.row)">删除</el-button>
+          <el-button type="text" :icon="Edit" @click="handleUpdate(scope.row)" size="small">
+            修改
+          </el-button>
+          <el-button type="text" :icon="Delete" @click="handleDelete(scope.row)" size="small">
+            删除
+          </el-button>
         </template>
       </el-table-column>
     </el-table>
@@ -74,8 +70,8 @@
       @size-change="getLinkPage()"
     />
 
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
-      <el-form ref="form" :rules="rules" label-width="80px">
+    <el-dialog :title="title" v-model="open" class="dialog-form">
+      <el-form ref="form" :rules="rules" label-width="auto" label-position="top">
         <el-form-item label="名称" prop="name">
           <el-input v-model="link.name" placeholder="请输入名称" />
         </el-form-item>
@@ -94,8 +90,8 @@
       </el-form>
       <template v-slot:footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleSubmit">确 定</el-button>
           <el-button @click="handleCancel">取 消</el-button>
+          <el-button type="primary" @click="handleSubmit">确 定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -108,6 +104,7 @@ import type { LinkAddParams, LinkListData, LinkPageParams } from '@/api/content/
 import { onMounted, ref } from 'vue'
 import { Search, Plus, Delete, Edit } from '@element-plus/icons-vue'
 import type { FormRules } from 'element-plus'
+import { toggleStatus } from '@/utils/toggleStatus'
 
 const queryParams = ref<LinkPageParams>({
   pageNum: 1,
@@ -155,8 +152,13 @@ const handleDelete = (row: LinkListData) => {
 
 const handleChangeStatus = async (row: LinkListData) => {
   statusLoading.value = true
-  await reqLinkUpdate(row.id, { status: row.status })
-  statusLoading.value = false
+  try {
+    await reqLinkUpdate(row.id, { status: row.status })
+  } catch {
+    toggleStatus(row)
+  } finally {
+    statusLoading.value = false
+  }
 }
 
 const handleSubmit = async () => {

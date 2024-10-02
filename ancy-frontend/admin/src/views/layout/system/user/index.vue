@@ -1,25 +1,17 @@
 <template>
   <div class="app-container">
-    <el-form ref="queryForm" :model="queryParams" :inline="true" size="small">
-      <el-row :gutter="20" style="margin-bottom: 10px">
-        <el-col :span="8">
-          <el-input
-            v-model="queryParams.userName"
-            placeholder="用户名"
-            clearable
-            @keyup.enter="getUserList()"
-          />
-        </el-col>
-        <el-col :span="8">
-          <el-select v-model="queryParams.status" placeholder="状态" clearable>
-            <el-option key="0" label="正常" value="0" />
-            <el-option key="1" label="停用" value="1" />
-          </el-select>
-        </el-col>
-        <el-col :span="2">
-          <el-button type="primary" :icon="Search" @click="getUserList()">搜索</el-button>
-        </el-col>
-      </el-row>
+    <el-form ref="queryForm" :model="queryParams" class="query-form" size="small">
+      <el-input
+        v-model="queryParams.userName"
+        placeholder="用户名"
+        clearable
+        @keyup.enter="getUserList()"
+      />
+      <el-select v-model="queryParams.status" placeholder="状态" clearable>
+        <el-option key="0" label="正常" value="0" />
+        <el-option key="1" label="停用" value="1" />
+      </el-select>
+      <el-button type="primary" :icon="Search" @click="getUserList()">搜索</el-button>
     </el-form>
 
     <el-row :gutter="10">
@@ -50,9 +42,8 @@
           />
         </template>
       </el-table-column>
-      <el-table-column prop="createTime" label="创建时间" align="center" />
-      <el-table-column prop="updateTime" label="更新时间" align="center" />
-
+      <el-table-column prop="createTime" label="创建时间" align="center" width="120" />
+      <el-table-column prop="updateTime" label="更新时间" align="center" width="120" />
       <el-table-column label="操作" align="center" fixed="right" width="170">
         <template v-slot="scope">
           <el-button type="text" :icon="Edit" @click="handleUpdate(scope.row)" size="small">
@@ -122,8 +113,8 @@
       </el-form>
       <template v-slot:footer>
         <div class="dialog-footer">
-          <el-button type="primary" @click="handleSubmit">确 定</el-button>
           <el-button @click="handleCancel">取 消</el-button>
+          <el-button type="primary" @click="handleSubmit">确 定</el-button>
         </div>
       </template>
     </el-dialog>
@@ -138,6 +129,7 @@ import { Plus, Edit, Delete, Search } from '@element-plus/icons-vue'
 import type { FormRules } from 'element-plus'
 import { reqRoleList } from '@/api/system/role'
 import type { RoleListData } from '@/api/system/role/type'
+import { toggleStatus } from '@/utils/toggleStatus'
 
 const queryParams = ref<UserPageParams>({
   pageNum: 1,
@@ -176,8 +168,13 @@ const handleAdd = () => {
 
 const handleStatusChange = async (row: UserListData) => {
   statusLoading.value = true
-  await reqUserUpdate(row.id, { status: row.status })
-  statusLoading.value = false
+  try {
+    await reqUserUpdate(row.id, { status: row.status })
+  } catch {
+    toggleStatus(row)
+  } finally {
+    statusLoading.value = false
+  }
 }
 
 const handleUpdate = (row: UserListData) => {

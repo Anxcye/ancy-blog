@@ -1,19 +1,13 @@
 <template>
   <div class="app-container">
-    <el-form ref="queryForm" :model="queryParams" :inline="true" size="small">
-      <el-row :gutter="10">
-        <el-col :span="10">
-          <el-input
-            v-model="queryParams.name"
-            placeholder="标签名"
-            clearable
-            @keyup.enter="getTagList()"
-          />
-        </el-col>
-        <el-form-item>
-          <el-button type="primary" :icon="Search" @click="getTagList()">搜索</el-button>
-        </el-form-item>
-      </el-row>
+    <el-form ref="queryForm" :model="queryParams" class="query-form" size="small">
+      <el-input
+        v-model="queryParams.name"
+        placeholder="标签名"
+        clearable
+        @keyup.enter="getTagList()"
+      />
+      <el-button type="primary" :icon="Search" @click="getTagList()">搜索</el-button>
     </el-form>
 
     <el-row :gutter="10">
@@ -28,10 +22,10 @@
       <el-table-column label="备注" align="center" prop="remark" />
       <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
         <template v-slot="scope">
-          <el-button size="mini" type="text" :icon="Edit" @click="handleUpdate(scope.row)">
+          <el-button size="small" type="text" :icon="Edit" @click="handleUpdate(scope.row)">
             修改
           </el-button>
-          <el-button size="mini" type="text" :icon="Delete" @click="handleDelete(scope.row)">
+          <el-button size="small" type="text" :icon="Delete" @click="handleDelete(scope.row)">
             删除
           </el-button>
         </template>
@@ -49,12 +43,12 @@
     />
 
     <!-- 添加或修改分类对话框 -->
-    <el-dialog :title="title" v-model="open" width="500px" append-to-body>
-      <el-form ref="form" :model="tag" :rules="rules">
-        <el-form-item prop="name">
+    <el-dialog :title="title" v-model="open" class="dialog-form">
+      <el-form ref="form" :model="tag" :rules="rules" label-width="auto" label-position="top">
+        <el-form-item prop="name" label="标签名">
           <el-input v-model="tag.name" placeholder="标签名" />
         </el-form-item>
-        <el-form-item prop="remark">
+        <el-form-item prop="remark" label="备注">
           <el-input v-model="tag.remark" type="textarea" placeholder="备注" />
         </el-form-item>
       </el-form>
