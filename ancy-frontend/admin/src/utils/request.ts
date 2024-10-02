@@ -1,3 +1,4 @@
+import router from '@/router'
 import { useUserStore } from '@/stores/modules/user'
 import axios from 'axios'
 
@@ -54,6 +55,11 @@ request.interceptors.response.use(
   function (error) {
     // 超出 2xx 范围的状态码都会触发该函数。
     // 对响应错误做点什么
+    if (error.response.data.code === 510) {
+      router.push('/login')
+      ElMessage.error('登录过期，请重新登录')
+      return Promise.reject(error)
+    }
     const msg = error.response.data.msg
     ElMessage.error(msg)
     return Promise.reject(error)

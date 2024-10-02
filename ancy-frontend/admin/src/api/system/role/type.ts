@@ -2,6 +2,7 @@ import type { ApiResponse } from '@/api/type'
 
 // role add
 export interface RoleAddParams {
+  id?: number
   roleName?: string
   roleKey?: string
   roleSort?: number
@@ -60,8 +61,8 @@ export interface RoleListRes extends ApiResponse {
 }
 
 export interface RolePageParams {
-  name: string
-  status: string
+  name?: string
+  status?: string
   pageNum: number
   pageSize: number
 }

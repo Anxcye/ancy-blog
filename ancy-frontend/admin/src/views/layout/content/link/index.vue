@@ -149,7 +149,7 @@ const handleDelete = (row: LinkListData) => {
     cancelButtonText: '取消',
   }).then(async () => {
     await reqLinkDelete(row.id)
-    await getLinkPage()
+    await getLinkPage(queryParams.value.pageNum)
   })
 }
 
