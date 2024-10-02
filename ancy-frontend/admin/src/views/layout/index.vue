@@ -32,7 +32,7 @@
                   @click="handleTabClick(tag)"
                   @close="removeTab(tag)"
                 >
-                  {{ tag.meta.title }}
+                  {{ tag.meta.title || 'Welcome' }}
                 </el-tag>
               </div>
               <div class="function">

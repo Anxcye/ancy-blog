@@ -15,10 +15,10 @@ router.beforeEach(async (to, from, next) => {
 
   const go = (param?: any) => {
     NProgress.start()
-    if (to.path !== '/ancy') {
+    if (to.path !== '/') {
       tabStore.addHistoryTab(to.path)
-      tabStore.currentTab = to.path
     }
+    tabStore.currentTab = to.path
     next(param)
   }
 

@@ -21,8 +21,8 @@ export const useTabStore: StoreDefinition = defineStore('tab', () => {
   const removeHistoryTab = (tab: string) => {
     historyTabs.value = historyTabs.value.filter((item) => item.path !== tab)
     if (historyTabs.value.length === 0) {
-      router.push('/ancy')
-      currentTab.value = '/ancy'
+      router.push('/')
+      currentTab.value = '/'
     }
 
     if (currentTab.value === tab) {

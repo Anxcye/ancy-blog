@@ -3,7 +3,7 @@
     <router-view v-slot="{ Component }">
       <transition name="fade">
         <keep-alive v-if="refresh">
-          <component :is="Component" v-if="refresh" :key="tabStore.currentTab?.path" />
+          <component :is="Component || AncyLogo" v-if="refresh" :key="tabStore.currentTab?.path" />
         </keep-alive>
       </transition>
     </router-view>
@@ -14,6 +14,7 @@
 import { nextTick, ref, watch } from 'vue'
 import { useLayoutStore } from '@/stores/modules/layout'
 import { useTabStore } from '@/stores/modules/tab'
+import AncyLogo from './AncyLogo.vue'
 
 const layoutStore = useLayoutStore()
 const tabStore = useTabStore()
