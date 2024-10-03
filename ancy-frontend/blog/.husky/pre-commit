@@ -1,0 +1,2 @@
+cd ancy-frontend/blog && pnpm run format
+git add .
