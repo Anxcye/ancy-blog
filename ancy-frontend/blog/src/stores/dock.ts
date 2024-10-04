@@ -1,28 +1,30 @@
 import { HomeOutlined } from '@ant-design/icons-vue'
 import { defineStore } from 'pinia'
-import { h } from 'vue'
+import { h, ref } from 'vue'
 
 export const useDockStore = defineStore('dock', () => {
   const items = [
     {
-      key: 'home1',
-      label: '首页1',
+      key: 'home',
+      label: '首页',
       icon: h(HomeOutlined),
       path: '/',
     },
     {
-      key: 'home2',
-      label: '首页2',
+      key: 'article',
+      label: '文章',
       icon: h(HomeOutlined),
-      path: '/article/3',
+      path: '/article',
     },
     {
-      key: 'home3',
-      label: '首页3',
+      key: 'timeline',
+      label: '回溯',
       icon: h(HomeOutlined),
-      path: '/article/5',
+      path: '/timeline',
     },
   ]
+
+  const homeArticles = ref([])
 
   return {
     items,

@@ -5,13 +5,21 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      component: () => import('../views/layout/index.vue'),
+      component: () => import('@/views/home/index.vue'),
+    },
+    {
+      path: '/article',
+      component: () => import('@/views/article/ArticleList.vue'),
       children: [
         {
           path: '/article/:id',
-          component: () => import('../views/ArticleDetail/index.vue'),
+          component: () => import('@/views/article/ArticleDetail.vue'),
         },
       ],
+    },
+    {
+      path: '/timeline',
+      component: () => import('@/views/timeline/index.vue'),
     },
   ],
 })

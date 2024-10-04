@@ -11,6 +11,8 @@ declare module 'vue' {
     AButton: typeof import('ant-design-vue/es')['Button']
     AMenu: typeof import('ant-design-vue/es')['Menu']
     ASwitch: typeof import('ant-design-vue/es')['Switch']
+    DockBar: typeof import('./src/components/DockBar.vue')['default']
+    PageHeader: typeof import('./src/components/PageHeader.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
   }

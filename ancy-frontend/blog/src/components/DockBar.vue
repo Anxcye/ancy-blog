@@ -1,31 +1,23 @@
 <template>
   <div class="dock-bar">
     <div class="dock-bar-item" v-for="item in items" :key="item.key">
-      <!-- <a-button :icon="item.icon" :href="item.path" :class="setClass(item.key)">
-        {{ item.label }}
-      </a-button> -->
-      <router-link
-        :to="item.path"
-        exact-active-class="btn-active"
-        :class="{ 'btn-inactive': router.currentRoute.value.path !== item.path }"
-      >
-        {{ item.label }}
+      <router-link :to="item.path" custom v-slot="{ isActive, navigate }">
+        <div
+          @click="navigate"
+          :class="['flex items-center justify-center gap-1', isActive ? 'bg-blue-500' : '']"
+        >
+          <icon :component="item.icon" />
+          {{ item.label }}
+        </div>
       </router-link>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
-import router from '@/router'
 import { useDockStore } from '@/stores/dock'
-
-const currentKey = ref('home1')
 const items = useDockStore().items
-
-const setClass = (key: string) => {
-  return currentKey.value === key ? 'btn-active' : 'btn-inactive'
-}
+import Icon from '@ant-design/icons-vue'
 </script>
 
 <style scoped lang="scss">
