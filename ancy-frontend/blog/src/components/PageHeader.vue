@@ -10,7 +10,7 @@
     <div class="theme">
       <a-button shape="circle" @click="toggleTheme">
         <template #icon>
-          <img :src="themeIcon" alt="theme" style="width: 24px; height: 24px" />
+          <img :src="themeIcon" alt="theme" class="w-6 h-6 mx-auto" />
         </template>
       </a-button>
     </div>

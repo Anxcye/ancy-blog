@@ -9,7 +9,9 @@ declare module 'vue' {
   export interface GlobalComponents {
     AAvatar: typeof import('ant-design-vue/es')['Avatar']
     AButton: typeof import('ant-design-vue/es')['Button']
+    ADropdown: typeof import('ant-design-vue/es')['Dropdown']
     AMenu: typeof import('ant-design-vue/es')['Menu']
+    AMenuItem: typeof import('ant-design-vue/es')['MenuItem']
     ASwitch: typeof import('ant-design-vue/es')['Switch']
     DockBar: typeof import('./src/components/DockBar.vue')['default']
     PageHeader: typeof import('./src/components/PageHeader.vue')['default']
