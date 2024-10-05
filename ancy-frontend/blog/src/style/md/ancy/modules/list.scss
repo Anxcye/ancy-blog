@@ -1,0 +1,8 @@
+.#{$theme-name} {
+  ol,
+  ul {
+    li + li {
+      margin-top: 0.25em;
+    }
+  }
+}

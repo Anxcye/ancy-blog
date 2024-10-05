@@ -7,7 +7,7 @@
       <div class="flex flex-col items-center md:items-start md:mt-10">
         <div class="text-4xl font-bold">{{ greeting }}</div>
         <div class="text-2xl mt-2">{{ role }}</div>
-        <div class="text-xl font-thin mt-4">{{ philosophy }}</div>
+        <div class="text-xl font-thin mt-4 text-gray-500">{{ philosophy }}</div>
         <div class="flex flex-row gap-2 mt-2 md:mt-7">
           <div v-for="item in badge" :key="item.index">
             <a-tooltip color="white">

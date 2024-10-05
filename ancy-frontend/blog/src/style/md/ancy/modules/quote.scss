@@ -1,0 +1,20 @@
+@mixin quote-vars($isDark) {
+  div.#{$theme-name} {
+    --md-theme-quote-color: #{if($isDark, #8b949e, #57606a)};
+    --md-theme-quote-border: 0.25em solid #{if($isDark, #444c56, #d0d7de)};
+  }
+}
+
+.#{$prefix} {
+  @include quote-vars(false);
+}
+
+.#{$prefix}-dark {
+  @include quote-vars(true);
+}
+
+div.#{$theme-name} {
+  blockquote {
+    padding: 0 1em;
+  }
+}

@@ -30,7 +30,7 @@ export interface ArticlePageRes
 export interface ArticlePageParams {
   pageNum: number
   pageSize: number
-  categoryId: number
+  categoryId?: number
 }
 
 export interface ArticleDetailData {

@@ -2,6 +2,8 @@
 @import 'tailwindcss/components';
 @import 'tailwindcss/utilities';
 
+@import './md/ancy/index.scss';
+
 .ant-dropdown-menu-item-active {
   color: var(--primary-color) !important;
 }

@@ -1,0 +1,34 @@
+@mixin table-vars($isDark) {
+  div.#{$theme-name} {
+    // 斑马条纹
+    --md-theme-table-stripe-color: #{if($isDark, #161b22, #f7f8fa)};
+
+    --md-theme-table-tr-bg-color: #{if($isDark, transparent, #fff)};
+    --md-theme-table-td-border-color: #{if($isDark, #30363d, #d0d7de)};
+  }
+}
+
+.#{$prefix} {
+  @include table-vars(false);
+}
+
+.#{$prefix}-dark {
+  @include table-vars(true);
+}
+
+div.#{$theme-name} {
+  table {
+    display: block;
+    max-width: 100%;
+    overflow: auto;
+    border-spacing: 0;
+    border-collapse: collapse;
+
+    tr {
+      th,
+      td {
+        padding: 6px 13px;
+      }
+    }
+  }
+}

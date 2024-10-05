@@ -15,12 +15,17 @@ declare module 'vue' {
     AMenu: typeof import('ant-design-vue/es')['Menu']
     AMenuItem: typeof import('ant-design-vue/es')['MenuItem']
     ASwitch: typeof import('ant-design-vue/es')['Switch']
+    ATag: typeof import('ant-design-vue/es')['Tag']
+    ATimeline: typeof import('ant-design-vue/es')['Timeline']
+    ATimelineItem: typeof import('ant-design-vue/es')['TimelineItem']
     ATooltip: typeof import('ant-design-vue/es')['Tooltip']
     DockBar: typeof import('./src/components/DockBar.vue')['default']
     DockBarItem: typeof import('./src/components/DockBarItem.vue')['default']
     DockerBarItem: typeof import('./src/components/DockerBarItem.vue')['default']
+    MdViewer: typeof import('./src/components/MdViewer.vue')['default']
     PageHeader: typeof import('./src/components/PageHeader.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    TopGradient: typeof import('./src/components/TopGradient.vue')['default']
   }
 }
