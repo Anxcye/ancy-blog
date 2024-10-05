@@ -1,3 +1,23 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+.ant-dropdown-menu-item-active {
+  color: var(--primary-color) !important;
+}
+.ant-dropdown {
+  backdrop-filter: blur(10px);
+  background-color: rgba(255, 255, 255, 0.11) !important;
+
+  .ant-dropdown-menu {
+    background-color: transparent !important;
+  }
+}
+.ant-drawer-mask {
+  backdrop-filter: blur(10px);
+}
+.ant-drawer-content-wrapper {
+  backdrop-filter: blur(2px);
+  background-color: rgba(255, 255, 255, 0.11) !important;
+  box-shadow: none !important;
+}

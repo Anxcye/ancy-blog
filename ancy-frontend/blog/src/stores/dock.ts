@@ -8,7 +8,6 @@ import {
   CalendarOutlined,
   LinkOutlined,
   MoreOutlined,
-  UserOutlined,
   ProjectOutlined,
   ReadOutlined,
 } from '@ant-design/icons-vue'
@@ -83,7 +82,6 @@ export const useDockStore = defineStore('dock', () => {
       key: 'more',
       label: '更多',
       icon: h(MoreOutlined),
-      path: '/more',
       group: 'more',
       children: [
         {

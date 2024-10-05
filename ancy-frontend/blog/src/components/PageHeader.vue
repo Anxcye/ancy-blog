@@ -1,64 +1,114 @@
 <template>
-  <div class="page-header">
-    <div class="menu"><a-button shape="circle" :icon="h(MenuOutlined)" /></div>
-    <div class="avatar">
-      <a-avatar :size="48" :src="baseInfoStore.baseInfo?.avatar" />
-    </div>
-    <div class="dock-bar">
-      <DockBar />
-    </div>
-    <div class="theme">
-      <a-button shape="circle" @click="toggleTheme">
-        <template #icon>
-          <img :src="themeIcon" alt="theme" class="w-6 h-6 mx-auto" />
-        </template>
-      </a-button>
+  <div class="app-container" :class="{ scrolled: isScrolled }">
+    <div class="page-header">
+      <div class="menu">
+        <a-button
+          shape="circle"
+          :icon="h(MenuOutlined)"
+          class="flex items-center justify-center"
+          @click="menuClick"
+        />
+      </div>
+      <div class="avatar">
+        <a-avatar :size="36" :src="baseInfoStore.baseInfo?.avatar" @click="avatarClick" />
+      </div>
+      <div class="dock-bar">
+        <DockBar :isScrolled="isScrolled" :drawerOpen="open" @update:drawerOpen="menuClose" />
+      </div>
+      <div class="flex items-center justify-center">
+        <a-button shape="circle" @click="themeClick">
+          <template #icon>
+            <img :src="themeIcon" alt="theme" class="w-6 h-6 mx-auto" />
+          </template>
+        </a-button>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { h, onMounted, ref } from 'vue'
+import { h, onMounted, ref, onUnmounted } from 'vue'
 import { MenuOutlined } from '@ant-design/icons-vue'
 import { useBaseInfoStore } from '@/stores/baseInfo'
 import sunIcon from '@/assets/svg/sun.svg'
 import moonIcon from '@/assets/svg/moon.svg'
 import DockBar from './DockBar.vue'
+import router from '@/router'
+
 const baseInfoStore = useBaseInfoStore()
 const themeIcon = ref(sunIcon)
+const isScrolled = ref(false)
+const open = ref(false)
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 0
+}
 
-const toggleTheme = () => {
+const menuClick = () => {
+  open.value = true
+}
+const menuClose = () => {
+  open.value = false
+}
+const avatarClick = () => {
+  router.push('/')
+}
+const themeClick = () => {
   themeIcon.value = themeIcon.value === sunIcon ? moonIcon : sunIcon
 }
 
 onMounted(async () => {
   await baseInfoStore.reqBaseInfo()
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
 })
 </script>
 
 <style scoped lang="scss">
-.page-header {
+.app-container {
+  width: 100vw;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 64px;
-  padding: 0 24px;
-  background-color: #fff;
+  justify-content: center;
+  left: 0;
+  top: 0;
+  right: 0;
+  z-index: 1000;
+  background-color: transparent;
+  position: fixed;
+  border-bottom: none;
 
-  // pc
-  @media (min-width: 768px) {
-    .menu {
-      display: none;
-    }
+  &.scrolled {
+    background-color: rgba(255, 255, 255, 0.566);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #e8e8e8;
   }
 
-  // mobile
-  @media (max-width: 768px) {
-    .menu {
-      display: block;
+  .page-header {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: $ac-header-height;
+
+    // pc
+    @media (min-width: 768px) {
+      max-width: 800px;
+      .menu {
+        display: none;
+      }
     }
-    .dock-bar {
-      display: none;
+
+    // mobile
+    @media (max-width: 768px) {
+      padding: 0 16px;
+      .menu {
+        display: block;
+      }
+      .dock-bar {
+        display: none;
+      }
     }
   }
 }
