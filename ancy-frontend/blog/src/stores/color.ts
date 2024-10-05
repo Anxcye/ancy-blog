@@ -29,6 +29,7 @@ export const useColorStore = defineStore('color', () => {
 
   const setPrimaryColor = (color: string) => {
     document.documentElement.style.setProperty('--primary-color', color)
+    document.documentElement.style.setProperty('--primary-background', color + '22')
   }
 
   onMounted(() => {

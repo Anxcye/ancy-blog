@@ -1,7 +1,7 @@
 <template>
   <div
     :class="[
-      'flex justify-between items-center gap-3 rounded-full px-3 py-1 ',
+      'flex justify-between items-center gap-3 rounded-full px-3 py-1 transition-all duration-300',
       props.isScrolled ? '' : ' border shadow',
     ]"
   >
@@ -9,7 +9,7 @@
       <a-dropdown>
         <div
           @click="navigate(item.path)"
-          class="flex items-center justify-center gap-1 text-sm"
+          class="flex items-center justify-center gap-1 text-sm cursor-pointer"
           :style="{
             color: isActive(item.group) ? primaryColor : '',
           }"

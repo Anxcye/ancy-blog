@@ -1,19 +1,20 @@
 <template>
   <a-config-provider :theme="acTheme"></a-config-provider>
-  <a-button type="primary">123</a-button>
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { computed } from 'vue'
 import { useColorStore } from '@/stores/color'
 import { theme } from 'ant-design-vue'
 
+const props = defineProps<{
+  dark: boolean
+}>()
+
 const colorStore = useColorStore()
-// .ant-dropdown-menu-item-active {
-//   color: #1677ff !important;
-// }
-const acTheme = ref({
-  // algorithm: theme.darkAlgorithm,
+
+const acTheme = computed(() => ({
+  algorithm: props.dark ? theme.darkAlgorithm : theme.defaultAlgorithm,
 
   token: {
     colorPrimary: colorStore.getPrimaryColor(),
@@ -370,5 +371,5 @@ const acTheme = ref({
     // motionDurationMid: 'red',
     // motionDurationSlow: 'red',
   },
-})
+}))
 </script>

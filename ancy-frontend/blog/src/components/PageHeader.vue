@@ -24,6 +24,7 @@
       </div>
     </div>
   </div>
+  <ConfigProvider :dark="isDark" />
 </template>
 
 <script setup lang="ts">
@@ -34,7 +35,9 @@ import sunIcon from '@/assets/svg/sun.svg'
 import moonIcon from '@/assets/svg/moon.svg'
 import DockBar from './DockBar.vue'
 import router from '@/router'
+import ConfigProvider from '@/provider/ConfigProvider.vue'
 
+const isDark = ref(false)
 const baseInfoStore = useBaseInfoStore()
 const themeIcon = ref(sunIcon)
 const isScrolled = ref(false)
@@ -53,6 +56,7 @@ const avatarClick = () => {
   router.push('/')
 }
 const themeClick = () => {
+  isDark.value = !isDark.value
   themeIcon.value = themeIcon.value === sunIcon ? moonIcon : sunIcon
 }
 

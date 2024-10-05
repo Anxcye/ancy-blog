@@ -15,6 +15,7 @@ declare module 'vue' {
     AMenu: typeof import('ant-design-vue/es')['Menu']
     AMenuItem: typeof import('ant-design-vue/es')['MenuItem']
     ASwitch: typeof import('ant-design-vue/es')['Switch']
+    ATooltip: typeof import('ant-design-vue/es')['Tooltip']
     DockBar: typeof import('./src/components/DockBar.vue')['default']
     DockBarItem: typeof import('./src/components/DockBarItem.vue')['default']
     DockerBarItem: typeof import('./src/components/DockerBarItem.vue')['default']

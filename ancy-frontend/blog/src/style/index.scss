@@ -21,3 +21,8 @@
   background-color: rgba(255, 255, 255, 0.11) !important;
   box-shadow: none !important;
 }
+
+::selection {
+  background-color: var(--primary-color);
+  color: white;
+}

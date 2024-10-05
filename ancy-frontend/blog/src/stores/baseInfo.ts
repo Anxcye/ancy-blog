@@ -11,5 +11,33 @@ export const useBaseInfoStore = defineStore('baseInfo', () => {
     baseInfo.value = res.data
   }
 
-  return { baseInfo, reqBaseInfo }
+  const getAvatar = () => {
+    return baseInfo.value?.avatar
+  }
+
+  const getGreeting = () => {
+    return baseInfo.value?.greeting
+  }
+
+  const getRole = () => {
+    return baseInfo.value?.role
+  }
+
+  const getPhilosophy = () => {
+    return baseInfo.value?.philosophy
+  }
+
+  const getBadge = () => {
+    return baseInfo.value?.badge
+  }
+
+  return {
+    baseInfo,
+    reqBaseInfo,
+    getAvatar,
+    getGreeting,
+    getRole,
+    getPhilosophy,
+    getBadge,
+  }
 })
