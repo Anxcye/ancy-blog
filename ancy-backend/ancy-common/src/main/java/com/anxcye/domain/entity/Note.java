@@ -1,13 +1,12 @@
-package com.anxcye.domain.vo;
+package com.anxcye.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
-
 import java.io.Serializable;
 import java.util.Date;
+import lombok.Data;
 
 /**
  * note表
@@ -15,7 +14,7 @@ import java.util.Date;
  */
 @TableName(value ="ancy_note")
 @Data
-public class NoteVo implements Serializable {
+public class Note implements Serializable {
     /**
      * 
      */
