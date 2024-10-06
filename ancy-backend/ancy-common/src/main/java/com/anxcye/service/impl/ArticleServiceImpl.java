@@ -92,8 +92,8 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
                 .map(entry -> new Article(Long.valueOf(entry.getKey()), entry.getValue().longValue()))
                 .collect(Collectors.toList());
 
-//        updateBatchById(articles);
-// avoid auto fill  updatetime by mybatis plus
+        // updateBatchById(articles);
+        // avoid auto fill updatetime by mybatis plus
         getBaseMapper().updateViewCountById(articles);
     }
 
@@ -124,10 +124,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
 
     }
 
+    // admin
     @Override
     public PageResult pageList(ArticleListDto articleListDto) {
         LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
-
         wrapper.like(StringUtils.hasText(articleListDto.getTitle()), Article::getTitle, articleListDto.getTitle());
         wrapper.like(StringUtils.hasText(articleListDto.getSummary()), Article::getSummary,
                 articleListDto.getSummary());
@@ -173,9 +173,31 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     }
 
     @Override
+    public List<ArticleCardVo> getArticleFront() {
+        LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
+        wrapper.eq(Article::getType, SystemConstants.ARTICLE_TYPE_FRONT);
+        wrapper.orderByAsc(Article::getOrderNum);
+
+        List<Article> articles = list(wrapper);
+        return BeanCopyUtils.copyList(articles, ArticleCardVo.class);
+    }
+
+    @Override
+    public List<ArticleCardVo> recent() {
+        LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
+        wrapper.eq(Article::getType, SystemConstants.ARTICLE_TYPE_NORMAL);
+        wrapper.orderByDesc(Article::getCreateTime);
+        wrapper.last("limit 5");
+        return BeanCopyUtils.copyList(list(wrapper), ArticleCardVo.class);
+    }
+
+
+
+    @Override
     public List<HotArticleVo> hot() {
         LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
 
+        wrapper.eq(Article::getType, SystemConstants.ARTICLE_TYPE_NORMAL);
         wrapper.orderByDesc(Article::getViewCount);
 
         Page<Article> page = new Page<>(1, 10);
@@ -190,13 +212,15 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         return hotArticleVos;
     }
 
+    // blog
     @Override
     public PageResult getList(Integer pageNum, Integer pageSize, Integer categoryId) {
         LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
-
+        wrapper.eq(Article::getType, SystemConstants.ARTICLE_TYPE_NORMAL);
         wrapper.eq(Objects.nonNull(categoryId) && categoryId > 0,
                 Article::getCategoryId, categoryId);
         wrapper.orderByDesc(Article::getIsTop)
+                .orderByAsc(Article::getOrderNum)
                 .orderByDesc(Article::getCreateTime);
         Page<Article> page = new Page<>(pageNum, pageSize);
         page(page, wrapper);
@@ -205,15 +229,17 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         articleCardVos.forEach(articleCardVo -> {
             articleCardVo.setCategoryName(categoryService.getById(articleCardVo.getCategoryId()).getName());
             articleCardVo.setViewCount(getViewCount(articleCardVo.getId()));
+            articleCardVo.setTags(tagService.selectTagsByArticleId(articleCardVo.getId()));
         });
 
         return new PageResult(page.getTotal(), articleCardVos);
     }
 
-    @Override
-    public ArticleDetailVo getArticleById(Long id) {
-        LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
+    private ArticleDetailVo getDetailById(Long id, Integer type) {
+           LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
         wrapper.eq(Article::getId, id);
+
+        wrapper.eq(Article::getType, type);
 
         Article article = getOne(wrapper);
 
@@ -232,7 +258,23 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         articleDetailVo.setTags(tagService.selectTagsByArticleId(id));
 
         return articleDetailVo;
-
     }
 
+    @Override
+    public ArticleDetailVo getArticleById(Long id) {
+      return getDetailById(id, SystemConstants.ARTICLE_TYPE_NORMAL);
+    }
+
+    @Override
+    public ArticleDetailVo getHomeById(Long id) {
+        return getDetailById(id, SystemConstants.ARTICLE_TYPE_FRONT);
+    }
+
+    @Override
+    public ArticleDetailVo getArticleLink() {
+        LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
+        wrapper.eq(Article::getType, SystemConstants.ARTICLE_TYPE_LINK);
+        Article article = getOne(wrapper);
+        return BeanCopyUtils.copyBean(article, ArticleDetailVo.class);
+    }
 }

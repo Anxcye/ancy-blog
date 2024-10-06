@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.anxcye.mapper.SettingMapper">
+
+    <resultMap id="BaseResultMap" type="com.anxcye.domain.entity.Setting">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="key" column="key" jdbcType="VARCHAR"/>
+            <result property="value" column="value" jdbcType="VARCHAR"/>
+            <result property="comment" column="comment" jdbcType="VARCHAR"/>
+            <result property="type" column="type" jdbcType="TINYINT"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,key,value,
+        comment,type
+    </sql>
+</mapper>

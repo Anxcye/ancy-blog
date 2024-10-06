@@ -37,4 +37,12 @@ public interface ArticleService extends IService<Article> {
     boolean deleteArticleById(Long articleId);
 
     List<ArticleCardVo> getByCategoryId(Long categoryId);
+
+    List<ArticleCardVo> getArticleFront();
+
+    List<ArticleCardVo> recent();
+
+    ArticleDetailVo getHomeById(Long id);
+
+    ArticleDetailVo getArticleLink();
 }

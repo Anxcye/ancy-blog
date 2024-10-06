@@ -10,6 +10,7 @@ import com.anxcye.domain.vo.LinkVo;
 import com.anxcye.mapper.LinkMapper;
 import com.anxcye.service.LinkService;
 import com.anxcye.utils.BeanCopyUtils;
+import com.anxcye.utils.SecurityUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.core.toolkit.StringUtils;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -28,11 +29,17 @@ import java.util.Objects;
 public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link>
         implements LinkService {
 
-    @Log
+    private LambdaQueryWrapper<Link> getLinkWrapper() {
+        LambdaQueryWrapper<Link> wrapper = new LambdaQueryWrapper<>();
+        if (!SecurityUtil.isAdmin()) {
+            wrapper.eq(Link::getStatus, SystemConstants.LINK_STATUS_NORMAL);
+        }
+        return wrapper;
+    }
+
     @Override
     public List<LinkVo> getApprovedLinks() {
-        LambdaQueryWrapper<Link> linkLambdaQueryWrapper = new LambdaQueryWrapper<>();
-        linkLambdaQueryWrapper.eq(Link::getStatus, SystemConstants.LINK_STATUS_NORMAL);
+        LambdaQueryWrapper<Link> linkLambdaQueryWrapper = getLinkWrapper();
         List<Link> list = this.list(linkLambdaQueryWrapper);
 
         return BeanCopyUtils.copyList(list, LinkVo.class);
@@ -40,7 +47,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link>
 
     @Override
     public PageResult pageList(LinkListDto linkListDto) {
-        LambdaQueryWrapper<Link> linkLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<Link> linkLambdaQueryWrapper = getLinkWrapper();
 
         linkLambdaQueryWrapper.like(StringUtils.isNotEmpty(linkListDto.getName()),
                 Link::getName, linkListDto.getName());
@@ -52,6 +59,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link>
         return new PageResult(page.getTotal(), page.getRecords());
     }
 
+    @Log
     @Override
     public Long addLink(LinkDto linkDto) {
         Link link = BeanCopyUtils.copyBean(linkDto, Link.class);
@@ -78,8 +86,12 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link>
         Link link = getById(id);
         return BeanCopyUtils.copyBean(link, LinkVo.class);
     }
+
+    @Override
+    public Long addLinkBlog(LinkDto linkDto) {
+        Link link = BeanCopyUtils.copyBean(linkDto, Link.class);
+        link.setStatus(SystemConstants.LINK_STATUS_HIDE);
+        save(link);
+        return link.getId();
+    }
 }
-
-
-
-

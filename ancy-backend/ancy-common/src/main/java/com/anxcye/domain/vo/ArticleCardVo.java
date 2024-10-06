@@ -48,6 +48,16 @@ public class ArticleCardVo {
     private String status;
 
     /**
+     * 文章类型 0普通文章 1首页文章 2关联项目 3友链文章
+     */
+    private Integer type;
+
+    /**
+     * 排序
+     */
+    private Integer orderNum;
+
+    /**
      * tags
      */
     private List<TagVo> tags;

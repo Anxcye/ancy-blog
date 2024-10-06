@@ -1,43 +1,31 @@
 package com.anxcye.controller;
 
-import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.result.ResponseResult;
-import com.anxcye.domain.vo.ArticleCardVo;
-import com.anxcye.domain.vo.ArticleDetailVo;
-import com.anxcye.domain.vo.HotArticleVo;
-import com.anxcye.service.ArticleService;
+import com.anxcye.service.SettingService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 
 @RestController
-@RequestMapping("/article")
-public class ArticleController {
+@RequestMapping("/setting")
+public class SettingController {
 
     @Autowired
-    private ArticleService articleService;
+    private SettingService settingService;
 
-    @GetMapping("/page")
-    public ResponseResult<PageResult> articlePage(Integer pageNum,
-                               Integer pageSize,
-                               @RequestParam(required = false) Integer categoryId) {
-        return ResponseResult.success(articleService.getList(pageNum, pageSize, categoryId));
+    @GetMapping("/base")
+    public ResponseResult<?> settingGetBase() {
+        return ResponseResult.success(settingService.getBaseSetting());
     }
 
-    @GetMapping("/hot")
-    public ResponseResult<List<HotArticleVo>> articleHot() {
-        return ResponseResult.success(articleService.hot());
-    }
+//    @PutMapping
+//    public ResponseResult<?> settingUpdateBase(@RequestBody SettingDto settingDto) {
+//        return ResponseResult.success(settingService.updateBaseSetting(settingDto));
+//    }
+//
 
-    @GetMapping("/{id}")
-    public ResponseResult<ArticleDetailVo> articleGetById(@PathVariable Long id) {
-        return ResponseResult.success(articleService.getArticleById(id));
-    }
-    @GetMapping("/front")
-    public ResponseResult<List<ArticleCardVo>> articleGetFrontList() {
-        return ResponseResult.success(articleService.getArticleFront());
-    }
+
 
 }

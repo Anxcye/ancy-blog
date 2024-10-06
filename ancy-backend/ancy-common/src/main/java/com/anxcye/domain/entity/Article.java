@@ -59,6 +59,16 @@ public class Article implements Serializable {
     private String status;
 
     /**
+     * 文章类型 0普通文章 1首页文章 2关联项目 3友链文章
+     */
+    private Integer type;
+
+    /**
+     * 排序
+     */
+    private Integer orderNum;
+
+    /**
      * 访问量
      */
     private Long viewCount;
@@ -77,11 +87,13 @@ public class Article implements Serializable {
     /**
      * 
      */
+    @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
      * 
      */
+    @TableField(fill = FieldFill.INSERT_UPDATE)
     private Long updateBy;
 
     /**

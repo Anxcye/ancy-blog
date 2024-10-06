@@ -80,13 +80,14 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
     }
 
     @Override
-    public void add(CommentDto commentDto) {
+    public Long add(CommentDto commentDto) {
         if (StringUtils.isEmpty(commentDto.getType())) {
             throw new SystemException(AppHttpCodeEnum.CONTENT_NOT_NULL);
         }
         Comment comment = BeanCopyUtils.copyBean(commentDto, Comment.class);
         comment.setStatus(SystemConstants.COMMENT_STATUS_NORMAL);
         save(comment);
+        return comment.getId();
     }
 }
 

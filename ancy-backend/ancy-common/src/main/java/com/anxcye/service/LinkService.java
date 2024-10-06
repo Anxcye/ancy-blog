@@ -27,4 +27,6 @@ public interface LinkService extends IService<Link> {
     boolean updateLink(Long id, LinkDto linkDto);
 
     LinkVo getLink(Long id);
+
+    Long addLinkBlog(LinkDto linkDto);
 }

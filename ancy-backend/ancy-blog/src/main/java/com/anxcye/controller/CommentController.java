@@ -2,6 +2,7 @@ package com.anxcye.controller;
 
 import com.anxcye.constants.SystemConstants;
 import com.anxcye.domain.dto.CommentDto;
+import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.result.ResponseResult;
 import com.anxcye.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,7 @@ public class CommentController {
     private CommentService commentService;
 
     @GetMapping("/article/{articleId}")
-    public ResponseResult<?> selectCommentByArticleId(@PathVariable Long articleId, Integer pageNum, Integer pageSize) {
+    public ResponseResult<PageResult> commentByArticleId(@PathVariable Long articleId, Integer pageNum, Integer pageSize) {
         return ResponseResult.success(commentService.selectComment(
                 SystemConstants.COMMENT_TYPE_ARTICLE,
                 articleId,
@@ -24,18 +25,17 @@ public class CommentController {
     }
 
     @GetMapping("/{parentId}/children")
-    public ResponseResult<?> selectChildren(@PathVariable Long parentId, Integer pageNum, Integer pageSize) {
+    public ResponseResult<PageResult> commentChildrenByParentId(@PathVariable Long parentId, Integer pageNum, Integer pageSize) {
         return ResponseResult.success(commentService.getChildren(parentId, pageNum, pageSize));
     }
 
     @PostMapping
-    public ResponseResult<?> add(@RequestBody CommentDto commentDto) {
-        commentService.add(commentDto);
-        return ResponseResult.success();
+    public ResponseResult<Long> commentAdd(@RequestBody CommentDto commentDto) {
+        return ResponseResult.success(commentService.add(commentDto));
     }
 
     @GetMapping("/link")
-    public ResponseResult<?> selectLinkComment( Integer pageNum, Integer pageSize) {
+    public ResponseResult<PageResult> commentLink(Integer pageNum, Integer pageSize) {
         return  ResponseResult.success(commentService.selectComment(
                 SystemConstants.COMMENT_TYPE_LINK,
                 null,

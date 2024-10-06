@@ -48,4 +48,9 @@ public class SystemConstants
     public static final String EXPORT_CATEGORY_FILE_NAME = "分类.xlsx";
     public static final String USER_ADMIN = "1";
     public static final String USER_ENABLE = "0";
+    public static final Integer ARTICLE_TYPE_NORMAL = 0;
+    public static final Integer ARTICLE_TYPE_FRONT = 1;
+    public static final Integer ARTICLE_TYPE_PROJECT = 2;
+    public static final Integer ARTICLE_TYPE_LINK = 3;
+    public static final String LINK_STATUS_HIDE = "1";
 }

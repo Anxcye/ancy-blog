@@ -16,6 +16,6 @@ public interface CommentService extends IService<Comment> {
 
     PageResult getChildren(Long parentId, Integer pageNum, Integer pageSize);
 
-    void add(CommentDto commentDto);
+    Long add(CommentDto commentDto);
 
 }

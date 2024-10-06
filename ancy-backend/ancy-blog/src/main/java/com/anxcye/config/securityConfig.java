@@ -14,7 +14,6 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -53,16 +52,16 @@ public class securityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(
                         auth -> auth
-                                .requestMatchers("/login").anonymous()
-                                .requestMatchers("/logout").authenticated()
-                                .requestMatchers("/comment").authenticated()
-                                .requestMatchers("/user/info").authenticated()
-                                .requestMatchers("/upload").authenticated()
+//                                .requestMatchers("/login").anonymous()
+//                                .requestMatchers("/logout").authenticated()
+//                                .requestMatchers("/comment").authenticated()
+//                                .requestMatchers("/user/info").authenticated()
+//                                .requestMatchers("/upload").authenticated()
                                 .anyRequest().anonymous()
                 )
                 .logout(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
+//                .addFilterBefore(jwtAuthenticationTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .exceptionHandling(
                         exception -> exception
                                 .authenticationEntryPoint(authenticationEntryPoint)
