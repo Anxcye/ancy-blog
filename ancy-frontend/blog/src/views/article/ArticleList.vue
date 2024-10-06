@@ -10,7 +10,7 @@
       <template #item="{ item }">
         <router-link class="hover:text-primary" :to="`/article/${item.id}`">
           <div
-            class="flex flex-col hover:bg-primary-bg-1 p-2 rounded-lg hover:shadow-md hover:scale-105 transition"
+            class="flex flex-col hover:bg-primary-bg-1 p-2 rounded-lg hover:shadow-md hover:scale-105 transition-all"
           >
             <div class="flex flex-row items-center justify-between">
               <div flex-1>
@@ -19,7 +19,6 @@
               </div>
               <div class="text-sm text-gray flex flex-row items-center gap-2">
                 <a-tag v-if="item.isTop === '1'" class="bg-primary text-white">置顶</a-tag>
-                <div>{{ timeAgo(new Date(item.createTime)) }}</div>
               </div>
             </div>
             <div class="flex flex-row gap-2 justify-between">
@@ -52,7 +51,6 @@ import type { ArticleListData } from '@/api/article/type'
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import TimelineList from '@/components/TimelineList.vue'
-import timeAgo from '@/utils/timeAgo'
 import { EyeOutlined, FolderOutlined } from '@ant-design/icons-vue'
 import Icon from '@ant-design/icons-vue'
 

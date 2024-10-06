@@ -29,6 +29,20 @@
   background-color: transparent !important;
 }
 
+div.timeline_container div.ant-timeline-item-label {
+  width: calc(4rem - 12px) !important;
+}
+
+div.timeline_container div.ant-timeline-item-content {
+  left: calc(4rem - 4px) !important;
+  width: calc(100% - 4rem - 4px) !important;
+}
+
+div.timeline_container div.ant-timeline-item-tail,
+div.ant-timeline-item-head {
+  left: 4rem !important;
+}
+
 ::selection {
   background-color: var(--primary-color);
   color: white;

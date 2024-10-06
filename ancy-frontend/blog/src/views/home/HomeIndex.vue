@@ -4,14 +4,9 @@
     <span class="text-xl font-medium">文章</span>
     <TimelineList :list="articleList">
       <template #item="{ item }">
-        <div class="flex flex-row items-center justify-between">
-          <router-link class="hover:text-primary" :to="`/article/${item.id}`">
-            {{ item.title }}
-          </router-link>
-          <div class="text-sm text-gray">
-            {{ timeAgo(new Date(item.createTime)) }}
-          </div>
-        </div>
+        <router-link class="hover:text-primary" :to="`/article/${item.id}`">
+          {{ item.title }}
+        </router-link>
       </template>
     </TimelineList>
   </div>
@@ -23,7 +18,6 @@ import { reqArticleRecent } from '@/api/article'
 import SayHi from './components/SayHi.vue'
 import { onMounted, ref } from 'vue'
 import type { ArticleListData } from '@/api/article/type'
-import timeAgo from '@/utils/timeAgo'
 import HomeFooter from './components/HomeFooter.vue'
 import TimelineList from '@/components/TimelineList.vue'
 const articleList = ref<ArticleListData[]>([])

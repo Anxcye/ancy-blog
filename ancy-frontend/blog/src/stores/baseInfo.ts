@@ -27,6 +27,14 @@ export const useBaseInfoStore = defineStore('baseInfo', () => {
     return baseInfo.value?.philosophy
   }
 
+  const getName = () => {
+    return baseInfo.value?.name
+  }
+
+  const getAddress = () => {
+    return baseInfo.value?.address
+  }
+
   const getBadge = () => {
     return baseInfo.value?.badge
   }
@@ -38,6 +46,8 @@ export const useBaseInfoStore = defineStore('baseInfo', () => {
     getGreeting,
     getRole,
     getPhilosophy,
+    getName,
+    getAddress,
     getBadge,
   }
 })

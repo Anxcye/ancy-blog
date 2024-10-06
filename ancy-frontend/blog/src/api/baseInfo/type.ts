@@ -12,6 +12,8 @@ export interface SettingGetBaseData {
   badge: Badge[]
   greeting: string
   philosophy: string
+  name: string
+  address: string
   role: string
 }
 export interface SettingGetBaseRes extends ApiResponse<SettingGetBaseData> {}
