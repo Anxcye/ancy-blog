@@ -26,7 +26,18 @@
 }
 
 .ant-btn-icon-only {
+  backdrop-filter: blur(2px);
   background-color: transparent !important;
+}
+
+.ant-tooltip {
+  backdrop-filter: blur(4px);
+  color: var(--text-color) !important;
+  --antd-arrow-background-color: var(--background-color-1) !important;
+}
+.ant-tooltip-inner {
+  background-color: var(--background-color-1) !important;
+  color: var(--text-color) !important;
 }
 
 div.timeline_container div.ant-timeline-item-label {
@@ -51,6 +62,7 @@ div.ant-timeline-item-head {
 a {
   position: relative;
   text-decoration: none;
+  color: var(--text-color);
 
   &::after {
     content: '';

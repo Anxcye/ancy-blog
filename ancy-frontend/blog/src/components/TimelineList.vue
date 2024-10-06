@@ -7,7 +7,12 @@
         :key="item.id"
       >
         <template #label>
-          <div class="text-sm text-gray">{{ timeAgo(new Date(item.createTime)) }}</div>
+          <a-tooltip>
+            <template #title>
+              {{ time(item) || '' }}
+            </template>
+            {{ timeAgo(new Date(time(item) || '')) }}
+          </a-tooltip>
         </template>
         <slot name="item" :item="item" />
       </a-timeline-item>
@@ -23,7 +28,14 @@ const colorStore = useColorStore()
 
 const props = defineProps<{
   list: { id: number; [key: string]: any }[]
+  timeField?: string
 }>()
+
+const timeField = props.timeField || 'createTime'
+
+const time = (item: any) => {
+  return item[timeField]
+}
 </script>
 
 <style scoped lang="scss"></style>

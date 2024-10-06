@@ -10,9 +10,9 @@
         <div class="text-xl font-thin mt-4 text-gray">{{ philosophy }}</div>
         <div class="flex flex-row gap-2 mt-2 md:mt-7">
           <div v-for="item in badge" :key="item.index">
-            <a-tooltip color="white">
+            <a-tooltip>
               <template #title>
-                <span class="text-black">{{ item.title }}</span>
+                <span>{{ item.title }}</span>
               </template>
               <a :href="item.url" target="_blank">
                 <a-avatar :size="32" :src="item.img" />

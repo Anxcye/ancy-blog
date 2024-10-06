@@ -67,6 +67,11 @@ const router = createRouter({
       meta: { group: 'more' },
     },
     {
+      path: '/project/:id',
+      component: () => import('@/views/project/ProjectDetail.vue'),
+      meta: { group: 'more' },
+    },
+    {
       path: '/read',
       component: () => import('@/views/read/index.vue'),
       meta: { group: 'more' },
