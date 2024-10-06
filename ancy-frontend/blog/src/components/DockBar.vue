@@ -2,7 +2,7 @@
   <div
     :class="[
       'flex justify-between items-center gap-3 rounded-full px-3 py-1 transition-all duration-300',
-      props.isScrolled ? '' : 'shadow border border-gray-200',
+      props.isScrolled ? '' : 'shadow border border-gray-bg',
     ]"
   >
     <div class="dock-bar-item" v-for="item in items" :key="item.key">
@@ -20,7 +20,7 @@
         <template #overlay v-if="item.children">
           <a-menu>
             <a-menu-item v-for="child in item.children" :key="child.key">
-              <router-link :to="child.path">
+              <router-link :to="child.path" class="hover:text-primary">
                 {{ child.label }}
               </router-link>
             </a-menu-item>

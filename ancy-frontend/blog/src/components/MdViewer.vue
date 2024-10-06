@@ -1,5 +1,5 @@
 <template>
-  <div class="mx-auto max-w-3xl">
+  <div>
     <MdPreview :model-value="props.content" previewTheme="ancy" />
   </div>
 </template>
@@ -16,5 +16,8 @@ const props = defineProps<{
 <style lang="scss">
 .md-editor {
   background-color: transparent !important;
+}
+.md-editor-preview-wrapper {
+  padding: 0 !important;
 }
 </style>

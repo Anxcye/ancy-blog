@@ -1,5 +1,4 @@
 <template>
-  <TopGradient />
   <SayHi />
   <div class="px-4 py-2">
     <span class="text-xl font-medium">文章</span>
@@ -10,7 +9,9 @@
         :key="item.id"
       >
         <div class="flex flex-row items-center justify-between">
-          <router-link class="flex-1" :to="`/article/${item.id}`">{{ item.title }}</router-link>
+          <router-link class="hover:text-primary" :to="`/article/${item.id}`">
+            {{ item.title }}
+          </router-link>
           <div class="text-sm text-gray">
             {{ timeAgo(new Date(item.createTime)) }}
           </div>
@@ -29,7 +30,6 @@ import type { ArticleListData } from '@/api/article/type'
 import { useColorStore } from '@/stores/color'
 import timeAgo from '@/utils/timeAgo'
 import HomeFooter from './components/HomeFooter.vue'
-import TopGradient from '@/components/TopGradient.vue'
 
 const colorStore = useColorStore()
 const articleList = ref<ArticleListData[]>([])

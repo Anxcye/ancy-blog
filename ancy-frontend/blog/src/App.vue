@@ -1,5 +1,6 @@
 <template>
   <div class="overflow-hidden">
+    <TopGradient />
     <PageHeader />
     <router-view class="router-view"></router-view>
   </div>
