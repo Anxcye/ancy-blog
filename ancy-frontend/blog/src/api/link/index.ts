@@ -10,6 +10,6 @@ export function reqLinkGetArticle(): Promise<ArticleGetByIdRes> {
   return request.get(`/link/article`)
 }
 
-export function linkAdd(params: LinkAddParams): Promise<LinkAddRes> {
+export function reqLinkAdd(params: LinkAddParams): Promise<LinkAddRes> {
   return request.post(`/link`, params)
 }

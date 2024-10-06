@@ -66,7 +66,7 @@
 
 <script setup lang="ts">
 import type { ArticleDetailData } from '@/api/article/type'
-import { linkAdd, reqLinkGetArticle, reqLinkList } from '@/api/link'
+import { reqLinkAdd, reqLinkGetArticle, reqLinkList } from '@/api/link'
 import type { LinkAddParams, LinkListData } from '@/api/link/type'
 import { onMounted, ref } from 'vue'
 import ArticleViewer from '@/components/ArticleViewer.vue'
@@ -114,7 +114,7 @@ const addLink = async () => {
     }
 
     await formRef.value!.validateFields()
-    const res = await linkAdd(addLinkParams.value)
+    const res = await reqLinkAdd(addLinkParams.value)
     if (res.code === 200) {
       addLinkList.value.push(addLinkParams.value)
       message.info('已发送电波~ 请等待')

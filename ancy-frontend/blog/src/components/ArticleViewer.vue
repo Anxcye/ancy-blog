@@ -8,11 +8,10 @@
 
 <script setup lang="ts">
 import MdViewer from '@/components/MdViewer.vue'
-import type { ArticleDetailData } from '@/api/article/type'
 import { computed } from 'vue'
 
 const props = defineProps<{
-  article?: ArticleDetailData
+  article?: { content: string }
 }>()
 const content = computed(() => props.article?.content)
 </script>

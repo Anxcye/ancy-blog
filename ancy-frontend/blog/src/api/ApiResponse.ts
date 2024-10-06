@@ -3,3 +3,9 @@ export interface ApiResponse<T> {
   msg: string
   data: T
 }
+
+export interface PageResponse<T>
+  extends ApiResponse<{
+    total: number
+    rows: T[]
+  }> {}

@@ -30,17 +30,17 @@
 }
 
 div.timeline_container div.ant-timeline-item-label {
-  width: calc(4rem - 12px) !important;
+  width: calc(5rem - 12px) !important;
 }
 
 div.timeline_container div.ant-timeline-item-content {
-  left: calc(4rem - 4px) !important;
-  width: calc(100% - 4rem - 4px) !important;
+  left: calc(5rem - 4px) !important;
+  width: calc(100% - 5rem - 4px) !important;
 }
 
 div.timeline_container div.ant-timeline-item-tail,
 div.ant-timeline-item-head {
-  left: 4rem !important;
+  left: 5rem !important;
 }
 
 ::selection {
