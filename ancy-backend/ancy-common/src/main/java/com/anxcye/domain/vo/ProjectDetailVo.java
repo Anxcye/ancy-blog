@@ -15,7 +15,7 @@ import java.util.Date;
  */
 @TableName(value ="ancy_project")
 @Data
-public class ProjectCardVo implements Serializable {
+public class ProjectDetailVo implements Serializable {
     /**
      * 
      */
@@ -28,9 +28,9 @@ public class ProjectCardVo implements Serializable {
     private String title;
 
     /**
-     * article id
+     * article
      */
-    private Long articleId;
+    private ArticleDetailVo articleDetailVo;
 
     /**
      * 文章摘要

@@ -1,13 +1,12 @@
-package com.anxcye.domain.vo;
+package com.anxcye.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import lombok.Data;
-
 import java.io.Serializable;
 import java.util.Date;
+import lombok.Data;
 
 /**
  * project表
@@ -15,7 +14,7 @@ import java.util.Date;
  */
 @TableName(value ="ancy_project")
 @Data
-public class ProjectCardVo implements Serializable {
+public class Project implements Serializable {
     /**
      * 
      */
@@ -58,14 +57,15 @@ public class ProjectCardVo implements Serializable {
     private String type;
 
     /**
-     *
+     * 
      */
     private String srcUrl;
 
     /**
-     *
+     * 
      */
     private String displayUrl;
+
     /**
      * 排序
      */

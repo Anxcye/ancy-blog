@@ -6,6 +6,7 @@ import com.anxcye.domain.entity.Note;
 import com.anxcye.domain.result.PageResult;
 import com.anxcye.mapper.NoteMapper;
 import com.anxcye.service.NoteService;
+import com.anxcye.utils.SecurityUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -22,7 +23,9 @@ public class NoteServiceImpl extends ServiceImpl<NoteMapper, Note>
 
     private LambdaQueryWrapper<Note> getNoteWrapper() {
         LambdaQueryWrapper<Note> wrapper = new LambdaQueryWrapper<>();
-        wrapper.eq(Note::getStatus, SystemConstants.STATUS_NORMAL);
+        if (!SecurityUtil.isAdmin()) {
+            wrapper.eq(Note::getStatus, SystemConstants.STATUS_NORMAL);
+        }
         return wrapper;
     }
 
