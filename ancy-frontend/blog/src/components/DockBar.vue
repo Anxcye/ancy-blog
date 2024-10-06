@@ -2,7 +2,7 @@
   <div
     :class="[
       'flex justify-between items-center gap-3 rounded-full px-3 py-1 transition-all duration-300',
-      props.isScrolled ? '' : ' border shadow',
+      props.isScrolled ? '' : 'shadow border border-gray-200',
     ]"
   >
     <div class="dock-bar-item" v-for="item in items" :key="item.key">

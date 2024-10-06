@@ -10,8 +10,8 @@
         :key="item.id"
       >
         <div class="flex flex-row items-center justify-between">
-          <a class="flex-1" :href="`/article/${item.id}`">{{ item.title }}</a>
-          <div class="text-sm text-gray-500">
+          <router-link class="flex-1" :to="`/article/${item.id}`">{{ item.title }}</router-link>
+          <div class="text-sm text-gray">
             {{ timeAgo(new Date(item.createTime)) }}
           </div>
         </div>

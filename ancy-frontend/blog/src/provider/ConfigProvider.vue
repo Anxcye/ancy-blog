@@ -7,14 +7,10 @@ import { computed } from 'vue'
 import { useColorStore } from '@/stores/color'
 import { theme } from 'ant-design-vue'
 
-const props = defineProps<{
-  dark: boolean
-}>()
-
 const colorStore = useColorStore()
 
 const acTheme = computed(() => ({
-  algorithm: props.dark ? theme.darkAlgorithm : theme.defaultAlgorithm,
+  algorithm: colorStore.isDarkMode ? theme.darkAlgorithm : theme.defaultAlgorithm,
 
   token: {
     colorPrimary: colorStore.getPrimaryColor(),

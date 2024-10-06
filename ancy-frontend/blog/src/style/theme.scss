@@ -1,0 +1,22 @@
+:root {
+  --text-color: #333;
+  --background-color: #fff;
+  --primary-background: color-mix(in sRGB, var(--primary-color) 20%, transparent);
+  --primary-background-1: color-mix(in sRGB, var(--primary-color) 10%, transparent);
+  --gray: rgb(87, 87, 87);
+  --gray-bg: rgb(212, 212, 212);
+}
+
+.dark-mode {
+  --text-color: #fff;
+  --background-color: #0d0625;
+  --primary-background: color-mix(in sRGB, var(--primary-color) 30%, transparent);
+  --primary-background-1: color-mix(in sRGB, var(--primary-color) 10%, transparent);
+  --gray: rgb(188, 188, 188);
+  --gray-bg: rgb(102, 102, 102);
+}
+
+body {
+  color: var(--text-color);
+  background-color: var(--background-color);
+}

@@ -15,6 +15,7 @@ const colorScheme = [
 
 export const useColorStore = defineStore('color', () => {
   const currentColor = ref<string | null>(null)
+  const isDarkMode = ref(false)
 
   const getPrimaryColor = () => {
     if (currentColor.value === null) {
@@ -29,13 +30,28 @@ export const useColorStore = defineStore('color', () => {
 
   const setPrimaryColor = (color: string) => {
     document.documentElement.style.setProperty('--primary-color', color)
-    document.documentElement.style.setProperty('--primary-background', color + '22')
-    document.documentElement.style.setProperty('--primary-background-1', color + '10')
+    updateTheme()
+  }
+
+  const toggleDarkMode = () => {
+    isDarkMode.value = !isDarkMode.value
+    updateTheme()
+  }
+
+  const updateTheme = () => {
+    if (isDarkMode.value) {
+      document.documentElement.classList.add('dark-mode')
+    } else {
+      document.documentElement.classList.remove('dark-mode')
+    }
   }
 
   onMounted(() => {
     setPrimaryColor(getPrimaryColor())
+    // 可以根据用户的系统偏好设置初始主题
+    isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches
+    updateTheme()
   })
 
-  return { currentColor, getPrimaryColor, resetPrimaryColor }
+  return { currentColor, getPrimaryColor, resetPrimaryColor, isDarkMode, toggleDarkMode }
 })

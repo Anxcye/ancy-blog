@@ -2,9 +2,7 @@
   <div>
     <TopGradient height="100%" />
     <div class="text-2xl font-bold text-center mt-40 mb-5">{{ article?.title }}</div>
-    <div
-      class="text-sm text-gray-500 text-center mb-5 flex flex-row gap-3 items-center justify-center"
-    >
+    <div class="text-sm text-gray text-center mb-5 flex flex-row gap-3 items-center justify-center">
       <span>
         <a-tooltip>
           <template #title>

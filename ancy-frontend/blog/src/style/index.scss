@@ -3,13 +3,14 @@
 @import 'tailwindcss/utilities';
 
 @import './md/ancy/index.scss';
+@import './theme.scss';
 
 .ant-dropdown-menu-item-active {
   color: var(--primary-color) !important;
 }
 .ant-dropdown {
   backdrop-filter: blur(10px);
-  background-color: rgba(255, 255, 255, 0.11) !important;
+  background-color: var(--background-color-1) !important;
 
   .ant-dropdown-menu {
     background-color: transparent !important;
@@ -20,8 +21,12 @@
 }
 .ant-drawer-content-wrapper {
   backdrop-filter: blur(2px);
-  background-color: rgba(255, 255, 255, 0.11) !important;
+  background-color: var(--background-color-1) !important;
   box-shadow: none !important;
+}
+
+.ant-btn-icon-only {
+  background-color: transparent !important;
 }
 
 ::selection {

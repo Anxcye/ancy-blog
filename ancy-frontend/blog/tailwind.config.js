@@ -7,6 +7,10 @@ export default {
       height: {
         'screen-nh': 'calc(100vh - var(--ac-header-height))',
       },
+      colors: {
+        gray: 'var(--gray)',
+        'gray-bg': 'var(--gray-bg)',
+      },
     },
   },
   plugins: [],

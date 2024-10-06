@@ -18,13 +18,22 @@
       <div class="flex items-center justify-center">
         <a-button shape="circle" @click="themeClick">
           <template #icon>
-            <img :src="themeIcon" alt="theme" class="w-6 h-6 mx-auto" />
+            <img
+              :src="themeIcon"
+              alt="theme"
+              class="w-6 h-6 mx-auto"
+              :style="{
+                filter: colorStore.isDarkMode
+                  ? 'invert(100%) sepia(100%) saturate(0%) hue-rotate(249deg) brightness(118%) contrast(119%)'
+                  : 'none',
+              }"
+            />
           </template>
         </a-button>
       </div>
     </div>
   </div>
-  <ConfigProvider :dark="isDark" />
+  <ConfigProvider />
 </template>
 
 <script setup lang="ts">
@@ -36,8 +45,9 @@ import moonIcon from '@/assets/svg/moon.svg'
 import DockBar from './DockBar.vue'
 import router from '@/router'
 import ConfigProvider from '@/provider/ConfigProvider.vue'
+import { useColorStore } from '@/stores/color'
 
-const isDark = ref(false)
+const colorStore = useColorStore()
 const baseInfoStore = useBaseInfoStore()
 const themeIcon = ref(sunIcon)
 const isScrolled = ref(false)
@@ -56,8 +66,9 @@ const avatarClick = () => {
   router.push('/')
 }
 const themeClick = () => {
-  isDark.value = !isDark.value
-  themeIcon.value = themeIcon.value === sunIcon ? moonIcon : sunIcon
+  themeIcon.value = colorStore.isDarkMode ? sunIcon : moonIcon
+
+  colorStore.toggleDarkMode()
 }
 
 onMounted(async () => {
@@ -84,7 +95,8 @@ onUnmounted(() => {
   border-bottom: none;
 
   &.scrolled {
-    background-color: rgba(255, 255, 255, 0.566);
+    // background-color: rgba(255, 255, 255, 0.11);
+    background-color: var(--background-color-1);
     backdrop-filter: blur(10px);
     border-bottom: 1px solid #e8e8e8;
   }
