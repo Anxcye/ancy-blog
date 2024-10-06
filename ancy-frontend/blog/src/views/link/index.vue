@@ -52,7 +52,9 @@
             <a-form-item>
               <div class="flex flex-row items-center gap-2 md:justify-end">
                 <a-button type="primary" @click="copyInfo">复制本站信息</a-button>
-                <a-button type="primary" @click="addLink">申请添加</a-button>
+                <a-button type="primary" @click="addLink" :loading="submitLoading">
+                  申请添加
+                </a-button>
               </div>
             </a-form-item>
           </a-form>
@@ -81,7 +83,10 @@ const initialLinkParams = {
   description: baseInfo.getPhilosophy() || '',
   address: baseInfo.getAddress() || '',
 }
-const addLinkParams = ref<LinkAddParams>(initialLinkParams)
+const addLinkParams = ref<LinkAddParams>({
+  ...initialLinkParams,
+})
+const addLinkList = ref<LinkAddParams[]>([])
 const rules = ref({
   name: [{ required: true, message: '请输入名称' }],
   logo: [{ required: true, message: '请输入logo' }],
@@ -89,6 +94,7 @@ const rules = ref({
   address: [{ required: true, message: '请输入地址' }],
 })
 const formRef = ref<FormInstance>()
+const submitLoading = ref(false)
 
 const copyInfo = () => {
   navigator.clipboard.writeText(JSON.stringify(initialLinkParams))
@@ -96,15 +102,25 @@ const copyInfo = () => {
 }
 
 const addLink = async () => {
-  if (addLinkParams.value.address === initialLinkParams.address) {
-    message.error('至少修改下信息吧~')
-    return
-  }
+  submitLoading.value = true
+  try {
+    if (addLinkParams.value.address === initialLinkParams.address) {
+      message.error('至少修改下信息吧~')
+      return
+    }
+    if (addLinkList.value.some((item) => item.address === addLinkParams.value.address)) {
+      message.error('已发送电波~ 请等待')
+      return
+    }
 
-  await formRef.value!.validateFields()
-  const res = await linkAdd(addLinkParams.value)
-  if (res.code === 200) {
-    message.info('已发送电波~ 请等待')
+    await formRef.value!.validateFields()
+    const res = await linkAdd(addLinkParams.value)
+    if (res.code === 200) {
+      addLinkList.value.push(addLinkParams.value)
+      message.info('已发送电波~ 请等待')
+    }
+  } finally {
+    submitLoading.value = false
   }
 }
 
