@@ -28,6 +28,7 @@ declare module 'vue' {
     PageHeader: typeof import('./src/components/PageHeader.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
+    TimelineList: typeof import('./src/components/TimelineList.vue')['default']
     TopGradient: typeof import('./src/components/TopGradient.vue')['default']
   }
 }

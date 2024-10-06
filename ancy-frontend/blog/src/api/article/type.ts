@@ -27,6 +27,8 @@ export interface ArticlePageRes
     rows: ArticleListData[]
   }> {}
 
+export interface ArticleListRes extends ApiResponse<ArticleListData[]> {}
+
 export interface ArticlePageParams {
   pageNum: number
   pageSize: number

@@ -2,12 +2,8 @@
   <SayHi />
   <div class="px-4 py-2">
     <span class="text-xl font-medium">文章</span>
-    <a-timeline class="mt-8">
-      <a-timeline-item
-        :color="colorStore.getPrimaryColor()"
-        v-for="item in articleList"
-        :key="item.id"
-      >
+    <TimelineList :list="articleList">
+      <template #item="{ item }">
         <div class="flex flex-row items-center justify-between">
           <router-link class="hover:text-primary" :to="`/article/${item.id}`">
             {{ item.title }}
@@ -16,29 +12,25 @@
             {{ timeAgo(new Date(item.createTime)) }}
           </div>
         </div>
-      </a-timeline-item>
-    </a-timeline>
+      </template>
+    </TimelineList>
   </div>
   <HomeFooter />
 </template>
 
 <script setup lang="ts">
-import { reqArticlePage } from '@/api/article'
+import { reqArticleRecent } from '@/api/article'
 import SayHi from './components/SayHi.vue'
 import { onMounted, ref } from 'vue'
 import type { ArticleListData } from '@/api/article/type'
-import { useColorStore } from '@/stores/color'
 import timeAgo from '@/utils/timeAgo'
 import HomeFooter from './components/HomeFooter.vue'
-
-const colorStore = useColorStore()
+import TimelineList from '@/components/TimelineList.vue'
 const articleList = ref<ArticleListData[]>([])
-const total = ref<number>(0)
 
 const getArticleList = async () => {
-  const res = await reqArticlePage({ pageNum: 1, pageSize: 10 })
-  articleList.value = res.data.rows
-  total.value = res.data.total
+  const res = await reqArticleRecent()
+  articleList.value = res.data
 }
 
 onMounted(async () => {

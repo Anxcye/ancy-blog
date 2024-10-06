@@ -12,6 +12,7 @@ export default {
         'gray-bg': 'var(--gray-bg)',
         primary: 'var(--primary-color)',
         'primary-bg': 'var(--primary-background)',
+        'primary-bg-1': 'var(--primary-background-1)',
       },
     },
   },

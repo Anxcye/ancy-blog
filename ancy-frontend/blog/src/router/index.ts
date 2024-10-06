@@ -43,7 +43,7 @@ const router = createRouter({
     },
     {
       path: '/category/:id',
-      component: () => import('@/views/category/index.vue'),
+      component: () => import('@/views/article/ArticleList.vue'),
       meta: { group: 'article' },
     },
     {
