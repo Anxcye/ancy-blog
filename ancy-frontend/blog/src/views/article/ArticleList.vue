@@ -1,10 +1,8 @@
 <template>
-  <div class="max-w-3xl mx-auto px-3">
-    <h1 class="text-2xl font-medium" v-if="route.params.id">
-      分类-{{ articleList[0]?.categoryName }}
-    </h1>
-    <h1 class="text-2xl font-medium" v-else>全部文章</h1>
-    <div class="text-sm text-gray">{{ total }} 篇文章</div>
+  <div class="content">
+    <h1 class="title" v-if="route.params.id">分类-{{ articleList[0]?.categoryName }}</h1>
+    <h1 class="title" v-else>全部文章</h1>
+    <div class="summary">{{ total }} 篇文章</div>
 
     <TimelineList :list="articleList" :total="total">
       <template #item="{ item }">

@@ -81,3 +81,15 @@ a {
     transform: scaleX(1);
   }
 }
+
+.title {
+  @apply text-2xl font-bold text-center md:text-left;
+}
+
+.summary {
+  @apply text-sm text-gray mt-2 mb-16 text-center md:text-left;
+}
+
+.content {
+  @apply max-w-3xl mx-auto px-3;
+}

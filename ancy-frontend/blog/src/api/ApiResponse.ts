@@ -9,3 +9,8 @@ export interface PageResponse<T>
     total: number
     rows: T[]
   }> {}
+
+export interface PageParam {
+  pageNum: number
+  pageSize: number
+}

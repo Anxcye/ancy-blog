@@ -1,5 +1,7 @@
 <template>
-  <div class="max-w-3xl mx-auto px-3">
+  <div class="content">
+    <div class="title">日志</div>
+    <div class="summary">{{ total }} 条日志</div>
     <TimelineList :list="noteList" :total="total">
       <template #item="{ item }">
         <div

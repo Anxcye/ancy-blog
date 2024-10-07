@@ -1,8 +1,9 @@
 <template>
-  <div class="max-w-3xl mx-auto px-3 pt-10">
+  <div class="content">
+    <div class="title">朋友</div>
+    <div class="summary">{{ linkList.length }} 个朋友</div>
     <ArticleViewer :article="article">
       <template #header>
-        <h1 class="text-2xl font-bold mb-20">朋友</h1>
         <div class="grid grid-cols-2 md:grid-cols-3">
           <a
             :href="item.address"

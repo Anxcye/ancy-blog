@@ -1,8 +1,7 @@
 <template>
-  <div class="max-w-3xl mx-auto px-3">
-    <div class="text-2xl font-bold">阅读</div>
-    <div class="text-sm text-gray mt-2 mb-4">阅读是人类进步的阶梯，是人类文明传承的重要方式。</div>
-    <div class="text-sm text-gray mb-20">记下了{{ total }}条</div>
+  <div class="content">
+    <div class="title">阅读</div>
+    <div class="summary">记下了{{ total }}条</div>
     <Waterfall :list="readList">
       <template #default="{ item }">
         <div

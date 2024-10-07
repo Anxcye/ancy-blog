@@ -1,5 +1,7 @@
 <template>
-  <div class="max-w-3xl mx-auto px-3">
+  <div class="content">
+    <div class="title">项目</div>
+    <div class="summary">{{ total }} 个项目</div>
     <TimelineList :list="projectList" timeField="beginDate" :total="total">
       <template #item="{ item }">
         <div
