@@ -1,4 +1,4 @@
-import type { ApiResponse } from '../ApiResponse'
+import type { ApiResponse, PageResponse } from '../ApiResponse'
 import type { ArticleDetailData } from '../article/type'
 
 export interface ProjectData {
@@ -27,3 +27,10 @@ export interface ProjectDetailData extends ProjectData {
   articleDetailVo: ArticleDetailData
 }
 export interface ProjectDetailRes extends ApiResponse<ProjectDetailData> {}
+
+export interface ProjectPageParams {
+  pageNum: number
+  pageSize: number
+}
+
+export interface ProjectPageRes extends PageResponse<ProjectData> {}

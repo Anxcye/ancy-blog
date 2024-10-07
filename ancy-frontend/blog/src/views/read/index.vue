@@ -1,7 +1,8 @@
 <template>
-  <div class="max-w-3xl mx-auto px-3" ref="containerRef">
-    <div class="text-2xl font-medium">阅读</div>
+  <div class="max-w-3xl mx-auto px-3">
+    <div class="text-2xl font-bold">阅读</div>
     <div class="text-sm text-gray mt-2 mb-4">阅读是人类进步的阶梯，是人类文明传承的重要方式。</div>
+    <div class="text-sm text-gray mb-20">记下了{{ total }}条</div>
     <Waterfall :list="readList">
       <template #default="{ item }">
         <div
@@ -47,6 +48,7 @@ import { onMounted, ref, onUnmounted } from 'vue'
 import TimeTip from '@/components/TimeTip.vue'
 import { Waterfall } from 'vue-waterfall-plugin-next'
 import 'vue-waterfall-plugin-next/dist/style.css'
+import { handleScroll } from '@/utils/handleScroll'
 
 const anxReaderUrl = 'https://github.com/anxcye/anx-reader'
 const readPageParam = ref<ReadPageParam>({
@@ -57,7 +59,6 @@ const colorStore = useColorStore()
 const readList = ref<ReadData[]>([])
 const total = ref(0)
 const loading = ref(false)
-const containerRef = ref<HTMLElement | null>(null)
 
 const getReadList = async () => {
   if (loading.value) return
@@ -76,25 +77,17 @@ const getColor = (source: string, bg = false) => {
   return bg ? colorStore.getColor(source) + '40' : colorStore.getColor(source)
 }
 
-const handleScroll = () => {
-  if (!containerRef.value) return
-  const { scrollTop, clientHeight, scrollHeight } = document.documentElement
-  if (
-    scrollTop + clientHeight >= scrollHeight - 100 &&
-    !loading.value &&
-    readList.value.length < total.value
-  ) {
-    getReadList()
-  }
+const scroll = () => {
+  handleScroll(getReadList, loading.value, total.value === readList.value.length)
 }
 
 onMounted(async () => {
   await getReadList()
-  window.addEventListener('scroll', handleScroll)
+  window.addEventListener('scroll', scroll)
 })
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
+  window.removeEventListener('scroll', scroll)
 })
 </script>
 

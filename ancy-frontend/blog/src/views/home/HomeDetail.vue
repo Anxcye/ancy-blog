@@ -14,7 +14,7 @@
 </template>
 
 <script setup lang="ts">
-import { reqArticleGetById } from '@/api/article'
+import { reqArticleHomeGetById } from '@/api/article'
 import type { ArticleDetailData } from '@/api/article/type'
 import ArticleViewer from '@/components/ArticleViewer.vue'
 import { onMounted, ref, watch } from 'vue'
@@ -24,7 +24,7 @@ const route = useRoute()
 const article = ref<ArticleDetailData>()
 
 const getArticleDetail = async (id: number) => {
-  const res = await reqArticleGetById(id)
+  const res = await reqArticleHomeGetById(id)
   article.value = res.data
 }
 
@@ -35,6 +35,7 @@ watch(
       await getArticleDetail(Number(newId))
     }
   },
+  { immediate: true },
 )
 
 onMounted(async () => {

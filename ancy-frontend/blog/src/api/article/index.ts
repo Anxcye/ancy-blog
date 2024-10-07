@@ -23,6 +23,10 @@ export function reqArticleGetById(id: number): Promise<ArticleGetByIdRes> {
   return request.get(`/article/${id}`)
 }
 
+export function reqArticleHomeGetById(id: number): Promise<ArticleGetByIdRes> {
+  return request.get(`/article/home/${id}`)
+}
+
 export function reqArticleRecent(): Promise<ArticleListRes> {
   return request.get(`/article/recent`)
 }

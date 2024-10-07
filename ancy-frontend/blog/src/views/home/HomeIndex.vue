@@ -2,7 +2,7 @@
   <SayHi />
   <div class="px-4 py-2">
     <span class="text-xl font-medium">文章</span>
-    <TimelineList :list="articleList">
+    <TimelineList :list="articleList" :pending="false">
       <template #item="{ item }">
         <router-link class="hover:text-primary" :to="`/article/${item.id}`">
           {{ item.title }}

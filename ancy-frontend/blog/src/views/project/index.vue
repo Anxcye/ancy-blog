@@ -1,6 +1,6 @@
 <template>
   <div class="max-w-3xl mx-auto px-3">
-    <TimelineList :list="projectList" timeField="beginDate">
+    <TimelineList :list="projectList" timeField="beginDate" :total="total">
       <template #item="{ item }">
         <div
           class="flex flex-col hover:bg-primary-bg-1 p-2 rounded-lg hover:shadow-md hover:scale-105 transition-all"
@@ -35,19 +35,43 @@
 </template>
 
 <script setup lang="ts">
-import { reqProjectList } from '@/api/project'
-import type { ProjectData } from '@/api/project/type'
-import { onMounted, ref } from 'vue'
+import { reqProjectPage } from '@/api/project'
+import type { ProjectData, ProjectPageParams } from '@/api/project/type'
+import { handleScroll } from '@/utils/handleScroll'
+import { onMounted, onUnmounted, ref } from 'vue'
 
 const projectList = ref<ProjectData[]>([])
+const total = ref(0)
+const params = ref<ProjectPageParams>({
+  pageNum: 1,
+  pageSize: 10,
+})
+const loading = ref(false)
 
 const getProjectList = async () => {
-  const res = await reqProjectList()
-  projectList.value = res.data
+  if (loading.value) return
+  loading.value = true
+  try {
+    const res = await reqProjectPage(params.value)
+    projectList.value = [...projectList.value, ...res.data.rows]
+    total.value = res.data.total
+    params.value.pageNum++
+  } finally {
+    loading.value = false
+  }
+}
+
+const scroll = () => {
+  handleScroll(getProjectList, loading.value, total.value === projectList.value.length)
 }
 
 onMounted(async () => {
   await getProjectList()
+  scroll()
+  window.addEventListener('scroll', scroll)
+})
+onUnmounted(() => {
+  window.removeEventListener('scroll', scroll)
 })
 </script>
 
