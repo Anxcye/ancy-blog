@@ -1,6 +1,8 @@
 package com.anxcye.service;
 
+import com.anxcye.domain.dto.ProjectPageDto;
 import com.anxcye.domain.entity.Project;
+import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.vo.ProjectCardVo;
 import com.anxcye.domain.vo.ProjectDetailVo;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -17,4 +19,6 @@ public interface ProjectService extends IService<Project> {
     List<ProjectCardVo> getProjectList();
 
     ProjectDetailVo getProjectDetail(Long id);
+
+    PageResult getProjectPage(ProjectPageDto projectPageDto);
 }

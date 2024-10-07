@@ -1,30 +1,24 @@
 package com.anxcye.controller;
 
+import com.anxcye.domain.dto.ReadPageDto;
+import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.result.ResponseResult;
-import com.anxcye.domain.vo.ProjectCardVo;
-import com.anxcye.domain.vo.ProjectDetailVo;
-import com.anxcye.service.ProjectService;
+import com.anxcye.service.ReadService;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.List;
-
 @RestController
-@RequestMapping("/project")
-public class ProjectController {
+@RequestMapping("/read")
+public class ReadController {
+
     @Autowired
-    private ProjectService projectService;
+    private ReadService readService;
 
-    @GetMapping("/list")
-    public ResponseResult<List<ProjectCardVo>> projectList() {
-        return ResponseResult.success(projectService.getProjectList());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseResult<ProjectDetailVo> projectDetail(@PathVariable Long id) {
-        return ResponseResult.success(projectService.getProjectDetail(id));
+    @GetMapping("/page")
+    public ResponseResult<PageResult> readPage(@ParameterObject ReadPageDto readPageDto) {
+        return ResponseResult.success(readService.getReadPage(readPageDto));
     }
 }

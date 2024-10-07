@@ -4,12 +4,12 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableField;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
-import java.io.Serializable;
-import java.util.Date;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+
+import java.io.Serializable;
+import java.util.Date;
 
 /**
  * 操作日志表
@@ -50,6 +50,11 @@ public class OperateLog implements Serializable {
      * 操作时间
      */
     private Date operateTime;
+
+    /**
+     * 
+     */
+    private String summary;
 
     /**
      * 操作的类名

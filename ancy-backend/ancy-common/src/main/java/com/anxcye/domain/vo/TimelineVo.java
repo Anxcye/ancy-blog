@@ -1,82 +1,40 @@
 package com.anxcye.domain.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
-import com.baomidou.mybatisplus.annotation.TableName;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Date;
 
-/**
- * note表
- * @TableName ancy_note
- */
-@TableName(value ="ancy_note")
+
 @Data
-public class NoteVo implements Serializable {
+@AllArgsConstructor
+@NoArgsConstructor
+public class TimelineVo implements Serializable {
     /**
-     * 
+     * ID
      */
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
-     * 文章内容
+     * 操作时间
      */
-    private String content;
+    private Date operateTime;
 
     /**
-     * 是否置顶（0否，1是）
+     *
      */
-    private String isTop;
+    private String summary;
 
     /**
-     * 状态（0已发布，1草稿）
+     * 操作的方法名
      */
-    private String status;
+    private String methodName;
 
     /**
-     * 排序
+     * 返回值
      */
-    private Integer orderNum;
+    private String returnValue;
 
-    /**
-     * 访问量
-     */
-    private Long viewCount;
-
-    /**
-     * 是否允许评论 1是，0否
-     */
-    private String isComment;
-
-    /**
-     * 
-     */
-    private Long createBy;
-
-    /**
-     * 
-     */
-    private Date createTime;
-
-    /**
-     * 
-     */
-    private Long updateBy;
-
-    /**
-     * 
-     */
-    private Date updateTime;
-
-    /**
-     * 删除标志（0代表未删除，1代表已删除）
-     */
-    private Integer deleted;
-
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
 }

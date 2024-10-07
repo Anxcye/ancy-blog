@@ -20,7 +20,7 @@ public class ArticleController {
 
     @PreAuthorize("@ps.hasPermission('content:article:add')")
     @PostMapping
-    public ResponseResult<Boolean> articleAdd(@RequestBody ArticleDto articleDto) {
+    public ResponseResult<Long> articleAdd(@RequestBody ArticleDto articleDto) {
         return ResponseResult.success(articleService.addArticle(articleDto));
     }
 

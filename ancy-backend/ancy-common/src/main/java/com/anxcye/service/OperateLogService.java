@@ -1,6 +1,8 @@
 package com.anxcye.service;
 
+import com.anxcye.domain.dto.TimelinePageDto;
 import com.anxcye.domain.entity.OperateLog;
+import com.anxcye.domain.result.PageResult;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -10,4 +12,5 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface OperateLogService extends IService<OperateLog> {
 
+    PageResult getTimelinePage(TimelinePageDto timelinePageDto);
 }

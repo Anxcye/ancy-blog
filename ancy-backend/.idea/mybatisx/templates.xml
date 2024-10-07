@@ -13,7 +13,7 @@
             <option name="extraClassSuffix" value="" />
             <option name="ignoreFieldPrefix" value="" />
             <option name="ignoreFieldSuffix" value="" />
-            <option name="ignoreTablePrefix" value="ancy_" />
+            <option name="ignoreTablePrefix" value="sys_" />
             <option name="ignoreTableSuffix" value="" />
             <option name="moduleName" value="ancy-common" />
             <option name="modulePath" value="$PROJECT_DIR$/ancy-common" />
@@ -27,8 +27,8 @@
             <option name="tableUIInfoList">
               <list>
                 <TableUIInfo>
-                  <option name="className" value="Project" />
-                  <option name="tableName" value="ancy_project" />
+                  <option name="className" value="OperateLog" />
+                  <option name="tableName" value="sys_operate_log" />
                 </TableUIInfo>
               </list>
             </option>

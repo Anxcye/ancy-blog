@@ -2,6 +2,7 @@ package com.anxcye.service.impl;
 
 import com.alibaba.fastjson.JSONObject;
 import com.alibaba.fastjson.TypeReference;
+import com.anxcye.annotation.Log;
 import com.anxcye.constants.SystemConstants;
 import com.anxcye.domain.dto.SettingDto;
 import com.anxcye.domain.entity.Setting;
@@ -62,6 +63,7 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting>
         return settingVo;
     }
 
+    @Log
     @Override
     public boolean updateBaseSetting(SettingDto settingDto) {
         // update all properties

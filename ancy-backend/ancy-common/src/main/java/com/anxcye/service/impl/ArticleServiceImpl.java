@@ -1,5 +1,6 @@
 package com.anxcye.service.impl;
 
+import com.anxcye.annotation.Log;
 import com.anxcye.constants.RedisConstant;
 import com.anxcye.constants.SystemConstants;
 import com.anxcye.domain.dto.ArticleDto;
@@ -108,9 +109,10 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         redisCache.setCacheMap(RedisConstant.ARTICLE_VIEW_COUNT, viewCountMap);
     }
 
+    @Log(fieldName = "title")
     @Override
     @Transactional
-    public boolean addArticle(ArticleDto articleDto) {
+    public Long addArticle(ArticleDto articleDto) {
         Article article = BeanCopyUtils.copyBean(articleDto, Article.class);
         save(article);
         initViewCount();
@@ -120,7 +122,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
             articleTagService.saveArticleTag(article.getId(), tagIds);
         }
 
-        return true;
+        return article.getId();
 
     }
 
@@ -146,6 +148,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         return new PageResult(page.getTotal(), articleCardVos);
     }
 
+    @Log
     @Override
     @Transactional
     public boolean updateArticleById(Long id, ArticleDto addArticleDto) {
@@ -158,6 +161,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         return true;
     }
 
+    @Log
     @Override
     public boolean deleteArticleById(Long articleId) {
         removeById(articleId);

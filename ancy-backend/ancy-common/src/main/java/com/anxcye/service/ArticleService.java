@@ -28,7 +28,7 @@ public interface ArticleService extends IService<Article> {
 
     void initViewCount();
 
-    boolean addArticle(ArticleDto articleDto);
+    Long addArticle(ArticleDto articleDto);
 
     PageResult pageList(ArticleListDto articleListDto);
 

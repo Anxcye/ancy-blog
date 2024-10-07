@@ -1,5 +1,6 @@
 package com.anxcye.service.impl;
 
+import com.anxcye.annotation.Log;
 import com.anxcye.domain.dto.RoleDto;
 import com.anxcye.domain.dto.RoleListDto;
 import com.anxcye.domain.entity.Role;
@@ -58,6 +59,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role>
 
     }
 
+    @Log
     @Override
     @Transactional
     public boolean addRole(RoleDto roleDto) {
@@ -67,6 +69,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role>
         return true;
     }
 
+    @Log
     @Override
     public boolean updateRole(Long id, RoleDto roleDto) {
         Role role = BeanCopyUtils.copyBean(roleDto, Role.class);
@@ -78,6 +81,7 @@ public class RoleServiceImpl extends ServiceImpl<RoleMapper, Role>
         return true;
     }
 
+    @Log
     @Override
     public boolean deleteRole(Long id) {
         removeById(id);

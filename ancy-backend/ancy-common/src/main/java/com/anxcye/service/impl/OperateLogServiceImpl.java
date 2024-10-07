@@ -1,10 +1,19 @@
 package com.anxcye.service.impl;
 
-import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.anxcye.domain.dto.TimelinePageDto;
 import com.anxcye.domain.entity.OperateLog;
-import com.anxcye.service.OperateLogService;
+import com.anxcye.domain.result.PageResult;
+import com.anxcye.domain.vo.TimelineVo;
 import com.anxcye.mapper.OperateLogMapper;
+import com.anxcye.service.OperateLogService;
+import com.anxcye.utils.BeanCopyUtils;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
+import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
 * @author axy
@@ -15,6 +24,21 @@ import org.springframework.stereotype.Service;
 public class OperateLogServiceImpl extends ServiceImpl<OperateLogMapper, OperateLog>
     implements OperateLogService{
 
+    private static final List<String> OPERATE_TYPE_LIST = Arrays.asList("addArticle", "addNote", "addProject");
+
+    @Override
+    public PageResult getTimelinePage(TimelinePageDto timelinePageDto) {
+        LambdaQueryWrapper<OperateLog> wrapper = new LambdaQueryWrapper<>();
+        wrapper.orderByDesc(OperateLog::getOperateTime);
+        wrapper.in(OperateLog::getMethodName, OPERATE_TYPE_LIST);
+
+        Page<OperateLog> page = new Page<>(timelinePageDto.getPageNum(), timelinePageDto.getPageSize());
+        page(page, wrapper);
+
+        List<TimelineVo> timelineVos = BeanCopyUtils.copyList(page.getRecords(), TimelineVo.class);
+
+        return new PageResult(page.getTotal(), timelineVos);
+    }
 }
 
 

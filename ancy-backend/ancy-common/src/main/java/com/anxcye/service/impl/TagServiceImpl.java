@@ -1,6 +1,7 @@
 package com.anxcye.service.impl;
 
 import com.alibaba.excel.util.StringUtils;
+import com.anxcye.annotation.Log;
 import com.anxcye.domain.dto.TagDto;
 import com.anxcye.domain.dto.TagListDto;
 import com.anxcye.domain.entity.Tag;
@@ -44,6 +45,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag>
         return new PageResult(tagPage.getTotal(), tagVos);
     }
 
+    @Log
     @Override
     public Long addTag(TagDto tagDto) {
         Tag tag = BeanCopyUtils.copyBean(tagDto, Tag.class);
@@ -51,6 +53,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag>
         return tag.getId();
     }
 
+    @Log
     @Override
     public boolean deleteTag(Long id) {
         removeById(id);
@@ -58,6 +61,7 @@ public class TagServiceImpl extends ServiceImpl<TagMapper, Tag>
         return true;
     }
 
+    @Log
     @Override
     public boolean updateTag(Long id, TagDto tagDto) {
         Tag tag = BeanCopyUtils.copyBean(tagDto, Tag.class);

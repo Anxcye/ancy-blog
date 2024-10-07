@@ -1,6 +1,7 @@
 package com.anxcye.service.impl;
 
 import com.alibaba.excel.EasyExcel;
+import com.anxcye.annotation.Log;
 import com.anxcye.constants.SystemConstants;
 import com.anxcye.domain.dto.CategoryDto;
 import com.anxcye.domain.dto.CategoryListDto;
@@ -76,6 +77,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         return BeanCopyUtils.copyList(categories, CategoryVo.class);
     }
 
+    @Log
     @Override
     public void exportToXlsx(HttpServletResponse response) throws IOException {
         WebUtils.setDownLoadHeader(SystemConstants.EXPORT_CATEGORY_FILE_NAME, response);
@@ -103,6 +105,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         return new PageResult(page.getTotal(), categoryVos);
     }
 
+    @Log
     @Override
     public Long addCategory(CategoryDto categoryDto) {
         Category category = BeanCopyUtils.copyBean(categoryDto, Category.class);
@@ -110,6 +113,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         return category.getId();
     }
 
+    @Log
     @Override
     public boolean updateCategory(Long id, CategoryDto categoryDto) {
         Category category = BeanCopyUtils.copyBean(categoryDto, Category.class);
@@ -118,6 +122,7 @@ public class CategoryServiceImpl extends ServiceImpl<CategoryMapper, Category> i
         return true;
     }
 
+    @Log
     @Override
     public boolean deleteCategory(Long id) {
         if (!articleService.getByCategoryId(id).isEmpty()){

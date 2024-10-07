@@ -1,6 +1,7 @@
 package com.anxcye.service.impl;
 
 
+import com.anxcye.annotation.Log;
 import com.anxcye.constants.SystemConstants;
 import com.anxcye.domain.enums.AppHttpCodeEnum;
 import com.anxcye.exception.SystemException;
@@ -25,6 +26,7 @@ public class CommonServiceImpl implements CommonService {
     @Autowired
     private AliOssUtil aliOssUtil;
 
+    @Log
     @Override
     public String uploadImg(MultipartFile file) {
         if (SecurityUtil.getUserId() != SystemConstants.SUPER_ADMIN_ID){

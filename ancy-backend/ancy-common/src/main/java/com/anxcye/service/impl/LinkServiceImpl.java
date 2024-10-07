@@ -67,12 +67,14 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link>
         return link.getId();
     }
 
+    @Log
     @Override
     public boolean deleteLink(Long id) {
         removeById(id);
         return true;
     }
 
+    @Log
     @Override
     public boolean updateLink(Long id, LinkDto linkDto) {
         Link link = BeanCopyUtils.copyBean(linkDto, Link.class);
@@ -87,6 +89,7 @@ public class LinkServiceImpl extends ServiceImpl<LinkMapper, Link>
         return BeanCopyUtils.copyBean(link, LinkVo.class);
     }
 
+    @Log
     @Override
     public Long addLinkBlog(LinkDto linkDto) {
         Link link = BeanCopyUtils.copyBean(linkDto, Link.class);

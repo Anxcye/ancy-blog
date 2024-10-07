@@ -1,6 +1,7 @@
 package com.anxcye.aspect;
 
 import com.alibaba.fastjson.JSON;
+import com.anxcye.annotation.Log;
 import com.anxcye.domain.entity.OperateLog;
 import com.anxcye.service.OperateLogService;
 import com.anxcye.utils.SecurityUtil;
@@ -9,9 +10,11 @@ import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Pointcut;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -27,6 +30,31 @@ public class LogAspect {
 
     @Pointcut("@annotation(com.anxcye.annotation.Log)")
     public void logPointCut() {
+    }
+
+    private String getCustomFieldValue(ProceedingJoinPoint joinPoint) {
+        MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+        Method method = signature.getMethod();
+        Log logAnnotation = method.getAnnotation(Log.class);
+        
+        if (logAnnotation != null && !logAnnotation.fieldName().isEmpty()) {
+            String fieldName = logAnnotation.fieldName();
+            Object[] args = joinPoint.getArgs();
+            if (args.length > 0 && args[0] != null) {
+                Object arg = args[0];  // 获取第一个参数
+                try {
+                    java.lang.reflect.Field field = arg.getClass().getDeclaredField(fieldName);
+                    field.setAccessible(true);
+                    Object value = field.get(arg);
+                    if (value != null) {
+                        return value.toString();
+                    }
+                } catch (NoSuchFieldException | IllegalAccessException e) {
+                    // 字段不存在或无法访问
+                }
+            }
+        }
+        return "";
     }
 
     @Around("logPointCut()")
@@ -54,9 +82,15 @@ public class LogAspect {
 
         String methodName = joinPoint.getSignature().getName();
 
-        String methodParams = Arrays.toString(joinPoint.getArgs());
+        String params = Arrays.toString(joinPoint.getArgs());
 
-        String returnValue = JSON.toJSONString(result);
+        String methodParams = params.length() > 1000 ? params.substring(0, 995) + "..." : params;
+
+        String summaryValue = getCustomFieldValue(joinPoint);
+
+        String returnV = JSON.toJSONString(result);
+
+        String returnValue = returnV.length() > 2000 ? returnV.substring(0, 1995) + "..." : returnV;
 
         long costTime = endTime - startTime;
 
@@ -67,6 +101,7 @@ public class LogAspect {
                 address,
                 ua,
                 operateTime,
+                summaryValue,
                 className,
                 methodName,
                 methodParams,

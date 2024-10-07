@@ -1,5 +1,6 @@
 package com.anxcye.service.impl;
 
+import com.anxcye.annotation.Log;
 import com.anxcye.constants.SystemConstants;
 import com.anxcye.domain.dto.MenuDto;
 import com.anxcye.domain.dto.MenuListDto;
@@ -100,6 +101,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         return BeanCopyUtils.copyList(menus, MenuVo.class);
     }
 
+    @Log
     @Override
     public boolean addMenu(MenuDto menuDto) {
         Menu menu = BeanCopyUtils.copyBean(menuDto, Menu.class);
@@ -107,6 +109,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         return true;
     }
 
+    @Log
     @Override
     public boolean updateMenu(Long id, MenuDto menuDto) {
         if (Objects.equals(menuDto.getParentId(), id)) {
@@ -118,6 +121,7 @@ public class MenuServiceImpl extends ServiceImpl<MenuMapper, Menu> implements Me
         return true;
     }
 
+    @Log
     @Override
     public boolean deleteMenu(Long id) {
         if (hasChild(id)) {

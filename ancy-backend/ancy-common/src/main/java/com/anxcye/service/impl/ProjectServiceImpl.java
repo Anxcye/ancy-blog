@@ -1,8 +1,10 @@
 package com.anxcye.service.impl;
 
 import com.anxcye.constants.SystemConstants;
+import com.anxcye.domain.dto.ProjectPageDto;
 import com.anxcye.domain.entity.Article;
 import com.anxcye.domain.entity.Project;
+import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.vo.ArticleDetailVo;
 import com.anxcye.domain.vo.ProjectCardVo;
 import com.anxcye.domain.vo.ProjectDetailVo;
@@ -12,6 +14,7 @@ import com.anxcye.service.ProjectService;
 import com.anxcye.utils.BeanCopyUtils;
 import com.anxcye.utils.SecurityUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -64,5 +67,16 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project>
         projectDetailVo.setArticleDetailVo(articleDetailVo);
 
         return projectDetailVo;
+    }
+
+    @Override
+    public PageResult getProjectPage(ProjectPageDto projectPageDto) {
+        LambdaQueryWrapper<Project> wrapper = getProjectWrapper();
+        wrapper.orderByDesc(Project::getIsTop)
+                .orderByAsc(Project::getOrderNum)
+                .orderByDesc(Project::getCreateTime);
+        Page<Project> page = new Page<>(projectPageDto.getPageNum(), projectPageDto.getPageSize());
+        page(page, wrapper);
+        return new PageResult(page.getTotal(), page.getRecords());
     }
 }

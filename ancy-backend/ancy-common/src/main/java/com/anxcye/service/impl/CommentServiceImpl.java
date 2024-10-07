@@ -1,6 +1,7 @@
 package com.anxcye.service.impl;
 
 import com.alibaba.excel.util.StringUtils;
+import com.anxcye.annotation.Log;
 import com.anxcye.constants.SystemConstants;
 import com.anxcye.domain.dto.CommentDto;
 import com.anxcye.domain.entity.Comment;
@@ -79,6 +80,7 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         return new PageResult(commentPage.getTotal(), commentVos);
     }
 
+    @Log
     @Override
     public Long add(CommentDto commentDto) {
         if (StringUtils.isEmpty(commentDto.getType())) {

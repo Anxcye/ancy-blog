@@ -1,5 +1,6 @@
 package com.anxcye.service.impl;
 
+import com.anxcye.annotation.Log;
 import com.anxcye.domain.entity.RoleMenu;
 import com.anxcye.mapper.RoleMenuMapper;
 import com.anxcye.service.RoleMenuService;
@@ -40,6 +41,7 @@ public class RoleMenuServiceImpl extends ServiceImpl<RoleMenuMapper, RoleMenu>
         return remove(wrapper);
     }
 
+    @Log
     @Override
     @Transactional
     public boolean updateByRoleId(Long roleId, List<Long> menuIds) {

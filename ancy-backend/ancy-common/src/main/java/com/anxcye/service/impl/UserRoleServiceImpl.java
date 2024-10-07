@@ -1,5 +1,6 @@
 package com.anxcye.service.impl;
 
+import com.anxcye.annotation.Log;
 import com.anxcye.domain.entity.UserRole;
 import com.anxcye.mapper.UserRoleMapper;
 import com.anxcye.service.UserRoleService;
@@ -56,6 +57,7 @@ public class UserRoleServiceImpl extends ServiceImpl<UserRoleMapper, UserRole>
                 .collect(Collectors.toList());
     }
 
+    @Log
     @Override
     @Transactional
     public boolean updateByUserId(Long id, List<Long> roleIds) {

@@ -1,5 +1,6 @@
 package com.anxcye.service.impl;
 
+import com.anxcye.annotation.Log;
 import com.anxcye.domain.entity.ArticleTag;
 import com.anxcye.mapper.ArticleTagMapper;
 import com.anxcye.service.ArticleTagService;
@@ -41,6 +42,7 @@ public class ArticleTagServiceImpl extends ServiceImpl<ArticleTagMapper, Article
         return remove(wrapper);
     }
 
+    @Log
     @Override
     @Transactional
     public boolean updateByArticleId(Long articleId, List<Long> tags) {

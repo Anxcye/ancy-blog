@@ -1,5 +1,6 @@
 package com.anxcye.service.impl;
 
+import com.anxcye.annotation.Log;
 import com.anxcye.constants.RedisConstant;
 import com.anxcye.constants.SystemConstants;
 import com.anxcye.domain.dto.*;
@@ -75,6 +76,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return (LoginUser) authenticate.getPrincipal();
     }
 
+    @Log
     @Override
     public BlogUserVo login(LoginDto loginDto) {
 
@@ -91,6 +93,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     }
 
+    @Log
     @Override
     public void logout() {
         Long id = SecurityUtil.getUserId();
@@ -104,6 +107,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return BeanCopyUtils.copyBean(user, UserInfoVo.class);
     }
 
+    @Log
     @Override
     public UserInfoVo updateUserInfo(UserDto userDto) {
         if (!Objects.equals(SecurityUtil.getUserId(), userDto.getId())) {
@@ -118,6 +122,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return getOne(new LambdaQueryWrapper<User>().eq(getter, value)) != null;
     }
 
+    @Log
     @Override
     public BlogUserVo register(RegisterDto userDto) {
         if (Objects.isNull(userDto.getUserName()) || Objects.isNull(userDto.getPassword()) || Objects.isNull(userDto.getEmail()) || Objects.isNull(userDto.getNickName())) {
@@ -139,6 +144,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return login(loginDto);
     }
 
+    @Log
     @Override
     public AdminUserVo adminLogin(LoginDto loginDto) {
 
@@ -161,6 +167,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return new RouterVo(menuService.selectMenuTreeByUserId(userId));
     }
 
+    @Log
     @Override
     public boolean adminLogout() {
         Long id = SecurityUtil.getUserId();
@@ -196,6 +203,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
 
     }
 
+    @Log
     @Override
     public Long addAdmin(AdminUserDto adminUserDto) {
         if (Objects.isNull(adminUserDto.getUserName()) ||
@@ -228,6 +236,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return userVo;
     }
 
+    @Log
     @Override
     @Transactional
     public boolean updateAdmin(Long id, AdminUserDto adminUserDto) {
@@ -244,6 +253,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
         return true;
     }
 
+    @Log
     @Override
     public boolean deleteUser(Long id) {
         removeById(id);
