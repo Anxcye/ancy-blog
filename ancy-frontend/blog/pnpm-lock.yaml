@@ -29,6 +29,9 @@ importers:
       vue-router:
         specifier: ^4.3.3
         version: 4.4.5(vue@3.5.8(typescript@5.4.5))
+      vue-waterfall-plugin-next:
+        specifier: ^2.6.0
+        version: 2.6.0
     devDependencies:
       '@rushstack/eslint-patch':
         specifier: ^1.8.0
@@ -2254,6 +2257,9 @@ packages:
     engines: {node: '>=10.15.0'}
     peerDependencies:
       vue: ^3.0.0
+
+  vue-waterfall-plugin-next@2.6.0:
+    resolution: {integrity: sha512-GgovHXWkEP0flI/60GPeTC9vQAnYXLfhohAe8BudIljlcpBS+UCFXOS+S7FCsoujhvdcUY1heKxZglf13KGl9g==}
 
   vue@3.5.8:
     resolution: {integrity: sha512-hvuvuCy51nP/1fSRvrrIqTLSvrSyz2Pq+KQ8S8SXCxTWVE0nMaOnSDnSOxV1eYmGfvK7mqiwvd1C59CEEz7dAQ==}
@@ -4618,6 +4624,8 @@ snapshots:
     dependencies:
       is-plain-object: 3.0.1
       vue: 3.5.8(typescript@5.4.5)
+
+  vue-waterfall-plugin-next@2.6.0: {}
 
   vue@3.5.8(typescript@5.4.5):
     dependencies:

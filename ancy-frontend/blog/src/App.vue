@@ -1,23 +1,12 @@
 <template>
-  <div class="overflow-hidden">
+  <div class="overflow-hidden flex flex-col min-h-screen w-full">
     <TopGradient />
     <PageHeader />
-    <router-view class="router-view"></router-view>
+    <router-view class="mt-ac-header w-full flex-1"></router-view>
+    <HomeFooter />
   </div>
 </template>
 
-<script setup lang="ts">
-import PageHeader from '@/components/PageHeader.vue'
-</script>
+<script setup lang="ts"></script>
 
-<style scoped lang="scss">
-.page-header {
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-}
-.router-view {
-  margin-top: $ac-header-height;
-}
-</style>
+<style scoped lang="scss"></style>

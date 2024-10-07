@@ -58,18 +58,18 @@ export const useDockStore = defineStore('dock', () => {
       children: categoryItems,
     },
     {
-      key: 'timeline',
-      label: '回溯',
-      icon: h(CalendarOutlined),
-      path: '/timeline',
-      group: 'timeline',
-    },
-    {
       key: 'note',
       label: '日志',
       icon: h(CalendarOutlined),
       path: '/note',
       group: 'note',
+    },
+    {
+      key: 'timeline',
+      label: '回溯',
+      icon: h(CalendarOutlined),
+      path: '/timeline',
+      group: 'timeline',
     },
     {
       key: 'link',

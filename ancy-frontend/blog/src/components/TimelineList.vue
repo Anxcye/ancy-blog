@@ -7,12 +7,7 @@
         :key="item.id"
       >
         <template #label>
-          <a-tooltip>
-            <template #title>
-              {{ time(item) || '' }}
-            </template>
-            {{ timeAgo(new Date(time(item) || '')) }}
-          </a-tooltip>
+          <TimeTip :time="time(item)" />
         </template>
         <slot name="item" :item="item" />
       </a-timeline-item>
@@ -22,8 +17,7 @@
 
 <script setup lang="ts">
 import { useColorStore } from '@/stores/color'
-import timeAgo from '@/utils/timeAgo'
-
+import TimeTip from '@/components/TimeTip.vue'
 const colorStore = useColorStore()
 
 const props = defineProps<{

@@ -10,7 +10,6 @@
       </template>
     </TimelineList>
   </div>
-  <HomeFooter />
 </template>
 
 <script setup lang="ts">
@@ -18,7 +17,6 @@ import { reqArticleRecent } from '@/api/article'
 import SayHi from './components/SayHi.vue'
 import { onMounted, ref } from 'vue'
 import type { ArticleListData } from '@/api/article/type'
-import HomeFooter from './components/HomeFooter.vue'
 import TimelineList from '@/components/TimelineList.vue'
 const articleList = ref<ArticleListData[]>([])
 

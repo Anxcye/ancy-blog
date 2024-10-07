@@ -18,6 +18,7 @@ declare module 'vue' {
     AInput: typeof import('ant-design-vue/es')['Input']
     AMenu: typeof import('ant-design-vue/es')['Menu']
     AMenuItem: typeof import('ant-design-vue/es')['MenuItem']
+    APagination: typeof import('ant-design-vue/es')['Pagination']
     ARadioButton: typeof import('ant-design-vue/es')['RadioButton']
     ARadioGroup: typeof import('ant-design-vue/es')['RadioGroup']
     ArticleDetail: typeof import('./src/components/ArticleDetail.vue')['default']
@@ -30,11 +31,13 @@ declare module 'vue' {
     DockBar: typeof import('./src/components/DockBar.vue')['default']
     DockBarItem: typeof import('./src/components/DockBarItem.vue')['default']
     DockerBarItem: typeof import('./src/components/DockerBarItem.vue')['default']
+    HomeFooter: typeof import('./src/components/HomeFooter.vue')['default']
     MdViewer: typeof import('./src/components/MdViewer.vue')['default']
     PageHeader: typeof import('./src/components/PageHeader.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']
     RouterView: typeof import('vue-router')['RouterView']
     TimelineList: typeof import('./src/components/TimelineList.vue')['default']
+    TimeTip: typeof import('./src/components/TimeTip.vue')['default']
     TopGradient: typeof import('./src/components/TopGradient.vue')['default']
   }
 }

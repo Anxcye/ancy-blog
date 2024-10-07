@@ -23,6 +23,19 @@ export const useColorStore = defineStore('color', () => {
     }
     return currentColor.value
   }
+  const hash = (source: string) => {
+    let hash = 0
+    for (let i = 0; i < source.length; i++) {
+      const char = source.charCodeAt(i)
+      hash = (hash << 5) - hash + char
+      hash |= 0
+    }
+    return Math.abs(hash)
+  }
+
+  const getColor = (source: string) => {
+    return colorScheme[hash(source) % colorScheme.length]
+  }
 
   const resetPrimaryColor = () => {
     currentColor.value = null
@@ -53,5 +66,5 @@ export const useColorStore = defineStore('color', () => {
     updateTheme()
   })
 
-  return { currentColor, getPrimaryColor, resetPrimaryColor, isDarkMode, toggleDarkMode }
+  return { currentColor, getPrimaryColor, resetPrimaryColor, isDarkMode, toggleDarkMode, getColor }
 })
