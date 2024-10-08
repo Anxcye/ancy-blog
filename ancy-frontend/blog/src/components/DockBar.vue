@@ -9,10 +9,10 @@
       <a-dropdown>
         <div
           @click="navigate(item.path)"
-          class="flex items-center justify-center gap-1 text-sm cursor-pointer"
-          :style="{
-            color: isActive(item.group) ? primaryColor : '',
-          }"
+          :class="[
+            'flex items-center justify-center gap-1 text-sm cursor-pointer ',
+            isActive(item.group) ? 'text-primary' : 'text-gray',
+          ]"
         >
           <icon :component="item.icon" v-if="isActive(item.group)" style="font-size: 12px" />
           {{ getActiveLabel(item) }}
@@ -43,10 +43,10 @@
       <div v-for="item in items" :key="item.key" class="my-4">
         <div
           @click="navigate(item.path)"
-          class="gap-2 font-medium text-lg w-full flex flex-row items-center"
-          :style="{
-            color: isActive(item.group) ? primaryColor : '',
-          }"
+          :class="[
+            'gap-2 font-medium text-lg w-full flex flex-row items-center',
+            isActive(item.group) ? 'text-primary' : 'text-gray',
+          ]"
         >
           <icon :component="item.icon" />
           <div class="">{{ item.label }}</div>
@@ -56,11 +56,14 @@
             <router-link :to="child.path" custom v-slot="{ isExactActive }">
               <div
                 @click="navigate(child.path)"
-                :class="[isExactActive ? 'text-lg' : 'text-sm']"
-                :style="{
-                  color: isExactActive ? primaryColor : '',
-                }"
+                :class="[
+                  isExactActive ? 'text-lg' : 'text-sm',
+                  isExactActive ? 'text-primary' : 'text-gray',
+                ]"
               >
+                <!-- :style="{
+                  color: isExactActive ? getPrimaryColor() : '',
+                }" -->
                 {{ child.label }}
               </div>
             </router-link>
@@ -75,12 +78,9 @@
 import { useDockStore } from '@/stores/dock'
 import Icon from '@ant-design/icons-vue'
 import router from '@/router'
-import { useColorStore } from '@/stores/color'
 const dockStore = useDockStore()
-const colorStore = useColorStore()
 const items = dockStore.items
 
-const primaryColor = colorStore.getPrimaryColor()
 const isActive = (group: string) => router.currentRoute.value.meta.group === group
 
 const props = defineProps<{

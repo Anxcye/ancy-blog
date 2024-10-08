@@ -16,6 +16,9 @@ public interface CommentService extends IService<Comment> {
 
     PageResult getChildren(Long parentId, Integer pageNum, Integer pageSize);
 
-    Long add(CommentDto commentDto);
+    Long addComment(CommentDto commentDto);
 
+    Boolean updateComment(Long id, CommentDto commentDto);
+
+    Boolean updateCommentLike(Long id, Boolean increase);
 }

@@ -15,41 +15,55 @@ public class PermissionServiceImpl {
             return true;
         }
 
-        List<String> roles = SecurityUtil.getLoginUser().getRoles();
-        return roles.contains(role);
+        try {
+            List<String> roles = SecurityUtil.getLoginUser().getRoles();
+            return roles.contains(role);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public boolean hasPermission(String permission) {
         if (AdminUtil.isSuperAdmin(SecurityUtil.getUserId())) {
             return true;
         }
-
-        List<String> permissions = SecurityUtil.getLoginUser().getPermissions();
-        return permissions.contains(permission);
+        try {
+            List<String> permissions = SecurityUtil.getLoginUser().getPermissions();
+            return permissions.contains(permission);
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public boolean hasAnyRole(String... roles) {
         if (AdminUtil.isSuperAdmin(SecurityUtil.getUserId())) {
             return true;
         }
+        try {
 
-        return Arrays.stream(roles)
-                .anyMatch(
-                        role -> SecurityUtil.getLoginUser()
-                                .getRoles()
-                                .contains(role));
+            return Arrays.stream(roles)
+                    .anyMatch(
+                            role -> SecurityUtil.getLoginUser()
+                                    .getRoles()
+                                    .contains(role));
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public boolean hasAnyPermission(String... permissions) {
         if (AdminUtil.isSuperAdmin(SecurityUtil.getUserId())) {
             return true;
         }
-
-        return Arrays.stream(permissions)
-                .anyMatch(
-                        permission -> SecurityUtil.getLoginUser()
-                                .getPermissions()
-                                .contains(permission));
+        try {
+            return Arrays.stream(permissions)
+                    .anyMatch(
+                            permission -> SecurityUtil.getLoginUser()
+                                    .getPermissions()
+                                    .contains(permission));
+        } catch (Exception e) {
+            return false;
+        }
     }
 
 }

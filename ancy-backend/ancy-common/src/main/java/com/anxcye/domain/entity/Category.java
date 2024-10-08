@@ -55,13 +55,13 @@ public class Category implements Serializable {
     /**
      *
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @TableField(fill = FieldFill.UPDATE)
     private Long updateBy;
 
     /**
      *
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @TableField(fill = FieldFill.UPDATE)
     private Date updateTime;
 
     /**

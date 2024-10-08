@@ -38,7 +38,7 @@ public class SystemConstants
 
     public static final String COMMENT_TYPE_ARTICLE = "0";
 
-    public static final String COMMENT_TYPE_LINK = "1";
+    public static final String COMMENT_TYPE_NOTE = "1";
 
     public static final long SUPER_ADMIN_ID = 1L;
     public static final String MENU_TABLE_MENU = "C";
@@ -53,4 +53,6 @@ public class SystemConstants
     public static final Integer ARTICLE_TYPE_PROJECT = 2;
     public static final Integer ARTICLE_TYPE_LINK = 3;
     public static final String LINK_STATUS_HIDE = "1";
+    public static final String NOT_TOP = "0";
+    public static final String IS_TOP = "1";
 }

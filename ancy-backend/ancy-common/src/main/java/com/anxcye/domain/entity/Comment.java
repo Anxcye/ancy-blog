@@ -8,20 +8,19 @@ import java.util.Date;
 
 /**
  * 评论表
- *
  * @TableName ancy_comment
  */
-@TableName(value = "ancy_comment")
+@TableName(value ="ancy_comment")
 @Data
 public class Comment implements Serializable {
     /**
-     *
+     * 
      */
     @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
-     * 评论类型（0代表文章评论，1代表友链评论）
+     * 评论类型（0代表文章评论，1代表NOTE评论）
      */
     private String type;
 
@@ -31,14 +30,34 @@ public class Comment implements Serializable {
     private Long articleId;
 
     /**
-     * 审核状态 (0代表审核通过，1代表审核未通过，2代表未审核)
+     * 公开状态 0代表公开，1代表隐藏
      */
     private String status;
 
     /**
      * 根评论id
      */
-    private Long rootId;
+    private Long parentId;
+
+    /**
+     * 
+     */
+    private Long userId;
+
+    /**
+     * 
+     */
+    private String avatar;
+
+    /**
+     * 
+     */
+    private String nickname;
+
+    /**
+     * 
+     */
+    private String email;
 
     /**
      * 评论内容
@@ -46,37 +65,57 @@ public class Comment implements Serializable {
     private String content;
 
     /**
-     * 所回复的目标评论的userid
+     * 
      */
-    private Long toCommentUserId;
+    private String ua;
 
     /**
-     * 回复目标评论id
+     * 
+     */
+    private String ip;
+
+    /**
+     * 
+     */
+    private Integer likeCount;
+
+    /**
+     * 
+     */
+    private String isTop;
+
+    /**
+     * 
+     */
+    private String toCommentNickname;
+
+    /**
+     * 
      */
     private Long toCommentId;
 
     /**
-     *
+     * 
      */
     @TableField(fill = FieldFill.INSERT)
     private Long createBy;
 
     /**
-     *
+     * 
      */
     @TableField(fill = FieldFill.INSERT)
     private Date createTime;
 
     /**
-     *
+     * 
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @TableField(fill = FieldFill.UPDATE)
     private Long updateBy;
 
     /**
-     *
+     * 
      */
-    @TableField(fill = FieldFill.INSERT_UPDATE)
+    @TableField(fill = FieldFill.UPDATE)
     private Date updateTime;
 
     /**

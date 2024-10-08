@@ -1,7 +1,14 @@
 <template>
-  <div class="app-container" :class="{ scrolled: isScrolled }">
-    <div class="page-header">
-      <div class="menu">
+  <div
+    :class="[
+      'w-screen flex justify-center left-0 top-0 right-0 z-10 bg-transparent border-b-0 fixed',
+      isScrolled ? 'bg-bg-color-1 backdrop-blur-sm border-b border-gray-bg' : '',
+    ]"
+  >
+    <div
+      class="w-screen flex items-center justify-between h-ac-header px-2 max-w-3xl mx-auto md:px-0"
+    >
+      <div class="block md:hidden">
         <a-button
           shape="circle"
           :icon="h(MenuOutlined)"
@@ -12,7 +19,7 @@
       <div class="avatar">
         <a-avatar :size="36" :src="baseInfoStore.baseInfo?.avatar" @click="avatarClick" />
       </div>
-      <div class="dock-bar">
+      <div class="hidden md:block">
         <DockBar :isScrolled="isScrolled" :drawerOpen="open" @update:drawerOpen="menuClose" />
       </div>
       <div class="flex items-center justify-center">
@@ -81,51 +88,4 @@ onUnmounted(() => {
 })
 </script>
 
-<style scoped lang="scss">
-.app-container {
-  width: 100vw;
-  display: flex;
-  justify-content: center;
-  left: 0;
-  top: 0;
-  right: 0;
-  z-index: 1000;
-  background-color: transparent;
-  position: fixed;
-  border-bottom: none;
-
-  &.scrolled {
-    // background-color: rgba(255, 255, 255, 0.11);
-    background-color: var(--background-color-1);
-    backdrop-filter: blur(10px);
-    border-bottom: 1px solid #e8e8e8;
-  }
-
-  .page-header {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: $ac-header-height;
-
-    // pc
-    @media (min-width: 768px) {
-      max-width: 800px;
-      .menu {
-        display: none;
-      }
-    }
-
-    // mobile
-    @media (max-width: 768px) {
-      padding: 0 16px;
-      .menu {
-        display: block;
-      }
-      .dock-bar {
-        display: none;
-      }
-    }
-  }
-}
-</style>
+<style scoped lang="scss"></style>

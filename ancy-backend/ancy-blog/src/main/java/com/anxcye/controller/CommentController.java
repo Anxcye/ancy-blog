@@ -6,6 +6,7 @@ import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.result.ResponseResult;
 import com.anxcye.service.CommentService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -31,15 +32,26 @@ public class CommentController {
 
     @PostMapping
     public ResponseResult<Long> commentAdd(@RequestBody CommentDto commentDto) {
-        return ResponseResult.success(commentService.add(commentDto));
+        return ResponseResult.success(commentService.addComment(commentDto));
     }
 
-    @GetMapping("/link")
-    public ResponseResult<PageResult> commentLink(Integer pageNum, Integer pageSize) {
+    @GetMapping("/note/{id}")
+    public ResponseResult<PageResult> commentNote(@PathVariable Long id, Integer pageNum, Integer pageSize) {
         return  ResponseResult.success(commentService.selectComment(
-                SystemConstants.COMMENT_TYPE_LINK,
-                null,
+                SystemConstants.COMMENT_TYPE_NOTE,
+                id,
                 pageNum,
                 pageSize));
+    }
+
+    @PreAuthorize("@ps.hasPermission('content:comment:edit')")
+    @PutMapping("/admin/{id}")
+    public ResponseResult<Boolean> commentUpdate(@PathVariable Long id, @RequestBody CommentDto commentDto) {
+        return ResponseResult.success(commentService.updateComment(id, commentDto));
+    }
+
+    @PutMapping("/{id}/like")
+    public ResponseResult<Boolean> commentLike(@PathVariable Long id, @RequestParam Boolean increase) {
+        return ResponseResult.success(commentService.updateCommentLike(id, increase));
     }
 }

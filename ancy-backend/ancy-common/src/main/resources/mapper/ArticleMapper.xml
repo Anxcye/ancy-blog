@@ -5,30 +5,32 @@
 <mapper namespace="com.anxcye.mapper.ArticleMapper">
 
     <resultMap id="BaseResultMap" type="com.anxcye.domain.entity.Article">
-        <id property="id" column="id" jdbcType="BIGINT"/>
-        <result property="title" column="title" jdbcType="VARCHAR"/>
-        <result property="content" column="content" jdbcType="LONGVARCHAR"/>
-        <result property="summary" column="summary" jdbcType="VARCHAR"/>
-        <result property="categoryId" column="category_id" jdbcType="BIGINT"/>
-        <result property="thumbnail" column="thumbnail" jdbcType="VARCHAR"/>
-        <result property="isTop" column="is_top" jdbcType="CHAR"/>
-        <result property="status" column="status" jdbcType="CHAR"/>
-        <result property="viewCount" column="view_count" jdbcType="BIGINT"/>
-        <result property="isComment" column="is_comment" jdbcType="CHAR"/>
-        <result property="createBy" column="create_by" jdbcType="BIGINT"/>
-        <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
-        <result property="updateBy" column="update_by" jdbcType="BIGINT"/>
-        <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
-        <result property="deleted" column="deleted" jdbcType="INTEGER"/>
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="title" column="title" jdbcType="VARCHAR"/>
+            <result property="content" column="content" jdbcType="VARCHAR"/>
+            <result property="summary" column="summary" jdbcType="VARCHAR"/>
+            <result property="categoryId" column="category_id" jdbcType="BIGINT"/>
+            <result property="thumbnail" column="thumbnail" jdbcType="VARCHAR"/>
+            <result property="isTop" column="is_top" jdbcType="CHAR"/>
+            <result property="status" column="status" jdbcType="CHAR"/>
+            <result property="type" column="type" jdbcType="TINYINT"/>
+            <result property="orderNum" column="order_num" jdbcType="TINYINT"/>
+            <result property="viewCount" column="view_count" jdbcType="BIGINT"/>
+            <result property="isComment" column="is_comment" jdbcType="CHAR"/>
+            <result property="createBy" column="create_by" jdbcType="BIGINT"/>
+            <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
+            <result property="updateBy" column="update_by" jdbcType="BIGINT"/>
+            <result property="updateTime" column="update_time" jdbcType="TIMESTAMP"/>
+            <result property="deleted" column="deleted" jdbcType="INTEGER"/>
     </resultMap>
 
     <sql id="Base_Column_List">
         id,title,content,
-		summary,category_id,thumbnail,
-		is_top,status,view_count,
-		is_comment,create_by,
-		create_time,update_by,
-		update_time,deleted
+        summary,category_id,thumbnail,
+        is_top,status,type,
+        order_num,view_count,is_comment,
+        create_by,create_time,update_by,
+        update_time,deleted
     </sql>
 
     <update id="updateViewCountById">

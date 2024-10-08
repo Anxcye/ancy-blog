@@ -1,3 +1,4 @@
+import { useColorStore } from '@/stores/color'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
@@ -77,6 +78,13 @@ const router = createRouter({
       meta: { group: 'more' },
     },
   ],
+})
+
+// beforeEach
+router.beforeEach((to, from, next) => {
+  const colorStore = useColorStore()
+  colorStore.changeColor()
+  next()
 })
 
 export default router

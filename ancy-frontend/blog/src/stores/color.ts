@@ -17,6 +17,13 @@ export const useColorStore = defineStore('color', () => {
   const currentColor = ref<string | null>(null)
   const isDarkMode = ref(false)
 
+  const changeColor = () => {
+    currentColor.value = colorScheme[Math.floor(Math.random() * colorScheme.length)]
+    setPrimaryColor(getPrimaryColor())
+    isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches
+    updateTheme()
+  }
+
   const getPrimaryColor = () => {
     if (currentColor.value === null) {
       currentColor.value = colorScheme[Math.floor(Math.random() * colorScheme.length)]
@@ -60,11 +67,16 @@ export const useColorStore = defineStore('color', () => {
   }
 
   onMounted(() => {
-    setPrimaryColor(getPrimaryColor())
-    // 可以根据用户的系统偏好设置初始主题
-    isDarkMode.value = window.matchMedia('(prefers-color-scheme: dark)').matches
-    updateTheme()
+    changeColor()
   })
 
-  return { currentColor, getPrimaryColor, resetPrimaryColor, isDarkMode, toggleDarkMode, getColor }
+  return {
+    currentColor,
+    getPrimaryColor,
+    resetPrimaryColor,
+    isDarkMode,
+    toggleDarkMode,
+    getColor,
+    changeColor,
+  }
 })

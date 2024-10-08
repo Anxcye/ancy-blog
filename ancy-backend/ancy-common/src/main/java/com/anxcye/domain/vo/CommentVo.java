@@ -23,34 +23,63 @@ public class CommentVo implements Serializable {
     /**
      * 根评论id
      */
-    private Long rootId;
+    private Long parentId;
+
+    private Long userId;
+
+    /**
+     *
+     */
+    private String avatar;
+
+    /**
+     *
+     */
+    private String nickname;
+
+    /**
+     *
+     */
+    private String email;
 
     /**
      * 评论内容
      */
     private String content;
 
-    private PageResult children;
-
     /**
-     * 所回复的目标评论的userid
+     *
      */
-    private Long toCommentUserId;
+    private String ua;
 
     /**
-     * 所回复的目标评论的userName
+     *
      */
-    private String toCommentUserName;
+    private String ip;
 
     /**
-     * 回复目标评论id
+     *
+     */
+    private Integer likeCount;
+
+    /**
+     *
+     */
+    private String isTop;
+
+    /**
+     *
+     */
+    private String toCommentNickname;
+
+    /**
+     *
      */
     private Long toCommentId;
-
     /**
-     * 评论人
-     */
-    private String userName;
+     *
+      */
+    private PageResult children;
 
     /**
      * 

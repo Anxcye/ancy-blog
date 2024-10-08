@@ -98,6 +98,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User> implements Us
     public void logout() {
         Long id = SecurityUtil.getUserId();
         redisCache.deleteObject(RedisConstant.BLOG_TOKEN_PREFIX + id);
+//        return t
     }
 
     @Override

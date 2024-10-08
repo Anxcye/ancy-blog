@@ -8,9 +8,18 @@
             <id property="id" column="id" jdbcType="BIGINT"/>
             <result property="type" column="type" jdbcType="CHAR"/>
             <result property="articleId" column="article_id" jdbcType="BIGINT"/>
-            <result property="rootId" column="root_id" jdbcType="BIGINT"/>
+            <result property="status" column="status" jdbcType="CHAR"/>
+            <result property="parentId" column="parent_id" jdbcType="BIGINT"/>
+            <result property="userId" column="user_id" jdbcType="BIGINT"/>
+            <result property="avatar" column="avatar" jdbcType="VARCHAR"/>
+            <result property="nickname" column="nickname" jdbcType="VARCHAR"/>
+            <result property="email" column="email" jdbcType="VARCHAR"/>
             <result property="content" column="content" jdbcType="VARCHAR"/>
-            <result property="toCommentUserId" column="to_comment_user_id" jdbcType="BIGINT"/>
+            <result property="ua" column="ua" jdbcType="VARCHAR"/>
+            <result property="ip" column="ip" jdbcType="VARCHAR"/>
+            <result property="like" column="like" jdbcType="INTEGER"/>
+            <result property="isTop" column="is_top" jdbcType="CHAR"/>
+            <result property="toCommentNickname" column="to_comment_nickname" jdbcType="VARCHAR"/>
             <result property="toCommentId" column="to_comment_id" jdbcType="BIGINT"/>
             <result property="createBy" column="create_by" jdbcType="BIGINT"/>
             <result property="createTime" column="create_time" jdbcType="TIMESTAMP"/>
@@ -21,8 +30,16 @@
 
     <sql id="Base_Column_List">
         id,type,article_id,
-        root_id,content,to_comment_user_id,
+        status,parent_id,user_id,
+        avatar,nickname,email,
+        content,ua,ip,
+        like,is_top,to_comment_nickname,
         to_comment_id,create_by,create_time,
         update_by,update_time,deleted
     </sql>
+    <update id="updateLikeCount">
+        UPDATE ancy_comment
+        SET like_count = like_count + #{increment}
+        WHERE id = #{id}
+    </update>
 </mapper>

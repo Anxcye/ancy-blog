@@ -30,6 +30,10 @@ public class SecurityUtil {
     }
 
     public static Long getUserId() {
-        return getLoginUser().getUser().getId();
+        try {
+            return getLoginUser().getUser().getId();
+        } catch (Exception e) {
+            return -1L;
+        }
     }
 }
