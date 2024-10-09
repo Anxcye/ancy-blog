@@ -12,6 +12,8 @@ export default {
         'ac-header': 'var(--ac-header-height)',
       },
       colors: {
+        'bg-color': 'var(--background-color)',
+        'tx-color': 'var(--text-color)',
         gray: 'var(--gray)',
         'gray-bg': 'var(--gray-bg)',
         primary: 'var(--primary-color)',

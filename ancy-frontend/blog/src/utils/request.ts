@@ -1,3 +1,5 @@
+import { message } from 'ant-design-vue'
+import { useAdminStore } from '@/stores/admin'
 import axios from 'axios'
 
 const request = axios.create({
@@ -5,28 +7,33 @@ const request = axios.create({
   timeout: 5000,
 })
 
-// 添加请求拦截器
+const adminRequest = ['/comment']
+
 request.interceptors.request.use(
   function (config) {
+    if (useAdminStore().token && adminRequest.some((url) => config.url?.startsWith(url))) {
+      config.headers.token = useAdminStore().token
+    }
     return config
   },
   function (error) {
-    // 对请求错误做些什么
     return Promise.reject(error)
   },
 )
 
-// 添加响应拦截器
 request.interceptors.response.use(
   function (response) {
-    // 2xx 范围内的状态码都会触发该函数。
-    // 对响应数据做点什么
-
+    if (response.data.code !== 200) {
+      message.error(response.data.msg)
+    }
     return response.data
   },
   function (error) {
-    // 超出 2xx 范围的状态码都会触发该函数。
-    // 对响应错误做点什么
+    if (error.response.status === 510) {
+      message.error('管理员登录过期，请重新登录')
+      useAdminStore().logout()
+    }
+    message.error(error.response.data.msg)
     return Promise.reject(error)
   },
 )

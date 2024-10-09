@@ -36,6 +36,14 @@
   color: var(--text-color) !important;
 }
 
+.ant-modal-content {
+  background-color: transparent !important;
+  box-shadow: none !important;
+}
+.ant-form-item {
+  margin-bottom: 0 !important;
+}
+
 div.timeline_container div.ant-timeline-item-label {
   width: calc(5rem - 12px) !important;
 }

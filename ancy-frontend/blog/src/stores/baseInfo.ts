@@ -39,6 +39,10 @@ export const useBaseInfoStore = defineStore('baseInfo', () => {
     return baseInfo.value?.badge
   }
 
+  const getFooter = () => {
+    return baseInfo.value?.footer
+  }
+
   return {
     baseInfo,
     reqBaseInfo,
@@ -49,5 +53,6 @@ export const useBaseInfoStore = defineStore('baseInfo', () => {
     getName,
     getAddress,
     getBadge,
+    getFooter,
   }
 })

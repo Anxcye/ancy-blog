@@ -3,6 +3,7 @@
     <slot name="header"></slot>
     <MdViewer :content="content" />
     <slot name="footer"></slot>
+    <DisplayComment :id="props.article.id" type="Article" v-if="props.article?.id" />
   </div>
 </template>
 
@@ -11,7 +12,7 @@ import MdViewer from '@/components/MdViewer.vue'
 import { computed } from 'vue'
 
 const props = defineProps<{
-  article?: { content: string }
+  article?: { id: number; content: string }
 }>()
 const content = computed(() => props.article?.content)
 </script>

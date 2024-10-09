@@ -7,9 +7,17 @@ export interface Badge {
   url: string
 }
 
+export interface Footer {
+  index: string
+  text: string
+  url: string
+  position: number
+}
+
 export interface SettingGetBaseData {
   avatar: string
   badge: Badge[]
+  footer: Footer[]
   greeting: string
   philosophy: string
   name: string
