@@ -6,6 +6,7 @@ import type {
   CommentPageParams,
   CommentUpdateRes,
   CommentListRes,
+  CommentTotalRes,
 } from './type'
 
 export function reqCommentByArticleId(params: CommentPageParams): Promise<CommentListRes> {
@@ -33,4 +34,11 @@ export function reqCommentChildrenByParentId(params: CommentPageParams): Promise
 
 export function reqCommentUpdate(id: number, params: CommentAddParams): Promise<CommentUpdateRes> {
   return request.put(`/comment/admin/${id}`, params)
+}
+
+export function commentArticleTotal(id: number): Promise<CommentTotalRes> {
+  return request.get(`/comment/article/${id}/total`)
+}
+export function commentNoteTotal(id: number): Promise<CommentTotalRes> {
+  return request.get(`/comment/note/${id}/total`)
 }

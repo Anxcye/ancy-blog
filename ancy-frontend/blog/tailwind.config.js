@@ -8,6 +8,9 @@ export default {
         'screen-nh': 'calc(100vh - var(--ac-header-height))',
         'ac-header': 'var(--ac-header-height)',
       },
+      minHeight: {
+        'screen-nh': 'calc(100vh - var(--ac-header-height))',
+      },
       margin: {
         'ac-header': 'var(--ac-header-height)',
       },

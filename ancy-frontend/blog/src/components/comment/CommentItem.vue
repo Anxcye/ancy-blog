@@ -80,10 +80,7 @@
       class="my-3"
       @submit="handleSubmit($event)"
     />
-    <div
-      v-if="comment.children && comment.children.total"
-      class="ml-6 border-l-4 border-primary-bg pl-2 md:ml-10"
-    >
+    <div v-if="total > 0" class="ml-6 border-l-4 border-primary-bg pl-2 md:ml-10">
       <div v-for="child in childrenCommentList" :key="child.id" class="mt-2">
         <CommentItem
           :comment="child"
@@ -99,6 +96,8 @@
       :total="total"
       v-model:current="getChildrenParams.pageNum"
       @change="loadChildrenComment"
+      :page-size="getChildrenParams.pageSize"
+      hideOnSinglePage
     />
     <a-button v-if="comment.children?.total > 3" class="w-full mt-2" @click="handleLoadMore">
       {{ showMore ? '收起更多' : '查看更多' }}
@@ -176,7 +175,7 @@ const handleStatusChange = async (item: CommentData) => {
 }
 
 const handleSubmit = (comment: CommentData) => {
-  if (comment.parentId === -1) {
+  if (comment.parentId === props.comment.id) {
     total.value++
     childrenCommentList.value.unshift(comment)
   } else {

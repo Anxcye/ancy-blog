@@ -54,3 +54,5 @@ export interface CommentAddRes extends ApiResponse<number> {}
 export interface CommentLikeRes extends ApiResponse<boolean> {}
 
 export interface CommentUpdateRes extends ApiResponse<boolean> {}
+
+export interface CommentTotalRes extends ApiResponse<number> {}

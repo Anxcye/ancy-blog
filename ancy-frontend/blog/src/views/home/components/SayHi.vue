@@ -1,5 +1,5 @@
 <template>
-  <div class="h-screen-nh flex flex-col justify-between items-center">
+  <div class="flex flex-col justify-between items-center px-2 min-h-screen-nh">
     <div></div>
     <div
       class="w-full items-center flex flex-col justify-center md:flex-row md:max-w-3xl md:mx-auto md:justify-between"

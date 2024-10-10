@@ -1,7 +1,7 @@
 <template>
-  <div class="border-t border-gray-bg bg-primary-bg-1 h-40 p-3">
+  <div class="border-t border-gray-bg bg-primary-bg-1 h-20 p-3">
     <div class="content">
-      <div class="flex flex-col">
+      <div class="flex flex-col justify-between items-center">
         <div class="flex flex-row items-center gap-3 text-sm">
           <span>
             Powered by
