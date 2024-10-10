@@ -42,4 +42,9 @@
         SET like_count = like_count + #{increment}
         WHERE id = #{id}
     </update>
+    <!-- Long countTotal(Long articleId, String commentType); -->
+    <select id="countTotal" resultType="java.lang.Long">
+        SELECT COUNT(*) FROM ancy_comment
+        WHERE article_id = #{articleId} AND type = #{commentType} AND deleted = 0
+    </select>
 </mapper>

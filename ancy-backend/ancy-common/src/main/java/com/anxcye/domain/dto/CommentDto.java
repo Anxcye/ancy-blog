@@ -62,7 +62,7 @@ public class CommentDto {
     /**
      * 所回复的目标评论的userid
      */
-    private Long toCommentUserId;
+    private String toCommentNickname;
 
     /**
      * 回复目标评论id

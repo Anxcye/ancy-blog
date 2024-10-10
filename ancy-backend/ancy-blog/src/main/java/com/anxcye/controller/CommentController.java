@@ -16,18 +16,30 @@ public class CommentController {
     @Autowired
     private CommentService commentService;
 
-    @GetMapping("/article/{articleId}")
-    public ResponseResult<PageResult> commentByArticleId(@PathVariable Long articleId, Integer pageNum, Integer pageSize) {
+    @GetMapping("/article/{id}")
+    public ResponseResult<PageResult> commentByArticleId(@PathVariable Long id, Integer pageNum, Integer pageSize) {
         return ResponseResult.success(commentService.selectComment(
                 SystemConstants.COMMENT_TYPE_ARTICLE,
-                articleId,
+                id,
                 pageNum,
                 pageSize));
     }
 
-    @GetMapping("/{parentId}/children")
-    public ResponseResult<PageResult> commentChildrenByParentId(@PathVariable Long parentId, Integer pageNum, Integer pageSize) {
-        return ResponseResult.success(commentService.getChildren(parentId, pageNum, pageSize));
+    @GetMapping("/article/{id}/total")
+    public ResponseResult<Long> commentArticleTotal(@PathVariable Long id) {
+        return ResponseResult.success(commentService.countTotal(
+                SystemConstants.COMMENT_TYPE_ARTICLE, id));
+    }
+
+    @GetMapping("/note/{id}/total")
+    public ResponseResult<Long> commentNoteTotal(@PathVariable Long id) {
+        return ResponseResult.success(commentService.countTotal(
+                SystemConstants.COMMENT_TYPE_NOTE, id));
+    }
+
+    @GetMapping("/{id}/children")
+    public ResponseResult<PageResult> commentChildrenByParentId(@PathVariable Long id, Integer pageNum, Integer pageSize) {
+        return ResponseResult.success(commentService.getChildren(id, pageNum, pageSize));
     }
 
     @PostMapping
@@ -37,7 +49,7 @@ public class CommentController {
 
     @GetMapping("/note/{id}")
     public ResponseResult<PageResult> commentNote(@PathVariable Long id, Integer pageNum, Integer pageSize) {
-        return  ResponseResult.success(commentService.selectComment(
+        return ResponseResult.success(commentService.selectComment(
                 SystemConstants.COMMENT_TYPE_NOTE,
                 id,
                 pageNum,

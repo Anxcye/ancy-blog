@@ -21,4 +21,6 @@ public interface CommentService extends IService<Comment> {
     Boolean updateComment(Long id, CommentDto commentDto);
 
     Boolean updateCommentLike(Long id, Boolean increase);
+
+    Long countTotal(String commentTypeNote, Long id);
 }

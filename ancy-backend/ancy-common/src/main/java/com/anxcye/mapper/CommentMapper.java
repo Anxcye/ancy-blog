@@ -12,6 +12,8 @@ import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 public interface CommentMapper extends BaseMapper<Comment> {
 
     int updateLikeCount(Long id, Integer increment);
+
+    Long countTotal(Long articleId, String commentType);
 }
 
 

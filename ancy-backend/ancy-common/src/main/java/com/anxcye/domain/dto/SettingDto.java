@@ -17,17 +17,28 @@ public class SettingDto {
     private String name;
     private String address;
     private List<BadgeDto> badge;
-
+    private List<FooterDto> footer;
 
     @Data
     @NoArgsConstructor
     @AllArgsConstructor
-    public static
-    class BadgeDto   {
+    public static class BadgeDto {
         private String index;
         private String title;
         private String url;
         private String img;
+        private Integer orderNum;
+    }
+
+    @Data
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class FooterDto {
+        private Integer position;
+        private String index;
+        private String text;
+        private String url;
+        private Integer orderNum;
     }
 
 }

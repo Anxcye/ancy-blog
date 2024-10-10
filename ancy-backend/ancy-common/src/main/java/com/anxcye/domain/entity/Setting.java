@@ -38,6 +38,11 @@ public class Setting implements Serializable {
     /**
      * 
      */
+    private Integer orderNum;
+
+    /**
+     * 
+     */
     private String comment;
 
     /**

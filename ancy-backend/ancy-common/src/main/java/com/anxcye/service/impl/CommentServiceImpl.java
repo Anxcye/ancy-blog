@@ -36,11 +36,17 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
     private HttpServletRequest httpServletRequest;
 
     private LambdaQueryWrapper<Comment> getCommentWrapper() {
-        LambdaQueryWrapper<Comment> commentLambdaQueryWrapper = new LambdaQueryWrapper<>();
+        LambdaQueryWrapper<Comment> wrapper = new LambdaQueryWrapper<>();
         if (!SecurityUtil.isAdmin()) {
-            commentLambdaQueryWrapper.eq(Comment::getStatus, SystemConstants.COMMENT_STATUS_NORMAL);
+            wrapper.eq(Comment::getStatus, SystemConstants.COMMENT_STATUS_NORMAL);
+            wrapper.select(Comment::getId, Comment::getType, Comment::getArticleId,
+                    Comment::getParentId, Comment::getUserId, Comment::getAvatar,
+                    Comment::getNickname, Comment::getContent, Comment::getLikeCount,
+                    Comment::getIsTop, Comment::getToCommentNickname, Comment::getToCommentId,
+                    Comment::getCreateBy, Comment::getCreateTime, Comment::getUpdateBy,
+                    Comment::getUpdateTime);
         }
-        return commentLambdaQueryWrapper;
+        return wrapper;
     }
 
     private List<CommentVo> toCommentVoList(List<Comment> commentList) {
@@ -67,10 +73,14 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         commentLambdaQueryWrapper.eq(Objects.nonNull(articleId), Comment::getArticleId, articleId);
         commentLambdaQueryWrapper.eq(Comment::getParentId, SystemConstants.COMMENT_IS_ROOT);
         commentLambdaQueryWrapper.eq(Comment::getType, commentType);
-        commentLambdaQueryWrapper.orderByAsc(Comment::getCreateTime);
+        commentLambdaQueryWrapper.orderByDesc(Comment::getIsTop)
+                .orderByDesc(Comment::getLikeCount)
+                .orderByDesc(Comment::getCreateTime);
 
         Page<Comment> commentPage = new Page<>(pageNum, pageSize);
         page(commentPage, commentLambdaQueryWrapper);
+
+
 
         List<CommentVo> commentVos = toCommentVoList(commentPage.getRecords());
         return new PageResult(commentPage.getTotal(), commentVos);
@@ -80,7 +90,9 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
     public PageResult getChildren(Long parentId, Integer pageNum, Integer pageSize) {
         LambdaQueryWrapper<Comment> commentLambdaQueryWrapper = getCommentWrapper();
         commentLambdaQueryWrapper.eq(Comment::getParentId, parentId);
-        commentLambdaQueryWrapper.orderByAsc(Comment::getCreateTime);
+        commentLambdaQueryWrapper.orderByDesc(Comment::getIsTop)
+                .orderByDesc(Comment::getLikeCount)
+                .orderByDesc(Comment::getCreateTime);
 
         Page<Comment> commentPage = new Page<>(pageNum, pageSize);
         page(commentPage, commentLambdaQueryWrapper);
@@ -120,5 +132,10 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
             throw new SystemException(AppHttpCodeEnum.NOT_FOUND);
         }
         return true;
+    }
+
+    @Override
+    public Long countTotal(String commentType, Long id) {
+            return baseMapper.countTotal(id, commentType);
     }
 }

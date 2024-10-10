@@ -40,10 +40,12 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting>
     @Override
     public SettingVo getBaseSetting() {
         LambdaQueryWrapper<Setting> wrapper = getWrapper();
+        wrapper.orderByAsc(Setting::getOrderNum);
         List<Setting> settingList = list(wrapper);
 
         Map<String, String> infoMap = new HashMap<>();
         List<SettingVo.BadgeVo> badgeList = new ArrayList<>();
+        List<SettingVo.FooterVo> footerList = new ArrayList<>();
 
         settingList.forEach(setting -> {
             switch (setting.getType()) {
@@ -53,12 +55,20 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting>
                 case 2:
                     JSONObject badge = JSONObject.parseObject(setting.getValue());
                     SettingVo.BadgeVo badgeVo = badge.toJavaObject(SettingVo.BadgeVo.class);
+                    badgeVo.setOrderNum(setting.getOrderNum());
                     badgeList.add(badgeVo);
+                    break;
+                case 3:
+                    JSONObject footer = JSONObject.parseObject(setting.getValue());
+                    SettingVo.FooterVo footerVo = footer.toJavaObject(SettingVo.FooterVo.class);
+                    footerVo.setOrderNum(setting.getOrderNum());
+                    footerList.add(footerVo);
                     break;
             }
         });
         SettingVo settingVo = JSONObject.parseObject(JSONObject.toJSONString(infoMap), SettingVo.class);
         settingVo.setBadge(badgeList);
+        settingVo.setFooter(footerList);
 
         return settingVo;
     }
@@ -77,7 +87,8 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting>
             switch (key) {
                 case "badge":
                     List<SettingDto.BadgeDto> badgeList = JSONObject.parseObject(
-                            JSONObject.toJSONString(value), new TypeReference<List<SettingDto.BadgeDto>>() {});
+                            JSONObject.toJSONString(value), new TypeReference<List<SettingDto.BadgeDto>>() {
+                            });
                     badgeList.forEach(badge -> {
                         Setting setting = getOne(
                                 new LambdaQueryWrapper<Setting>().eq(Setting::getName, "badge_" + badge.getIndex()));
@@ -87,6 +98,7 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting>
                             setting.setValue(JSONObject.toJSONString(badge));
                             setting.setType(2);
                             setting.setStatus(SystemConstants.STATUS_NORMAL);
+                            setting.setOrderNum(badge.getOrderNum());
                             save(setting);
                         } else {
                             setting.setValue(JSONObject.toJSONString(badge));
@@ -94,6 +106,28 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting>
                         }
                     });
                     break;
+                case "footer":
+                    List<SettingDto.FooterDto> footerList = JSONObject.parseObject(
+                            JSONObject.toJSONString(value), new TypeReference<List<SettingDto.FooterDto>>() {
+                            });
+                    footerList.forEach(footer -> {
+                        Setting setting = getOne(
+                                new LambdaQueryWrapper<Setting>().eq(Setting::getName, "footer_" + footer.getIndex()));
+                        if (setting == null) {
+                            setting = new Setting();
+                            setting.setName("footer_" + footer.getIndex());
+                            setting.setValue(JSONObject.toJSONString(footer));
+                            setting.setType(3);
+                            setting.setStatus(SystemConstants.STATUS_NORMAL);
+                            setting.setOrderNum(footer.getOrderNum());
+                            save(setting);
+                        } else {
+                            setting.setValue(JSONObject.toJSONString(footer));
+                            updateById(setting);
+                        }
+                    });
+                    break;
+
                 default:
                     LambdaQueryWrapper<Setting> wrapper = new LambdaQueryWrapper<>();
                     wrapper.eq(Setting::getName, key);
@@ -104,6 +138,7 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting>
                         setting.setValue(value.toString());
                         setting.setType(1);
                         setting.setStatus(SystemConstants.STATUS_NORMAL);
+                        setting.setOrderNum(0);
                         save(setting);
                     } else {
                         setting.setValue(value.toString());

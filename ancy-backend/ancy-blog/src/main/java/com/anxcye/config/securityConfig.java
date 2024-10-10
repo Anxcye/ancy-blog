@@ -60,7 +60,7 @@ public class securityConfig {
 //                                .requestMatchers("/comment").authenticated()
 //                                .requestMatchers("/user/info").authenticated()
                                 .requestMatchers("/comment/admin/" ).authenticated()
-                                .anyRequest().anonymous()
+                                .anyRequest().permitAll()
                 )
                 .logout(AbstractHttpConfigurer::disable)
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))

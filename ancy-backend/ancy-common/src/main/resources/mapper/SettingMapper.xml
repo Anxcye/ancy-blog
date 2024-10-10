@@ -6,14 +6,17 @@
 
     <resultMap id="BaseResultMap" type="com.anxcye.domain.entity.Setting">
             <id property="id" column="id" jdbcType="BIGINT"/>
-            <result property="key" column="key" jdbcType="VARCHAR"/>
-            <result property="value" column="value" jdbcType="VARCHAR"/>
+            <result property="status" column="status" jdbcType="CHAR"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="orderNum" column="order_num" jdbcType="INTEGER"/>
             <result property="comment" column="comment" jdbcType="VARCHAR"/>
             <result property="type" column="type" jdbcType="TINYINT"/>
+            <result property="value" column="value" jdbcType="VARCHAR"/>
     </resultMap>
 
     <sql id="Base_Column_List">
-        id,key,value,
-        comment,type
+        id,status,name,
+        order_num,comment,type,
+        value
     </sql>
 </mapper>
