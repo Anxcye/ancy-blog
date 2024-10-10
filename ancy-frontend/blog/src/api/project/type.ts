@@ -1,5 +1,4 @@
 import type { ApiResponse, PageResponse } from '../ApiResponse'
-import type { ArticleDetailData } from '../article/type'
 
 export interface ProjectData {
   id: number
@@ -24,7 +23,7 @@ export interface ProjectData {
 export interface ProjectListRes extends ApiResponse<ProjectData[]> {}
 
 export interface ProjectDetailData extends ProjectData {
-  articleDetailVo: ArticleDetailData
+  content: string
 }
 export interface ProjectDetailRes extends ApiResponse<ProjectDetailData> {}
 

@@ -1,6 +1,6 @@
 <template>
   <div class="max-w-3xl mx-auto px-3">
-    <ArticleViewer :article="projectDetail?.articleDetailVo">
+    <ArticleViewer :article="projectDetail" v-if="projectDetail" :showComment="false">
       <template #header>
         <div class="flex flex-col gap-2 items-center md:items-start">
           <div class="text-2xl font-medium">{{ projectDetail?.title }}</div>
