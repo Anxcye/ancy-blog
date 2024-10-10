@@ -1,5 +1,6 @@
 package com.anxcye.service;
 
+import com.anxcye.domain.dto.ProjectDto;
 import com.anxcye.domain.dto.ProjectPageDto;
 import com.anxcye.domain.entity.Project;
 import com.anxcye.domain.result.PageResult;
@@ -21,4 +22,10 @@ public interface ProjectService extends IService<Project> {
     ProjectDetailVo getProjectDetail(Long id);
 
     PageResult getProjectPage(ProjectPageDto projectPageDto);
+
+    Long addProject(ProjectDto projectDto);
+
+    Boolean updateProject(Long id, ProjectDto projectDto);
+
+    Boolean deleteProject(Long id);
 }

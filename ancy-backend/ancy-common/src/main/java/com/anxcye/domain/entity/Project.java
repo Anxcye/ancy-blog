@@ -1,7 +1,9 @@
 package com.anxcye.domain.entity;
 
 import com.baomidou.mybatisplus.annotation.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
 import java.util.Date;
@@ -12,6 +14,8 @@ import java.util.Date;
  */
 @TableName(value ="ancy_project")
 @Data
+@NoArgsConstructor
+@AllArgsConstructor
 public class Project implements Serializable {
     /**
      * 
@@ -25,9 +29,9 @@ public class Project implements Serializable {
     private String title;
 
     /**
-     * article id
+     * content
      */
-    private Long articleId;
+    private String content;
 
     /**
      * 文章摘要

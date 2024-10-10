@@ -5,8 +5,10 @@ import lombok.Data;
 import java.io.Serializable;
 
 @Data
-public class CommentListDto extends PageListDto implements Serializable {
+public class CommentPageDto extends PageListDto implements Serializable {
     private Long articleId;
-    
-    private String summary;
+    private String email;
+    private String nickname;
+    private String content;
+    private String status;
 }

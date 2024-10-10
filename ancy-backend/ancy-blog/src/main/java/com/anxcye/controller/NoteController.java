@@ -1,6 +1,6 @@
 package com.anxcye.controller;
 
-import com.anxcye.domain.dto.PageListDto;
+import com.anxcye.domain.dto.NotePageDto;
 import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.result.ResponseResult;
 import com.anxcye.service.NoteService;
@@ -17,8 +17,8 @@ public class NoteController {
     private NoteService noteService;
 
     @GetMapping("/page")
-    public ResponseResult<PageResult> notePage(@ParameterObject PageListDto pageListDto) {
-        return ResponseResult.success(noteService.getNotesPage(pageListDto));
+    public ResponseResult<PageResult> notePage(@ParameterObject NotePageDto notePageDto) {
+        return ResponseResult.success(noteService.getNotePage(notePageDto, false));
     }
 
 }

@@ -1,6 +1,7 @@
 package com.anxcye.service;
 
 import com.anxcye.domain.dto.CommentDto;
+import com.anxcye.domain.dto.CommentPageDto;
 import com.anxcye.domain.entity.Comment;
 import com.anxcye.domain.result.PageResult;
 import com.baomidou.mybatisplus.extension.service.IService;
@@ -23,4 +24,8 @@ public interface CommentService extends IService<Comment> {
     Boolean updateCommentLike(Long id, Boolean increase);
 
     Long countTotal(String commentTypeNote, Long id);
+
+    PageResult getCommentPage(CommentPageDto commentPageDto);
+
+    boolean deleteComment(Long id);
 }

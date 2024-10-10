@@ -1,8 +1,5 @@
 package com.anxcye.domain.vo;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableField;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
@@ -19,7 +16,6 @@ public class NoteVo implements Serializable {
     /**
      * 
      */
-    @TableId(type = IdType.AUTO)
     private Long id;
 
     /**
@@ -76,7 +72,4 @@ public class NoteVo implements Serializable {
      * 删除标志（0代表未删除，1代表已删除）
      */
     private Integer deleted;
-
-    @TableField(exist = false)
-    private static final long serialVersionUID = 1L;
 }

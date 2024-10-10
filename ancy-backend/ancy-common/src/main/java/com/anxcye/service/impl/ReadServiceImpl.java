@@ -1,10 +1,12 @@
 package com.anxcye.service.impl;
 
+import com.anxcye.domain.dto.ReadDto;
 import com.anxcye.domain.dto.ReadPageDto;
 import com.anxcye.domain.entity.Read;
 import com.anxcye.domain.result.PageResult;
 import com.anxcye.mapper.ReadMapper;
 import com.anxcye.service.ReadService;
+import com.anxcye.utils.BeanCopyUtils;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
@@ -30,6 +32,25 @@ public class ReadServiceImpl extends ServiceImpl<ReadMapper, Read>
         Page<Read> page = new Page<>(readPageDto.getPageNum(), readPageDto.getPageSize());
         page(page, wrapper);
         return new PageResult(page.getTotal(), page.getRecords());
+    }
+
+    @Override
+    public Long addRead(ReadDto readDto) {
+        Read read = BeanCopyUtils.copyBean(readDto, Read.class);
+        save(read);
+        return read.getId();
+    }
+
+    @Override
+    public Boolean updateRead(Long id, ReadDto readDto) {
+        Read read = BeanCopyUtils.copyBean(readDto, Read.class);
+        read.setId(id);
+        return updateById(read);
+    }
+
+    @Override
+    public Boolean deleteRead(Long id) {
+        return removeById(id);
     }
 }
 

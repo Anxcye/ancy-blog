@@ -50,8 +50,7 @@ public class SystemConstants
     public static final String USER_ENABLE = "0";
     public static final Integer ARTICLE_TYPE_NORMAL = 0;
     public static final Integer ARTICLE_TYPE_FRONT = 1;
-    public static final Integer ARTICLE_TYPE_PROJECT = 2;
-    public static final Integer ARTICLE_TYPE_LINK = 3;
+    public static final Integer ARTICLE_TYPE_LINK = 2;
     public static final String LINK_STATUS_HIDE = "1";
     public static final String NOT_TOP = "0";
     public static final String IS_TOP = "1";

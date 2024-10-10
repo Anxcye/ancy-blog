@@ -1,8 +1,10 @@
 package com.anxcye.service;
 
-import com.anxcye.domain.dto.PageListDto;
+import com.anxcye.domain.dto.NoteDto;
+import com.anxcye.domain.dto.NotePageDto;
 import com.anxcye.domain.entity.Note;
 import com.anxcye.domain.result.PageResult;
+import com.anxcye.domain.vo.NoteVo;
 import com.baomidou.mybatisplus.extension.service.IService;
 
 /**
@@ -12,5 +14,15 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface NoteService extends IService<Note> {
 
-    PageResult getNotesPage(PageListDto pageListDto);
+//    PageResult getNotesPage(PageListDto pageListDto);
+
+    PageResult getNotePage(NotePageDto notePageDto, Boolean isAdmin);
+
+    NoteVo getNoteById(Long id);
+
+    Long addNote(NoteDto noteDto);
+
+    Boolean updateNote(Long id, NoteDto noteDto);
+
+    Boolean deleteNote(Long id);
 }

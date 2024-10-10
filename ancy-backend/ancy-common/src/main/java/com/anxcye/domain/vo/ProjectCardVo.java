@@ -28,11 +28,6 @@ public class ProjectCardVo implements Serializable {
     private String title;
 
     /**
-     * article id
-     */
-    private Long articleId;
-
-    /**
      * 文章摘要
      */
     private String summary;

@@ -1,5 +1,6 @@
 package com.anxcye.service;
 
+import com.anxcye.domain.dto.ReadDto;
 import com.anxcye.domain.dto.ReadPageDto;
 import com.anxcye.domain.entity.Read;
 import com.anxcye.domain.result.PageResult;
@@ -13,4 +14,10 @@ import com.baomidou.mybatisplus.extension.service.IService;
 public interface ReadService extends IService<Read> {
 
     PageResult getReadPage(ReadPageDto readPageDto);
+
+    Long addRead(ReadDto readDto);
+
+    Boolean updateRead(Long id, ReadDto readDto);
+
+    Boolean deleteRead(Long id);
 }

@@ -4,6 +4,7 @@ import com.alibaba.excel.util.StringUtils;
 import com.anxcye.annotation.Log;
 import com.anxcye.constants.SystemConstants;
 import com.anxcye.domain.dto.CommentDto;
+import com.anxcye.domain.dto.CommentPageDto;
 import com.anxcye.domain.entity.Comment;
 import com.anxcye.domain.enums.AppHttpCodeEnum;
 import com.anxcye.domain.result.PageResult;
@@ -80,8 +81,6 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
         Page<Comment> commentPage = new Page<>(pageNum, pageSize);
         page(commentPage, commentLambdaQueryWrapper);
 
-
-
         List<CommentVo> commentVos = toCommentVoList(commentPage.getRecords());
         return new PageResult(commentPage.getTotal(), commentVos);
     }
@@ -136,6 +135,33 @@ public class CommentServiceImpl extends ServiceImpl<CommentMapper, Comment>
 
     @Override
     public Long countTotal(String commentType, Long id) {
-            return baseMapper.countTotal(id, commentType);
+        return baseMapper.countTotal(id, commentType);
+    }
+
+    @Override
+    public PageResult getCommentPage(CommentPageDto commentPageDto) {
+        LambdaQueryWrapper<Comment> commentLambdaQueryWrapper = getCommentWrapper();
+        commentLambdaQueryWrapper.eq(Objects.nonNull(commentPageDto.getStatus()), Comment::getStatus,
+                commentPageDto.getStatus());
+        commentLambdaQueryWrapper.eq(Objects.nonNull(commentPageDto.getArticleId()), Comment::getArticleId,
+                commentPageDto.getArticleId());
+        commentLambdaQueryWrapper.like(Objects.nonNull(commentPageDto.getEmail()), Comment::getEmail,
+                commentPageDto.getEmail());
+        commentLambdaQueryWrapper.like(Objects.nonNull(commentPageDto.getNickname()), Comment::getNickname,
+                commentPageDto.getNickname());
+        commentLambdaQueryWrapper.like(Objects.nonNull(commentPageDto.getContent()), Comment::getContent,
+                commentPageDto.getContent());
+        commentLambdaQueryWrapper.orderByDesc(Comment::getCreateTime);
+
+        Page<Comment> commentPage = new Page<>(commentPageDto.getPageNum(), commentPageDto.getPageSize());
+        page(commentPage, commentLambdaQueryWrapper);
+        List<CommentVo> commentVos = toCommentVoList(commentPage.getRecords());
+        return new PageResult(commentPage.getTotal(), commentVos);
+    }
+
+    @Override
+    public boolean deleteComment(Long id) {
+        removeById(id);
+        return true;
     }
 }

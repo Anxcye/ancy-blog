@@ -1,11 +1,10 @@
 package com.anxcye.service.impl;
 
 import com.anxcye.constants.SystemConstants;
+import com.anxcye.domain.dto.ProjectDto;
 import com.anxcye.domain.dto.ProjectPageDto;
-import com.anxcye.domain.entity.Article;
 import com.anxcye.domain.entity.Project;
 import com.anxcye.domain.result.PageResult;
-import com.anxcye.domain.vo.ArticleDetailVo;
 import com.anxcye.domain.vo.ProjectCardVo;
 import com.anxcye.domain.vo.ProjectDetailVo;
 import com.anxcye.mapper.ProjectMapper;
@@ -56,17 +55,8 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project>
         LambdaQueryWrapper<Project> wrapper = getProjectWrapper();
         wrapper.eq(Project::getId, id);
         Project project = getOne(wrapper);
-        if (project == null) {
-            return null;
-        }
-        Article article = articleService.getById(project.getArticleId());
-        
-        ArticleDetailVo articleDetailVo = BeanCopyUtils.copyBean(article, ArticleDetailVo.class);
 
-        ProjectDetailVo projectDetailVo = BeanCopyUtils.copyBean(project, ProjectDetailVo.class);
-        projectDetailVo.setArticleDetailVo(articleDetailVo);
-
-        return projectDetailVo;
+        return BeanCopyUtils.copyBean(project, ProjectDetailVo.class);
     }
 
     @Override
@@ -77,6 +67,28 @@ public class ProjectServiceImpl extends ServiceImpl<ProjectMapper, Project>
                 .orderByDesc(Project::getCreateTime);
         Page<Project> page = new Page<>(projectPageDto.getPageNum(), projectPageDto.getPageSize());
         page(page, wrapper);
-        return new PageResult(page.getTotal(), page.getRecords());
+
+        List<ProjectCardVo> projectCardVos = BeanCopyUtils.copyList(page.getRecords(), ProjectCardVo.class);
+
+        return new PageResult(page.getTotal(), projectCardVos);
+    }
+
+    @Override
+    public Long addProject(ProjectDto projectDto) {
+        Project project = BeanCopyUtils.copyBean(projectDto, Project.class);
+        save(project);
+        return project.getId();
+    }
+
+    @Override
+    public Boolean updateProject(Long id, ProjectDto projectDto) {
+        Project project = BeanCopyUtils.copyBean(projectDto, Project.class);
+        project.setId(id);
+        return updateById(project);
+    }
+
+    @Override
+    public Boolean deleteProject(Long id) {
+        return removeById(id);
     }
 }

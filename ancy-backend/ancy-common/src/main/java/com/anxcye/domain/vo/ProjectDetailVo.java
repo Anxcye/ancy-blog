@@ -30,7 +30,7 @@ public class ProjectDetailVo implements Serializable {
     /**
      * article
      */
-    private ArticleDetailVo articleDetailVo;
+    private String content;
 
     /**
      * 文章摘要
