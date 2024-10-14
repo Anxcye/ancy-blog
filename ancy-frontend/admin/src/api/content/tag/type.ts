@@ -1,3 +1,4 @@
+import type { PageResponse } from '@/api/pageResult'
 import type { ApiResponse } from '@/api/type'
 
 // tag list
@@ -12,9 +13,8 @@ export interface TagListData {
   deleted: number
 }
 
-export interface TagListRes extends ApiResponse {
-  data: TagListData[]
-}
+export interface TagListRes extends ApiResponse<TagListData[]> {}
+
 // tag add
 export interface TagAddData {
   id?: number
@@ -22,9 +22,7 @@ export interface TagAddData {
   remark?: string
 }
 
-export interface TagAddRes extends ApiResponse {
-  data: number
-}
+export interface TagAddRes extends ApiResponse<number> {}
 
 // tag data
 export interface TagData {
@@ -37,22 +35,13 @@ export interface TagData {
   updateTime: string
 }
 // tag update
-export interface TagUpdateRes extends ApiResponse {
-  data: boolean
-}
+export interface TagUpdateRes extends ApiResponse<boolean> {}
 
 // tag delete
-export interface TagDeleteRes extends ApiResponse {
-  data: boolean
-}
+export interface TagDeleteRes extends ApiResponse<boolean> {}
 
 // tag page
-export interface TagPageRes extends ApiResponse {
-  data: {
-    total: number
-    rows: TagListData[]
-  }
-}
+export interface TagPageRes extends PageResponse<TagListData> {}
 
 export interface TagPageParams {
   pageNum: number

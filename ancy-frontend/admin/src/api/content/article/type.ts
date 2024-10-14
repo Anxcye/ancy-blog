@@ -1,5 +1,6 @@
 import type { ApiResponse } from '@/api/type'
 import type { TagData } from '../tag/type'
+import type { PageResponse } from '@/api/pageResult'
 
 // article page
 export interface ArticlePageData {
@@ -17,12 +18,7 @@ export interface ArticlePageData {
   viewCount: number
 }
 
-export interface ArticlePageRes extends ApiResponse {
-  data: {
-    rows: ArticlePageData[]
-    total: number
-  }
-}
+export interface ArticlePageRes extends PageResponse<ArticlePageData> {}
 
 export interface ArticlePageParams {
   title?: string
@@ -32,9 +28,8 @@ export interface ArticlePageParams {
 }
 
 // article delete
-export interface ArticleDeleteRes extends ApiResponse {
-  data: boolean
-}
+export interface ArticleDeleteRes extends ApiResponse<boolean> {}
+
 export interface ArticleAddParams {
   title?: string
   content?: string
@@ -48,9 +43,7 @@ export interface ArticleAddParams {
 }
 
 // article add
-export interface ArticleAddRes extends ApiResponse {
-  data: boolean
-}
+export interface ArticleAddRes extends ApiResponse<number> {}
 
 // article get by id
 export interface ArticleGetByIdData {
@@ -71,13 +64,7 @@ export interface ArticleGetByIdData {
   updateTime: string
 }
 
-export interface ArticleGetByIdRes extends ApiResponse {
-  code: number
-  msg: string
-  data: ArticleGetByIdData
-}
+export interface ArticleGetByIdRes extends ApiResponse<ArticleGetByIdData> {}
 
 // article update
-export interface ArticleUpdateRes extends ApiResponse {
-  data: boolean
-}
+export interface ArticleUpdateRes extends ApiResponse<boolean> {}

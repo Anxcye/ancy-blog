@@ -53,10 +53,18 @@
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
   .el-input {
     width: 200px;
   }
   .el-select {
     width: 200px;
   }
+}
+
+.el-pagination {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
 }

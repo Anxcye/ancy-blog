@@ -1,3 +1,4 @@
+import type { PageResponse } from '@/api/pageResult'
 import type { ApiResponse } from '@/api/type'
 
 // Parameter interface
@@ -22,15 +23,10 @@ export interface LoginData {
 }
 
 // Response interface
-export interface LoginRes {
-  code: number
-  msg: string
-  data: LoginData
-}
+export interface LoginRes extends ApiResponse<LoginData> {}
 
 export interface GetRoutersData {
   id: number
-
   children: GetRoutersData[]
   menuName: string
   parentId: number
@@ -44,7 +40,6 @@ export interface GetRoutersData {
   perms: string
   icon: string
   remark: string
-
   createBy: number
   createTime: string
   updateBy: number
@@ -52,20 +47,13 @@ export interface GetRoutersData {
 }
 
 // Response interface
-export interface GetRoutersRes {
-  code: number
-  msg: string
-
-  data: {
+export interface GetRoutersRes
+  extends ApiResponse<{
     menus: GetRoutersData[]
-  }
-}
+  }> {}
+
 // Response interface
-export interface LogoutRes {
-  code: number
-  msg: string
-  data: boolean
-}
+export interface LogoutRes extends ApiResponse<boolean> {}
 
 // User add
 export interface UserAddParams {
@@ -81,9 +69,7 @@ export interface UserAddParams {
   avatar?: string
 }
 
-export interface UserAddRes extends ApiResponse {
-  data: number
-}
+export interface UserAddRes extends ApiResponse<number> {}
 
 // User get by id
 export interface UserGetByIdData {
@@ -102,18 +88,13 @@ export interface UserGetByIdData {
   updateTime: string
 }
 
-export interface UserGetByIdRes extends ApiResponse {
-  data: UserGetByIdData
-}
+export interface UserGetByIdRes extends ApiResponse<UserGetByIdData> {}
 
 // User update
-export interface UserUpdateRes extends ApiResponse {
-  data: boolean
-}
+export interface UserUpdateRes extends ApiResponse<boolean> {}
+
 // User delete
-export interface UserDeleteRes extends ApiResponse {
-  data: boolean
-}
+export interface UserDeleteRes extends ApiResponse<boolean> {}
 
 // user list
 export interface UserListData {
@@ -132,12 +113,7 @@ export interface UserListData {
   userName: string
 }
 
-export interface UserPageRes extends ApiResponse {
-  data: {
-    total: number
-    rows: UserListData[]
-  }
-}
+export interface UserPageRes extends PageResponse<UserListData> {}
 
 export interface UserPageParams {
   pageNum: number

@@ -1,3 +1,4 @@
+import type { PageResponse } from '@/api/pageResult'
 import type { ApiResponse } from '@/api/type'
 
 export interface LinkAddParams {
@@ -9,9 +10,7 @@ export interface LinkAddParams {
   status?: string
 }
 
-export interface LinkAddRes extends ApiResponse {
-  data: number
-}
+export interface LinkAddRes extends ApiResponse<number> {}
 
 export interface LinkGetByIdData {
   id: number
@@ -24,17 +23,11 @@ export interface LinkGetByIdData {
   createTime: string
 }
 
-export interface LinkGetByIdRes extends ApiResponse {
-  data: LinkGetByIdData
-}
+export interface LinkGetByIdRes extends ApiResponse<LinkGetByIdData> {}
 
-export interface LinkUpdateRes extends ApiResponse {
-  data: boolean
-}
+export interface LinkUpdateRes extends ApiResponse<boolean> {}
 
-export interface LinkDeleteRes extends ApiResponse {
-  data: boolean
-}
+export interface LinkDeleteRes extends ApiResponse<boolean> {}
 
 export interface LinkListData {
   id: number
@@ -50,16 +43,9 @@ export interface LinkListData {
   deleted: number
 }
 
-export interface LinkListRes extends ApiResponse {
-  data: LinkListData[]
-}
+export interface LinkListRes extends ApiResponse<LinkListData[]> {}
 
-export interface LinkPageRes extends ApiResponse {
-  data: {
-    total: number
-    rows: LinkListData[]
-  }
-}
+export interface LinkPageRes extends PageResponse<LinkListData> {}
 
 export interface LinkPageParams {
   name?: string

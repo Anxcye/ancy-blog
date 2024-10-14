@@ -20,7 +20,7 @@
       <el-table-column label="ID" align="center" width="50" prop="id" />
       <el-table-column label="标签名" align="center" prop="name" />
       <el-table-column label="备注" align="center" prop="remark" />
-      <el-table-column label="操作" align="center" class-name="small-padding fixed-width">
+      <el-table-column label="操作" align="center" width="170" fixed="right">
         <template v-slot="scope">
           <el-button size="small" type="text" :icon="Edit" @click="handleUpdate(scope.row)">
             修改

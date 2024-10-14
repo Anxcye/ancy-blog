@@ -36,12 +36,7 @@
       <el-table-column label="id" align="center" prop="id" />
       <el-table-column label="分类名" align="center" prop="name" />
       <el-table-column label="描述" align="center" prop="description" />
-      <el-table-column
-        label="操作"
-        align="center"
-        class-name="small-padding fixed-width"
-        fixed="right"
-      >
+      <el-table-column label="操作" align="center" width="170" fixed="right">
         <template v-slot="scope">
           <el-button type="text" :icon="Edit" @click="handleUpdate(scope.row)" size="small">
             修改

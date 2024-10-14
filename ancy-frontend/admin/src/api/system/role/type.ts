@@ -1,3 +1,4 @@
+import type { PageResponse } from '@/api/pageResult'
 import type { ApiResponse } from '@/api/type'
 
 // role add
@@ -11,9 +12,7 @@ export interface RoleAddParams {
   remark?: string
 }
 
-export interface RoleAddRes extends ApiResponse {
-  data: boolean
-}
+export interface RoleAddRes extends ApiResponse<boolean> {}
 
 // role/get by id
 export interface RoleGetByIdData {
@@ -30,17 +29,11 @@ export interface RoleGetByIdData {
   remark: string
 }
 
-export interface RoleGetByIdRes extends ApiResponse {
-  data: RoleGetByIdData
-}
+export interface RoleGetByIdRes extends ApiResponse<RoleGetByIdData> {}
 
-export interface RoleUpdateRes extends ApiResponse {
-  data: boolean
-}
+export interface RoleUpdateRes extends ApiResponse<boolean> {}
 
-export interface RoleDeleteRes extends ApiResponse {
-  data: boolean
-}
+export interface RoleDeleteRes extends ApiResponse<boolean> {}
 
 export interface RoleListData {
   id: number
@@ -56,9 +49,7 @@ export interface RoleListData {
   remark: string
 }
 
-export interface RoleListRes extends ApiResponse {
-  data: RoleListData[]
-}
+export interface RoleListRes extends ApiResponse<RoleListData[]> {}
 
 export interface RolePageParams {
   name?: string
@@ -67,9 +58,4 @@ export interface RolePageParams {
   pageSize: number
 }
 
-export interface RolePageRes extends ApiResponse {
-  data: {
-    total: number
-    rows: RoleListData[]
-  }
-}
+export interface RolePageRes extends PageResponse<RoleListData> {}

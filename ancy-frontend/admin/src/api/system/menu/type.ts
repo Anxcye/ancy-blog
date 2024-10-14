@@ -16,17 +16,11 @@ export interface MenuAddParams {
   remark?: string
 }
 
-export interface MenuAddRes extends ApiResponse {
-  data: boolean
-}
+export interface MenuAddRes extends ApiResponse<boolean> {}
 
-export interface MenuUpdateRes extends ApiResponse {
-  data: boolean
-}
+export interface MenuUpdateRes extends ApiResponse<boolean> {}
 
-export interface MenuDeleteRes extends ApiResponse {
-  data: boolean
-}
+export interface MenuDeleteRes extends ApiResponse<boolean> {}
 
 export interface MenuListData {
   id: number
@@ -49,9 +43,8 @@ export interface MenuListData {
   children: MenuListData[]
 }
 
-export interface MenuListRes extends ApiResponse {
-  data: MenuListData[]
-}
+export interface MenuListRes extends ApiResponse<MenuListData[]> {}
+
 export interface MenuPageParams {
   name?: string
   status?: string
@@ -68,6 +61,4 @@ export interface MenuPageRes {
   }
 }
 
-export interface MenuTreeRes extends ApiResponse {
-  data: MenuListData[]
-}
+export interface MenuTreeRes extends ApiResponse<MenuListData[]> {}

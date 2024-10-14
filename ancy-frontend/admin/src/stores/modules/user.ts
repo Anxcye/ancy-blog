@@ -5,6 +5,7 @@ import { getLoginInfo, removeLoginInfo, setLoginInfo } from '@/utils/localStorag
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useRouteStore } from './route'
+import { useBaseInfoStore } from './baseInfo'
 
 export const useUserStore = defineStore('user', () => {
   const userInfo = ref<LoginData | null>(getLoginInfo())
@@ -15,6 +16,7 @@ export const useUserStore = defineStore('user', () => {
     userInfo.value = res.data
 
     await useRouteStore().initRoutes()
+    await useBaseInfoStore().getBaseInfo()
   }
 
   const logout = async () => {

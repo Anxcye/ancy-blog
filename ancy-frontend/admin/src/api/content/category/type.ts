@@ -1,3 +1,4 @@
+import type { PageResponse } from '@/api/pageResult'
 import type { ApiResponse } from '@/api/type'
 
 // category list
@@ -8,9 +9,7 @@ export interface CategoryListData {
   description: string
 }
 
-export interface CategoryListRes extends ApiResponse {
-  data: CategoryListData[]
-}
+export interface CategoryListRes extends ApiResponse<CategoryListData[]> {}
 
 // category add
 export interface CategoryAddParams {
@@ -21,9 +20,7 @@ export interface CategoryAddParams {
   status?: string
 }
 
-export interface CategoryAddRes extends ApiResponse {
-  data: number
-}
+export interface CategoryAddRes extends ApiResponse<number> {}
 
 // category page
 export interface CategoryPageParams {
@@ -33,21 +30,12 @@ export interface CategoryPageParams {
   pageSize: number
 }
 
-export interface CategoryPageRes extends ApiResponse {
-  data: {
-    total: number
-    rows: CategoryListData[]
-  }
-}
+export interface CategoryPageRes extends PageResponse<CategoryListData> {}
 
-export interface CategoryUpdateRes extends ApiResponse {
-  data: boolean
-}
+export interface CategoryUpdateRes extends ApiResponse<boolean> {}
 
 // export to xlsx
 export interface ExportToXlsxRes {}
 
 // category delete
-export interface CategoryDeleteRes extends ApiResponse {
-  data: boolean
-}
+export interface CategoryDeleteRes extends ApiResponse<boolean> {}

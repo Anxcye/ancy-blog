@@ -106,6 +106,7 @@
             node-key="id"
             empty-text="加载中，请稍候"
             :props="defaultProps"
+            check-strictly
           />
         </el-form-item>
         <el-form-item label="备注">
