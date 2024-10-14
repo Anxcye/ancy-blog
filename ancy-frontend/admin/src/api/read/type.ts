@@ -19,11 +19,13 @@ export interface ReadPageParams {
   source?: string
   content?: string
   author?: string
+  addFrom?: number
   pageNum: number
   pageSize: number
 }
 
 export interface ReadAddParams {
+  id?: number
   source?: string
   content?: string
   author?: string

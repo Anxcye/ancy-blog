@@ -2,28 +2,28 @@
   <div class="app-container">
     <el-form ref="queryForm" :model="queryParams" class="query-form" size="small">
       <el-input
-        v-model="queryParams.title"
-        placeholder="项目名称"
+        v-model="queryParams.author"
+        placeholder="作者"
         clearable
-        @keyup.enter="getProjectPage()"
+        @keyup.enter="getReadPage()"
       />
       <el-input
-        v-model="queryParams.summary"
-        placeholder="项目描述"
+        v-model="queryParams.source"
+        placeholder="来源"
         clearable
-        @keyup.enter="getProjectPage()"
+        @keyup.enter="getReadPage()"
       />
-
-      <el-select v-model="queryParams.type" placeholder="项目类型" clearable>
-        <el-option key="0" label="活跃" value="0" />
-        <el-option key="1" label="存档" value="1" />
+      <el-input
+        v-model="queryParams.content"
+        placeholder="内容"
+        clearable
+        @keyup.enter="getReadPage()"
+      />
+      <el-select v-model="queryParams.addFrom" placeholder="添加来源" clearable>
+        <el-option key="0" label="手动" value="0" />
+        <el-option key="1" label="安读" value="1" />
       </el-select>
-
-      <el-select v-model="queryParams.status" placeholder="公开?" clearable>
-        <el-option key="0" label="公开" value="0" />
-        <el-option key="1" label="隐藏" value="1" />
-      </el-select>
-      <el-button type="primary" :icon="Search" @click="getProjectPage()">搜索</el-button>
+      <el-button type="primary" :icon="Search" @click="getReadPage()">搜索</el-button>
     </el-form>
 
     <el-row :gutter="10">
@@ -34,69 +34,30 @@
 
     <el-table v-loading="loading" :data="readList">
       <el-table-column label="ID" align="center" width="50" prop="id" />
-      <el-table-column label="名称" align="center" prop="title" />
+      <el-table-column label="作者" align="center" width="150" prop="author" />
+      <el-table-column label="来源" align="center" width="150" prop="source" />
+
       <el-table-column
-        label="描述"
+        label="内容"
         align="center"
-        show-overflow-tooltip
         width="200"
-        prop="summary"
+        show-overflow-tooltip
+        prop="content"
       />
 
-      <el-table-column label="logo" align="center" width="100" prop="thumbnail" type="img">
+      <el-table-column label="添加来源" align="center" prop="addFrom">
         <template v-slot="scope">
-          <el-image style="width: 88px" :src="scope.row.thumbnail" fit="cover" />
+          <el-tag v-if="scope.row.addFrom === 0">手动</el-tag>
+          <el-tag v-else type="success">安读</el-tag>
         </template>
       </el-table-column>
 
-      <el-table-column prop="type" label="类型" align="center">
+      <el-table-column label="时间" align="center" width="250" prop="createTime">
         <template v-slot="scope">
-          <el-tag v-if="scope.row.type === '0'" type="success">活跃</el-tag>
-          <el-tag v-else type="info">存档</el-tag>
+          <div>创建时间: {{ scope.row.createTime }}</div>
+          <div v-if="scope.row.updateTime">更新时间: {{ scope.row.updateTime }}</div>
         </template>
       </el-table-column>
-
-      <el-table-column label="地址" width="300" align="center">
-        <template v-slot="scope">
-          <el-link :href="scope.row.srcUrl" target="_blank" style="word-break: break-all">
-            <span>源地址：</span>
-            {{ scope.row.srcUrl }}
-          </el-link>
-          <br />
-          <el-link :href="scope.row.displayUrl" target="_blank" style="word-break: break-all">
-            <span>展示地址：</span>
-            {{ scope.row.displayUrl }}
-          </el-link>
-        </template>
-      </el-table-column>
-
-      <el-table-column prop="beginDate" label="开始日期" width="100" align="center" />
-
-      <el-table-column prop="status" label="公开" align="center">
-        <template v-slot="scope">
-          <el-switch
-            v-model="scope.row.status"
-            active-value="0"
-            inactive-value="1"
-            :loading="statusLoading"
-            @change="handleChangeStatus(scope.row)"
-          />
-        </template>
-      </el-table-column>
-
-      <el-table-column prop="isTop" label="置顶" align="center">
-        <template v-slot="scope">
-          <el-switch
-            v-model="scope.row.isTop"
-            active-value="1"
-            inactive-value="0"
-            :loading="statusLoading"
-            @change="handleChangeStatus(scope.row)"
-          />
-        </template>
-      </el-table-column>
-
-      <el-table-column prop="orderNum" label="排序" align="center" />
 
       <el-table-column label="操作" align="center" fixed="right" width="170">
         <template v-slot="scope">
@@ -116,38 +77,32 @@
       :total="total"
       :page-sizes="[5, 10, 20, 30, 40]"
       v-model:current-page="queryParams.pageNum"
-      @current-change="getProjectPage"
-      @size-change="getProjectPage()"
+      @current-change="getReadPage"
+      @size-change="getReadPage()"
     />
 
     <el-dialog :title="title" v-model="open" class="dialog-form">
       <el-form ref="form" :rules="rules" label-width="auto" label-position="top">
-        <el-form-item label="名称" prop="name">
-          <el-input v-model="read.title" placeholder="请输入名称" />
+        <el-form-item label="作者" prop="author">
+          <el-input v-model="read.author" placeholder="作者" />
         </el-form-item>
-        <el-form-item label="描述" prop="description">
-          <el-input v-model="read.summary" type="textarea" placeholder="请输入描述" />
+        <el-form-item label="来源" prop="source">
+          <el-input v-model="read.source" placeholder="来源 可能是一本书名" />
         </el-form-item>
-        <el-form-item label="logo" prop="logo">
-          <el-input v-model="read.thumbnail" placeholder="请输入logo地址" />
+        <el-form-item label="内容" prop="content">
+          <el-input
+            v-model="read.content"
+            placeholder="说了什么呢？"
+            type="textarea"
+            auto-size
+            :autosize="{ minRows: 2, maxRows: 7 }"
+          />
         </el-form-item>
-        <el-form-item label="地址" prop="address">
-          <el-input v-model="read.srcUrl" placeholder="请输入地址" />
-        </el-form-item>
-        <el-form-item label="展示地址" prop="displayUrl">
-          <el-input v-model="read.displayUrl" placeholder="请输入展示地址" />
-        </el-form-item>
-        <el-form-item label="开始日期" prop="beginDate">
-          <el-date-picker v-model="read.beginDate" type="date" placeholder="选择日期" />
-        </el-form-item>
-        <el-form-item label="公开" prop="status">
-          <el-switch v-model="read.status" active-value="0" inactive-value="1" />
-        </el-form-item>
-        <el-form-item label="置顶" prop="isTop">
-          <el-switch v-model="read.isTop" active-value="1" inactive-value="0" />
-        </el-form-item>
-        <el-form-item label="排序" prop="orderNum">
-          <el-input v-model="read.orderNum" placeholder="请输入排序" />
+        <el-form-item label="添加来源" prop="addFrom">
+          <el-select v-model="read.addFrom" placeholder="手动" disabled default-first-option>
+            <el-option :key="0" label="手动" :value="0" />
+            <el-option :key="1" label="安读" :value="1" />
+          </el-select>
         </el-form-item>
       </el-form>
       <template v-slot:footer>
@@ -164,9 +119,8 @@
 import { onMounted, ref } from 'vue'
 import { Search, Plus, Delete, Edit } from '@element-plus/icons-vue'
 import type { FormRules } from 'element-plus'
-import { toggleStatus } from '@/utils/toggleStatus'
-import type { ReadAddParams, ReadPageParams } from '@/api/read/type';
-import { reqReadPage } from '@/api/read';
+import type { ReadAddParams, ReadListData, ReadPageParams } from '@/api/read/type'
+import { reqReadAdd, reqReadDelete, reqReadPage, reqReadUpdate } from '@/api/read'
 
 const queryParams = ref<ReadPageParams>({
   pageNum: 1,
@@ -179,9 +133,8 @@ const open = ref<boolean>(false)
 const title = ref<string>('')
 const read = ref<ReadAddParams>({})
 const rules = ref<FormRules>({})
-const statusLoading = ref<boolean>(false)
 
-const getProjectPage = async (page: number = 1) => {
+const getReadPage = async (page: number = 1) => {
   loading.value = true
   queryParams.value.pageNum = page
   const res = await reqReadPage(queryParams.value)
@@ -199,39 +152,29 @@ const handleAdd = () => {
 const handleUpdate = (row: ReadListData) => {
   read.value = { ...row }
   open.value = true
-  title.value = '修改' + row.title
+  title.value = '修改' + row.author
 }
 
-const handleDelete = (row: ProjectListData) => {
+const handleDelete = (row: ReadListData) => {
   ElMessageBox.confirm('删除?', {
     confirmButtonText: '确定',
     cancelButtonText: '取消',
   }).then(async () => {
-    await reqProjectDelete(row.id)
-    await getProjectPage(queryParams.value.pageNum)
+    await reqReadDelete(row.id)
+    await getReadPage(queryParams.value.pageNum)
   })
-}
-
-const handleChangeStatus = async (row: ProjectListData) => {
-  statusLoading.value = true
-  try {
-    await reqProjectUpdate(row.id, { status: row.status, isTop: row.isTop })
-  } catch {
-    toggleStatus(row)
-  } finally {
-    statusLoading.value = false
-  }
 }
 
 const handleSubmit = async () => {
   if (read.value.id) {
-    await reqProjectUpdate(read.value.id, read.value)
+    await reqReadUpdate(read.value.id, read.value)
   } else {
-    await reqProjectAdd(read.value)
+    read.value.addFrom = 0
+    await reqReadAdd(read.value)
     ElMessage.success('新增成功')
   }
   open.value = false
-  getProjectPage()
+  getReadPage()
 }
 
 const handleCancel = () => {
@@ -240,7 +183,7 @@ const handleCancel = () => {
 }
 
 onMounted(() => {
-  getProjectPage()
+  getReadPage()
 })
 </script>
 
