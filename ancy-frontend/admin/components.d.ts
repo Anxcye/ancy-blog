@@ -54,6 +54,7 @@ declare module 'vue' {
     ElTreeSelect: typeof import('element-plus/es')['ElTreeSelect']
     ElUpload: typeof import('element-plus/es')['ElUpload']
     HoverCard: typeof import('./src/components/HoverCard.vue')['default']
+    MdEditor: typeof import('./src/components/MdEditor.vue')['default']
     ResponsiveAside: typeof import('./src/components/ResponsiveAside.vue')['default']
     ResponsiveLayout: typeof import('./src/components/ResponsiveLayout.vue')['default']
     RouterLink: typeof import('vue-router')['RouterLink']

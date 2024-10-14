@@ -74,7 +74,6 @@
               <el-radio key="1" label="1">允许</el-radio>
               <el-radio key="0" label="0">禁止</el-radio>
             </el-radio-group>
-            {{ article.isComment }}
           </el-form-item>
         </el-col>
         <el-col :span="7" style="text-align: right">
@@ -102,7 +101,7 @@
 
 <script setup lang="ts">
 import { onMounted, ref, watch } from 'vue'
-import MdEditor from './MdEditor.vue'
+import MdEditor from '@/components/MdEditor.vue'
 import type { CategoryListData } from '@/api/content/category/type'
 import type { ArticleAddParams } from '@/api/content/article/type'
 import { reqCategoryAdd, reqCategoryList } from '@/api/content/category'
