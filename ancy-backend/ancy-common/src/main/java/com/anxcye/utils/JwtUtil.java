@@ -2,21 +2,41 @@ package com.anxcye.utils;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.UUID;
 
 /**
  * JWT工具类
  */
+@Component
 public class JwtUtil {
 
+    private static Long JWT_TTL;
+    private static String JWT_KEY;
+
+    @Value ("${ancy.jwt.jwtExpiration}")
+    public void setJwtExpiration(Long jwtExpiration) {
+        JwtUtil.JWT_TTL = jwtExpiration * 1000L * 60 * 60 * 24;
+    }
+
+    @Value ("${ancy.jwt.jwtSecret}")
+    public void setJwtKey(String jwtSecret) {
+        JwtUtil.JWT_KEY = jwtSecret;
+    }
+
+
+
+
     // 有效期为
-    public static final Long JWT_TTL = 24 * 60 * 60 * 1000L;// 60 * 60 *1000 一个小时
+//    public static Long JWT_TTL = 24 * 60 * 60 * 1000L * jwtExpiration;// 60 * 60 *1000 一个小时
     // 设置秘钥明文
-    public static final String JWT_KEY = "anxJWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.cye";
+//    public static final String JWT_KEY = "anxJWT signature does not match locally computed signature. JWT validity cannot be asserted and should not be trusted.cye";
 
     public static String getUUID() {
         return UUID.randomUUID().toString().replaceAll("-", "");
@@ -70,7 +90,7 @@ public class JwtUtil {
      */
 
     public static SecretKey generalKey() {
-        byte[] encodedKey = JWT_KEY.getBytes();
+        byte[] encodedKey = JWT_KEY.getBytes(StandardCharsets.UTF_8);
         return new SecretKeySpec(encodedKey, 0, encodedKey.length, "HmacSHA256");
     }
 
