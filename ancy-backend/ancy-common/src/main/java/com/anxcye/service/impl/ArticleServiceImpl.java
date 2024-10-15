@@ -133,6 +133,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         wrapper.like(StringUtils.hasText(articleListDto.getTitle()), Article::getTitle, articleListDto.getTitle());
         wrapper.like(StringUtils.hasText(articleListDto.getSummary()), Article::getSummary,
                 articleListDto.getSummary());
+        wrapper.in(Article::getType, SystemConstants.ARTICLE_TYPE_NORMAL, SystemConstants.ARTICLE_TYPE_FRONT);
 
         Page<Article> page = new Page<>(articleListDto.getPageNum(), articleListDto.getPageSize());
         page(page, wrapper);
@@ -196,7 +197,6 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
     }
 
 
-
     @Override
     public List<HotArticleVo> hot() {
         LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
@@ -239,11 +239,12 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         return new PageResult(page.getTotal(), articleCardVos);
     }
 
-    private ArticleDetailVo getDetailById(Long id, Integer type) {
-           LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
+    @Override
+    public ArticleDetailVo getDetailById(Long id, Integer type) {
+        LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
         wrapper.eq(Article::getId, id);
 
-        wrapper.eq(Article::getType, type);
+        wrapper.eq(Objects.nonNull(type), Article::getType, type);
 
         Article article = getOne(wrapper);
 
@@ -266,7 +267,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
 
     @Override
     public ArticleDetailVo getArticleById(Long id) {
-      return getDetailById(id, SystemConstants.ARTICLE_TYPE_NORMAL);
+        return getDetailById(id, SystemConstants.ARTICLE_TYPE_NORMAL);
     }
 
     @Override
@@ -280,5 +281,20 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         wrapper.eq(Article::getType, SystemConstants.ARTICLE_TYPE_LINK);
         Article article = getOne(wrapper);
         return BeanCopyUtils.copyBean(article, ArticleDetailVo.class);
+    }
+
+    @Override
+    public Boolean updateLinkArticle(ArticleDto articleDto) {
+        String content = articleDto.getContent();
+        LambdaQueryWrapper<Article> wrapper = getArticleWrapper();
+        wrapper.eq(Article::getType, SystemConstants.ARTICLE_TYPE_LINK);
+        Article article = getOne(wrapper);
+        if (Objects.isNull(article)) {
+            save(new Article(null, "Link", content, null, null, null, null, null, 2, null, null, null, null, null, null, null, null ));
+            return true;
+        }
+        article.setContent(content);
+        updateById(article);
+        return true;
     }
 }

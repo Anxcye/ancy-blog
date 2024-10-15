@@ -15,4 +15,6 @@ public interface SettingService extends IService<Setting> {
     SettingVo getBaseSetting();
 
     boolean updateBaseSetting(SettingDto settingDto);
+
+    Boolean deleteBaseSetting(Integer type, String index);
 }

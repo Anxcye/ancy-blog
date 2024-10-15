@@ -17,7 +17,7 @@ public class ReadController {
     private ReadService readService;
 
     @PreAuthorize("@ps.hasPermission('content:read:list')")
-    @GetMapping
+    @GetMapping("/page")
     public ResponseResult<PageResult> readPage(@ParameterObject ReadPageDto readPageDto) {
         return ResponseResult.success(readService.getReadPage(readPageDto));
     }

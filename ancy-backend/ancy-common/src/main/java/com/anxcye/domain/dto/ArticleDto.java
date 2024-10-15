@@ -24,6 +24,10 @@ public class ArticleDto {
     private String isTop;
     // 状态（0已发布，1草稿）
     private String status;
+
+    private Integer type;
+
+    private Integer orderNum;
     // 是否允许评论 1是，0否
     private String isComment;
     // 标签ID列表

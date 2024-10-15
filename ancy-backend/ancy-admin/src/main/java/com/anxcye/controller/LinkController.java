@@ -1,11 +1,14 @@
 package com.anxcye.controller;
 
+import com.anxcye.domain.dto.ArticleDto;
 import com.anxcye.domain.dto.LinkDto;
 import com.anxcye.domain.dto.LinkListDto;
 import com.anxcye.domain.entity.Link;
 import com.anxcye.domain.result.PageResult;
 import com.anxcye.domain.result.ResponseResult;
+import com.anxcye.domain.vo.ArticleDetailVo;
 import com.anxcye.domain.vo.LinkVo;
+import com.anxcye.service.ArticleService;
 import com.anxcye.service.LinkService;
 import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +22,9 @@ import java.util.List;
 public class LinkController {
     @Autowired
     private LinkService linkService;
+
+    @Autowired
+    private ArticleService articleService;
 
     @PreAuthorize("@ps.hasPermission('content:link:list')")
     @GetMapping("/list")
@@ -55,4 +61,17 @@ public class LinkController {
     public ResponseResult<LinkVo> linkGetById(@PathVariable Long id) {
         return ResponseResult.success(linkService.getLink(id));
     }
+
+    @PreAuthorize("@ps.hasPermission('content:link:query')")
+    @PutMapping("/article")
+    public ResponseResult<Boolean> linkUpdateArticle(@RequestBody ArticleDto articleDto) {
+        return ResponseResult.success(articleService.updateLinkArticle(articleDto));
+    }
+
+    @PreAuthorize("@ps.hasPermission('content:link:edit')")
+    @GetMapping("/article")
+    public ResponseResult<ArticleDetailVo> linkGetArticle() {
+        return ResponseResult.success(articleService.getArticleLink());
+    }
+
 }

@@ -18,7 +18,7 @@ public class CommentController {
     private CommentService commentService;
 
     @PreAuthorize("@ps.hasPermission('content:comment:list')")
-    @GetMapping
+    @GetMapping("/page")
     public ResponseResult<PageResult> commentPage(@ParameterObject CommentPageDto commentPageDto){
         return ResponseResult.success(commentService.getCommentPage(commentPageDto));
     }

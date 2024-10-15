@@ -26,4 +26,10 @@ public class SettingController {
     public ResponseResult<Boolean> settingUpdate(@RequestBody SettingDto settingDto) {
         return ResponseResult.success(settingService.updateBaseSetting(settingDto));
     }
+
+    @PreAuthorize("@ps.hasPermission('content:setting:remove')")
+    @DeleteMapping("/{type}/{index}")
+    public ResponseResult<Boolean> settingDelete(@PathVariable Integer type, @PathVariable String index) {
+        return ResponseResult.success(settingService.deleteBaseSetting(type, index));
+    }
 }

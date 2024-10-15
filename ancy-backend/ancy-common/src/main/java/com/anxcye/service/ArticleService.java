@@ -22,6 +22,8 @@ public interface ArticleService extends IService<Article> {
 
     PageResult getList(Integer pageNum, Integer pageSize, Integer categoryId);
 
+    ArticleDetailVo getDetailById(Long id, Integer type);
+
     ArticleDetailVo getArticleById(Long id);
 
     void syncFromRedisToDB();
@@ -45,4 +47,6 @@ public interface ArticleService extends IService<Article> {
     ArticleDetailVo getHomeById(Long id);
 
     ArticleDetailVo getArticleLink();
+
+    Boolean updateLinkArticle(ArticleDto articleDto);
 }

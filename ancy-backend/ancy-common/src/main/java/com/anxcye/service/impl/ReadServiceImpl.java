@@ -13,6 +13,8 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
+import java.util.Objects;
+
 /**
 * @author axy
 * @description 针对表【ancy_read(阅读表)】的数据库操作Service实现
@@ -28,6 +30,7 @@ public class ReadServiceImpl extends ServiceImpl<ReadMapper, Read>
         wrapper.like(StringUtils.hasText(readPageDto.getSource()), Read::getSource, readPageDto.getSource());
         wrapper.like(StringUtils.hasText(readPageDto.getContent()), Read::getContent, readPageDto.getContent());
         wrapper.like(StringUtils.hasText(readPageDto.getAuthor()), Read::getAuthor, readPageDto.getAuthor());
+        wrapper.eq(Objects.nonNull(readPageDto.getAddFrom()), Read::getAddFrom, readPageDto.getAddFrom());
         wrapper.orderByDesc(Read::getCreateTime);
         Page<Read> page = new Page<>(readPageDto.getPageNum(), readPageDto.getPageSize());
         page(page, wrapper);

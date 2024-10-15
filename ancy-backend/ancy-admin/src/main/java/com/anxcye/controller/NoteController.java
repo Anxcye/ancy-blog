@@ -19,7 +19,7 @@ public class NoteController {
     private NoteService noteService;
 
     @PreAuthorize("@ps.hasPermission('content:note:list')")
-    @GetMapping
+    @GetMapping("/page")
     public ResponseResult<PageResult> notePage(@ParameterObject NotePageDto notePageDto) {
         return ResponseResult.success(noteService.getNotePage(notePageDto, true));
     }

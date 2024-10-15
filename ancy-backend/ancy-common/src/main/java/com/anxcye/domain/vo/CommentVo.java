@@ -16,6 +16,11 @@ public class CommentVo implements Serializable {
     private Long articleId;
 
     /**
+     * 评论类型（0代表文章评论，1代表NOTE评论）
+     */
+    private String type;
+
+    /**
      * 审核状态 (0代表审核通过，1代表审核未通过，2代表未审核)
      */
     private String status;

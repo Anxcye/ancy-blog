@@ -9,4 +9,5 @@ public class ReadPageDto extends PageListDto implements Serializable {
     private String source;
     private String content;
     private String author;
+    private Integer addFrom;
 }

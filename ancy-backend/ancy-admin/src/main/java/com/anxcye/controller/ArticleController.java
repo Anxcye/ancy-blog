@@ -33,7 +33,7 @@ public class ArticleController {
     @PreAuthorize("@ps.hasPermission('content:article:query')")
     @GetMapping("/{id}")
     public ResponseResult<ArticleDetailVo> articleGetById(@PathVariable Long id) {
-        return ResponseResult.success(articleService.getArticleById(id));
+        return ResponseResult.success(articleService.getDetailById(id, null));
     }
 
 

@@ -149,4 +149,21 @@ public class SettingServiceImpl extends ServiceImpl<SettingMapper, Setting>
         });
         return true;
     }
+
+    @Override
+    public Boolean deleteBaseSetting(Integer type, String index) {
+        LambdaQueryWrapper<Setting> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(Setting::getType, type);
+        switch (type) {
+            case 2:
+                wrapper.eq(Setting::getName, "badge_" + index);
+                break;
+            case 3:
+                wrapper.eq(Setting::getName, "footer_" + index);
+                break;
+            default:
+                break;
+        }
+        return remove(wrapper);
+    }
 }
