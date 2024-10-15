@@ -290,7 +290,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         wrapper.eq(Article::getType, SystemConstants.ARTICLE_TYPE_LINK);
         Article article = getOne(wrapper);
         if (Objects.isNull(article)) {
-            save(new Article(null, "Link", content, null, null, null, null, null, 2, null, null, null, null, null, null, null, null ));
+            save(new Article(null, "Link", content, null, null, null, null, "0", 2, null, null, null, null, null, null, null, null ));
             return true;
         }
         article.setContent(content);
