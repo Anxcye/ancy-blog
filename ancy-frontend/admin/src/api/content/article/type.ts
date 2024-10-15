@@ -11,11 +11,14 @@ export interface ArticlePageData {
   updateTime: string
   id: number
   isTop: string
+  type: 0 | 1
+  orderNum: number
   status: '1' | '0'
   summary: string
   thumbnail: string
   title: string
   viewCount: number
+  tags: TagData[]
 }
 
 export interface ArticlePageRes extends PageResponse<ArticlePageData> {}
@@ -37,6 +40,8 @@ export interface ArticleAddParams {
   categoryId?: number
   thumbnail?: string
   isTop?: string
+  type?: 0 | 1
+  orderNum?: number
   status?: string
   isComment?: string
   tags?: number[]

@@ -19,6 +19,9 @@
       <el-col :span="1.5">
         <el-button type="primary" plain :icon="Plus" @click="handleAdd">新增</el-button>
       </el-col>
+      <el-col :span="1.5">
+        <el-button type="primary" plain :icon="Plus" @click="handleArticle">修改介绍</el-button>
+      </el-col>
     </el-row>
 
     <el-table v-loading="loading" :data="linkList">
@@ -95,16 +98,30 @@
         </div>
       </template>
     </el-dialog>
+
+    <el-dialog title="修改介绍" v-model="openArticle" class="dialog-form">
+      <div class="text-gray-500 text-smm mb-2">这篇文章将放在友链页面下</div>
+      <MdEditor v-model="article.content" />
+      <el-button type="primary" @click="handleSubmitArticle">提交</el-button>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { reqLinkAdd, reqLinkDelete, reqLinkPage, reqLinkUpdate } from '@/api/content/link'
+import {
+  reqLinkAdd,
+  reqLinkDelete,
+  reqLinkGetArticle,
+  reqLinkPage,
+  reqLinkUpdate,
+  reqLinkUpdateArticle,
+} from '@/api/content/link'
 import type { LinkAddParams, LinkListData, LinkPageParams } from '@/api/content/link/type'
 import { onMounted, ref } from 'vue'
 import { Search, Plus, Delete, Edit } from '@element-plus/icons-vue'
 import type { FormRules } from 'element-plus'
 import { toggleStatus } from '@/utils/toggleStatus'
+import type { ArticleAddParams } from '@/api/content/article/type'
 
 const queryParams = ref<LinkPageParams>({
   pageNum: 1,
@@ -118,6 +135,8 @@ const title = ref<string>('')
 const link = ref<LinkAddParams>({})
 const rules = ref<FormRules>({})
 const statusLoading = ref<boolean>(false)
+const openArticle = ref<boolean>(false)
+const article = ref<ArticleAddParams>({})
 
 const getLinkPage = async (page: number = 1) => {
   loading.value = true
@@ -132,6 +151,17 @@ const handleAdd = () => {
   link.value = {}
   open.value = true
   title.value = '新增'
+}
+
+const handleArticle = async () => {
+  const res = await reqLinkGetArticle()
+  article.value = { ...res.data, tags: [] }
+  openArticle.value = true
+}
+
+const handleSubmitArticle = async () => {
+  await reqLinkUpdateArticle(article.value)
+  openArticle.value = false
 }
 
 const handleUpdate = (row: LinkListData) => {

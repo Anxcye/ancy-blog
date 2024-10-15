@@ -7,8 +7,10 @@ import type {
   LinkListRes,
   LinkPageParams,
   LinkPageRes,
+  LinkUpdateArticleRes,
   LinkUpdateRes,
 } from './type'
+import type { ArticleAddParams, ArticleGetByIdRes } from '../article/type'
 
 export function reqLinkAdd(params: LinkAddParams): Promise<LinkAddRes> {
   return request.post(`/links`, params)
@@ -32,4 +34,12 @@ export function reqLinkList(): Promise<LinkListRes> {
 
 export function reqLinkPage(params: LinkPageParams): Promise<LinkPageRes> {
   return request.get(`/links/page`, { params })
+}
+
+export function reqLinkUpdateArticle(params: ArticleAddParams): Promise<LinkUpdateArticleRes> {
+  return request.put(`/links/article`, params)
+}
+
+export function reqLinkGetArticle(): Promise<ArticleGetByIdRes> {
+  return request.get(`/links/article`)
 }

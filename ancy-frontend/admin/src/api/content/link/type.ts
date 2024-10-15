@@ -53,3 +53,5 @@ export interface LinkPageParams {
   pageNum: number
   pageSize: number
 }
+
+export interface LinkUpdateArticleRes extends ApiResponse<boolean> {}
