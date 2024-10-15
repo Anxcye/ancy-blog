@@ -121,8 +121,8 @@ const getNotePage = async (page: number = 1) => {
   total.value = res.data.total
 }
 
-onMounted(async () => {
-  await getNotePage()
+onMounted(() => {
+  getNotePage()
 })
 
 const handleAdd = () => {

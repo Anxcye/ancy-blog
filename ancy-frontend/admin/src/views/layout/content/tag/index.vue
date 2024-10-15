@@ -126,7 +126,7 @@ const hancleCancel = () => {
   tag.value = {}
 }
 
-onMounted(async () => {
+onMounted(() => {
   getTagList()
 })
 </script>

@@ -127,8 +127,8 @@ const getArticlePage = async (page: number = 1) => {
   total.value = res.data.total
 }
 
-onMounted(async () => {
-  await getArticlePage()
+onMounted(() => {
+  getArticlePage()
 })
 
 const handleAdd = () => {

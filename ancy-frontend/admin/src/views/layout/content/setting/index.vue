@@ -217,8 +217,8 @@ const deleteItem = (type: number, index?: string) => {
   }
 }
 
-onMounted(async () => {
-  await getSetting()
+onMounted(() => {
+  getSetting()
 })
 </script>
 

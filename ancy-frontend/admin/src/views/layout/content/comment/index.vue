@@ -160,8 +160,8 @@ const handleDelete = async (row: CommentListData) => {
   })
 }
 
-onMounted(async () => {
-  await getCommentList()
+onMounted(() => {
+  getCommentList()
 })
 </script>
 

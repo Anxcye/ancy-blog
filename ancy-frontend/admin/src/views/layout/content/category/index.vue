@@ -161,8 +161,8 @@ const handleDelete = async (row: CategoryListData) => {
   })
 }
 
-onMounted(async () => {
-  await getCategoryList()
+onMounted(() => {
+  getCategoryList()
 })
 </script>
 
