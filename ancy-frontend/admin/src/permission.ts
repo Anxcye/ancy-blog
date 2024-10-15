@@ -18,7 +18,7 @@ router.beforeEach(async (to, from, next) => {
   const setFavicon = ref(false)
 
   if (!setFavicon.value) {
-    browserStore.setIcon(to.meta.icon as string)
+    browserStore.setIcon()
     setFavicon.value = true
   }
 
