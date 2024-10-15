@@ -33,6 +33,7 @@ import { reqProjectDetail } from '@/api/project'
 import type { ProjectDetailData } from '@/api/project/type'
 import { onMounted, ref } from 'vue'
 import ArticleViewer from '@/components/ArticleViewer.vue'
+import { useBrowserStore } from '@/stores/browser'
 
 const route = useRoute()
 const projectDetail = ref<ProjectDetailData>()
@@ -40,6 +41,7 @@ const projectDetail = ref<ProjectDetailData>()
 const getProjectDetail = async () => {
   const res = await reqProjectDetail(Number(route.params.id))
   projectDetail.value = res.data
+  useBrowserStore().setTitle('项目' + projectDetail.value?.title ?? '')
 }
 
 onMounted(async () => {

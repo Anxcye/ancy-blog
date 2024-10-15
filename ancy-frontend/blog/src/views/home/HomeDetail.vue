@@ -17,6 +17,7 @@
 import { reqArticleHomeGetById } from '@/api/article'
 import type { ArticleDetailData } from '@/api/article/type'
 import ArticleViewer from '@/components/ArticleViewer.vue'
+import { useBrowserStore } from '@/stores/browser'
 import { onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
@@ -26,6 +27,7 @@ const article = ref<ArticleDetailData>()
 const getArticleDetail = async (id: number) => {
   const res = await reqArticleHomeGetById(id)
   article.value = res.data
+  useBrowserStore().setTitle(article.value?.title ?? '')
 }
 
 watch(

@@ -52,6 +52,7 @@ import TimelineList from '@/components/TimelineList.vue'
 import { EyeOutlined, FolderOutlined } from '@ant-design/icons-vue'
 import Icon from '@ant-design/icons-vue'
 import { handleScroll } from '@/utils/handleScroll'
+import { useBrowserStore } from '@/stores/browser'
 
 const articleList = ref<ArticleListData[]>([])
 const total = ref<number>(0)
@@ -78,6 +79,9 @@ const getArticleList = async (replace = false) => {
   } finally {
     loading.value = false
   }
+  useBrowserStore().setTitle(
+    route.params.id ? ('分类 - ' + articleList.value[0]?.categoryName ?? '') : '文章列表',
+  )
 }
 
 watch(

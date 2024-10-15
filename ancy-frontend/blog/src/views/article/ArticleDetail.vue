@@ -48,6 +48,7 @@ import Icon from '@ant-design/icons-vue'
 import { CalendarOutlined, FolderOutlined, EyeOutlined } from '@ant-design/icons-vue'
 import timeAgo from '@/utils/timeAgo'
 import ArticleViewer from '@/components/ArticleViewer.vue'
+import { useBrowserStore } from '@/stores/browser'
 
 const route = useRoute()
 const article = ref<ArticleDetailData>()
@@ -55,6 +56,7 @@ const article = ref<ArticleDetailData>()
 const getArticle = async () => {
   const res = await reqArticleGetById(Number(route.params.id))
   article.value = res.data
+  useBrowserStore().setTitle(article.value?.title ?? '')
 }
 onMounted(async () => {
   await getArticle()

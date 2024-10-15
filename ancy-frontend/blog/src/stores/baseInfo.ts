@@ -2,13 +2,16 @@ import { reqSettingGetBase } from '@/api/baseInfo'
 import type { SettingGetBaseData } from '@/api/baseInfo/type'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { useBrowserStore } from './browser'
 
 export const useBaseInfoStore = defineStore('baseInfo', () => {
   const baseInfo = ref<SettingGetBaseData>()
+  const browserStore = useBrowserStore()
 
   const reqBaseInfo = async () => {
     const res = await reqSettingGetBase()
     baseInfo.value = res.data
+    browserStore.setIcon()
   }
 
   const getAvatar = () => {

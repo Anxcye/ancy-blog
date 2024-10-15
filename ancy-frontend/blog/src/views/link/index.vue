@@ -23,42 +23,52 @@
         </div>
       </template>
       <template #footer>
-        <div class="text-xl font-bold mb-4 mt-20 text-center">添加朋友</div>
-        <div class="flex flex-col items-center gap-2 justify-between md:flex-row">
-          <div class="flex flex-col gap-2 items-center w-full md:w-1/2">
-            <a :href="addLinkParams.address" target="_blank" class="py-4">
-              <div class="flex flex-col items-center justify-center gap-2">
-                <a-avatar :src="addLinkParams.logo" class="w-20 h-20 rounded-3xl" />
-                <div class="text-lg font-medium">{{ addLinkParams.name }}</div>
-                <div class="text-sm text-gray text-center">
-                  {{ addLinkParams.description }}
+        <div class="mb-2">
+          <div class="text-xl font-bold mb-4 mt-20 text-center">添加朋友</div>
+          <div class="flex flex-col items-center gap-2 justify-between md:flex-row">
+            <div class="flex flex-col gap-2 items-center w-full md:w-1/2">
+              <a :href="addLinkParams.address" target="_blank" class="py-4">
+                <div class="flex flex-col items-center justify-center gap-2">
+                  <a-avatar :src="addLinkParams.logo" class="w-20 h-20 rounded-3xl" />
+                  <div class="text-lg font-medium">{{ addLinkParams.name }}</div>
+                  <div class="text-sm text-gray text-center">
+                    {{ addLinkParams.description }}
+                  </div>
                 </div>
-              </div>
-            </a>
-            <div class="text-xl font-bold">预览</div>
+              </a>
+              <div class="text-xl font-bold">预览</div>
+            </div>
+            <a-form
+              :model="addLinkParams"
+              :rules="rules"
+              ref="formRef"
+              class="flex flex-col gap-3 w-full md:w-1/2"
+            >
+              <a-form-item label="名称" name="name">
+                <a-input v-model:value="addLinkParams.name" placeholder="input placeholder" />
+              </a-form-item>
+              <a-form-item label="logo" name="logo">
+                <a-input v-model:value="addLinkParams.logo" placeholder="input placeholder" />
+              </a-form-item>
+              <a-form-item label="描述" name="description">
+                <a-input
+                  v-model:value="addLinkParams.description"
+                  placeholder="input placeholder"
+                />
+              </a-form-item>
+              <a-form-item label="地址" name="address">
+                <a-input v-model:value="addLinkParams.address" placeholder="input placeholder" />
+              </a-form-item>
+              <a-form-item>
+                <div class="flex flex-row items-center gap-2 justify-center md:justify-end">
+                  <a-button type="primary" @click="copyInfo">复制本站信息</a-button>
+                  <a-button type="primary" @click="addLink" :loading="submitLoading">
+                    申请添加
+                  </a-button>
+                </div>
+              </a-form-item>
+            </a-form>
           </div>
-          <a-form :model="addLinkParams" :rules="rules" ref="formRef" class="w-full md:w-1/2">
-            <a-form-item label="名称" name="name">
-              <a-input v-model:value="addLinkParams.name" placeholder="input placeholder" />
-            </a-form-item>
-            <a-form-item label="logo" name="logo">
-              <a-input v-model:value="addLinkParams.logo" placeholder="input placeholder" />
-            </a-form-item>
-            <a-form-item label="描述" name="description">
-              <a-input v-model:value="addLinkParams.description" placeholder="input placeholder" />
-            </a-form-item>
-            <a-form-item label="地址" name="address">
-              <a-input v-model:value="addLinkParams.address" placeholder="input placeholder" />
-            </a-form-item>
-            <a-form-item>
-              <div class="flex flex-row items-center gap-2 md:justify-end">
-                <a-button type="primary" @click="copyInfo">复制本站信息</a-button>
-                <a-button type="primary" @click="addLink" :loading="submitLoading">
-                  申请添加
-                </a-button>
-              </div>
-            </a-form-item>
-          </a-form>
         </div>
       </template>
     </ArticleViewer>
