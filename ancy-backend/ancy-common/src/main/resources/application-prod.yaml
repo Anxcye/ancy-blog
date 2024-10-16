@@ -1,0 +1,20 @@
+ancy:
+  aliyun:
+    oss:
+      access-key-id: ${ALIYUN_ACCESS_KEY_ID}
+      endpoint: ${ALIYUN_ENDPOINT}
+      bucket-name: ${ALIYUN_BUCKET_NAME}
+      access-key-secret: ${ALIYUN_ACCESS_KEY_SECRET}
+  mysql:
+    url: jdbc:mysql://${MYSQL_ADDRESS}:${MYSQL_PORT}/ancy_blog?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    username: ${MYSQL_USERNAME}
+    password: ${MYSQL_PASSWORD}
+    driver-class-name: ${MYSQL_DRIVER_CLASS_NAME}
+  redis:
+    password: ${REDIS_PASSWORD}
+  springboot:
+    jwt:
+      jwtSecret: ${JWT_SECRET}
+      jwtExpiration: ${JWT_EXPIRATION}
+
+

@@ -1,6 +1,3 @@
-server:
-  port: 8889
-
 ancy:
   jwt:
     jwtSecret: ${ancy.springboot.jwt.jwtSecret}
