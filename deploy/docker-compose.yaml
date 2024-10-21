@@ -60,14 +60,20 @@ services:
       - ancy-redis
 
   nginx:
-    build:
-      context: .
-      dockerfile: Dockerfile-nginx
+    image: nginx:1.25.2
     container_name: ancy-nginx
     restart: always
+    environment:
+      - NGINX_BLOG_SERVER_NAME=${NGINX_BLOG_SERVER_NAME}
+      - NGINX_ADMIN_SERVER_NAME=${NGINX_ADMIN_SERVER_NAME}
     ports:
       - 80:80
-      - 81:81
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/access.log:/var/log/nginx/access.log
+      - ./nginx/error.log:/var/log/nginx/error.log
+      - ./dists/blog-frontend:/usr/share/nginx/html/blog
+      - ./dists/admin-frontend:/usr/share/nginx/html/admin
     depends_on:
       - admin-backend
       - blog-backend
