@@ -19,6 +19,8 @@ spring:
       max-request-size: 5MB
   data:
     redis:
+      host: ${ancy.redis.host}
+      port: ${ancy.redis.port}
       password: ${ancy.redis.password}
   profiles:
     active: dev

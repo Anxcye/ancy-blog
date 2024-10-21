@@ -1,5 +1,5 @@
 
-create database ancy_blog;
+-- create database ancy_blog if not exists;
 
 use ancy_blog;
 

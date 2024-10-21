@@ -6,11 +6,13 @@ ancy:
       bucket-name: ${ALIYUN_BUCKET_NAME}
       access-key-secret: ${ALIYUN_ACCESS_KEY_SECRET}
   mysql:
-    url: jdbc:mysql://${MYSQL_ADDRESS}:${MYSQL_PORT}/ancy_blog?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://${MYSQL_ADDRESS}:${MYSQL_PORT}/ancy_blog?useUnicode=true&characterEncoding=utf-8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: ${MYSQL_USERNAME}
     password: ${MYSQL_PASSWORD}
     driver-class-name: ${MYSQL_DRIVER_CLASS_NAME}
   redis:
+    host: ${REDIS_ADDRESS}
+    port: ${REDIS_PORT}
     password: ${REDIS_PASSWORD}
   springboot:
     jwt:

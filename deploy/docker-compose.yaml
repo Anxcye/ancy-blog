@@ -1,0 +1,108 @@
+version: '3.8'
+services:
+  admin-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile-admin-backend
+    container_name: ancy-admin-backend
+    # restart: always
+    restart: on-failure
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - TZ=Asia/Shanghai
+      - ALIYUN_ACCESS_KEY_ID=${ALIYUN_ACCESS_KEY_ID}
+      - ALIYUN_ENDPOINT=${ALIYUN_ENDPOINT}
+      - ALIYUN_BUCKET_NAME=${ALIYUN_BUCKET_NAME}
+      - ALIYUN_ACCESS_KEY_SECRET=${ALIYUN_ACCESS_KEY_SECRET}
+      - MYSQL_ADDRESS=${MYSQL_ADDRESS}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DRIVER_CLASS_NAME=${MYSQL_DRIVER_CLASS_NAME}
+      - REDIS_ADDRESS=${REDIS_ADDRESS}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
+    networks:
+      - ancy-network
+    depends_on:
+      - ancy-mysql
+      - ancy-redis
+
+  blog-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile-blog-backend
+    container_name: ancy-blog-backend
+    restart: on-failure
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+      - TZ=Asia/Shanghai
+      - ALIYUN_ACCESS_KEY_ID=${ALIYUN_ACCESS_KEY_ID}
+      - ALIYUN_ENDPOINT=${ALIYUN_ENDPOINT}
+      - ALIYUN_BUCKET_NAME=${ALIYUN_BUCKET_NAME}
+      - ALIYUN_ACCESS_KEY_SECRET=${ALIYUN_ACCESS_KEY_SECRET}
+      - MYSQL_ADDRESS=${MYSQL_ADDRESS}
+      - MYSQL_PORT=${MYSQL_PORT}
+      - MYSQL_USERNAME=${MYSQL_USERNAME}
+      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DRIVER_CLASS_NAME=${MYSQL_DRIVER_CLASS_NAME}
+      - REDIS_ADDRESS=${REDIS_ADDRESS}
+      - REDIS_PORT=${REDIS_PORT}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - JWT_EXPIRATION=${JWT_EXPIRATION}
+    networks:
+      - ancy-network
+    depends_on:
+      - ancy-mysql
+      - ancy-redis
+
+  nginx:
+    build:
+      context: .
+      dockerfile: Dockerfile-nginx
+    container_name: ancy-nginx
+    restart: always
+    ports:
+      - 80:80
+      - 81:81
+    depends_on:
+      - admin-backend
+      - blog-backend
+    networks:
+      - ancy-network
+
+
+  ancy-mysql:
+    image: mysql:8.0.31
+    container_name: ancy-mysql
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=${MYSQL_PASSWORD}
+      - MYSQL_DATABASE=ancy_blog
+      - TZ=Asia/Shanghai
+    volumes:
+      - ancy-mysql-conf:/etc/mysql/conf.d
+      - ancy-mysql-data:/var/lib/mysql
+      - ./sql/init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+    networks:
+      - ancy-network
+
+  ancy-redis:
+    image: redis:7.0.12
+    container_name: ancy-redis
+    restart: always
+    networks:
+      - ancy-network
+
+networks:
+  ancy-network:
+    driver: bridge
+    external: false
+
+volumes:
+  ancy-mysql-data:
+  ancy-mysql-conf:
+

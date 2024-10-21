@@ -12,6 +12,7 @@ import IconsResolver from 'unplugin-icons/resolver'
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  base: './',
   plugins: [
     vue(),
     AutoImport({
@@ -63,7 +64,7 @@ export default defineConfig({
   },
   server: {
     proxy: {
-      '/api': {
+      '/dev': {
         target: 'http://localhost:8889',
         // target: import.meta.env.VITE_APP_API_URL,
         changeOrigin: true,

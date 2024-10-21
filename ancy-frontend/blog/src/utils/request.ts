@@ -2,8 +2,10 @@ import { message } from 'ant-design-vue'
 import { useAdminStore } from '@/stores/admin'
 import axios from 'axios'
 
+const BASE_URL = import.meta.env.DEV ? '/dev' : '/api'
+
 const request = axios.create({
-  baseURL: '/api',
+  baseURL: BASE_URL,
   timeout: 5000,
 })
 
