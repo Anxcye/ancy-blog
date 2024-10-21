@@ -1,3 +1,59 @@
 server:
   port: 8888
 
+ancy:
+  jwt:
+    jwtSecret: ${ancy.springboot.jwt.jwtSecret}
+    jwtExpiration: ${ancy.springboot.jwt.jwtExpiration}
+
+spring:
+  datasource:
+    url: ${ancy.mysql.url}
+    #    url: jdbc:mysql://localhost:3306/your_database
+    username: ${ancy.mysql.username}
+    password: ${ancy.mysql.password}
+    driver-class-name: ${ancy.mysql.driver-class-name}
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 5MB
+  data:
+    redis:
+      password: ${ancy.redis.password}
+  profiles:
+    active: dev
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      logic-delete-field: deleted
+      logic-delete-value: 1
+      logic-not-delete-value: 0
+      id-type: auto
+
+# springdoc-openapi
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'user'
+      paths-to-match: '/**'
+      packages-to-scan: com.anxcye.controller
+
+knife4j:
+  enable: true
+  setting:
+    language: zh_cn
+
+aliyun:
+  oss:
+    access-key-id: ${ancy.aliyun.oss.access-key-id}
+    endpoint: ${ancy.aliyun.oss.endpoint}
+    bucket-name: ${ancy.aliyun.oss.bucket-name}
+    access-key-secret: ${ancy.aliyun.oss.access-key-secret}

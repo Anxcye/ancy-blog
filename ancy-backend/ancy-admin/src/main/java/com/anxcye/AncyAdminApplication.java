@@ -9,7 +9,6 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 @MapperScan("com.anxcye.mapper")
 @EnableScheduling
 public class AncyAdminApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(AncyAdminApplication.class, args);
     }

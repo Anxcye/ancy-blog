@@ -1,3 +1,6 @@
+server:
+  port: 8889
+
 ancy:
   jwt:
     jwtSecret: ${ancy.springboot.jwt.jwtSecret}
@@ -6,6 +9,7 @@ ancy:
 spring:
   datasource:
     url: ${ancy.mysql.url}
+    #    url: jdbc:mysql://localhost:3306/your_database
     username: ${ancy.mysql.username}
     password: ${ancy.mysql.password}
     driver-class-name: ${ancy.mysql.driver-class-name}
@@ -28,6 +32,19 @@ mybatis-plus:
       logic-delete-value: 1
       logic-not-delete-value: 0
       id-type: auto
+
+# springdoc-openapi
+springdoc:
+  swagger-ui:
+    path: /swagger-ui.html
+    tags-sorter: alpha
+    operations-sorter: alpha
+  api-docs:
+    path: /v3/api-docs
+  group-configs:
+    - group: 'admin'
+      paths-to-match: '/**'
+      packages-to-scan: com.anxcye.controller
 
 knife4j:
   enable: true
