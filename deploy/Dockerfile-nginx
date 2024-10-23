@@ -1,7 +1,0 @@
-FROM nginx:1.25.2
-
-COPY ./dists/blog-frontend /usr/share/nginx/html/blog
-COPY ./dists/admin-frontend /usr/share/nginx/html/admin
-COPY ./nginx/nginx.conf /etc/nginx/nginx.conf
-
-EXPOSE 80

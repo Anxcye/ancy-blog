@@ -68,7 +68,7 @@ export default defineConfig({
         target: 'http://localhost:8889',
         // target: import.meta.env.VITE_APP_API_URL,
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ''),
+        rewrite: (path) => path.replace(/^\/dev/, ''),
       },
     },
   },

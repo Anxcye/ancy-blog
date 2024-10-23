@@ -190,7 +190,7 @@ create table sys_menu
     remark      varchar(500) default ''  null comment '备注',
     deleted     char         default '0' null
 )
-    comment '菜单权限表' charset = utf8mb3;
+    comment '菜单权限表';
 
 create table sys_operate_log
 (
@@ -225,7 +225,7 @@ create table sys_role
     update_time datetime         null comment '更新时间',
     remark      varchar(500)     null comment '备注'
 )
-    comment '角色信息表' charset = utf8mb3;
+    comment '角色信息表';
 
 create table sys_role_menu
 (
@@ -234,7 +234,7 @@ create table sys_role_menu
     role_id bigint not null comment '角色ID',
     menu_id bigint not null comment '菜单ID'
 )
-    comment '角色和菜单关联表' charset = utf8mb3;
+    comment '角色和菜单关联表';
 
 create table sys_setting
 (

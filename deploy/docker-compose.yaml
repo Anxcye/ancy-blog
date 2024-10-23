@@ -63,9 +63,6 @@ services:
     image: nginx:1.25.2
     container_name: ancy-nginx
     restart: always
-    environment:
-      - NGINX_BLOG_SERVER_NAME=${NGINX_BLOG_SERVER_NAME}
-      - NGINX_ADMIN_SERVER_NAME=${NGINX_ADMIN_SERVER_NAME}
     ports:
       - 80:80
     volumes:
