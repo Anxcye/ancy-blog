@@ -55,7 +55,7 @@ jobs:
       if: startsWith(github.ref, 'refs/tags/')
       id: changelog
       run: |
-        CHANGELOG_CONTENT=$(awk "/# ${VERSION}/,/^# [0-9]/" CHANGELOG.md | grep -v "^# [0-9]")
+        CHANGELOG_CONTENT=$(sed -n "/## ${VERSION}/,/## /p" CHANGELOG.md | sed '$d')
         echo "CHANGELOG<<EOF" >> $GITHUB_ENV
         echo "$CHANGELOG_CONTENT" >> $GITHUB_ENV
         echo "EOF" >> $GITHUB_ENV
