@@ -1,4 +1,4 @@
-mvn clean package -DskipTest -f ../ancy-backend
+mvn clean package -DskipTests -f ../ancy-backend
 mv ../ancy-backend/ancy-admin/target/ancy-admin-1.0-SNAPSHOT.jar ./jars/admin.jar
 mv ../ancy-backend/ancy-blog/target/ancy-blog-1.0-SNAPSHOT.jar ./jars/blog.jar
 
