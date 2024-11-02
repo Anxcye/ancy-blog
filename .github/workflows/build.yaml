@@ -1,0 +1,51 @@
+name: Build and Package
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      redis:
+        image: redis
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up JDK
+      uses: actions/setup-java@v3
+      with:
+        java-version: '17'
+        distribution: 'temurin'
+
+    - name: Set up Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '18'
+
+    - name: Install pnpm
+      uses: pnpm/action-setup@v2
+      with:
+        version: 8
+
+    - name: Build project
+      run: cd deploy && ./build.sh
+
+    - name: Create tar archive
+      run: cd ../ && tar -czf deploy.tar.gz deploy/
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: deploy-archive
+        path: deploy.tar.gz

@@ -1,0 +1,13 @@
+2024/11/02 05:11:17 [emerg] 1#1: open() "/etc/nginx/conf.d/nginx.conf" failed (2: No such file or directory) in /etc/nginx/nginx.conf:8
+2024/11/02 05:11:18 [emerg] 1#1: open() "/etc/nginx/conf.d/nginx.conf" failed (2: No such file or directory) in /etc/nginx/nginx.conf:8
+2024/11/02 05:11:20 [emerg] 1#1: open() "/etc/nginx/conf.d/nginx.conf" failed (2: No such file or directory) in /etc/nginx/nginx.conf:8
+2024/11/02 05:11:21 [emerg] 1#1: open() "/etc/nginx/conf.d/nginx.conf" failed (2: No such file or directory) in /etc/nginx/nginx.conf:8
+2024/11/02 05:11:22 [emerg] 1#1: open() "/etc/nginx/conf.d/nginx.conf" failed (2: No such file or directory) in /etc/nginx/nginx.conf:8
+2024/11/02 05:11:25 [emerg] 1#1: open() "/etc/nginx/conf.d/nginx.conf" failed (2: No such file or directory) in /etc/nginx/nginx.conf:8
+2024/11/02 05:11:28 [emerg] 1#1: open() "/etc/nginx/conf.d/nginx.conf" failed (2: No such file or directory) in /etc/nginx/nginx.conf:8
+2024/11/02 05:11:36 [emerg] 1#1: open() "/etc/nginx/conf.d/nginx.conf" failed (2: No such file or directory) in /etc/nginx/nginx.conf:8
+2024/11/02 05:11:50 [emerg] 1#1: open() "/etc/nginx/conf.d/nginx.conf" failed (2: No such file or directory) in /etc/nginx/nginx.conf:8
+2024/11/02 05:12:16 [emerg] 1#1: open() "/etc/nginx/conf.d/nginx.conf" failed (2: No such file or directory) in /etc/nginx/nginx.conf:8
+2024/11/02 05:13:06 [emerg] 1#1: open() "/etc/nginx/conf.d/nginx.conf" failed (2: No such file or directory) in /etc/nginx/nginx.conf:8
+2024/11/02 05:14:06 [emerg] 1#1: open() "/etc/nginx/conf.d/nginx.conf" failed (2: No such file or directory) in /etc/nginx/nginx.conf:8
+2024/11/02 05:15:05 [emerg] 1#1: open() "/etc/nginx/conf.d/nginx.conf" failed (2: No such file or directory) in /etc/nginx/nginx.conf:8
