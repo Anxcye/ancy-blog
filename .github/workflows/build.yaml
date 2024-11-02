@@ -42,7 +42,7 @@ jobs:
       run: cd deploy && ./build.sh
 
     - name: Create tar archive
-      run: cd ../ && tar -czf deploy.tar.gz deploy/
+      run: tar -czf ancy.tar.gz deploy/
 
     - name: Upload artifact
       uses: actions/upload-artifact@v3
