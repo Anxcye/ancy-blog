@@ -51,19 +51,19 @@ jobs:
       run: |
         echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
 
-    - name: Extract changelog
-      if: startsWith(github.ref, 'refs/tags/')
-      id: changelog
+    - name: Extract release notes
+      id: extract_release_notes
       run: |
-        CHANGELOG_CONTENT=$(sed -n "/## ${VERSION}/,/## /p" CHANGELOG.md | sed '$d')
-        echo "CHANGELOG<<EOF" >> $GITHUB_ENV
-        echo "$CHANGELOG_CONTENT" >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
-        echo "CHANGELOG=$CHANGELOG_CONTENT" >> $GITHUB_ENV
+          VERSION=${{ env.VERSION }}
+          CHANGELOG_CONTENT=$(sed -n "/## $VERSION/,/## /p" CHANGELOG.md | sed '$d')
+          echo "RELEASE_NOTES<<EOF" >> $GITHUB_ENV
+          echo "$CHANGELOG_CONTENT" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+          echo "RELEASE_NOTES=$CHANGELOG_CONTENT" >> $GITHUB_ENV
 
     - name: Create Release
       if: startsWith(github.ref, 'refs/tags/')
       uses: softprops/action-gh-release@v2
       with:
         files: ancy.tar.gz
-        body: ${{ env.CHANGELOG }}
+        body: ${{ env.RELEASE_NOTES }}
