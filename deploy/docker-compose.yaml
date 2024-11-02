@@ -5,7 +5,6 @@ services:
       context: .
       dockerfile: Dockerfile-admin-backend
     container_name: ancy-admin-backend
-    # restart: always
     restart: on-failure
     environment:
       - SPRING_PROFILES_ACTIVE=prod
@@ -65,18 +64,55 @@ services:
     restart: always
     ports:
       - 80:80
+      - 443:443
     volumes:
+      - ./nginx/nginx.conf.template:/etc/nginx/templates/nginx.conf.template
       - ./nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./nginx/access.log:/var/log/nginx/access.log
       - ./nginx/error.log:/var/log/nginx/error.log
       - ./dists/blog-frontend:/usr/share/nginx/html/blog
       - ./dists/admin-frontend:/usr/share/nginx/html/admin
+      - ./certbot/etc:/etc/letsencrypt
+      - ./certbot/var:/var/lib/letsencrypt
+      - ./certbot/webroot:/var/www/certbot
+    environment:
+      - BLOG_SERVER_NAME=${BLOG_SERVER_NAME}
+      - ADMIN_SERVER_NAME=${ADMIN_SERVER_NAME}
     depends_on:
-      - admin-backend
-      - blog-backend
+      admin-backend:
+        condition: service_started
+      blog-backend:
+        condition: service_started
+      certbot:
+        condition: service_completed_successfully
     networks:
       - ancy-network
 
+  certbot:
+    image: certbot/certbot:v2.11.0
+    container_name: certbot
+    ports:
+      - 80:80
+    volumes:
+      - ./certbot/etc:/etc/letsencrypt
+      - ./certbot/var:/var/lib/letsencrypt
+      - ./certbot/webroot:/var/www/certbot
+    command: certonly --standalone --non-interactive --email ${CERTBOT_EMAIL} --agree-tos --no-eff-email -d ${BLOG_SERVER_NAME} -d ${ADMIN_SERVER_NAME}
+    networks:
+      - ancy-network
+
+  certbot-renew:
+    image: certbot/certbot
+    container_name: certbot-renew
+    volumes:
+      - ./certbot/etc:/etc/letsencrypt
+      - ./certbot/var:/var/lib/letsencrypt
+      - ./certbot/webroot:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; sleep 24h; while :; do certbot renew --webroot --webroot-path=/var/www/certbot; sleep 24h; done;'"
+    depends_on:
+      - nginx
+    networks:
+      - ancy-network
 
   ancy-mysql:
     image: mysql:8.0.31
@@ -108,4 +144,3 @@ networks:
 volumes:
   ancy-mysql-data:
   ancy-mysql-conf:
-
