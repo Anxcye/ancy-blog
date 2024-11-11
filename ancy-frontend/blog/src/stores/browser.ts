@@ -8,6 +8,10 @@ export const useBrowserStore = defineStore('browser', () => {
   const icon = useFavicon()
   const title = useTitle()
 
+  const getTitle = () => {
+    return title.value
+  }
+
   const setTitle = (newTitle: string) => {
     title.value = newTitle + ' | ' + (baseInfoStore.getName() ?? 'Ancy')
   }
@@ -16,5 +20,5 @@ export const useBrowserStore = defineStore('browser', () => {
     icon.value = baseInfoStore.getAvatar()
   }
 
-  return { setIcon, setTitle }
+  return { setIcon, setTitle, getTitle, title }
 })

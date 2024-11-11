@@ -31,12 +31,27 @@
 import { useRoute } from 'vue-router'
 import { reqProjectDetail } from '@/api/project'
 import type { ProjectDetailData } from '@/api/project/type'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import ArticleViewer from '@/components/ArticleViewer.vue'
 import { useBrowserStore } from '@/stores/browser'
+import { useHead } from '@vueuse/head'
+import getMeta from '@/utils/meta'
 
 const route = useRoute()
 const projectDetail = ref<ProjectDetailData>()
+
+useHead({
+  meta: getMeta(
+    computed(() => projectDetail.value?.summary ?? ''),
+    computed(() => [
+      '项目',
+      ...(projectDetail.value?.srcUrl
+        ? ['开源', 'Github', projectDetail.value?.srcUrl.split('/').pop() ?? '']
+        : []),
+      ...(projectDetail.value?.displayUrl ? ['展示', projectDetail.value?.displayUrl] : []),
+    ]),
+  ),
+})
 
 const getProjectDetail = async () => {
   const res = await reqProjectDetail(Number(route.params.id))

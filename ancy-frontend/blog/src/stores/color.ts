@@ -28,7 +28,6 @@ export const useColorStore = defineStore('color', () => {
     if (currentColor.value === null) {
       currentColor.value = colorScheme[Math.floor(Math.random() * colorScheme.length)]
     }
-    console.log(currentColor.value)
     return currentColor.value
   }
   const hash = (source: string) => {

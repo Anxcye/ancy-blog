@@ -42,22 +42,32 @@
 <script setup lang="ts">
 import { reqArticleGetById } from '@/api/article'
 import type { ArticleDetailData } from '@/api/article/type'
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import Icon from '@ant-design/icons-vue'
 import { CalendarOutlined, FolderOutlined, EyeOutlined } from '@ant-design/icons-vue'
 import timeAgo from '@/utils/timeAgo'
 import ArticleViewer from '@/components/ArticleViewer.vue'
 import { useBrowserStore } from '@/stores/browser'
+import { useHead } from '@vueuse/head'
+import getMeta from '@/utils/meta'
 
 const route = useRoute()
 const article = ref<ArticleDetailData>()
+
+useHead({
+  meta: getMeta(
+    computed(() => article.value?.summary ?? ''),
+    computed(() => article.value?.tags.map((item) => item.name) ?? []),
+  ),
+})
 
 const getArticle = async () => {
   const res = await reqArticleGetById(Number(route.params.id))
   article.value = res.data
   useBrowserStore().setTitle(article.value?.title ?? '')
 }
+
 onMounted(async () => {
   await getArticle()
 })

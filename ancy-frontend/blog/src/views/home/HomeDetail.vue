@@ -18,7 +18,9 @@ import { reqArticleHomeGetById } from '@/api/article'
 import type { ArticleDetailData } from '@/api/article/type'
 import ArticleViewer from '@/components/ArticleViewer.vue'
 import { useBrowserStore } from '@/stores/browser'
-import { onMounted, ref, watch } from 'vue'
+import getMeta from '@/utils/meta'
+import { useHead } from '@vueuse/head'
+import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
@@ -42,6 +44,13 @@ watch(
 
 onMounted(async () => {
   await getArticleDetail(Number(route.params.id))
+})
+
+useHead({
+  meta: getMeta(
+    computed(() => article.value?.summary ?? ''),
+    computed(() => article.value?.tags.map((item) => item.name) ?? []),
+  ),
 })
 </script>
 
