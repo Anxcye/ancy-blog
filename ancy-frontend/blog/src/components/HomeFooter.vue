@@ -17,17 +17,15 @@
             {{ item.text }}
           </router-link>
           |
-          <a @click="openLogin" class="hover:cursor-pointer">管理员登录</a>
+          <a-button type="text" @click="openLogin" class="hover:cursor-pointer">
+            管理员登录
+          </a-button>
         </div>
         <div class="flex flex-row items-center gap-3 text-sm">
-          <a
-            v-for="item in footer2"
-            :key="item.index"
-            :href="item.url"
-            class="hover:cursor-pointer"
-          >
-            {{ item.text }}
-          </a>
+          <div v-for="item in footer2" :key="item.index">
+            <a v-if="item.url" :href="item.url" class="hover:cursor-pointer">{{ item.text }}</a>
+            <span v-else>{{ item.text }}</span>
+          </div>
         </div>
       </div>
     </div>

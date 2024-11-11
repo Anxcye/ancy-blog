@@ -85,14 +85,23 @@ const router = createRouter({
       component: () => import('@/views/read/index.vue'),
       meta: { group: 'more' },
     },
+    {
+      path: '/404',
+      name: '404',
+      component: () => import('@/views/404/index.vue'),
+    },
+    {
+      path: '/:pathMatch(.*)*',
+      redirect: '/404',
+    },
   ],
 })
 
 router.beforeEach((to, from, next) => {
-  const colorStore = useColorStore()
+  // const colorStore = useColorStore()
   const browserStore = useBrowserStore()
 
-  colorStore.changeColor()
+  // colorStore.changeColor()
 
   browserStore.setTitle(to.name as string)
 

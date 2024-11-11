@@ -22,6 +22,6 @@ pnpm install
 pnpm build
 
 # Copy frontend builds
-# cd ../../deploy
+cd ../../deploy
 cp -r ../ancy-frontend/blog/dist/* ./dists/blog-frontend
 cp -r ../ancy-frontend/admin/dist/* ./dists/admin-frontend

@@ -17,7 +17,12 @@
         />
       </div>
       <div class="avatar">
-        <a-avatar :size="36" :src="baseInfoStore.baseInfo?.avatar" @click="avatarClick" />
+        <a-avatar
+          :size="36"
+          :src="baseInfoStore.baseInfo?.avatar"
+          @click="avatarClick"
+          alt="avatar"
+        />
       </div>
       <div class="hidden md:block">
         <DockBar :isScrolled="isScrolled" :drawerOpen="open" @update:drawerOpen="menuClose" />
