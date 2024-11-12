@@ -12,7 +12,7 @@ import IconsResolver from 'unplugin-icons/resolver'
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  base: './',
+  base: '/',
   plugins: [
     vue(),
     AutoImport({
@@ -66,7 +66,6 @@ export default defineConfig({
     proxy: {
       '/dev': {
         target: 'http://localhost:8889',
-        // target: import.meta.env.VITE_APP_API_URL,
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/dev/, ''),
       },
