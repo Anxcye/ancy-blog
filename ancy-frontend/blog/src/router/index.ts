@@ -1,5 +1,5 @@
 import { useBrowserStore } from '@/stores/browser'
-import { useColorStore } from '@/stores/color'
+// import { useColorStore } from '@/stores/color'
 import { createRouter, createWebHistory } from 'vue-router'
 
 const router = createRouter({
