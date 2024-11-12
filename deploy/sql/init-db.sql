@@ -352,7 +352,7 @@ INSERT INTO ancy_blog.sys_menu (id, menu_name, parent_id, order_num, path, compo
 INSERT INTO ancy_blog.sys_menu (id, menu_name, parent_id, order_num, path, component, is_frame, menu_type, visible, status, perms, icon, create_by, create_time, update_by, update_time, remark, deleted) VALUES (2034, '菜单删除', 203, 4, '', null, 1, 'F', '0', '0', 'system:menu:remove', '#', 1, NOW(), null, null, null, '0');
 
 INSERT INTO ancy_blog.sys_role (id, role_name, role_key, role_sort, status, deleted, create_by, create_time, update_by, update_time, remark) VALUES (1, '超级管理员', 'admin', 1, '0', '0', 1, NOW(), null, null, '超级管理员');
-INSERT INTO ancy_blog.sys_role (id, role_name, role_key, role_sort, status, deleted, create_by, create_time, update_by, update_time, remark) VALUES (13, '访客', 'visitor', 3, '0', '0', 1, NOW(), null, null, null);
+INSERT INTO ancy_blog.sys_role (id, role_name, role_key, role_sort, status, deleted, create_by, create_time, update_by, update_time, remark) VALUES (2, '访客', 'visitor', 3, '0', '0', 1, NOW(), null, null, null);
 
 INSERT INTO ancy_blog.sys_role_menu (id, role_id, menu_id) VALUES (1, 1, 1);
 INSERT INTO ancy_blog.sys_role_menu (id, role_id, menu_id) VALUES (2, 1, 101);
