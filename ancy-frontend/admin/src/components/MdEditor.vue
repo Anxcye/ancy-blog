@@ -13,7 +13,7 @@
 
 <script setup lang="ts">
 import { onMounted, onUnmounted, ref } from 'vue'
-import { MdEditor, type ExposeParam, type ToolbarNames } from 'md-editor-v3'
+import { config, MdEditor, type ExposeParam, type ToolbarNames } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import { reqUpload } from '@/api/common'
 
@@ -24,6 +24,12 @@ const emit = defineEmits(['update:modelValue'])
 const handleUpdateModelValue = (v: string) => {
   emit('update:modelValue', v)
 }
+
+config({
+  markdownItPlugins(plugins) {
+    return plugins.filter((p) => p.type !== 'xss')
+  },
+})
 
 const initialToolbars: ToolbarNames[] = [
   'underline',

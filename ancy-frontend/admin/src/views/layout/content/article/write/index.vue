@@ -111,7 +111,9 @@ import { reqUpload } from '@/api/common'
 import type { UploadRequestOptions } from 'element-plus'
 import { useRoute, type LocationQueryValue } from 'vue-router'
 import { reqArticleAdd, reqArticleGetById, reqArticleUpdate } from '@/api/content/article'
+import { useRouter } from 'vue-router'
 
+const router = useRouter()
 const route = useRoute()
 const article = ref<ArticleAddParams>({})
 const categoryList = ref<CategoryListData[]>([])
@@ -198,11 +200,16 @@ const handleSubmit = async () => {
   } else {
     await reqArticleAdd(article.value)
   }
+
+  ElMessage.success('操作成功')
+  router.push('/article')
 }
 
 const handleDraft = async () => {
   article.value.status = '1'
   await reqArticleAdd(article.value)
+  ElMessage.success('操作成功')
+  router.push('/article')
 }
 
 const handleUpload = async (img: UploadRequestOptions) => {
