@@ -81,6 +81,7 @@ const getNote = async (id: number) => {
 }
 
 const handleSubmit = async () => {
+  note.value.status = '0'
   if (aId.value) {
     await reqNoteUpdate(aId.value, note.value)
   } else {

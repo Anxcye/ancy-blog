@@ -134,6 +134,7 @@ public class ArticleServiceImpl extends ServiceImpl<ArticleMapper, Article>
         wrapper.like(StringUtils.hasText(articleListDto.getSummary()), Article::getSummary,
                 articleListDto.getSummary());
         wrapper.in(Article::getType, SystemConstants.ARTICLE_TYPE_NORMAL, SystemConstants.ARTICLE_TYPE_FRONT);
+        wrapper.orderByDesc(Article::getCreateTime);
 
         Page<Article> page = new Page<>(articleListDto.getPageNum(), articleListDto.getPageSize());
         page(page, wrapper);

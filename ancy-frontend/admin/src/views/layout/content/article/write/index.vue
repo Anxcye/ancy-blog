@@ -195,12 +195,12 @@ const getArticleById = async (id: number) => {
 }
 
 const handleSubmit = async () => {
+  article.value.status = '0'
   if (aId.value) {
     await reqArticleUpdate(aId.value, article.value)
   } else {
     await reqArticleAdd(article.value)
   }
-
   ElMessage.success('操作成功')
   router.push('/article')
 }

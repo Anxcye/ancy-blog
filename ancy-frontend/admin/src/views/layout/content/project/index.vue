@@ -205,6 +205,7 @@ const getProjectDetail = async (id: number) => {
 }
 
 const handleAdd = () => {
+  project.value.status = '0'
   project.value = {}
   open.value = true
   title.value = '新增'
