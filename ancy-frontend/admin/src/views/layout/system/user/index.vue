@@ -42,8 +42,12 @@
           />
         </template>
       </el-table-column>
-      <el-table-column prop="createTime" label="创建时间" align="center" width="120" />
-      <el-table-column prop="updateTime" label="更新时间" align="center" width="120" />
+      <el-table-column label="时间" align="center" width="250" prop="createTime">
+        <template v-slot="scope">
+          <div>创建时间: {{ scope.row.createTime }}</div>
+          <div v-if="scope.row.updateTime">更新时间: {{ scope.row.updateTime }}</div>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" fixed="right" width="170">
         <template v-slot="scope">
           <el-button type="text" :icon="Edit" @click="handleUpdate(scope.row)" size="small">

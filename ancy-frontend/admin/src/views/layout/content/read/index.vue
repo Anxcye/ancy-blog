@@ -37,15 +37,9 @@
       <el-table-column label="作者" align="center" width="150" prop="author" />
       <el-table-column label="来源" align="center" width="150" prop="source" />
 
-      <el-table-column
-        label="内容"
-        align="center"
-        width="200"
-        show-overflow-tooltip
-        prop="content"
-      />
+      <el-table-column label="内容" align="center" show-overflow-tooltip prop="content" />
 
-      <el-table-column label="添加来源" align="center" prop="addFrom">
+      <el-table-column label="添加来源" align="center" width="100" prop="addFrom">
         <template v-slot="scope">
           <el-tag v-if="scope.row.addFrom === 0">手动</el-tag>
           <el-tag v-else type="success">安读</el-tag>

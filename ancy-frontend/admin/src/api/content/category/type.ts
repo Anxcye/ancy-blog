@@ -7,6 +7,10 @@ export interface CategoryListData {
   name: string
   parentId: number
   description: string
+  createBy: number
+  createTime: string
+  updateBy: number
+  updateTime: string
 }
 
 export interface CategoryListRes extends ApiResponse<CategoryListData[]> {}

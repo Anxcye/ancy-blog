@@ -10,7 +10,6 @@ export interface TagListData {
   createTime: string
   updateBy: number
   updateTime: string
-  deleted: number
 }
 
 export interface TagListRes extends ApiResponse<TagListData[]> {}

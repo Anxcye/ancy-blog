@@ -82,6 +82,12 @@
           <el-image preview-teleported :src="scope.row.avatar" style="width: 50px; height: 50px" />
         </template>
       </el-table-column>
+      <el-table-column label="时间" align="center" width="250" prop="createTime">
+        <template v-slot="scope">
+          <div>创建时间: {{ scope.row.createTime }}</div>
+          <div v-if="scope.row.updateTime">更新时间: {{ scope.row.updateTime }}</div>
+        </template>
+      </el-table-column>
       <el-table-column label="操作" align="center" width="100" fixed="right">
         <template v-slot="scope">
           <el-button type="text" :icon="Delete" @click="handleDelete(scope.row)" size="small">

@@ -53,14 +53,14 @@
         prop="perms"
         label="权限标识"
         :show-overflow-tooltip="true"
-        width="160"
+        min-width="160"
         align="center"
       />
       <el-table-column
         prop="component"
         label="组件路径"
         :show-overflow-tooltip="true"
-        width="160"
+        min-width="160"
         align="center"
       />
       <el-table-column prop="status" label="启用" width="80" align="center">
@@ -74,9 +74,10 @@
           />
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" prop="createTime" width="100">
+      <el-table-column label="时间" align="center" width="250" prop="createTime">
         <template v-slot="scope">
-          {{ scope.row.createTime }}
+          <div>创建时间: {{ scope.row.createTime }}</div>
+          <div v-if="scope.row.updateTime">更新时间: {{ scope.row.updateTime }}</div>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" fixed="right" width="240">

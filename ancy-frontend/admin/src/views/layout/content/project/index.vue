@@ -95,6 +95,12 @@
           />
         </template>
       </el-table-column>
+      <el-table-column label="时间" align="center" width="250" prop="createTime">
+        <template v-slot="scope">
+          <div>创建时间: {{ scope.row.createTime }}</div>
+          <div v-if="scope.row.updateTime">更新时间: {{ scope.row.updateTime }}</div>
+        </template>
+      </el-table-column>
 
       <el-table-column prop="orderNum" label="排序" align="center" />
 

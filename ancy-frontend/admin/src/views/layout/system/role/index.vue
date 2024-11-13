@@ -22,8 +22,18 @@
 
     <el-table v-loading="loading" :data="roleList">
       <el-table-column label="ID" prop="id" width="50" />
-      <el-table-column label="角色名称" prop="roleName" :show-overflow-tooltip="true" width="150" />
-      <el-table-column label="权限字符" prop="roleKey" :show-overflow-tooltip="true" width="150" />
+      <el-table-column
+        label="角色名称"
+        prop="roleName"
+        :show-overflow-tooltip="true"
+        min-width="160"
+      />
+      <el-table-column
+        label="权限字符"
+        prop="roleKey"
+        :show-overflow-tooltip="true"
+        min-width="160"
+      />
       <el-table-column label="显示顺序" prop="roleSort" width="100" />
       <el-table-column label="启用" align="center" width="100">
         <template v-slot="scope">
@@ -36,9 +46,10 @@
           />
         </template>
       </el-table-column>
-      <el-table-column label="创建时间" align="center" prop="createTime" width="180">
+      <el-table-column label="时间" align="center" width="250" prop="createTime">
         <template v-slot="scope">
-          <span>{{ scope.row.createTime }}</span>
+          <div>创建时间: {{ scope.row.createTime }}</div>
+          <div v-if="scope.row.updateTime">更新时间: {{ scope.row.updateTime }}</div>
         </template>
       </el-table-column>
       <el-table-column label="操作" align="center" fixed="right" width="170">
