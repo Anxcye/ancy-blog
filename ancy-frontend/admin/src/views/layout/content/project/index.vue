@@ -149,6 +149,9 @@
         <el-form-item label="排序" prop="orderNum">
           <el-input v-model="project.orderNum" placeholder="请输入排序" />
         </el-form-item>
+        <el-form-item label="项目介绍">
+          <MdEditor v-model="project.content" />
+        </el-form-item>
       </el-form>
       <template v-slot:footer>
         <div class="dialog-footer">
@@ -166,7 +169,13 @@ import { Search, Plus, Delete, Edit } from '@element-plus/icons-vue'
 import type { FormRules } from 'element-plus'
 import { toggleStatus } from '@/utils/toggleStatus'
 import type { ProjectAddParams, ProjectListData, ProjectPageParams } from '@/api/project/type'
-import { reqProjectAdd, reqProjectDelete, reqProjectPage, reqProjectUpdate } from '@/api/project'
+import {
+  reqProjectAdd,
+  reqProjectDelete,
+  reqProjectGetById,
+  reqProjectPage,
+  reqProjectUpdate,
+} from '@/api/project'
 
 const queryParams = ref<ProjectPageParams>({
   pageNum: 1,
@@ -190,14 +199,19 @@ const getProjectPage = async (page: number = 1) => {
   loading.value = false
 }
 
+const getProjectDetail = async (id: number) => {
+  const res = await reqProjectGetById(id)
+  return res.data
+}
+
 const handleAdd = () => {
   project.value = {}
   open.value = true
   title.value = '新增'
 }
 
-const handleUpdate = (row: ProjectListData) => {
-  project.value = { ...row }
+const handleUpdate = async (row: ProjectListData) => {
+  project.value = await getProjectDetail(row.id)
   open.value = true
   title.value = '修改' + row.title
 }

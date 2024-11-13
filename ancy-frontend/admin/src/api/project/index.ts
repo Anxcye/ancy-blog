@@ -25,6 +25,6 @@ export function reqProjectDelete(id: number): Promise<ProjectDeleteRes> {
   return request.delete(`/project/${id}`)
 }
 
-export function projectGetById(id: number): Promise<ProjectGetByIdRes> {
+export function reqProjectGetById(id: number): Promise<ProjectGetByIdRes> {
   return request.get(`/project/${id}`)
 }

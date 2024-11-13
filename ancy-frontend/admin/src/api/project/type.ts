@@ -57,8 +57,8 @@ export interface ProjectDetailData {
   content: string
   summary: string
   thumbnail: string
-  isTop: string
-  status: string
+  isTop: '0' | '1'
+  status: '0' | '1'
   type: string
   srcUrl: string
   displayUrl: string
