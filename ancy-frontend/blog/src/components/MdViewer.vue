@@ -5,9 +5,13 @@
 </template>
 
 <script setup lang="ts">
-import { MdPreview } from 'md-editor-v3'
+import { config, MdPreview } from 'md-editor-v3'
 import 'md-editor-v3/lib/preview.css'
-
+config({
+  markdownItPlugins(plugins) {
+    return plugins.filter((p) => p.type !== 'xss')
+  },
+})
 const props = defineProps<{
   content?: string
 }>()
