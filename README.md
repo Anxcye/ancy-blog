@@ -12,6 +12,11 @@
 - 前台 [Anxcye 小站](https://anxcye.com)
 - 后台 [Anxcye 小站管理](https://admin.anxcye.com)
 
+![前台](./docs/main.png)
+
+在 `LightHouse` 中拥有不错的得分：
+![性能得分](./docs/perf.png)
+
 
 ## 部署项目
 **先决条件**
