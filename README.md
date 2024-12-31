@@ -17,6 +17,10 @@
 在 `LightHouse` 中拥有不错的得分：
 ![性能得分](./docs/perf.png)
 
+## TODO
+- [ ] 添加 Cloudflare R2 对象存储
+- [ ] 优化后端代码
+
 
 ## 部署项目
 **先决条件**
