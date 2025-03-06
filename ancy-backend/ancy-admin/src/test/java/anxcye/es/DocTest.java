@@ -1,7 +1,8 @@
-package com.anxcye.es;
+package anxcye.es;
 
 import cn.hutool.core.bean.BeanUtil;
 import cn.hutool.json.JSONUtil;
+import com.anxcye.AncyAdminApplication;
 import com.anxcye.domain.entity.Article;
 import com.anxcye.domain.po.ArticleDoc;
 import com.anxcye.service.ArticleService;
@@ -20,7 +21,7 @@ import org.springframework.context.annotation.ComponentScan;
 
 import java.io.IOException;
 
-@SpringBootTest(classes = AncyBlogApplication.class, properties = "spring.profiles.active=dev")
+@SpringBootTest(classes = AncyAdminApplication.class, properties = "spring.profiles.active=dev")
 @ComponentScan(basePackages = "com.anxcye")
 public class DocTest {
     private RestHighLevelClient client;

@@ -1,4 +1,4 @@
-package com.anxcye;
+package anxcye;
 
 import org.springframework.boot.test.context.SpringBootTest;
 

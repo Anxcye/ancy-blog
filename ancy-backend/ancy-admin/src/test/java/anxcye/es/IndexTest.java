@@ -1,4 +1,4 @@
-package com.anxcye.es;
+package anxcye.es;
 
 import org.apache.http.HttpHost;
 import org.elasticsearch.action.admin.indices.delete.DeleteIndexRequest;

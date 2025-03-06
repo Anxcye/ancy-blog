@@ -1,4 +1,4 @@
-package com.anxcye;
+package anxcye;
 
 public class redisTest {
 
