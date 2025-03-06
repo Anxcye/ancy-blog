@@ -58,6 +58,10 @@ public class IndexTest {
         client.indices().delete(request, RequestOptions.DEFAULT);
     }
 
+    @AfterEach
+    void tearDown() throws IOException {
+        this.client.close();
+    }
     static final String MAPPING_TEMPLATE = """
             {
               "mappings": {
@@ -101,8 +105,4 @@ public class IndexTest {
               }
             }""";
 
-    @AfterEach
-    void tearDown() throws IOException {
-        this.client.close();
-    }
 }
