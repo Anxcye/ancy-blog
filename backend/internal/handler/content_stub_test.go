@@ -6,6 +6,7 @@ package handler
 
 import (
 	"errors"
+	"time"
 
 	"github.com/anxcye/ancy-blog/backend/internal/domain"
 	"github.com/anxcye/ancy-blog/backend/internal/repository"
@@ -30,7 +31,7 @@ type handlerRepoStub struct {
 	retryTranslationJobFunc      func(id string) (domain.TranslationJob, error)
 	listTranslationContentsFunc  func(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int)
 	getTranslationContentFunc    func(sourceType, sourceID, locale string) (domain.TranslationContent, bool)
-	upsertTranslationContentFunc func(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error)
+	upsertTranslationContentFunc func(sourceType, sourceID, locale, title, summary, content, status string, publishedAt time.Time, translatedByJobID string) (domain.TranslationContent, error)
 }
 
 func (s *handlerRepoStub) CreateComment(comment domain.Comment) (domain.Comment, error) {
@@ -146,9 +147,9 @@ func (s *handlerRepoStub) GetTranslationContent(sourceType, sourceID, locale str
 	return domain.TranslationContent{}, false
 }
 
-func (s *handlerRepoStub) UpsertTranslationContent(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error) {
+func (s *handlerRepoStub) UpsertTranslationContent(sourceType, sourceID, locale, title, summary, content, status string, publishedAt time.Time, translatedByJobID string) (domain.TranslationContent, error) {
 	if s.upsertTranslationContentFunc != nil {
-		return s.upsertTranslationContentFunc(sourceType, sourceID, locale, content, translatedByJobID)
+		return s.upsertTranslationContentFunc(sourceType, sourceID, locale, title, summary, content, status, publishedAt, translatedByJobID)
 	}
 	return domain.TranslationContent{}, errors.New("not implemented")
 }

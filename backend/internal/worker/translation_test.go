@@ -42,7 +42,11 @@ type upsertCall struct {
 	sourceType string
 	sourceID   string
 	locale     string
+	title      string
+	summary    string
 	content    string
+	status     string
+	published  time.Time
 	jobID      string
 }
 
@@ -81,17 +85,35 @@ func (s *workerRepoStub) GetIntegrationProvider(providerKey string) (domain.Inte
 	return s.provider, s.providerOK
 }
 
-func (s *workerRepoStub) UpsertArticleTranslation(articleID, locale, content, translatedByJobID string) error {
+func (s *workerRepoStub) UpsertArticleTranslation(articleID, locale, title, summary, content, status string, publishedAt time.Time, translatedByJobID string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.upsertCalls = append(s.upsertCalls, upsertCall{sourceType: "article", sourceID: articleID, locale: locale, content: content, jobID: translatedByJobID})
+	s.upsertCalls = append(s.upsertCalls, upsertCall{
+		sourceType: "article",
+		sourceID:   articleID,
+		locale:     locale,
+		title:      title,
+		summary:    summary,
+		content:    content,
+		status:     status,
+		published:  publishedAt,
+		jobID:      translatedByJobID,
+	})
 	return nil
 }
 
-func (s *workerRepoStub) UpsertMomentTranslation(momentID, locale, content, translatedByJobID string) error {
+func (s *workerRepoStub) UpsertMomentTranslation(momentID, locale, content, status string, publishedAt time.Time, translatedByJobID string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	s.upsertCalls = append(s.upsertCalls, upsertCall{sourceType: "moment", sourceID: momentID, locale: locale, content: content, jobID: translatedByJobID})
+	s.upsertCalls = append(s.upsertCalls, upsertCall{
+		sourceType: "moment",
+		sourceID:   momentID,
+		locale:     locale,
+		content:    content,
+		status:     status,
+		published:  publishedAt,
+		jobID:      translatedByJobID,
+	})
 	return nil
 }
 
@@ -136,7 +158,7 @@ func TestTranslationWorkerProcessOnceSuccess(t *testing.T) {
 			t.Fatalf("unexpected request: %s %s", r.Method, r.URL.Path)
 		}
 		w.Header().Set("Content-Type", "application/json")
-		_, _ = w.Write([]byte(`{"choices":[{"message":{"content":"translated text"}}]}`))
+		_, _ = w.Write([]byte(`{"choices":[{"message":{"content":"{\"title\":\"Translated Title\",\"summary\":\"Translated Summary\",\"content\":\"translated text\"}"}}]}`))
 	}))
 	defer llmServer.Close()
 
@@ -176,6 +198,12 @@ func TestTranslationWorkerProcessOnceSuccess(t *testing.T) {
 	}
 	if repo.upsertCalls[0].locale != "en-US" {
 		t.Fatalf("expected locale en-US, got %s", repo.upsertCalls[0].locale)
+	}
+	if repo.upsertCalls[0].title != "Translated Title" {
+		t.Fatalf("expected translated title")
+	}
+	if repo.upsertCalls[0].status != "draft" {
+		t.Fatalf("expected draft status by default")
 	}
 	if len(repo.failed) != 0 {
 		t.Fatalf("expected no failed jobs, got %+v", repo.failed)
@@ -276,5 +304,42 @@ func TestTranslationWorkerProcessOnceMarksFailedWhenRetryExhausted(t *testing.T)
 	msg := repo.failed["job-5"]
 	if !strings.Contains(msg, "source not found") {
 		t.Fatalf("expected terminal failure message, got %q", msg)
+	}
+}
+
+func TestTranslationWorkerAutoPublishSetsPublishedStatus(t *testing.T) {
+	llmServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"choices":[{"message":{"content":"translated moment"}}]}`))
+	}))
+	defer llmServer.Close()
+
+	rawCfg, _ := json.Marshal(map[string]any{"base_url": llmServer.URL, "api_key": "k", "model": "m"})
+	repo := newWorkerRepoStub()
+	repo.hasJob = true
+	repo.jobToClaim = domain.TranslationJob{
+		ID:           "job-6",
+		SourceType:   "moment",
+		SourceID:     "moment-1",
+		SourceLocale: "zh-CN",
+		TargetLocale: "en-US",
+		ProviderKey:  "openai_compatible",
+		ModelName:    "m",
+		AutoPublish:  true,
+	}
+	repo.sourceFound = true
+	repo.sourceText = "原文"
+	repo.providerOK = true
+	repo.provider = domain.IntegrationProvider{ProviderKey: "openai_compatible", Enabled: true, ConfigJSON: rawCfg}
+
+	worker := buildWorkerForTest(repo, time.Second)
+	if err := worker.processOnce(context.Background()); err != nil {
+		t.Fatalf("processOnce failed: %v", err)
+	}
+	if len(repo.upsertCalls) != 1 {
+		t.Fatalf("expected one upsert call")
+	}
+	if repo.upsertCalls[0].status != "published" {
+		t.Fatalf("expected published status when autoPublish is true")
 	}
 }

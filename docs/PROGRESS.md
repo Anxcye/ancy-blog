@@ -7,6 +7,7 @@
 
 ## In Progress
 - [ ] Add API rate limiting for auth/comment/AI/translation-create endpoints.
+- [ ] Add frontend i18n routing and SEO output (`/` default zh, `/en/*` english).
 
 ## Done
 - [x] Created tracking docs and collaboration guidelines.
@@ -45,6 +46,7 @@
 - [x] Added locale-aware read support for public moments and timeline APIs (`locale` query passthrough + repository translation readback).
 - [x] Added admin translation-content management APIs for browse/detail/manual override (`/api/v1/admin/translations/contents*`).
 - [x] Added translation worker retry/backoff and manual retry endpoint for failed jobs (`/api/v1/admin/translations/jobs/{id}/retry`).
+- [x] Added i18n publish-control schema and runtime: translation `autoPublish/publishAt`, article translation `title/summary/content`, and locale read visibility based on translation publish state.
 
 ## Blocked
 - None.

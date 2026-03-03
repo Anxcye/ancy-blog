@@ -178,8 +178,8 @@ func (s *TranslationService) RetryTranslationJob(id string) (domain.TranslationJ
 func (s *TranslationService) GetTranslationSourceText(sourceType, sourceID string) (string, bool, error) {
 	return s.core.GetTranslationSourceText(sourceType, sourceID)
 }
-func (s *TranslationService) UpsertTranslationResult(sourceType, sourceID, targetLocale, content, translatedByJobID string) error {
-	return s.core.UpsertTranslationResult(sourceType, sourceID, targetLocale, content, translatedByJobID)
+func (s *TranslationService) UpsertTranslationResult(sourceType, sourceID, targetLocale, title, summary, content, status string, publishedAt time.Time, translatedByJobID string) error {
+	return s.core.UpsertTranslationResult(sourceType, sourceID, targetLocale, title, summary, content, status, publishedAt, translatedByJobID)
 }
 func (s *TranslationService) ListTranslationContents(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int, error) {
 	return s.core.ListTranslationContents(page, pageSize, sourceType, sourceID, locale)
@@ -187,8 +187,8 @@ func (s *TranslationService) ListTranslationContents(page, pageSize int, sourceT
 func (s *TranslationService) GetTranslationContent(sourceType, sourceID, locale string) (domain.TranslationContent, bool, error) {
 	return s.core.GetTranslationContent(sourceType, sourceID, locale)
 }
-func (s *TranslationService) UpsertTranslationContent(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error) {
-	return s.core.UpsertTranslationContent(sourceType, sourceID, locale, content, translatedByJobID)
+func (s *TranslationService) UpsertTranslationContent(sourceType, sourceID, locale, title, summary, content, status string, publishedAt time.Time, translatedByJobID string) (domain.TranslationContent, error) {
+	return s.core.UpsertTranslationContent(sourceType, sourceID, locale, title, summary, content, status, publishedAt, translatedByJobID)
 }
 
 func (s *TimelineService) ListTimeline(page, pageSize int, locale string) ([]domain.TimelineItem, int) {

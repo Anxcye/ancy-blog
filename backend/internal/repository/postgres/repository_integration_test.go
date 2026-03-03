@@ -48,6 +48,7 @@ func resetTestDatabase(t *testing.T, db *sql.DB) {
 	execSQLFile(t, db, migrationFilePath(t, "000002_translation_job_result.up.sql"))
 	execSQLFile(t, db, migrationFilePath(t, "000003_content_translations.up.sql"))
 	execSQLFile(t, db, migrationFilePath(t, "000004_translation_retry.up.sql"))
+	execSQLFile(t, db, migrationFilePath(t, "000005_i18n_publish_control.up.sql"))
 }
 
 func migrationFilePath(t *testing.T, name string) string {
@@ -232,7 +233,7 @@ func TestRepositoryIntegration_TranslationJobLifecycle(t *testing.T) {
 		t.Fatalf("expected non-empty source text")
 	}
 
-	if err := repo.UpsertArticleTranslation(article.ID, "en-US", "translated body", job.ID); err != nil {
+	if err := repo.UpsertArticleTranslation(article.ID, "en-US", "Translated Title", "Translated Summary", "translated body", "published", now, job.ID); err != nil {
 		t.Fatalf("upsert article translation failed: %v", err)
 	}
 	localized, ok := repo.GetPublishedArticleBySlugWithLocale("translate-me", "en-US")
@@ -252,7 +253,7 @@ func TestRepositoryIntegration_TranslationJobLifecycle(t *testing.T) {
 	if err != nil {
 		t.Fatalf("create moment failed: %v", err)
 	}
-	if err := repo.UpsertMomentTranslation(moment.ID, "en-US", "translated moment body", job.ID); err != nil {
+	if err := repo.UpsertMomentTranslation(moment.ID, "en-US", "translated moment body", "published", now, job.ID); err != nil {
 		t.Fatalf("upsert moment translation failed: %v", err)
 	}
 
@@ -300,7 +301,7 @@ func TestRepositoryIntegration_TranslationJobLifecycle(t *testing.T) {
 		t.Fatalf("unexpected translation detail content: %s", gotTranslation.Content)
 	}
 
-	manual, err := repo.UpsertTranslationContent("article", article.ID, "en-US", "manual override", "")
+	manual, err := repo.UpsertTranslationContent("article", article.ID, "en-US", "Manual Title", "Manual Summary", "manual override", "draft", time.Time{}, "")
 	if err != nil {
 		t.Fatalf("upsert translation content failed: %v", err)
 	}

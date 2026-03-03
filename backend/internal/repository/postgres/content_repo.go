@@ -177,11 +177,15 @@ WHERE slug=$1 AND status='published' AND deleted_at IS NULL
 func (r *Repository) GetPublishedArticleBySlugWithLocale(slug, locale string) (domain.Article, bool) {
 	var a domain.Article
 	err := r.db.QueryRow(`
-SELECT a.id::text, a.title, a.slug, a.content_kind, COALESCE(a.summary,''), COALESCE(at.content, a.content), a.status, a.visibility,
+SELECT a.id::text, COALESCE(at.title, a.title), a.slug, a.content_kind, COALESCE(at.summary, a.summary, ''), COALESCE(at.content, a.content), a.status, a.visibility,
        a.allow_comment, a.origin_type, COALESCE(a.source_url,''), a.ai_assist_level, COALESCE(a.cover_image,''),
        COALESCE(a.published_at, a.created_at), a.created_at, a.updated_at
 FROM articles a
-LEFT JOIN article_translations at ON at.article_id = a.id AND at.locale = $2
+LEFT JOIN article_translations at
+  ON at.article_id = a.id
+ AND at.locale = $2
+ AND at.status = 'published'
+ AND (at.published_at IS NULL OR at.published_at <= NOW())
 WHERE a.slug=$1 AND a.status='published' AND a.deleted_at IS NULL
 `, slug, locale).Scan(&a.ID, &a.Title, &a.Slug, &a.ContentKind, &a.Summary, &a.Content, &a.Status, &a.Visibility,
 		&a.AllowComment, &a.OriginType, &a.SourceURL, &a.AIAssistLevel, &a.CoverImage, &a.PublishedAt, &a.CreatedAt, &a.UpdatedAt)
@@ -247,7 +251,11 @@ func (r *Repository) ListPublishedMoments(page, pageSize int, locale string) ([]
 SELECT m.id::text, COALESCE(mt.content, m.content), m.status, m.allow_comment,
        COALESCE(m.published_at, m.created_at), m.created_at, m.updated_at
 FROM moments m
-LEFT JOIN moment_translations mt ON mt.moment_id = m.id AND mt.locale = $1
+LEFT JOIN moment_translations mt
+  ON mt.moment_id = m.id
+ AND mt.locale = $1
+ AND mt.status = 'published'
+ AND (mt.published_at IS NULL OR mt.published_at <= NOW())
 WHERE m.status='published' AND m.deleted_at IS NULL
 ORDER BY m.published_at DESC NULLS LAST, m.created_at DESC
 LIMIT $2 OFFSET $3

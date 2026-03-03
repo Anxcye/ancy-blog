@@ -263,6 +263,21 @@
   - mandates CSS-variable theme injection and spring-like staggered entry animation
 - Updated `AGENTS.md` workflow rules:
   - frontend design/motion changes must update `docs/FRONTEND_STYLE_GUIDE.md`
+- Added i18n publish-control implementation for translation workflow:
+  - migration `000005_i18n_publish_control.up/down.sql`
+  - `translation_jobs` now supports `auto_publish` and `publish_at`
+  - `article_translations` extended to `title/summary/content + status + published_at`
+  - `moment_translations` extended to `content + status + published_at`
+- Updated locale read behavior:
+  - public article/moment/timeline locale reads only use translation rows where `status='published'` and `published_at <= now`
+  - fallback to Chinese source remains unchanged when localized content is unavailable
+- Updated translation runtime APIs:
+  - create job request supports `autoPublish` + `publishAt`
+  - admin translation-content upsert supports `title/summary/status/publishedAt`
+  - worker upsert now writes publish-state-aware translation records
+- Validation status in this environment:
+  - `go test ./...` with local GOCACHE passed for all packages except worker runtime tests that require opening local listener ports in sandbox
+  - worker package compile check passed with `go test ./internal/worker -run TestDoesNotExist`
 
 ### Next Suggested Tasks
 1. Add locale-aware read support for moments and timeline APIs.

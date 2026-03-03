@@ -99,19 +99,25 @@ type IntegrationUpdateRequest struct {
 }
 
 type CreateTranslationJobRequest struct {
-	SourceType   string `json:"sourceType"`
-	SourceID     string `json:"sourceId"`
-	SourceLocale string `json:"sourceLocale"`
-	TargetLocale string `json:"targetLocale"`
-	ProviderKey  string `json:"providerKey"`
-	ModelName    string `json:"modelName"`
-	MaxRetries   int    `json:"maxRetries"`
+	SourceType   string    `json:"sourceType"`
+	SourceID     string    `json:"sourceId"`
+	SourceLocale string    `json:"sourceLocale"`
+	TargetLocale string    `json:"targetLocale"`
+	ProviderKey  string    `json:"providerKey"`
+	ModelName    string    `json:"modelName"`
+	MaxRetries   int       `json:"maxRetries"`
+	AutoPublish  bool      `json:"autoPublish"`
+	PublishAt    time.Time `json:"publishAt"`
 }
 
 type UpsertTranslationContentRequest struct {
-	SourceType        string `json:"sourceType"`
-	SourceID          string `json:"sourceId"`
-	Locale            string `json:"locale"`
-	Content           string `json:"content"`
-	TranslatedByJobID string `json:"translatedByJobId"`
+	SourceType        string    `json:"sourceType"`
+	SourceID          string    `json:"sourceId"`
+	Locale            string    `json:"locale"`
+	Title             string    `json:"title"`
+	Summary           string    `json:"summary"`
+	Content           string    `json:"content"`
+	Status            string    `json:"status"`
+	PublishedAt       time.Time `json:"publishedAt"`
+	TranslatedByJobID string    `json:"translatedByJobId"`
 }

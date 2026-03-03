@@ -6,6 +6,7 @@ package memory
 
 import (
 	"testing"
+	"time"
 
 	"github.com/anxcye/ancy-blog/backend/internal/domain"
 )
@@ -59,7 +60,7 @@ func TestLocaleTranslationForMomentAndTimeline(t *testing.T) {
 	momentID := moments[0].ID
 	originalContent := moments[0].Content
 
-	if err := repo.UpsertMomentTranslation(momentID, "en-US", "translated moment", "job-1"); err != nil {
+	if err := repo.UpsertMomentTranslation(momentID, "en-US", "translated moment", "published", time.Now().UTC(), "job-1"); err != nil {
 		t.Fatalf("upsert moment translation failed: %v", err)
 	}
 
@@ -105,7 +106,7 @@ func TestTranslationContentCRUD(t *testing.T) {
 	}
 	articleID := articles[0].ID
 
-	row, err := repo.UpsertTranslationContent("article", articleID, "en-US", "translated article", "job-1")
+	row, err := repo.UpsertTranslationContent("article", articleID, "en-US", "Translated Title", "Translated Summary", "translated article", "published", time.Now().UTC(), "job-1")
 	if err != nil {
 		t.Fatalf("upsert translation content failed: %v", err)
 	}

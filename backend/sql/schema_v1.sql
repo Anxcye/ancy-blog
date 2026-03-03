@@ -290,6 +290,8 @@ CREATE TABLE IF NOT EXISTS translation_jobs (
     retry_count INTEGER NOT NULL DEFAULT 0,
     max_retries INTEGER NOT NULL DEFAULT 3,
     next_retry_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    auto_publish BOOLEAN NOT NULL DEFAULT FALSE,
+    publish_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     finished_at TIMESTAMPTZ
@@ -306,7 +308,11 @@ CREATE TABLE IF NOT EXISTS article_translations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     article_id UUID NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
     locale VARCHAR(16) NOT NULL,
+    title VARCHAR(512),
+    summary TEXT,
     content TEXT NOT NULL,
+    status VARCHAR(16) NOT NULL DEFAULT 'draft',
+    published_at TIMESTAMPTZ,
     translated_by_job_id UUID REFERENCES translation_jobs(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -315,12 +321,16 @@ CREATE TABLE IF NOT EXISTS article_translations (
 
 CREATE INDEX IF NOT EXISTS idx_article_translations_locale
     ON article_translations (locale, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_article_translations_status_published
+    ON article_translations (status, published_at DESC, updated_at DESC);
 
 CREATE TABLE IF NOT EXISTS moment_translations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     moment_id UUID NOT NULL REFERENCES moments(id) ON DELETE CASCADE,
     locale VARCHAR(16) NOT NULL,
     content TEXT NOT NULL,
+    status VARCHAR(16) NOT NULL DEFAULT 'draft',
+    published_at TIMESTAMPTZ,
     translated_by_job_id UUID REFERENCES translation_jobs(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -329,6 +339,8 @@ CREATE TABLE IF NOT EXISTS moment_translations (
 
 CREATE INDEX IF NOT EXISTS idx_moment_translations_locale
     ON moment_translations (locale, updated_at DESC);
+CREATE INDEX IF NOT EXISTS idx_moment_translations_status_published
+    ON moment_translations (status, published_at DESC, updated_at DESC);
 
 -- =========================
 -- Optional seed data

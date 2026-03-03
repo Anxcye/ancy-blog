@@ -490,6 +490,8 @@ func (h *AdminHandler) CreateTranslationJob(c *gin.Context) {
 		ProviderKey:  req.ProviderKey,
 		ModelName:    req.ModelName,
 		MaxRetries:   req.MaxRetries,
+		AutoPublish:  req.AutoPublish,
+		PublishAt:    req.PublishAt,
 		RequestedBy:  user.ID,
 	})
 	if err != nil {
@@ -573,7 +575,17 @@ func (h *AdminHandler) UpsertTranslationContent(c *gin.Context) {
 		badRequest(c, "VALIDATION_ERROR", "invalid request body")
 		return
 	}
-	row, err := h.translationService.UpsertTranslationContent(req.SourceType, req.SourceID, req.Locale, req.Content, req.TranslatedByJobID)
+	row, err := h.translationService.UpsertTranslationContent(
+		req.SourceType,
+		req.SourceID,
+		req.Locale,
+		req.Title,
+		req.Summary,
+		req.Content,
+		req.Status,
+		req.PublishedAt,
+		req.TranslatedByJobID,
+	)
 	if err != nil {
 		badRequest(c, "VALIDATION_ERROR", err.Error())
 		return

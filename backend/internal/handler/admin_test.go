@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/anxcye/ancy-blog/backend/internal/apperr"
 	"github.com/anxcye/ancy-blog/backend/internal/domain"
@@ -241,12 +242,16 @@ func TestAdminListTranslationContents(t *testing.T) {
 func TestAdminUpsertTranslationContent(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	repo := &handlerRepoStub{
-		upsertTranslationContentFunc: func(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error) {
+		upsertTranslationContentFunc: func(sourceType, sourceID, locale, title, summary, content, status string, publishedAt time.Time, translatedByJobID string) (domain.TranslationContent, error) {
 			return domain.TranslationContent{
 				SourceType:        sourceType,
 				SourceID:          sourceID,
 				Locale:            locale,
+				Title:             title,
+				Summary:           summary,
 				Content:           content,
+				Status:            status,
+				PublishedAt:       publishedAt,
 				TranslatedByJobID: translatedByJobID,
 			}, nil
 		},

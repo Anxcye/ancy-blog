@@ -107,26 +107,50 @@ func (w *TranslationWorker) processOnce(ctx context.Context) error {
 		return nil
 	}
 
-	translated, err := w.translateWithProvider(ctx, provider.ConfigJSON, job.ModelName, job.SourceLocale, job.TargetLocale, sourceText)
-	if err != nil {
-		w.handleFailure(job, err.Error())
-		return nil
+	status, publishAt := w.resolvePublishPolicy(job)
+	translatedTitle := ""
+	translatedSummary := ""
+	translatedContent := ""
+	if job.SourceType == "article" {
+		var err error
+		translatedTitle, translatedSummary, translatedContent, err = w.translateArticleWithProvider(ctx, provider.ConfigJSON, job.ModelName, job.SourceLocale, job.TargetLocale, sourceText)
+		if err != nil {
+			w.handleFailure(job, err.Error())
+			return nil
+		}
+	} else {
+		translated, err := w.translateWithProvider(ctx, provider.ConfigJSON, job.ModelName, job.SourceLocale, job.TargetLocale, sourceText)
+		if err != nil {
+			w.handleFailure(job, err.Error())
+			return nil
+		}
+		translatedContent = translated
 	}
-	if strings.TrimSpace(translated) == "" {
+	if strings.TrimSpace(translatedContent) == "" {
 		w.handleFailure(job, "empty translation output")
 		return nil
 	}
 
-	if err := w.translationService.UpsertTranslationResult(job.SourceType, job.SourceID, job.TargetLocale, translated, job.ID); err != nil {
+	if err := w.translationService.UpsertTranslationResult(job.SourceType, job.SourceID, job.TargetLocale, translatedTitle, translatedSummary, translatedContent, status, publishAt, job.ID); err != nil {
 		w.handleFailure(job, fmt.Sprintf("persist translation failed: %v", err))
 		return nil
 	}
 
-	if err := w.translationService.MarkTranslationJobSucceeded(job.ID, translated); err != nil {
+	if err := w.translationService.MarkTranslationJobSucceeded(job.ID, translatedContent); err != nil {
 		return err
 	}
 	w.logger.Info("translation job succeeded", "job_id", job.ID, "provider_key", job.ProviderKey)
 	return nil
+}
+
+func (w *TranslationWorker) resolvePublishPolicy(job domain.TranslationJob) (string, time.Time) {
+	if !job.AutoPublish {
+		return "draft", time.Time{}
+	}
+	if !job.PublishAt.IsZero() {
+		return "published", job.PublishAt.UTC()
+	}
+	return "published", time.Now().UTC()
 }
 
 func (w *TranslationWorker) handleFailure(job domain.TranslationJob, errorMessage string) {
@@ -232,4 +256,91 @@ func (w *TranslationWorker) translateWithProvider(ctx context.Context, configJSO
 		return "", fmt.Errorf("llm response has no choices")
 	}
 	return strings.TrimSpace(out.Choices[0].Message.Content), nil
+}
+
+func (w *TranslationWorker) translateArticleWithProvider(ctx context.Context, configJSON []byte, modelName, sourceLocale, targetLocale, sourceText string) (string, string, string, error) {
+	var cfg struct {
+		BaseURL string `json:"base_url"`
+		APIKey  string `json:"api_key"`
+		Model   string `json:"model"`
+	}
+	if err := json.Unmarshal(configJSON, &cfg); err != nil {
+		return "", "", "", fmt.Errorf("provider config parse failed: %w", err)
+	}
+	if strings.TrimSpace(cfg.BaseURL) == "" || strings.TrimSpace(cfg.APIKey) == "" {
+		return "", "", "", fmt.Errorf("provider config missing base_url or api_key")
+	}
+	if strings.TrimSpace(modelName) == "" {
+		modelName = cfg.Model
+	}
+	if strings.TrimSpace(modelName) == "" {
+		return "", "", "", fmt.Errorf("model is empty")
+	}
+	baseURL := strings.TrimRight(cfg.BaseURL, "/")
+	endpoint := baseURL + "/chat/completions"
+
+	systemPrompt := "You are a professional translator. Preserve meaning and markdown structure."
+	userPrompt := fmt.Sprintf(`Translate the following article source from %s to %s.
+Return STRICT JSON only with fields: title, summary, content.
+Do not add markdown code fences.
+
+Source:
+%s`, sourceLocale, targetLocale, sourceText)
+
+	payload := map[string]any{
+		"model": modelName,
+		"messages": []map[string]string{
+			{"role": "system", "content": systemPrompt},
+			{"role": "user", "content": userPrompt},
+		},
+		"temperature": 0.2,
+	}
+	body, _ := json.Marshal(payload)
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
+	if err != nil {
+		return "", "", "", err
+	}
+	req.Header.Set("Authorization", "Bearer "+cfg.APIKey)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := w.httpClient.Do(req)
+	if err != nil {
+		return "", "", "", fmt.Errorf("llm request failed: %w", err)
+	}
+	defer resp.Body.Close()
+	respBody, _ := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
+	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
+		return "", "", "", fmt.Errorf("llm response status %d: %s", resp.StatusCode, strings.TrimSpace(string(respBody)))
+	}
+	var out struct {
+		Choices []struct {
+			Message struct {
+				Content string `json:"content"`
+			} `json:"message"`
+		} `json:"choices"`
+	}
+	if err := json.Unmarshal(respBody, &out); err != nil {
+		return "", "", "", fmt.Errorf("llm response decode failed: %w", err)
+	}
+	if len(out.Choices) == 0 {
+		return "", "", "", fmt.Errorf("llm response has no choices")
+	}
+	raw := strings.TrimSpace(out.Choices[0].Message.Content)
+	if raw == "" {
+		return "", "", "", fmt.Errorf("empty translation output")
+	}
+	start := strings.Index(raw, "{")
+	end := strings.LastIndex(raw, "}")
+	if start >= 0 && end > start {
+		raw = raw[start : end+1]
+	}
+	var parsed struct {
+		Title   string `json:"title"`
+		Summary string `json:"summary"`
+		Content string `json:"content"`
+	}
+	if err := json.Unmarshal([]byte(raw), &parsed); err != nil {
+		return "", "", "", fmt.Errorf("article translation json decode failed: %w", err)
+	}
+	return strings.TrimSpace(parsed.Title), strings.TrimSpace(parsed.Summary), strings.TrimSpace(parsed.Content), nil
 }

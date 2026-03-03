@@ -9,6 +9,10 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 - Public article URLs use `slug`, not UUID.
 - URL format: `/article/{slug}`.
 - Slug must be unique, lowercase, and hyphen-separated words.
+- Locale route strategy:
+  - Chinese (default): no locale prefix (e.g. `/article/{slug}`).
+  - English: `/en/*` prefix (e.g. `/en/article/{slug}`).
+  - No `/zh` prefix in default route set.
 
 ## Article Publishing Rules
 - Articles support `draft`, `published`, `archived`.
@@ -90,6 +94,17 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 - Translation task uses configured LLM provider from integration center.
 - Translation output should be stored in locale-specific content records.
 - Translation result must include metadata: provider, model, status, and error message (if failed).
+- Translation scope:
+  - Article: `title`, `summary`, `content`.
+  - Moment: `content`.
+- Locale fallback:
+  - English route falls back to Chinese content when localized content is unavailable.
+  - Fallback pages should be marked `noindex` on frontend to avoid SEO confusion.
+- Publish control:
+  - Chinese source content is the default publish baseline.
+  - Translation job supports `auto_publish` switch.
+  - Translation job supports `publish_at` for scheduled publish.
+  - When `auto_publish=false`, localized content remains draft until manual publish.
 
 ## Navigation Rules
 - Top navigation is dynamically managed by admin.

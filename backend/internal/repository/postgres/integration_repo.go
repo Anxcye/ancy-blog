@@ -98,13 +98,14 @@ func (r *Repository) CreateTranslationJob(job domain.TranslationJob) (domain.Tra
 		job.NextRetryAt = time.Now().UTC()
 	}
 	var finishedAt sql.NullTime
+	var publishAt sql.NullTime
 	var errorMessage sql.NullString
 	err := r.db.QueryRow(`
-INSERT INTO translation_jobs (source_type, source_id, source_locale, target_locale, provider_key, model_name, status, error_message, result_text, requested_by, retry_count, max_retries, next_retry_at)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
-RETURNING id::text, retry_count, max_retries, next_retry_at, created_at, updated_at, finished_at, error_message, COALESCE(result_text,'')
-`, job.SourceType, job.SourceID, job.SourceLocale, job.TargetLocale, job.ProviderKey, job.ModelName, job.Status, nullableString(job.ErrorMessage), nullableString(job.ResultText), nullableUUID(job.RequestedBy), job.RetryCount, job.MaxRetries, job.NextRetryAt).
-		Scan(&job.ID, &job.RetryCount, &job.MaxRetries, &job.NextRetryAt, &job.CreatedAt, &job.UpdatedAt, &finishedAt, &errorMessage, &job.ResultText)
+INSERT INTO translation_jobs (source_type, source_id, source_locale, target_locale, provider_key, model_name, status, error_message, result_text, requested_by, retry_count, max_retries, next_retry_at, auto_publish, publish_at)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+RETURNING id::text, retry_count, max_retries, next_retry_at, auto_publish, publish_at, created_at, updated_at, finished_at, error_message, COALESCE(result_text,'')
+`, job.SourceType, job.SourceID, job.SourceLocale, job.TargetLocale, job.ProviderKey, job.ModelName, job.Status, nullableString(job.ErrorMessage), nullableString(job.ResultText), nullableUUID(job.RequestedBy), job.RetryCount, job.MaxRetries, job.NextRetryAt, job.AutoPublish, nullableTime(job.PublishAt)).
+		Scan(&job.ID, &job.RetryCount, &job.MaxRetries, &job.NextRetryAt, &job.AutoPublish, &publishAt, &job.CreatedAt, &job.UpdatedAt, &finishedAt, &errorMessage, &job.ResultText)
 	if err != nil {
 		if isForeignKeyViolation(err) {
 			return domain.TranslationJob{}, apperr.ErrProviderNotFound
@@ -113,6 +114,9 @@ RETURNING id::text, retry_count, max_retries, next_retry_at, created_at, updated
 	}
 	if finishedAt.Valid {
 		job.FinishedAt = finishedAt.Time
+	}
+	if publishAt.Valid {
+		job.PublishAt = publishAt.Time
 	}
 	if errorMessage.Valid {
 		job.ErrorMessage = errorMessage.String
@@ -157,7 +161,8 @@ func (r *Repository) ListTranslationJobs(page, pageSize int, status, sourceType,
 	args = append(args, pageSize, offset)
 	query := fmt.Sprintf(`
 SELECT id::text, source_type, source_id::text, source_locale, target_locale, provider_key, model_name,
-       status, COALESCE(error_message,''), COALESCE(result_text,''), COALESCE(requested_by::text,''), retry_count, max_retries, next_retry_at, created_at, updated_at, finished_at
+       status, COALESCE(error_message,''), COALESCE(result_text,''), COALESCE(requested_by::text,''), retry_count, max_retries, next_retry_at,
+       auto_publish, publish_at, created_at, updated_at, finished_at
 FROM translation_jobs
 WHERE %s
 ORDER BY created_at DESC
@@ -174,8 +179,13 @@ LIMIT $%d OFFSET $%d
 	for rows.Next() {
 		var j domain.TranslationJob
 		var finishedAt sql.NullTime
+		var publishAt sql.NullTime
 		if err := rows.Scan(&j.ID, &j.SourceType, &j.SourceID, &j.SourceLocale, &j.TargetLocale, &j.ProviderKey, &j.ModelName,
-			&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.RetryCount, &j.MaxRetries, &j.NextRetryAt, &j.CreatedAt, &j.UpdatedAt, &finishedAt); err == nil {
+			&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.RetryCount, &j.MaxRetries, &j.NextRetryAt,
+			&j.AutoPublish, &publishAt, &j.CreatedAt, &j.UpdatedAt, &finishedAt); err == nil {
+			if publishAt.Valid {
+				j.PublishAt = publishAt.Time
+			}
 			if finishedAt.Valid {
 				j.FinishedAt = finishedAt.Time
 			}
@@ -188,18 +198,24 @@ LIMIT $%d OFFSET $%d
 func (r *Repository) GetTranslationJobByID(id string) (domain.TranslationJob, bool) {
 	var j domain.TranslationJob
 	var finishedAt sql.NullTime
+	var publishAt sql.NullTime
 	err := r.db.QueryRow(`
 SELECT id::text, source_type, source_id::text, source_locale, target_locale, provider_key, model_name,
-       status, COALESCE(error_message,''), COALESCE(result_text,''), COALESCE(requested_by::text,''), retry_count, max_retries, next_retry_at, created_at, updated_at, finished_at
+       status, COALESCE(error_message,''), COALESCE(result_text,''), COALESCE(requested_by::text,''), retry_count, max_retries, next_retry_at,
+       auto_publish, publish_at, created_at, updated_at, finished_at
 FROM translation_jobs
 WHERE id=$1
 `, id).Scan(&j.ID, &j.SourceType, &j.SourceID, &j.SourceLocale, &j.TargetLocale, &j.ProviderKey, &j.ModelName,
-		&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.RetryCount, &j.MaxRetries, &j.NextRetryAt, &j.CreatedAt, &j.UpdatedAt, &finishedAt)
+		&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.RetryCount, &j.MaxRetries, &j.NextRetryAt,
+		&j.AutoPublish, &publishAt, &j.CreatedAt, &j.UpdatedAt, &finishedAt)
 	if err != nil {
 		return domain.TranslationJob{}, false
 	}
 	if finishedAt.Valid {
 		j.FinishedAt = finishedAt.Time
+	}
+	if publishAt.Valid {
+		j.PublishAt = publishAt.Time
 	}
 	return j, true
 }
@@ -229,19 +245,25 @@ LIMIT 1
 
 	var j domain.TranslationJob
 	var finishedAt sql.NullTime
+	var publishAt sql.NullTime
 	err = tx.QueryRow(`
 UPDATE translation_jobs
 SET status='running', updated_at=NOW()
 WHERE id=$1
 RETURNING id::text, source_type, source_id::text, source_locale, target_locale, provider_key, model_name,
-          status, COALESCE(error_message,''), COALESCE(result_text,''), COALESCE(requested_by::text,''), retry_count, max_retries, next_retry_at, created_at, updated_at, finished_at
+          status, COALESCE(error_message,''), COALESCE(result_text,''), COALESCE(requested_by::text,''), retry_count, max_retries, next_retry_at,
+          auto_publish, publish_at, created_at, updated_at, finished_at
 `, id).Scan(&j.ID, &j.SourceType, &j.SourceID, &j.SourceLocale, &j.TargetLocale, &j.ProviderKey, &j.ModelName,
-		&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.RetryCount, &j.MaxRetries, &j.NextRetryAt, &j.CreatedAt, &j.UpdatedAt, &finishedAt)
+		&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.RetryCount, &j.MaxRetries, &j.NextRetryAt,
+		&j.AutoPublish, &publishAt, &j.CreatedAt, &j.UpdatedAt, &finishedAt)
 	if err != nil {
 		return domain.TranslationJob{}, false, err
 	}
 	if finishedAt.Valid {
 		j.FinishedAt = finishedAt.Time
+	}
+	if publishAt.Valid {
+		j.PublishAt = publishAt.Time
 	}
 	if err := tx.Commit(); err != nil {
 		return domain.TranslationJob{}, false, err
@@ -289,6 +311,7 @@ WHERE id=$1
 func (r *Repository) RetryTranslationJob(id string) (domain.TranslationJob, error) {
 	var j domain.TranslationJob
 	var finishedAt sql.NullTime
+	var publishAt sql.NullTime
 	err := r.db.QueryRow(`
 UPDATE translation_jobs
 SET status='queued',
@@ -300,9 +323,10 @@ SET status='queued',
 WHERE id=$1 AND status='failed'
 RETURNING id::text, source_type, source_id::text, source_locale, target_locale, provider_key, model_name,
           status, COALESCE(error_message,''), COALESCE(result_text,''), COALESCE(requested_by::text,''),
-          retry_count, max_retries, next_retry_at, created_at, updated_at, finished_at
+          retry_count, max_retries, next_retry_at, auto_publish, publish_at, created_at, updated_at, finished_at
 `, id).Scan(&j.ID, &j.SourceType, &j.SourceID, &j.SourceLocale, &j.TargetLocale, &j.ProviderKey, &j.ModelName,
-		&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.RetryCount, &j.MaxRetries, &j.NextRetryAt, &j.CreatedAt, &j.UpdatedAt, &finishedAt)
+		&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.RetryCount, &j.MaxRetries, &j.NextRetryAt,
+		&j.AutoPublish, &publishAt, &j.CreatedAt, &j.UpdatedAt, &finishedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return domain.TranslationJob{}, apperr.ErrTranslationJobNotFound
@@ -311,6 +335,9 @@ RETURNING id::text, source_type, source_id::text, source_locale, target_locale, 
 	}
 	if finishedAt.Valid {
 		j.FinishedAt = finishedAt.Time
+	}
+	if publishAt.Valid {
+		j.PublishAt = publishAt.Time
 	}
 	return j, nil
 }
@@ -351,23 +378,35 @@ WHERE id=$1 AND deleted_at IS NULL
 	}
 }
 
-func (r *Repository) UpsertArticleTranslation(articleID, locale, content, translatedByJobID string) error {
+func (r *Repository) UpsertArticleTranslation(articleID, locale, title, summary, content, status string, publishedAt time.Time, translatedByJobID string) error {
 	_, err := r.db.Exec(`
-INSERT INTO article_translations (article_id, locale, content, translated_by_job_id, created_at, updated_at)
-VALUES ($1, $2, $3, $4, NOW(), NOW())
+INSERT INTO article_translations (article_id, locale, title, summary, content, status, published_at, translated_by_job_id, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, $7, $8, NOW(), NOW())
 ON CONFLICT (article_id, locale)
-DO UPDATE SET content = EXCLUDED.content, translated_by_job_id = EXCLUDED.translated_by_job_id, updated_at = NOW()
-`, articleID, locale, nullableString(content), nullableUUID(translatedByJobID))
+DO UPDATE SET
+    title = EXCLUDED.title,
+    summary = EXCLUDED.summary,
+    content = EXCLUDED.content,
+    status = EXCLUDED.status,
+    published_at = EXCLUDED.published_at,
+    translated_by_job_id = EXCLUDED.translated_by_job_id,
+    updated_at = NOW()
+`, articleID, locale, nullableString(title), nullableString(summary), nullableString(content), status, nullableTime(publishedAt), nullableUUID(translatedByJobID))
 	return err
 }
 
-func (r *Repository) UpsertMomentTranslation(momentID, locale, content, translatedByJobID string) error {
+func (r *Repository) UpsertMomentTranslation(momentID, locale, content, status string, publishedAt time.Time, translatedByJobID string) error {
 	_, err := r.db.Exec(`
-INSERT INTO moment_translations (moment_id, locale, content, translated_by_job_id, created_at, updated_at)
-VALUES ($1, $2, $3, $4, NOW(), NOW())
+INSERT INTO moment_translations (moment_id, locale, content, status, published_at, translated_by_job_id, created_at, updated_at)
+VALUES ($1, $2, $3, $4, $5, $6, NOW(), NOW())
 ON CONFLICT (moment_id, locale)
-DO UPDATE SET content = EXCLUDED.content, translated_by_job_id = EXCLUDED.translated_by_job_id, updated_at = NOW()
-`, momentID, locale, nullableString(content), nullableUUID(translatedByJobID))
+DO UPDATE SET
+    content = EXCLUDED.content,
+    status = EXCLUDED.status,
+    published_at = EXCLUDED.published_at,
+    translated_by_job_id = EXCLUDED.translated_by_job_id,
+    updated_at = NOW()
+`, momentID, locale, nullableString(content), status, nullableTime(publishedAt), nullableUUID(translatedByJobID))
 	return err
 }
 
@@ -394,11 +433,13 @@ func (r *Repository) ListTranslationContents(page, pageSize int, sourceType, sou
 	switch sourceType {
 	case "article":
 		baseQuery = `
-SELECT article_id::text AS source_id, locale, COALESCE(content,''), COALESCE(translated_by_job_id::text,''), created_at, updated_at
+SELECT article_id::text AS source_id, locale, COALESCE(title,''), COALESCE(summary,''), COALESCE(content,''), status, published_at,
+       COALESCE(translated_by_job_id::text,''), created_at, updated_at
 FROM article_translations`
 	case "moment":
 		baseQuery = `
-SELECT moment_id::text AS source_id, locale, COALESCE(content,''), COALESCE(translated_by_job_id::text,''), created_at, updated_at
+SELECT moment_id::text AS source_id, locale, '' AS title, '' AS summary, COALESCE(content,''), status, published_at,
+       COALESCE(translated_by_job_id::text,''), created_at, updated_at
 FROM moment_translations`
 	default:
 		return []domain.TranslationContent{}, 0
@@ -412,7 +453,7 @@ FROM moment_translations`
 
 	listArgs := append(args, pageSize, offset)
 	listSQL := fmt.Sprintf(`
-SELECT source_id, locale, content, translated_by_job_id, created_at, updated_at
+SELECT source_id, locale, title, summary, content, status, published_at, translated_by_job_id, created_at, updated_at
 FROM (%s) t
 WHERE %s
 ORDER BY updated_at DESC
@@ -427,8 +468,12 @@ LIMIT $%d OFFSET $%d
 	out := make([]domain.TranslationContent, 0)
 	for rows.Next() {
 		var item domain.TranslationContent
+		var publishedAt sql.NullTime
 		item.SourceType = sourceType
-		if err := rows.Scan(&item.SourceID, &item.Locale, &item.Content, &item.TranslatedByJobID, &item.CreatedAt, &item.UpdatedAt); err == nil {
+		if err := rows.Scan(&item.SourceID, &item.Locale, &item.Title, &item.Summary, &item.Content, &item.Status, &publishedAt, &item.TranslatedByJobID, &item.CreatedAt, &item.UpdatedAt); err == nil {
+			if publishedAt.Valid {
+				item.PublishedAt = publishedAt.Time
+			}
 			out = append(out, item)
 		}
 	}
@@ -440,17 +485,25 @@ func (r *Repository) GetTranslationContent(sourceType, sourceID, locale string) 
 	var err error
 	switch sourceType {
 	case "article":
+		var publishedAt sql.NullTime
 		err = r.db.QueryRow(`
-SELECT article_id::text, locale, COALESCE(content,''), COALESCE(translated_by_job_id::text,''), created_at, updated_at
+SELECT article_id::text, locale, COALESCE(title,''), COALESCE(summary,''), COALESCE(content,''), status, published_at, COALESCE(translated_by_job_id::text,''), created_at, updated_at
 FROM article_translations
 WHERE article_id=$1 AND locale=$2
-`, sourceID, locale).Scan(&row.SourceID, &row.Locale, &row.Content, &row.TranslatedByJobID, &row.CreatedAt, &row.UpdatedAt)
+`, sourceID, locale).Scan(&row.SourceID, &row.Locale, &row.Title, &row.Summary, &row.Content, &row.Status, &publishedAt, &row.TranslatedByJobID, &row.CreatedAt, &row.UpdatedAt)
+		if publishedAt.Valid {
+			row.PublishedAt = publishedAt.Time
+		}
 	case "moment":
+		var publishedAt sql.NullTime
 		err = r.db.QueryRow(`
-SELECT moment_id::text, locale, COALESCE(content,''), COALESCE(translated_by_job_id::text,''), created_at, updated_at
+SELECT moment_id::text, locale, COALESCE(content,''), status, published_at, COALESCE(translated_by_job_id::text,''), created_at, updated_at
 FROM moment_translations
 WHERE moment_id=$1 AND locale=$2
-`, sourceID, locale).Scan(&row.SourceID, &row.Locale, &row.Content, &row.TranslatedByJobID, &row.CreatedAt, &row.UpdatedAt)
+`, sourceID, locale).Scan(&row.SourceID, &row.Locale, &row.Content, &row.Status, &publishedAt, &row.TranslatedByJobID, &row.CreatedAt, &row.UpdatedAt)
+		if publishedAt.Valid {
+			row.PublishedAt = publishedAt.Time
+		}
 	default:
 		return domain.TranslationContent{}, false
 	}
@@ -460,14 +513,14 @@ WHERE moment_id=$1 AND locale=$2
 	return row, true
 }
 
-func (r *Repository) UpsertTranslationContent(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error) {
+func (r *Repository) UpsertTranslationContent(sourceType, sourceID, locale, title, summary, content, status string, publishedAt time.Time, translatedByJobID string) (domain.TranslationContent, error) {
 	switch sourceType {
 	case "article":
-		if err := r.UpsertArticleTranslation(sourceID, locale, content, translatedByJobID); err != nil {
+		if err := r.UpsertArticleTranslation(sourceID, locale, title, summary, content, status, publishedAt, translatedByJobID); err != nil {
 			return domain.TranslationContent{}, err
 		}
 	case "moment":
-		if err := r.UpsertMomentTranslation(sourceID, locale, content, translatedByJobID); err != nil {
+		if err := r.UpsertMomentTranslation(sourceID, locale, content, status, publishedAt, translatedByJobID); err != nil {
 			return domain.TranslationContent{}, err
 		}
 	default:

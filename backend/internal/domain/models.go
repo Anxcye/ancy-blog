@@ -206,6 +206,8 @@ type TranslationJob struct {
 	RetryCount   int       `json:"retryCount"`
 	MaxRetries   int       `json:"maxRetries"`
 	NextRetryAt  time.Time `json:"nextRetryAt,omitempty"`
+	AutoPublish  bool      `json:"autoPublish"`
+	PublishAt    time.Time `json:"publishAt,omitempty"`
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
 	FinishedAt   time.Time `json:"finishedAt,omitempty"`
@@ -215,7 +217,11 @@ type TranslationContent struct {
 	SourceType        string    `json:"sourceType"`
 	SourceID          string    `json:"sourceId"`
 	Locale            string    `json:"locale"`
+	Title             string    `json:"title,omitempty"`
+	Summary           string    `json:"summary,omitempty"`
 	Content           string    `json:"content"`
+	Status            string    `json:"status"`
+	PublishedAt       time.Time `json:"publishedAt,omitempty"`
 	TranslatedByJobID string    `json:"translatedByJobId,omitempty"`
 	CreatedAt         time.Time `json:"createdAt"`
 	UpdatedAt         time.Time `json:"updatedAt"`

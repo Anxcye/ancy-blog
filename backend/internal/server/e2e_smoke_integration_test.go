@@ -245,6 +245,7 @@ func resetDBForE2E(t *testing.T, dsn string) {
 	execSQLFile(t, db, migrationFilePath(t, "000002_translation_job_result.up.sql"))
 	execSQLFile(t, db, migrationFilePath(t, "000003_content_translations.up.sql"))
 	execSQLFile(t, db, migrationFilePath(t, "000004_translation_retry.up.sql"))
+	execSQLFile(t, db, migrationFilePath(t, "000005_i18n_publish_control.up.sql"))
 }
 
 func migrationFilePath(t *testing.T, name string) string {

@@ -505,6 +505,9 @@ func (s *ContentService) CreateTranslationJob(job domain.TranslationJob) (domain
 	if job.NextRetryAt.IsZero() {
 		job.NextRetryAt = time.Now().UTC()
 	}
+	if !job.PublishAt.IsZero() {
+		job.PublishAt = job.PublishAt.UTC()
+	}
 	job.Status = "queued"
 	return s.repo.CreateTranslationJob(job)
 }
@@ -550,12 +553,15 @@ func (s *ContentService) GetTranslationSourceText(sourceType, sourceID string) (
 	return s.repo.GetTranslationSourceText(sourceType, sourceID)
 }
 
-func (s *ContentService) UpsertTranslationResult(sourceType, sourceID, targetLocale, content, translatedByJobID string) error {
+func (s *ContentService) UpsertTranslationResult(sourceType, sourceID, targetLocale, title, summary, content, status string, publishedAt time.Time, translatedByJobID string) error {
+	if status == "" {
+		status = "draft"
+	}
 	switch sourceType {
 	case "article":
-		return s.repo.UpsertArticleTranslation(sourceID, targetLocale, content, translatedByJobID)
+		return s.repo.UpsertArticleTranslation(sourceID, targetLocale, title, summary, content, status, publishedAt, translatedByJobID)
 	case "moment":
-		return s.repo.UpsertMomentTranslation(sourceID, targetLocale, content, translatedByJobID)
+		return s.repo.UpsertMomentTranslation(sourceID, targetLocale, content, status, publishedAt, translatedByJobID)
 	default:
 		return fmt.Errorf("%w: unsupported sourceType", apperr.ErrValidation)
 	}
@@ -580,7 +586,7 @@ func (s *ContentService) GetTranslationContent(sourceType, sourceID, locale stri
 	return row, ok, nil
 }
 
-func (s *ContentService) UpsertTranslationContent(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error) {
+func (s *ContentService) UpsertTranslationContent(sourceType, sourceID, locale, title, summary, content, status string, publishedAt time.Time, translatedByJobID string) (domain.TranslationContent, error) {
 	if sourceType != "article" && sourceType != "moment" {
 		return domain.TranslationContent{}, fmt.Errorf("%w: sourceType must be article or moment", apperr.ErrValidation)
 	}
@@ -590,7 +596,19 @@ func (s *ContentService) UpsertTranslationContent(sourceType, sourceID, locale, 
 	if strings.TrimSpace(content) == "" {
 		return domain.TranslationContent{}, fmt.Errorf("%w: content is required", apperr.ErrValidation)
 	}
-	return s.repo.UpsertTranslationContent(sourceType, sourceID, locale, content, translatedByJobID)
+	if status == "" {
+		status = "draft"
+	}
+	if status != "draft" && status != "published" && status != "archived" {
+		return domain.TranslationContent{}, fmt.Errorf("%w: status must be draft, published, or archived", apperr.ErrValidation)
+	}
+	if status == "published" && publishedAt.IsZero() {
+		publishedAt = time.Now().UTC()
+	}
+	if !publishedAt.IsZero() {
+		publishedAt = publishedAt.UTC()
+	}
+	return s.repo.UpsertTranslationContent(sourceType, sourceID, locale, title, summary, content, status, publishedAt, translatedByJobID)
 }
 
 func (s *ContentService) GetIntegrationProviderForRuntime(providerKey string) (domain.IntegrationProvider, bool) {

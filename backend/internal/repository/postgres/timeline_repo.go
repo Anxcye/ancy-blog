@@ -26,13 +26,17 @@ SELECT content_type, id, title, summary, slug, content, published_at
 FROM (
   SELECT 'article' AS content_type,
          a.id::text AS id,
-         a.title,
-         COALESCE(a.summary,'') AS summary,
+         COALESCE(at.title, a.title) AS title,
+         COALESCE(at.summary, a.summary,'') AS summary,
          a.slug,
          COALESCE(at.content, '') AS content,
          COALESCE(a.published_at, a.created_at) AS published_at
   FROM articles a
-  LEFT JOIN article_translations at ON at.article_id = a.id AND at.locale = $1
+  LEFT JOIN article_translations at
+    ON at.article_id = a.id
+   AND at.locale = $1
+   AND at.status = 'published'
+   AND (at.published_at IS NULL OR at.published_at <= NOW())
   WHERE a.status='published' AND a.deleted_at IS NULL
   UNION ALL
   SELECT 'moment' AS content_type,
@@ -43,7 +47,11 @@ FROM (
          COALESCE(mt.content, m.content) AS content,
          COALESCE(m.published_at, m.created_at) AS published_at
   FROM moments m
-  LEFT JOIN moment_translations mt ON mt.moment_id = m.id AND mt.locale = $1
+  LEFT JOIN moment_translations mt
+    ON mt.moment_id = m.id
+   AND mt.locale = $1
+   AND mt.status = 'published'
+   AND (mt.published_at IS NULL OR mt.published_at <= NOW())
   WHERE m.status='published' AND m.deleted_at IS NULL
 ) t
 ORDER BY published_at DESC

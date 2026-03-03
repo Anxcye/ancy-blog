@@ -37,7 +37,11 @@ type Repository struct {
 }
 
 type translationRecord struct {
+	title             string
+	summary           string
 	content           string
+	status            string
+	publishedAt       time.Time
 	translatedByJobID string
 	createdAt         time.Time
 	updatedAt         time.Time
@@ -224,8 +228,16 @@ func (r *Repository) GetPublishedArticleBySlugWithLocale(slug, locale string) (d
 	for _, a := range r.articles {
 		if a.Slug == slug && a.Status == "published" {
 			if strings.TrimSpace(locale) != "" {
-				if content, ok := r.getArticleTranslation(a.ID, locale); ok {
-					a.Content = content
+				if tr, ok := r.getArticleTranslation(a.ID, locale); ok && translationVisible(tr) {
+					if strings.TrimSpace(tr.title) != "" {
+						a.Title = tr.title
+					}
+					if strings.TrimSpace(tr.summary) != "" {
+						a.Summary = tr.summary
+					}
+					if strings.TrimSpace(tr.content) != "" {
+						a.Content = tr.content
+					}
 				}
 			}
 			return a, true
@@ -268,8 +280,10 @@ func (r *Repository) ListPublishedMoments(page, pageSize int, locale string) ([]
 	for _, m := range r.moments {
 		if m.Status == "published" {
 			if strings.TrimSpace(locale) != "" {
-				if content, ok := r.getMomentTranslation(m.ID, locale); ok {
-					m.Content = content
+				if tr, ok := r.getMomentTranslation(m.ID, locale); ok && translationVisible(tr) {
+					if strings.TrimSpace(tr.content) != "" {
+						m.Content = tr.content
+					}
 				}
 			}
 			items = append(items, m)
@@ -584,8 +598,14 @@ func (r *Repository) ListTimeline(page, pageSize int, locale string) ([]domain.T
 		if a.Status == "published" {
 			content := ""
 			if strings.TrimSpace(locale) != "" {
-				if translated, ok := r.getArticleTranslation(a.ID, locale); ok {
-					content = translated
+				if tr, ok := r.getArticleTranslation(a.ID, locale); ok && translationVisible(tr) {
+					if strings.TrimSpace(tr.title) != "" {
+						a.Title = tr.title
+					}
+					if strings.TrimSpace(tr.summary) != "" {
+						a.Summary = tr.summary
+					}
+					content = tr.content
 				}
 			}
 			items = append(items, domain.TimelineItem{
@@ -603,8 +623,8 @@ func (r *Repository) ListTimeline(page, pageSize int, locale string) ([]domain.T
 		if m.Status == "published" {
 			content := m.Content
 			if strings.TrimSpace(locale) != "" {
-				if translated, ok := r.getMomentTranslation(m.ID, locale); ok {
-					content = translated
+				if tr, ok := r.getMomentTranslation(m.ID, locale); ok && translationVisible(tr) {
+					content = tr.content
 				}
 			}
 			items = append(items, domain.TimelineItem{ContentType: "moment", ID: m.ID, Content: content, PublishedAt: m.PublishedAt})
@@ -656,9 +676,15 @@ func (r *Repository) GetTranslationSourceText(sourceType, sourceID string) (stri
 	}
 }
 
-func (r *Repository) UpsertArticleTranslation(articleID, locale, content, translatedByJobID string) error {
+func (r *Repository) UpsertArticleTranslation(articleID, locale, title, summary, content, status string, publishedAt time.Time, translatedByJobID string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if status == "" {
+		status = "draft"
+	}
+	if status == "published" && publishedAt.IsZero() {
+		publishedAt = time.Now().UTC()
+	}
 	if _, ok := r.articleTranslations[articleID]; !ok {
 		r.articleTranslations[articleID] = map[string]translationRecord{}
 	}
@@ -667,16 +693,26 @@ func (r *Repository) UpsertArticleTranslation(articleID, locale, content, transl
 	if !exists {
 		current.createdAt = now
 	}
+	current.title = title
+	current.summary = summary
 	current.content = content
+	current.status = status
+	current.publishedAt = publishedAt
 	current.translatedByJobID = translatedByJobID
 	current.updatedAt = now
 	r.articleTranslations[articleID][locale] = current
 	return nil
 }
 
-func (r *Repository) UpsertMomentTranslation(momentID, locale, content, translatedByJobID string) error {
+func (r *Repository) UpsertMomentTranslation(momentID, locale, content, status string, publishedAt time.Time, translatedByJobID string) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	if status == "" {
+		status = "draft"
+	}
+	if status == "published" && publishedAt.IsZero() {
+		publishedAt = time.Now().UTC()
+	}
 	if _, ok := r.momentTranslations[momentID]; !ok {
 		r.momentTranslations[momentID] = map[string]translationRecord{}
 	}
@@ -686,28 +722,30 @@ func (r *Repository) UpsertMomentTranslation(momentID, locale, content, translat
 		current.createdAt = now
 	}
 	current.content = content
+	current.status = status
+	current.publishedAt = publishedAt
 	current.translatedByJobID = translatedByJobID
 	current.updatedAt = now
 	r.momentTranslations[momentID][locale] = current
 	return nil
 }
 
-func (r *Repository) getArticleTranslation(articleID, locale string) (string, bool) {
+func (r *Repository) getArticleTranslation(articleID, locale string) (translationRecord, bool) {
 	translations, ok := r.articleTranslations[articleID]
 	if !ok {
-		return "", false
+		return translationRecord{}, false
 	}
 	row, ok := translations[locale]
-	return row.content, ok
+	return row, ok
 }
 
-func (r *Repository) getMomentTranslation(momentID, locale string) (string, bool) {
+func (r *Repository) getMomentTranslation(momentID, locale string) (translationRecord, bool) {
 	translations, ok := r.momentTranslations[momentID]
 	if !ok {
-		return "", false
+		return translationRecord{}, false
 	}
 	row, ok := translations[locale]
-	return row.content, ok
+	return row, ok
 }
 
 func (r *Repository) ListTranslationContents(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int) {
@@ -743,7 +781,11 @@ func (r *Repository) GetTranslationContent(sourceType, sourceID, locale string) 
 			SourceType:        "article",
 			SourceID:          sourceID,
 			Locale:            locale,
+			Title:             row.title,
+			Summary:           row.summary,
 			Content:           row.content,
+			Status:            row.status,
+			PublishedAt:       row.publishedAt,
 			TranslatedByJobID: row.translatedByJobID,
 			CreatedAt:         row.createdAt,
 			UpdatedAt:         row.updatedAt,
@@ -762,6 +804,8 @@ func (r *Repository) GetTranslationContent(sourceType, sourceID, locale string) 
 			SourceID:          sourceID,
 			Locale:            locale,
 			Content:           row.content,
+			Status:            row.status,
+			PublishedAt:       row.publishedAt,
 			TranslatedByJobID: row.translatedByJobID,
 			CreatedAt:         row.createdAt,
 			UpdatedAt:         row.updatedAt,
@@ -771,14 +815,14 @@ func (r *Repository) GetTranslationContent(sourceType, sourceID, locale string) 
 	}
 }
 
-func (r *Repository) UpsertTranslationContent(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error) {
+func (r *Repository) UpsertTranslationContent(sourceType, sourceID, locale, title, summary, content, status string, publishedAt time.Time, translatedByJobID string) (domain.TranslationContent, error) {
 	switch sourceType {
 	case "article":
-		if err := r.UpsertArticleTranslation(sourceID, locale, content, translatedByJobID); err != nil {
+		if err := r.UpsertArticleTranslation(sourceID, locale, title, summary, content, status, publishedAt, translatedByJobID); err != nil {
 			return domain.TranslationContent{}, err
 		}
 	case "moment":
-		if err := r.UpsertMomentTranslation(sourceID, locale, content, translatedByJobID); err != nil {
+		if err := r.UpsertMomentTranslation(sourceID, locale, content, status, publishedAt, translatedByJobID); err != nil {
 			return domain.TranslationContent{}, err
 		}
 	default:
@@ -802,7 +846,11 @@ func (r *Repository) listArticleTranslationContents(sourceID, locale string) []d
 				SourceType:        "article",
 				SourceID:          articleID,
 				Locale:            lc,
+				Title:             rec.title,
+				Summary:           rec.summary,
 				Content:           rec.content,
+				Status:            rec.status,
+				PublishedAt:       rec.publishedAt,
 				TranslatedByJobID: rec.translatedByJobID,
 				CreatedAt:         rec.createdAt,
 				UpdatedAt:         rec.updatedAt,
@@ -827,6 +875,8 @@ func (r *Repository) listMomentTranslationContents(sourceID, locale string) []do
 				SourceID:          momentID,
 				Locale:            lc,
 				Content:           rec.content,
+				Status:            rec.status,
+				PublishedAt:       rec.publishedAt,
 				TranslatedByJobID: rec.translatedByJobID,
 				CreatedAt:         rec.createdAt,
 				UpdatedAt:         rec.updatedAt,
@@ -852,6 +902,16 @@ func contains(arr []string, val string) bool {
 		}
 	}
 	return false
+}
+
+func translationVisible(rec translationRecord) bool {
+	if rec.status != "published" {
+		return false
+	}
+	if rec.publishedAt.IsZero() {
+		return true
+	}
+	return !rec.publishedAt.After(time.Now().UTC())
 }
 
 func normalizePagination(page, pageSize int) (int, int) {

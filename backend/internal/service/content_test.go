@@ -36,7 +36,7 @@ type contentRepoStub struct {
 	retryTranslationJobFunc       func(id string) (domain.TranslationJob, error)
 	listTranslationContentsFunc   func(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int)
 	getTranslationContentFunc     func(sourceType, sourceID, locale string) (domain.TranslationContent, bool)
-	upsertTranslationContentFunc  func(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error)
+	upsertTranslationContentFunc  func(sourceType, sourceID, locale, title, summary, content, status string, publishedAt time.Time, translatedByJobID string) (domain.TranslationContent, error)
 }
 
 func (s *contentRepoStub) CreateArticle(article domain.Article) (domain.Article, error) {
@@ -165,9 +165,9 @@ func (s *contentRepoStub) GetTranslationContent(sourceType, sourceID, locale str
 	return domain.TranslationContent{}, false
 }
 
-func (s *contentRepoStub) UpsertTranslationContent(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error) {
+func (s *contentRepoStub) UpsertTranslationContent(sourceType, sourceID, locale, title, summary, content, status string, publishedAt time.Time, translatedByJobID string) (domain.TranslationContent, error) {
 	if s.upsertTranslationContentFunc != nil {
-		return s.upsertTranslationContentFunc(sourceType, sourceID, locale, content, translatedByJobID)
+		return s.upsertTranslationContentFunc(sourceType, sourceID, locale, title, summary, content, status, publishedAt, translatedByJobID)
 	}
 	return domain.TranslationContent{}, nil
 }
@@ -504,7 +504,7 @@ func TestListTranslationContentsValidation(t *testing.T) {
 
 func TestUpsertTranslationContentValidation(t *testing.T) {
 	svc := NewContentService(&contentRepoStub{}, nil)
-	if _, err := svc.UpsertTranslationContent("article", "a1", "en-US", "", ""); err == nil {
+	if _, err := svc.UpsertTranslationContent("article", "a1", "en-US", "", "", "", "", time.Time{}, ""); err == nil {
 		t.Fatalf("expected validation error for empty content")
 	}
 }

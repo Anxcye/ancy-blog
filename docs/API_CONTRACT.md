@@ -490,7 +490,9 @@
   "targetLocale": "en-US",
   "providerKey": "openai_compatible",
   "modelName": "gpt-4.1-mini",
-  "maxRetries": 3
+  "maxRetries": 3,
+  "autoPublish": true,
+  "publishAt": "2026-03-05T09:00:00Z"
 }
 ```
 - Response: created job id
@@ -547,7 +549,11 @@
   "sourceType": "article",
   "sourceId": "uuid",
   "locale": "en-US",
+  "title": "Translated title",
+  "summary": "Translated summary",
   "content": "manual translation override",
+  "status": "draft",
+  "publishedAt": "2026-03-05T09:00:00Z",
   "translatedByJobId": "uuid"
 }
 ```
