@@ -9,14 +9,22 @@ This is the Go API backend for the rewritten blog platform, built with Gin.
 ## Run Locally
 ```bash
 cd backend
+cp .env.example .env
+make run
+```
+
+Or run directly:
+```bash
+cd backend
 go run ./cmd/server
 ```
 
 ## Database Migrations (golang-migrate)
 ```bash
 cd backend
-go run ./cmd/migrate -action up
-go run ./cmd/migrate -action version
+cp .env.example .env
+make migrate-up
+make migrate-version
 ```
 
 Quick shortcuts:

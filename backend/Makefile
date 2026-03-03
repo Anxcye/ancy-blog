@@ -3,6 +3,12 @@
 # Module: backend, local automation layer.
 # Related: cmd/server and cmd/migrate entrypoints.
 
+# Load local environment variables when `.env` exists.
+ifneq (,$(wildcard .env))
+include .env
+export
+endif
+
 .PHONY: run test fmt migrate-up migrate-down migrate-version
 
 run:
