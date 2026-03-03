@@ -257,6 +257,12 @@
   - `go test ./...` passed
   - `go test -tags=integration ./internal/repository/postgres -run TestRepositoryIntegration -count=1` passed
   - `go test -tags=integration ./internal/server -run TestAPISmokeFlow -count=1` passed
+- Added frontend visual direction documentation:
+  - new file `docs/FRONTEND_STYLE_GUIDE.md`
+  - defines minimalist Japanese-inspired "静谧美学" style tokens, motion tokens, particle background rules, and mobile/performance constraints
+  - mandates CSS-variable theme injection and spring-like staggered entry animation
+- Updated `AGENTS.md` workflow rules:
+  - frontend design/motion changes must update `docs/FRONTEND_STYLE_GUIDE.md`
 
 ### Next Suggested Tasks
 1. Add locale-aware read support for moments and timeline APIs.

@@ -32,9 +32,10 @@ All inline code comments must be in English.
 1. Update `docs/PRODUCT_RULES.md` when business behavior changes.
 2. Update `docs/DATA_MODEL.md` when entity fields/relations change.
 3. Update `docs/API_CONTRACT.md` before implementing or changing endpoints.
-4. Update `docs/PROGRESS.md` when a task status changes.
-5. Record architecture choices in `docs/DECISIONS.md`.
-6. At the end of each work session, append to `docs/SESSION_LOG.md`.
+4. Update `docs/FRONTEND_STYLE_GUIDE.md` when frontend visual/motion direction changes.
+5. Update `docs/PROGRESS.md` when a task status changes.
+6. Record architecture choices in `docs/DECISIONS.md`.
+7. At the end of each work session, append to `docs/SESSION_LOG.md`.
 
 ## Content Modeling Rules
 1. Use unified `articles` with `content_kind` (`post | page`) instead of a separate `pages` table.
