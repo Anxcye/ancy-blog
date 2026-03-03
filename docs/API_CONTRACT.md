@@ -61,3 +61,19 @@
 ```
 - Error Codes: AUTH_REFRESH_INVALID
 
+## System
+- ID: SYS-001
+- Method: GET
+- Path: /healthz
+- Auth Required: No
+- Request: None
+- Response:
+```json
+{
+  "code": "OK",
+  "message": "service is healthy",
+  "data": { "status": "up" }
+}
+```
+- Error Codes: None
+- Notes: Used by local and deployment health probes.

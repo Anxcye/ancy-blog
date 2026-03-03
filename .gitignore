@@ -1,0 +1,45 @@
+# File: .gitignore
+# Purpose: Define repository-wide ignore rules for generated artifacts and local-only files.
+# Module: repository root, version control hygiene layer.
+# Related: backend Go build outputs, future frontend Node modules, local environment configs.
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE/editor
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Env and secrets
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+logs/
+
+# Go
+bin/
+dist/
+*.test
+*.out
+coverage/
+cover.out
+tmp/
+
+# Node.js / frontend
+node_modules/
+**/node_modules/
+pnpm-debug.log*
+npm-debug.log*
+yarn-error.log*
+.pnpm-store/
+
+# Build outputs
+build/
+out/
+

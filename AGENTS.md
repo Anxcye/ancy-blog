@@ -34,10 +34,16 @@ All inline code comments must be in English.
 3. Record architecture choices in `docs/DECISIONS.md`.
 4. At the end of each work session, append to `docs/SESSION_LOG.md`.
 
+## Engineering Baseline (Enterprise-Oriented)
+1. Backend framework: `Gin` with structured logging and recovery middleware.
+2. Configuration: environment-driven config only; no hardcoded secrets.
+3. API standard: versioned routes (`/api/v1`), unified response envelope, stable error codes.
+4. Layering: `handler -> service -> repository`, with clear dependency direction.
+5. Quality gates: run lint/test/build before merge; keep code production-ready by default.
+
 ## Definition of Done
 A task is done only if:
 1. Code is implemented.
 2. Lint/test/build pass locally.
 3. Contract/docs are updated.
 4. Progress and session log are updated.
-

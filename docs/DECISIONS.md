@@ -24,3 +24,8 @@
 - Rationale: Faster delivery and lower maintenance overhead.
 - Consequences: Keep extension points for future role support.
 
+## ADR-005: HTTP Framework
+- Date: 2026-03-03
+- Decision: Use Gin as the HTTP framework.
+- Rationale: Widely adopted in Go projects, mature middleware ecosystem, clear routing model.
+- Consequences: Standardize handler/middleware patterns around Gin context.
