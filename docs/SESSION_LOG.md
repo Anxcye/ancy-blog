@@ -169,6 +169,13 @@
 - Validation run after integration tests:
   - `go test ./...` passed
   - `go test -tags=integration ./internal/repository/postgres -run TestRepositoryIntegration -count=1` passed
+- Added API e2e smoke test suite with build tag:
+  - `internal/server/e2e_smoke_integration_test.go`
+  - starts full HTTP handler stack via `httptest` and hits real routes
+  - validates login -> admin article create -> public article read -> comment create -> integration enable -> translation job create/detail
+- Validation run after e2e smoke:
+  - `go test ./...` passed
+  - `go test -tags=integration ./internal/server -run TestAPISmokeFlow -count=1` passed
 
 ### Next Suggested Tasks
 1. Implement translation worker execution (`queued -> running -> succeeded/failed`) and persistence update API.

@@ -6,7 +6,7 @@
 - [ ] Set up lint/test/build scripts.
 
 ## In Progress
-- [ ] Add e2e API smoke tests that run against local PostgreSQL + Redis docker compose services.
+- [ ] Add worker-oriented tests for translation execution with mocked LLM responses.
 - [ ] Add integration tests for real PostgreSQL queries against a test container.
 
 ## Done
@@ -38,6 +38,7 @@
 - [x] Added versioned migration mechanism with `golang-migrate` (`cmd/migrate` + `migrations/*.sql` + `Makefile` shortcuts).
 - [x] Implemented translation worker runtime (`queued -> running -> succeeded/failed`) with OpenAI-compatible execution path.
 - [x] Added PostgreSQL integration tests (`-tags=integration`) for article/comment/translation lifecycle.
+- [x] Added API e2e smoke test (`-tags=integration`) covering auth/admin/public/translation flows.
 
 ## Blocked
 - None.
