@@ -58,6 +58,15 @@
   - timeline API for mixed article/moment feed
   - hover-related slot/category retrieval APIs
 - Removed legacy article `placement` API from contract and unified mounting via slot APIs.
+- Implemented backend code based on contracts:
+  - layered structure: `handler -> service -> repository`
+  - in-memory repository with seed data
+  - auth APIs (`login`, `refresh`, `me`) + bearer middleware
+  - public APIs for articles, moments, links, taxonomy, site, slots, timeline
+  - admin APIs for content and site management
+- Verified compile and smoke test:
+  - `go test ./...` passed
+  - `/healthz`, `/api/v1/auth/login`, and `/api/v1/public/timeline` returned expected results
 
 ### Next Suggested Tasks
 1. Install Go `1.22+`, run `go mod tidy`, then `go run ./cmd/server` under `backend/`.

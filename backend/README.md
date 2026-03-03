@@ -17,9 +17,25 @@ go run ./cmd/server
 - `APP_ENV` (default: `dev`)
 - `HTTP_HOST` (default: `0.0.0.0`)
 - `HTTP_PORT` (default: `8080`)
+- `AUTH_ADMIN_USERNAME` (default: `admin`)
+- `AUTH_ADMIN_PASSWORD` (default: `123456`)
+- `AUTH_ACCESS_TOKEN_TTL_SECONDS` (default: `3600`)
+- `AUTH_REFRESH_TOKEN_TTL_SECONDS` (default: `604800`)
 
 ## Health Check
 - `GET /healthz`
+
+## API Groups
+- Auth: `/api/v1/auth/*`
+- Public: `/api/v1/public/*`
+- Admin: `/api/v1/admin/*` (Bearer token required)
+
+## Demo Login
+```bash
+curl -X POST http://127.0.0.1:8080/api/v1/auth/login \
+  -H 'Content-Type: application/json' \
+  -d '{"username":"admin","password":"123456"}'
+```
 
 ## Notes
 - The HTTP layer uses `gin-gonic/gin` with:

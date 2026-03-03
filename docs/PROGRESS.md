@@ -5,10 +5,10 @@
 - [ ] Initialize `frontend-blog/` Vue3 scaffold.
 - [ ] Implement PostgreSQL schema in code (migration not required in current plan).
 - [ ] Set up lint/test/build scripts.
-- [ ] Implement auth and content APIs based on current contract (`auth/public/admin` groups).
+- [ ] Replace in-memory repository with PostgreSQL + Redis cache-aside.
 
 ## In Progress
-- [ ] Set up lint/test/build scripts.
+- [ ] Replace in-memory repository with PostgreSQL + Redis cache-aside.
 
 ## Done
 - [x] Created tracking docs and collaboration guidelines.
@@ -21,6 +21,7 @@
 - [x] Expanded API contract for `public/admin/auth` route groups and core resources.
 - [x] Defined site config domain (`site_settings/footer_items/social_links`) and Redis cache policy.
 - [x] Defined dynamic nav/slot model and timeline API for frontend interaction design.
+- [x] Implemented backend v1 APIs (`auth/public/admin`) with Gin, in-memory repository, and auth middleware.
 
 ## Blocked
 - None.
