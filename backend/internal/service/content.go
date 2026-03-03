@@ -90,6 +90,10 @@ func (s *ContentService) GetPublishedArticleBySlugWithLocale(slug, locale string
 	return s.repo.GetPublishedArticleBySlugWithLocale(slug, locale)
 }
 
+func (s *ContentService) SlugExists(slug string) bool {
+	return s.repo.SlugExists(slug)
+}
+
 func (s *ContentService) CreateMoment(moment domain.Moment) (domain.Moment, error) {
 	if strings.TrimSpace(moment.Content) == "" {
 		return domain.Moment{}, fmt.Errorf("%w: content is required", apperr.ErrValidation)

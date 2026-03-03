@@ -12,6 +12,7 @@ type ContentRepository interface {
 	ListPublishedArticles(page, pageSize int, category, tag, contentKind string) ([]domain.Article, int)
 	GetPublishedArticleBySlug(slug string) (domain.Article, bool)
 	GetPublishedArticleBySlugWithLocale(slug, locale string) (domain.Article, bool)
+	SlugExists(slug string) bool
 	GetArticleByID(id string) (domain.Article, bool)
 
 	CreateMoment(moment domain.Moment) (domain.Moment, error)

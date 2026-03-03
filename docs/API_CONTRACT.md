@@ -511,6 +511,53 @@
 - Response: translation job detail
 - Error Codes: TRANSLATION_JOB_NOT_FOUND
 
+## Admin - AI Assist
+- ID: ADM-AI-001
+- Method: POST
+- Path: /api/v1/admin/ai/summary
+- Auth Required: Yes
+- Request:
+```json
+{
+  "title": "Go Testing Notes",
+  "content": "long article content...",
+  "providerKey": "openai_compatible",
+  "modelName": "gpt-4.1-mini",
+  "maxLength": 180
+}
+```
+- Response:
+```json
+{
+  "summary": "short summary text",
+  "fallbackUsed": false
+}
+```
+- Error Codes: VALIDATION_ERROR, INTERNAL_ERROR
+- Notes: Non-streaming API. Falls back to local truncation when provider is unavailable or invocation fails.
+
+- ID: ADM-AI-002
+- Method: POST
+- Path: /api/v1/admin/ai/slug
+- Auth Required: Yes
+- Request:
+```json
+{
+  "title": "Go Testing Notes",
+  "providerKey": "openai_compatible",
+  "modelName": "gpt-4.1-mini"
+}
+```
+- Response:
+```json
+{
+  "slug": "go-testing-notes",
+  "fallbackUsed": false
+}
+```
+- Error Codes: VALIDATION_ERROR, INTERNAL_ERROR
+- Notes: Slug output is normalized and de-duplicated (`-2`, `-3`, ...).
+
 ## System
 - ID: SYS-001
 - Method: GET

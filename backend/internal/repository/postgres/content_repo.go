@@ -207,6 +207,14 @@ WHERE id=$1 AND deleted_at IS NULL
 	return a, true
 }
 
+func (r *Repository) SlugExists(slug string) bool {
+	var exists bool
+	if err := r.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM articles WHERE slug=$1 AND deleted_at IS NULL)`, slug).Scan(&exists); err != nil {
+		return false
+	}
+	return exists
+}
+
 func (r *Repository) CreateMoment(moment domain.Moment) (domain.Moment, error) {
 	var id string
 	var createdAt, updatedAt time.Time

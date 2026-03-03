@@ -19,6 +19,7 @@ type handlerRepoStub struct {
 	listPublishedArticlesFunc    func(page, pageSize int, category, tag, contentKind string) ([]domain.Article, int)
 	listFooterItemsFunc          func() []domain.FooterItem
 	countArticleCommentsFunc     func(articleID string) (int, error)
+	slugExistsFunc               func(slug string) bool
 	listIntegrationProvidersFunc func(providerType string) []domain.IntegrationProvider
 	updateIntegrationProvider    func(providerKey string, enabled bool, configJSON, metaJSON []byte) (domain.IntegrationProvider, error)
 	getIntegrationProviderFunc   func(providerKey string) (domain.IntegrationProvider, bool)
@@ -59,6 +60,13 @@ func (s *handlerRepoStub) CountArticleComments(articleID string) (int, error) {
 		return s.countArticleCommentsFunc(articleID)
 	}
 	return 0, nil
+}
+
+func (s *handlerRepoStub) SlugExists(slug string) bool {
+	if s.slugExistsFunc != nil {
+		return s.slugExistsFunc(slug)
+	}
+	return false
 }
 
 func (s *handlerRepoStub) ListIntegrationProviders(providerType string) []domain.IntegrationProvider {

@@ -194,6 +194,17 @@
     - empty translated output -> failed mark
 - Validation run after worker tests:
   - `go test ./...` passed, including `internal/worker` package tests
+- Added non-streaming admin AI assist APIs:
+  - `POST /api/v1/admin/ai/summary` for article summary generation
+  - `POST /api/v1/admin/ai/slug` for slug recommendation
+  - fallback behavior when provider is unavailable/failed
+  - slug normalization and de-duplication by repository existence check
+- Added AI assist service and tests:
+  - `internal/service/ai_assist.go`
+  - `internal/service/ai_assist_test.go`
+  - updated handler/app/server wiring and related test stubs
+- Validation run after AI assist addition:
+  - `go test ./...` passed
 
 ### Next Suggested Tasks
 1. Add locale-aware read support for moments and timeline APIs.

@@ -47,6 +47,7 @@ func (s *ArticleService) GetPublishedArticleBySlug(slug string) (domain.Article,
 func (s *ArticleService) GetPublishedArticleBySlugWithLocale(slug, locale string) (domain.Article, bool) {
 	return s.core.GetPublishedArticleBySlugWithLocale(slug, locale)
 }
+func (s *ArticleService) SlugExists(slug string) bool { return s.core.SlugExists(slug) }
 func (s *ArticleService) CreateMoment(moment domain.Moment) (domain.Moment, error) {
 	return s.core.CreateMoment(moment)
 }

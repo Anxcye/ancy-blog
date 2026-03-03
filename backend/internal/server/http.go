@@ -107,6 +107,8 @@ func NewHTTPServer(cfg *config.Config, logger *slog.Logger) (*HTTPServer, error)
 			admin.POST("/translations/jobs", container.AdminHandler.CreateTranslationJob)
 			admin.GET("/translations/jobs", container.AdminHandler.ListTranslationJobs)
 			admin.GET("/translations/jobs/:id", container.AdminHandler.TranslationJobDetail)
+			admin.POST("/ai/summary", container.AdminHandler.GenerateSummary)
+			admin.POST("/ai/slug", container.AdminHandler.SuggestSlug)
 
 			admin.POST("/upload/image", container.UploadHandler.UploadImage)
 		}

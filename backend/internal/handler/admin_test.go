@@ -41,6 +41,7 @@ func TestAdminListIntegrations(t *testing.T) {
 		service.NewSiteService(core),
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
+		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
 	)
 	r := adminRouter(h)
 	r.GET("/integrations", h.ListIntegrations)
@@ -67,6 +68,7 @@ func TestAdminUpdateIntegrationProviderNotFound(t *testing.T) {
 		service.NewSiteService(core),
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
+		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
 	)
 	r := adminRouter(h)
 	r.PUT("/integrations/:providerKey", h.UpdateIntegration)
@@ -108,6 +110,7 @@ func TestAdminCreateTranslationJobSuccess(t *testing.T) {
 		service.NewSiteService(core),
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
+		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
 	)
 	r := adminRouter(h)
 	r.POST("/translations/jobs", h.CreateTranslationJob)
@@ -133,6 +136,7 @@ func TestAdminTranslationJobDetailNotFound(t *testing.T) {
 		service.NewSiteService(core),
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
+		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
 	)
 	r := adminRouter(h)
 	r.GET("/translations/jobs/:id", h.TranslationJobDetail)
@@ -143,5 +147,70 @@ func TestAdminTranslationJobDetailNotFound(t *testing.T) {
 
 	if w.Code != http.StatusNotFound {
 		t.Fatalf("expected 404, got %d", w.Code)
+	}
+}
+
+func TestAdminAISuggestSlugFallback(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	repo := &handlerRepoStub{slugExistsFunc: func(slug string) bool { return slug == "my-title" }}
+	core := service.NewContentService(repo, nil)
+	h := NewAdminHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewIntegrationService(core),
+		service.NewTranslationService(core),
+		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+	)
+	r := adminRouter(h)
+	r.POST("/ai/slug", h.SuggestSlug)
+
+	body := bytes.NewBufferString(`{"title":"My Title"}`)
+	req := httptest.NewRequest(http.MethodPost, "/ai/slug", body)
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", w.Code, w.Body.String())
+	}
+	var env response.Envelope
+	if err := json.Unmarshal(w.Body.Bytes(), &env); err != nil {
+		t.Fatalf("unmarshal failed: %v", err)
+	}
+	data, ok := env.Data.(map[string]any)
+	if !ok {
+		t.Fatalf("unexpected data type: %T", env.Data)
+	}
+	if data["slug"] != "my-title-2" {
+		t.Fatalf("unexpected slug: %#v", data)
+	}
+}
+
+func TestAdminAIGenerateSummaryFallback(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	repo := &handlerRepoStub{}
+	core := service.NewContentService(repo, nil)
+	h := NewAdminHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewIntegrationService(core),
+		service.NewTranslationService(core),
+		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+	)
+	r := adminRouter(h)
+	r.POST("/ai/summary", h.GenerateSummary)
+
+	body := bytes.NewBufferString(`{"title":"T","content":"This is a long body for fallback summary.","maxLength":10}`)
+	req := httptest.NewRequest(http.MethodPost, "/ai/summary", body)
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", w.Code, w.Body.String())
 	}
 }

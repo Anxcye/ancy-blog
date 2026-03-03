@@ -218,6 +218,12 @@ func (r *Repository) GetArticleByID(id string) (domain.Article, bool) {
 	return a, ok
 }
 
+func (r *Repository) SlugExists(slug string) bool {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	return r.slugExists(slug, "")
+}
+
 func (r *Repository) CreateMoment(moment domain.Moment) (domain.Moment, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()

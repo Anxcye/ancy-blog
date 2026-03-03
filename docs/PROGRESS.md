@@ -42,6 +42,7 @@
 - [x] Added locale translation persistence (`article_translations`, `moment_translations`) and worker writeback.
 - [x] Added article detail `locale` query support with translation fallback.
 - [x] Added translation worker unit tests with mocked LLM responses (success/failure/empty output/provider disabled).
+- [x] Added non-streaming admin AI assist endpoints for article summary and slug suggestion (`/api/v1/admin/ai/summary`, `/api/v1/admin/ai/slug`) with deterministic fallback and slug de-duplication.
 
 ## Blocked
 - None.

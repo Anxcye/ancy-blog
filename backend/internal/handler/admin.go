@@ -25,6 +25,7 @@ type AdminHandler struct {
 	siteService        *service.SiteService
 	integrationService *service.IntegrationService
 	translationService *service.TranslationService
+	aiAssistService    *service.AIAssistService
 }
 
 func NewAdminHandler(
@@ -34,6 +35,7 @@ func NewAdminHandler(
 	siteService *service.SiteService,
 	integrationService *service.IntegrationService,
 	translationService *service.TranslationService,
+	aiAssistService *service.AIAssistService,
 ) *AdminHandler {
 	return &AdminHandler{
 		articleService:     articleService,
@@ -42,6 +44,7 @@ func NewAdminHandler(
 		siteService:        siteService,
 		integrationService: integrationService,
 		translationService: translationService,
+		aiAssistService:    aiAssistService,
 	}
 }
 
@@ -517,4 +520,60 @@ func (h *AdminHandler) TranslationJobDetail(c *gin.Context) {
 		return
 	}
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: job})
+}
+
+type aiSummaryRequest struct {
+	Title       string `json:"title"`
+	Content     string `json:"content"`
+	ProviderKey string `json:"providerKey"`
+	ModelName   string `json:"modelName"`
+	MaxLength   int    `json:"maxLength"`
+}
+
+func (h *AdminHandler) GenerateSummary(c *gin.Context) {
+	var req aiSummaryRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequest(c, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+	summary, fallbackUsed, err := h.aiAssistService.GenerateSummary(c.Request.Context(), req.Title, req.Content, req.ProviderKey, req.ModelName, req.MaxLength)
+	if err != nil {
+		response.JSON(c, http.StatusInternalServerError, response.Envelope{Code: "INTERNAL_ERROR", Message: "failed to generate summary"})
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{
+		Code:    "OK",
+		Message: "success",
+		Data: map[string]any{
+			"summary":      summary,
+			"fallbackUsed": fallbackUsed,
+		},
+	})
+}
+
+type aiSlugRequest struct {
+	Title       string `json:"title"`
+	ProviderKey string `json:"providerKey"`
+	ModelName   string `json:"modelName"`
+}
+
+func (h *AdminHandler) SuggestSlug(c *gin.Context) {
+	var req aiSlugRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequest(c, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+	slug, fallbackUsed, err := h.aiAssistService.SuggestSlug(c.Request.Context(), req.Title, req.ProviderKey, req.ModelName)
+	if err != nil {
+		response.JSON(c, http.StatusInternalServerError, response.Envelope{Code: "INTERNAL_ERROR", Message: "failed to suggest slug"})
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{
+		Code:    "OK",
+		Message: "success",
+		Data: map[string]any{
+			"slug":         slug,
+			"fallbackUsed": fallbackUsed,
+		},
+	})
 }
