@@ -94,8 +94,18 @@
   - public comment create/list/children/total APIs
   - admin comment page/update APIs
   - PostgreSQL repository methods for comment read/write and moderation update
+- Implemented integration-center runtime APIs:
+  - admin integration list/update/test endpoints
+  - admin translation job create/list/detail endpoints
+  - service-layer validation for provider type/state and translation job inputs
+  - repository-layer support for `integration_providers` and `translation_jobs`
+- Added integration provider seed records in `backend/sql/schema_v1.sql`:
+  - `cloudflare_r2`
+  - `openai_compatible`
+- Validated build after integration changes:
+  - `go test ./...` passed (with local `source ~/.zshrc` to load Go path)
 
 ### Next Suggested Tasks
-1. Install Go `1.22+`, run `go mod tidy`, then `go run ./cmd/server` under `backend/`.
-2. Implement domain structs and DTOs from `docs/DATA_MODEL.md` and `docs/API_CONTRACT.md`.
-3. Implement first admin/public APIs for site settings, footer items, and social links with cache-aside pattern.
+1. Implement translation worker execution (`queued -> running -> succeeded/failed`) and persistence update API.
+2. Add integration provider connectivity checks with real outbound requests (R2 and OpenAI-compatible).
+3. Initialize `frontend-admin/` and bind integration/translation pages to the new APIs.

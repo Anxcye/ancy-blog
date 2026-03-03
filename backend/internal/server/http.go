@@ -99,6 +99,14 @@ func NewHTTPServer(cfg *config.Config, logger *slog.Logger) (*HTTPServer, error)
 			admin.POST("/site/slots/:slotKey/items", container.AdminHandler.CreateSlotItem)
 			admin.DELETE("/site/slots/:slotKey/items/:id", container.AdminHandler.DeleteSlotItem)
 
+			admin.GET("/integrations", container.AdminHandler.ListIntegrations)
+			admin.PUT("/integrations/:providerKey", container.AdminHandler.UpdateIntegration)
+			admin.POST("/integrations/:providerKey/test", container.AdminHandler.TestIntegration)
+
+			admin.POST("/translations/jobs", container.AdminHandler.CreateTranslationJob)
+			admin.GET("/translations/jobs", container.AdminHandler.ListTranslationJobs)
+			admin.GET("/translations/jobs/:id", container.AdminHandler.TranslationJobDetail)
+
 			admin.POST("/upload/image", container.UploadHandler.UploadImage)
 		}
 	}

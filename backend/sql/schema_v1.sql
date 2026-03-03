@@ -304,4 +304,12 @@ INSERT INTO site_settings (site_name, avatar_url, hero_intro_md, default_locale)
 SELECT 'Ancy Blog', '', 'Hi, I build things.', 'en'
 WHERE NOT EXISTS (SELECT 1 FROM site_settings);
 
+INSERT INTO integration_providers (provider_type, provider_key, name, enabled, config_json, meta_json)
+SELECT 'object_storage', 'cloudflare_r2', 'Cloudflare R2', FALSE, '{}'::jsonb, '{}'::jsonb
+WHERE NOT EXISTS (SELECT 1 FROM integration_providers WHERE provider_key = 'cloudflare_r2');
+
+INSERT INTO integration_providers (provider_type, provider_key, name, enabled, config_json, meta_json)
+SELECT 'llm', 'openai_compatible', 'OpenAI Compatible', FALSE, '{}'::jsonb, '{}'::jsonb
+WHERE NOT EXISTS (SELECT 1 FROM integration_providers WHERE provider_key = 'openai_compatible');
+
 COMMIT;

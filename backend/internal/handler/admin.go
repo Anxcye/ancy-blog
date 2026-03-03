@@ -5,9 +5,11 @@
 package handler
 
 import (
+	"encoding/json"
 	"net/http"
 
 	"github.com/anxcye/ancy-blog/backend/internal/domain"
+	"github.com/anxcye/ancy-blog/backend/internal/middleware"
 	"github.com/anxcye/ancy-blog/backend/internal/response"
 	"github.com/anxcye/ancy-blog/backend/internal/service"
 	"github.com/gin-gonic/gin"
@@ -310,4 +312,115 @@ func (h *AdminHandler) DeleteSlotItem(c *gin.Context) {
 		return
 	}
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: true})
+}
+
+func (h *AdminHandler) ListIntegrations(c *gin.Context) {
+	providerType := c.Query("providerType")
+	rows := h.contentService.ListIntegrationProviders(providerType)
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: rows})
+}
+
+type integrationUpdateRequest struct {
+	Enabled    bool           `json:"enabled"`
+	ConfigJSON map[string]any `json:"configJson"`
+	MetaJSON   map[string]any `json:"metaJson"`
+}
+
+func (h *AdminHandler) UpdateIntegration(c *gin.Context) {
+	providerKey := c.Param("providerKey")
+	var req integrationUpdateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequest(c, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+	configJSON, err := json.Marshal(req.ConfigJSON)
+	if err != nil {
+		badRequest(c, "VALIDATION_ERROR", "configJson must be JSON object")
+		return
+	}
+	metaJSON, err := json.Marshal(req.MetaJSON)
+	if err != nil {
+		badRequest(c, "VALIDATION_ERROR", "metaJson must be JSON object")
+		return
+	}
+	_, err = h.contentService.UpdateIntegrationProvider(providerKey, req.Enabled, configJSON, metaJSON)
+	if err != nil {
+		if err.Error() == "provider not found" {
+			response.JSON(c, http.StatusNotFound, response.Envelope{Code: "PROVIDER_NOT_FOUND", Message: "provider not found"})
+			return
+		}
+		badRequest(c, "VALIDATION_ERROR", err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: true})
+}
+
+func (h *AdminHandler) TestIntegration(c *gin.Context) {
+	providerKey := c.Param("providerKey")
+	result, err := h.contentService.TestIntegrationProvider(providerKey)
+	if err != nil {
+		if err.Error() == "provider not found" {
+			response.JSON(c, http.StatusNotFound, response.Envelope{Code: "PROVIDER_NOT_FOUND", Message: "provider not found"})
+			return
+		}
+		response.JSON(c, http.StatusBadRequest, response.Envelope{Code: "PROVIDER_TEST_FAILED", Message: err.Error()})
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: result})
+}
+
+type createTranslationJobRequest struct {
+	SourceType   string `json:"sourceType"`
+	SourceID     string `json:"sourceId"`
+	SourceLocale string `json:"sourceLocale"`
+	TargetLocale string `json:"targetLocale"`
+	ProviderKey  string `json:"providerKey"`
+	ModelName    string `json:"modelName"`
+}
+
+func (h *AdminHandler) CreateTranslationJob(c *gin.Context) {
+	var req createTranslationJobRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequest(c, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+	user := middleware.MustUser(c)
+	job, err := h.contentService.CreateTranslationJob(domain.TranslationJob{
+		SourceType:   req.SourceType,
+		SourceID:     req.SourceID,
+		SourceLocale: req.SourceLocale,
+		TargetLocale: req.TargetLocale,
+		ProviderKey:  req.ProviderKey,
+		ModelName:    req.ModelName,
+		RequestedBy:  user.ID,
+	})
+	if err != nil {
+		if err.Error() == "provider not found" {
+			response.JSON(c, http.StatusNotFound, response.Envelope{Code: "PROVIDER_NOT_FOUND", Message: "provider not found"})
+			return
+		}
+		badRequest(c, "VALIDATION_ERROR", err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: map[string]string{"id": job.ID}})
+}
+
+func (h *AdminHandler) ListTranslationJobs(c *gin.Context) {
+	page := getIntQuery(c, "page", 1)
+	pageSize := getIntQuery(c, "pageSize", 10)
+	status := c.Query("status")
+	sourceType := c.Query("sourceType")
+	sourceID := c.Query("sourceId")
+	rows, total := h.contentService.ListTranslationJobs(page, pageSize, status, sourceType, sourceID)
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.TranslationJob]{Total: total, Rows: rows}})
+}
+
+func (h *AdminHandler) TranslationJobDetail(c *gin.Context) {
+	id := c.Param("id")
+	job, ok := h.contentService.GetTranslationJobByID(id)
+	if !ok {
+		response.JSON(c, http.StatusNotFound, response.Envelope{Code: "TRANSLATION_JOB_NOT_FOUND", Message: "translation job not found"})
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: job})
 }

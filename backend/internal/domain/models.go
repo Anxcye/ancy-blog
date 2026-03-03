@@ -4,7 +4,10 @@
 // Related: repository interfaces, service logic, and HTTP handlers.
 package domain
 
-import "time"
+import (
+	"encoding/json"
+	"time"
+)
 
 type User struct {
 	ID          string `json:"id"`
@@ -168,4 +171,38 @@ type SlotContentItem struct {
 	Slug        string `json:"slug,omitempty"`
 	Summary     string `json:"summary,omitempty"`
 	Content     string `json:"content,omitempty"`
+}
+
+type IntegrationProvider struct {
+	ID           string          `json:"id"`
+	ProviderType string          `json:"providerType"`
+	ProviderKey  string          `json:"providerKey"`
+	Name         string          `json:"name"`
+	Enabled      bool            `json:"enabled"`
+	ConfigJSON   json.RawMessage `json:"configJson"`
+	MetaJSON     json.RawMessage `json:"metaJson,omitempty"`
+	CreatedAt    time.Time       `json:"createdAt"`
+	UpdatedAt    time.Time       `json:"updatedAt"`
+}
+
+type ProviderTestResult struct {
+	OK        bool   `json:"ok"`
+	Message   string `json:"message"`
+	LatencyMS int64  `json:"latencyMs"`
+}
+
+type TranslationJob struct {
+	ID           string    `json:"id"`
+	SourceType   string    `json:"sourceType"`
+	SourceID     string    `json:"sourceId"`
+	SourceLocale string    `json:"sourceLocale"`
+	TargetLocale string    `json:"targetLocale"`
+	ProviderKey  string    `json:"providerKey"`
+	ModelName    string    `json:"modelName"`
+	Status       string    `json:"status"`
+	ErrorMessage string    `json:"errorMessage,omitempty"`
+	RequestedBy  string    `json:"requestedBy,omitempty"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
+	FinishedAt   time.Time `json:"finishedAt,omitempty"`
 }

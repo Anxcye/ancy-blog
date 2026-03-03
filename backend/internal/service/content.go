@@ -34,6 +34,7 @@ const (
 	cacheSiteSocialKey   = "site:social:default"
 	cacheSiteNavKey      = "site:nav:default"
 	cacheSiteSlotKeyFmt  = "site:slot:%s:default"
+	defaultJSONObj       = "{}"
 )
 
 func (s *ContentService) CreateArticle(article domain.Article) (domain.Article, error) {
@@ -394,8 +395,138 @@ func (s *ContentService) ListSlotContent(slotKey string, limit int) ([]domain.Sl
 	return items, exists
 }
 
+func (s *ContentService) ListIntegrationProviders(providerType string) []domain.IntegrationProvider {
+	rows := s.repo.ListIntegrationProviders(providerType)
+	for i := range rows {
+		rows[i].ConfigJSON = maskSecretJSON(rows[i].ConfigJSON)
+	}
+	return rows
+}
+
+func (s *ContentService) UpdateIntegrationProvider(providerKey string, enabled bool, configJSON, metaJSON []byte) (domain.IntegrationProvider, error) {
+	if strings.TrimSpace(providerKey) == "" {
+		return domain.IntegrationProvider{}, errors.New("provider key is required")
+	}
+	if !json.Valid(configJSON) {
+		return domain.IntegrationProvider{}, errors.New("configJson must be valid JSON")
+	}
+	if len(metaJSON) > 0 && !json.Valid(metaJSON) {
+		return domain.IntegrationProvider{}, errors.New("metaJson must be valid JSON")
+	}
+	if len(metaJSON) == 0 {
+		metaJSON = []byte(defaultJSONObj)
+	}
+	provider, err := s.repo.UpdateIntegrationProvider(providerKey, enabled, configJSON, metaJSON)
+	if err != nil {
+		return domain.IntegrationProvider{}, err
+	}
+	provider.ConfigJSON = maskSecretJSON(provider.ConfigJSON)
+	return provider, nil
+}
+
+func (s *ContentService) TestIntegrationProvider(providerKey string) (domain.ProviderTestResult, error) {
+	start := time.Now()
+	provider, ok := s.repo.GetIntegrationProvider(providerKey)
+	if !ok {
+		return domain.ProviderTestResult{}, errors.New("provider not found")
+	}
+	if !provider.Enabled {
+		return domain.ProviderTestResult{}, errors.New("provider is disabled")
+	}
+
+	var config map[string]any
+	if err := json.Unmarshal(provider.ConfigJSON, &config); err != nil {
+		return domain.ProviderTestResult{}, errors.New("provider config is invalid JSON")
+	}
+
+	requiredByProvider := map[string][]string{
+		"cloudflare_r2":     {"account_id", "bucket", "access_key_id", "secret_access_key", "public_base_url"},
+		"openai_compatible": {"base_url", "api_key", "model"},
+	}
+	required := requiredByProvider[provider.ProviderKey]
+	for _, key := range required {
+		v, ok := config[key]
+		if !ok || strings.TrimSpace(fmt.Sprintf("%v", v)) == "" {
+			return domain.ProviderTestResult{}, fmt.Errorf("missing required config key: %s", key)
+		}
+	}
+
+	return domain.ProviderTestResult{
+		OK:        true,
+		Message:   "configuration looks valid",
+		LatencyMS: time.Since(start).Milliseconds(),
+	}, nil
+}
+
+func (s *ContentService) CreateTranslationJob(job domain.TranslationJob) (domain.TranslationJob, error) {
+	if job.SourceType != "article" && job.SourceType != "moment" {
+		return domain.TranslationJob{}, errors.New("sourceType must be article or moment")
+	}
+	if strings.TrimSpace(job.SourceID) == "" {
+		return domain.TranslationJob{}, errors.New("sourceId is required")
+	}
+	if strings.TrimSpace(job.SourceLocale) == "" || strings.TrimSpace(job.TargetLocale) == "" {
+		return domain.TranslationJob{}, errors.New("sourceLocale and targetLocale are required")
+	}
+	if strings.EqualFold(job.SourceLocale, job.TargetLocale) {
+		return domain.TranslationJob{}, errors.New("sourceLocale and targetLocale must be different")
+	}
+	if strings.TrimSpace(job.ProviderKey) == "" || strings.TrimSpace(job.ModelName) == "" {
+		return domain.TranslationJob{}, errors.New("providerKey and modelName are required")
+	}
+	provider, ok := s.repo.GetIntegrationProvider(job.ProviderKey)
+	if !ok {
+		return domain.TranslationJob{}, errors.New("provider not found")
+	}
+	if provider.ProviderType != "llm" {
+		return domain.TranslationJob{}, errors.New("provider is not llm")
+	}
+	if !provider.Enabled {
+		return domain.TranslationJob{}, errors.New("provider is disabled")
+	}
+	job.Status = "queued"
+	return s.repo.CreateTranslationJob(job)
+}
+
+func (s *ContentService) ListTranslationJobs(page, pageSize int, status, sourceType, sourceID string) ([]domain.TranslationJob, int) {
+	return s.repo.ListTranslationJobs(page, pageSize, status, sourceType, sourceID)
+}
+
+func (s *ContentService) GetTranslationJobByID(id string) (domain.TranslationJob, bool) {
+	return s.repo.GetTranslationJobByID(id)
+}
+
 func (s *ContentService) ListTimeline(page, pageSize int) ([]domain.TimelineItem, int) {
 	return s.repo.ListTimeline(page, pageSize)
+}
+
+func maskSecretJSON(raw []byte) []byte {
+	if len(raw) == 0 || !json.Valid(raw) {
+		return raw
+	}
+	var payload map[string]any
+	if err := json.Unmarshal(raw, &payload); err != nil {
+		return raw
+	}
+	secretKeys := map[string]struct{}{
+		"access_key_id":     {},
+		"secret_access_key": {},
+		"api_key":           {},
+		"token":             {},
+		"secret":            {},
+	}
+	for k, v := range payload {
+		if _, ok := secretKeys[strings.ToLower(k)]; ok {
+			if s, ok2 := v.(string); ok2 && strings.TrimSpace(s) != "" {
+				payload[k] = "******"
+			}
+		}
+	}
+	masked, err := json.Marshal(payload)
+	if err != nil {
+		return raw
+	}
+	return masked
 }
 
 func (s *ContentService) getCache(key string, out any) bool {

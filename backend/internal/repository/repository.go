@@ -54,5 +54,13 @@ type ContentRepository interface {
 	DeleteSlotItem(slotKey, itemID string) bool
 	ListSlotContent(slotKey string, limit int) ([]domain.SlotContentItem, bool)
 
+	ListIntegrationProviders(providerType string) []domain.IntegrationProvider
+	GetIntegrationProvider(providerKey string) (domain.IntegrationProvider, bool)
+	UpdateIntegrationProvider(providerKey string, enabled bool, configJSON, metaJSON []byte) (domain.IntegrationProvider, error)
+
+	CreateTranslationJob(job domain.TranslationJob) (domain.TranslationJob, error)
+	ListTranslationJobs(page, pageSize int, status, sourceType, sourceID string) ([]domain.TranslationJob, int)
+	GetTranslationJobByID(id string) (domain.TranslationJob, bool)
+
 	ListTimeline(page, pageSize int) ([]domain.TimelineItem, int)
 }

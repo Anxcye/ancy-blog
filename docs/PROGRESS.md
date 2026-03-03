@@ -4,10 +4,9 @@
 - [ ] Initialize `frontend-admin/` Vue3 scaffold.
 - [ ] Initialize `frontend-blog/` Vue3 scaffold.
 - [ ] Set up lint/test/build scripts.
-- [ ] Implement integration-center APIs (`integration_providers`, `translation_jobs`).
 
 ## In Progress
-- [ ] Implement integration-center APIs (`integration_providers`, `translation_jobs`).
+- [ ] Design and implement translation job worker execution flow.
 
 ## Done
 - [x] Created tracking docs and collaboration guidelines.
@@ -28,6 +27,7 @@
 - [x] Implemented Redis cache-aside for `site/settings/footer/social/nav/slot`.
 - [x] Removed in-memory fallback: backend now fails fast when PostgreSQL init fails.
 - [x] Implemented comments APIs for public and admin flows.
+- [x] Implemented integration-center APIs (`integration_providers`, `translation_jobs`).
 
 ## Blocked
 - None.
