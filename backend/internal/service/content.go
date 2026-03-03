@@ -7,12 +7,12 @@ package service
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/url"
 	"strings"
 	"time"
 
+	"github.com/anxcye/ancy-blog/backend/internal/apperr"
 	"github.com/anxcye/ancy-blog/backend/internal/cache"
 	"github.com/anxcye/ancy-blog/backend/internal/domain"
 	"github.com/anxcye/ancy-blog/backend/internal/repository"
@@ -39,7 +39,7 @@ const (
 
 func (s *ContentService) CreateArticle(article domain.Article) (domain.Article, error) {
 	if strings.TrimSpace(article.Title) == "" || strings.TrimSpace(article.Slug) == "" {
-		return domain.Article{}, errors.New("title and slug are required")
+		return domain.Article{}, fmt.Errorf("%w: title and slug are required", apperr.ErrValidation)
 	}
 	if article.ContentKind == "" {
 		article.ContentKind = "post"
@@ -61,10 +61,10 @@ func (s *ContentService) CreateArticle(article domain.Article) (domain.Article, 
 
 func (s *ContentService) UpdateArticle(id string, article domain.Article) (domain.Article, error) {
 	if strings.TrimSpace(id) == "" {
-		return domain.Article{}, errors.New("article id is required")
+		return domain.Article{}, fmt.Errorf("%w: article id is required", apperr.ErrValidation)
 	}
 	if strings.TrimSpace(article.Title) == "" || strings.TrimSpace(article.Slug) == "" {
-		return domain.Article{}, errors.New("title and slug are required")
+		return domain.Article{}, fmt.Errorf("%w: title and slug are required", apperr.ErrValidation)
 	}
 	if article.ContentKind == "" {
 		article.ContentKind = "post"
@@ -85,7 +85,7 @@ func (s *ContentService) GetPublishedArticleBySlug(slug string) (domain.Article,
 
 func (s *ContentService) CreateMoment(moment domain.Moment) (domain.Moment, error) {
 	if strings.TrimSpace(moment.Content) == "" {
-		return domain.Moment{}, errors.New("content is required")
+		return domain.Moment{}, fmt.Errorf("%w: content is required", apperr.ErrValidation)
 	}
 	if moment.Status == "" {
 		moment.Status = "draft"
@@ -99,13 +99,13 @@ func (s *ContentService) ListPublishedMoments(page, pageSize int) ([]domain.Mome
 
 func (s *ContentService) CreateComment(comment domain.Comment) (domain.Comment, error) {
 	if strings.TrimSpace(comment.ArticleID) == "" {
-		return domain.Comment{}, errors.New("articleId is required")
+		return domain.Comment{}, fmt.Errorf("%w: articleId is required", apperr.ErrValidation)
 	}
 	if strings.TrimSpace(comment.Content) == "" {
-		return domain.Comment{}, errors.New("content is required")
+		return domain.Comment{}, fmt.Errorf("%w: content is required", apperr.ErrValidation)
 	}
 	if strings.TrimSpace(comment.Nickname) == "" {
-		return domain.Comment{}, errors.New("nickname is required")
+		return domain.Comment{}, fmt.Errorf("%w: nickname is required", apperr.ErrValidation)
 	}
 	if comment.Status == "" {
 		comment.Status = "approved"
@@ -131,7 +131,7 @@ func (s *ContentService) ListCommentPage(page, pageSize int, status string) ([]d
 
 func (s *ContentService) UpdateCommentAdmin(id, status, isPinned string) (domain.Comment, error) {
 	if strings.TrimSpace(id) == "" {
-		return domain.Comment{}, errors.New("id is required")
+		return domain.Comment{}, fmt.Errorf("%w: id is required", apperr.ErrValidation)
 	}
 	if status == "" {
 		status = "approved"
@@ -141,10 +141,10 @@ func (s *ContentService) UpdateCommentAdmin(id, status, isPinned string) (domain
 
 func (s *ContentService) SubmitLink(link domain.Link) (domain.Link, error) {
 	if strings.TrimSpace(link.Name) == "" || strings.TrimSpace(link.URL) == "" {
-		return domain.Link{}, errors.New("name and url are required")
+		return domain.Link{}, fmt.Errorf("%w: name and url are required", apperr.ErrValidation)
 	}
 	if _, err := url.ParseRequestURI(link.URL); err != nil {
-		return domain.Link{}, errors.New("url is invalid")
+		return domain.Link{}, fmt.Errorf("%w: url is invalid", apperr.ErrValidation)
 	}
 	return s.repo.SubmitLink(link)
 }
@@ -159,11 +159,11 @@ func (s *ContentService) ListLinkSubmissions(page, pageSize int, reviewStatus st
 
 func (s *ContentService) ReviewLink(id, reviewStatus, reviewNote, relatedArticleID string) (domain.Link, error) {
 	if reviewStatus != "pending" && reviewStatus != "approved" && reviewStatus != "rejected" {
-		return domain.Link{}, errors.New("invalid review status")
+		return domain.Link{}, fmt.Errorf("%w: invalid review status", apperr.ErrValidation)
 	}
 	if relatedArticleID != "" {
 		if _, ok := s.repo.GetArticleByID(relatedArticleID); !ok {
-			return domain.Link{}, errors.New("related article not found")
+			return domain.Link{}, apperr.ErrArticleNotFound
 		}
 	}
 	return s.repo.ReviewLink(id, reviewStatus, reviewNote, relatedArticleID)
@@ -200,15 +200,15 @@ func (s *ContentService) UpdateSiteSettings(settings domain.SiteSettings) domain
 
 func (s *ContentService) CreateFooterItem(item domain.FooterItem) (domain.FooterItem, error) {
 	if strings.TrimSpace(item.Label) == "" {
-		return domain.FooterItem{}, errors.New("label is required")
+		return domain.FooterItem{}, fmt.Errorf("%w: label is required", apperr.ErrValidation)
 	}
 	if item.RowNum < 1 || item.RowNum > 3 {
-		return domain.FooterItem{}, errors.New("rowNum must be between 1 and 3")
+		return domain.FooterItem{}, fmt.Errorf("%w: rowNum must be between 1 and 3", apperr.ErrValidation)
 	}
 	if item.LinkType == "internal" {
 		a, ok := s.repo.GetPublishedArticleBySlug(item.InternalArticleSlug)
 		if !ok || a.ContentKind != "page" {
-			return domain.FooterItem{}, errors.New("internal article slug must point to a published page")
+			return domain.FooterItem{}, fmt.Errorf("%w: internal article slug must point to a published page", apperr.ErrValidation)
 		}
 	}
 	if !item.Enabled && item.OrderNum == 0 {
@@ -223,12 +223,12 @@ func (s *ContentService) CreateFooterItem(item domain.FooterItem) (domain.Footer
 
 func (s *ContentService) UpdateFooterItem(id string, item domain.FooterItem) (domain.FooterItem, error) {
 	if item.RowNum < 1 || item.RowNum > 3 {
-		return domain.FooterItem{}, errors.New("rowNum must be between 1 and 3")
+		return domain.FooterItem{}, fmt.Errorf("%w: rowNum must be between 1 and 3", apperr.ErrValidation)
 	}
 	if item.LinkType == "internal" {
 		a, ok := s.repo.GetPublishedArticleBySlug(item.InternalArticleSlug)
 		if !ok || a.ContentKind != "page" {
-			return domain.FooterItem{}, errors.New("internal article slug must point to a published page")
+			return domain.FooterItem{}, fmt.Errorf("%w: internal article slug must point to a published page", apperr.ErrValidation)
 		}
 	}
 	updated, err := s.repo.UpdateFooterItem(id, item)
@@ -260,7 +260,7 @@ func (s *ContentService) ListFooterItems() []domain.FooterItem {
 
 func (s *ContentService) CreateSocialLink(item domain.SocialLink) (domain.SocialLink, error) {
 	if strings.TrimSpace(item.Title) == "" || strings.TrimSpace(item.URL) == "" {
-		return domain.SocialLink{}, errors.New("title and url are required")
+		return domain.SocialLink{}, fmt.Errorf("%w: title and url are required", apperr.ErrValidation)
 	}
 	created, err := s.repo.CreateSocialLink(item)
 	if err == nil {
@@ -271,7 +271,7 @@ func (s *ContentService) CreateSocialLink(item domain.SocialLink) (domain.Social
 
 func (s *ContentService) UpdateSocialLink(id string, item domain.SocialLink) (domain.SocialLink, error) {
 	if strings.TrimSpace(item.Title) == "" || strings.TrimSpace(item.URL) == "" {
-		return domain.SocialLink{}, errors.New("title and url are required")
+		return domain.SocialLink{}, fmt.Errorf("%w: title and url are required", apperr.ErrValidation)
 	}
 	updated, err := s.repo.UpdateSocialLink(id, item)
 	if err == nil {
@@ -302,7 +302,7 @@ func (s *ContentService) ListSocialLinks() []domain.SocialLink {
 
 func (s *ContentService) CreateNavItem(item domain.NavItem) (domain.NavItem, error) {
 	if strings.TrimSpace(item.Name) == "" || strings.TrimSpace(item.Key) == "" {
-		return domain.NavItem{}, errors.New("name and key are required")
+		return domain.NavItem{}, fmt.Errorf("%w: name and key are required", apperr.ErrValidation)
 	}
 	created, err := s.repo.CreateNavItem(item)
 	if err == nil {
@@ -313,7 +313,7 @@ func (s *ContentService) CreateNavItem(item domain.NavItem) (domain.NavItem, err
 
 func (s *ContentService) UpdateNavItem(id string, item domain.NavItem) (domain.NavItem, error) {
 	if strings.TrimSpace(item.Name) == "" || strings.TrimSpace(item.Key) == "" {
-		return domain.NavItem{}, errors.New("name and key are required")
+		return domain.NavItem{}, fmt.Errorf("%w: name and key are required", apperr.ErrValidation)
 	}
 	updated, err := s.repo.UpdateNavItem(id, item)
 	if err == nil {
@@ -344,7 +344,7 @@ func (s *ContentService) ListNavItems() []domain.NavItem {
 
 func (s *ContentService) CreateContentSlot(slot domain.ContentSlot) (domain.ContentSlot, error) {
 	if strings.TrimSpace(slot.SlotKey) == "" || strings.TrimSpace(slot.Name) == "" {
-		return domain.ContentSlot{}, errors.New("slotKey and name are required")
+		return domain.ContentSlot{}, fmt.Errorf("%w: slotKey and name are required", apperr.ErrValidation)
 	}
 	created, err := s.repo.CreateContentSlot(slot)
 	if err == nil {
@@ -355,11 +355,11 @@ func (s *ContentService) CreateContentSlot(slot domain.ContentSlot) (domain.Cont
 
 func (s *ContentService) CreateSlotItem(slotKey string, item domain.SlotItem) (domain.SlotItem, error) {
 	if item.ContentType != "article" && item.ContentType != "moment" {
-		return domain.SlotItem{}, errors.New("contentType must be article or moment")
+		return domain.SlotItem{}, fmt.Errorf("%w: contentType must be article or moment", apperr.ErrValidation)
 	}
 	if item.ContentType == "article" {
 		if _, ok := s.repo.GetArticleByID(item.ContentID); !ok {
-			return domain.SlotItem{}, errors.New("article not found")
+			return domain.SlotItem{}, apperr.ErrArticleNotFound
 		}
 	}
 	created, err := s.repo.CreateSlotItem(slotKey, item)
@@ -405,13 +405,13 @@ func (s *ContentService) ListIntegrationProviders(providerType string) []domain.
 
 func (s *ContentService) UpdateIntegrationProvider(providerKey string, enabled bool, configJSON, metaJSON []byte) (domain.IntegrationProvider, error) {
 	if strings.TrimSpace(providerKey) == "" {
-		return domain.IntegrationProvider{}, errors.New("provider key is required")
+		return domain.IntegrationProvider{}, fmt.Errorf("%w: provider key is required", apperr.ErrValidation)
 	}
 	if !json.Valid(configJSON) {
-		return domain.IntegrationProvider{}, errors.New("configJson must be valid JSON")
+		return domain.IntegrationProvider{}, fmt.Errorf("%w: configJson must be valid JSON", apperr.ErrValidation)
 	}
 	if len(metaJSON) > 0 && !json.Valid(metaJSON) {
-		return domain.IntegrationProvider{}, errors.New("metaJson must be valid JSON")
+		return domain.IntegrationProvider{}, fmt.Errorf("%w: metaJson must be valid JSON", apperr.ErrValidation)
 	}
 	if len(metaJSON) == 0 {
 		metaJSON = []byte(defaultJSONObj)
@@ -428,15 +428,15 @@ func (s *ContentService) TestIntegrationProvider(providerKey string) (domain.Pro
 	start := time.Now()
 	provider, ok := s.repo.GetIntegrationProvider(providerKey)
 	if !ok {
-		return domain.ProviderTestResult{}, errors.New("provider not found")
+		return domain.ProviderTestResult{}, apperr.ErrProviderNotFound
 	}
 	if !provider.Enabled {
-		return domain.ProviderTestResult{}, errors.New("provider is disabled")
+		return domain.ProviderTestResult{}, fmt.Errorf("%w: provider is disabled", apperr.ErrValidation)
 	}
 
 	var config map[string]any
 	if err := json.Unmarshal(provider.ConfigJSON, &config); err != nil {
-		return domain.ProviderTestResult{}, errors.New("provider config is invalid JSON")
+		return domain.ProviderTestResult{}, fmt.Errorf("%w: provider config is invalid JSON", apperr.ErrValidation)
 	}
 
 	requiredByProvider := map[string][]string{
@@ -460,29 +460,29 @@ func (s *ContentService) TestIntegrationProvider(providerKey string) (domain.Pro
 
 func (s *ContentService) CreateTranslationJob(job domain.TranslationJob) (domain.TranslationJob, error) {
 	if job.SourceType != "article" && job.SourceType != "moment" {
-		return domain.TranslationJob{}, errors.New("sourceType must be article or moment")
+		return domain.TranslationJob{}, fmt.Errorf("%w: sourceType must be article or moment", apperr.ErrValidation)
 	}
 	if strings.TrimSpace(job.SourceID) == "" {
-		return domain.TranslationJob{}, errors.New("sourceId is required")
+		return domain.TranslationJob{}, fmt.Errorf("%w: sourceId is required", apperr.ErrValidation)
 	}
 	if strings.TrimSpace(job.SourceLocale) == "" || strings.TrimSpace(job.TargetLocale) == "" {
-		return domain.TranslationJob{}, errors.New("sourceLocale and targetLocale are required")
+		return domain.TranslationJob{}, fmt.Errorf("%w: sourceLocale and targetLocale are required", apperr.ErrValidation)
 	}
 	if strings.EqualFold(job.SourceLocale, job.TargetLocale) {
-		return domain.TranslationJob{}, errors.New("sourceLocale and targetLocale must be different")
+		return domain.TranslationJob{}, fmt.Errorf("%w: sourceLocale and targetLocale must be different", apperr.ErrValidation)
 	}
 	if strings.TrimSpace(job.ProviderKey) == "" || strings.TrimSpace(job.ModelName) == "" {
-		return domain.TranslationJob{}, errors.New("providerKey and modelName are required")
+		return domain.TranslationJob{}, fmt.Errorf("%w: providerKey and modelName are required", apperr.ErrValidation)
 	}
 	provider, ok := s.repo.GetIntegrationProvider(job.ProviderKey)
 	if !ok {
-		return domain.TranslationJob{}, errors.New("provider not found")
+		return domain.TranslationJob{}, apperr.ErrProviderNotFound
 	}
 	if provider.ProviderType != "llm" {
-		return domain.TranslationJob{}, errors.New("provider is not llm")
+		return domain.TranslationJob{}, fmt.Errorf("%w: provider is not llm", apperr.ErrValidation)
 	}
 	if !provider.Enabled {
-		return domain.TranslationJob{}, errors.New("provider is disabled")
+		return domain.TranslationJob{}, fmt.Errorf("%w: provider is disabled", apperr.ErrValidation)
 	}
 	job.Status = "queued"
 	return s.repo.CreateTranslationJob(job)

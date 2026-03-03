@@ -56,12 +56,19 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 	}
 
 	contentService := service.NewContentService(repo, cacheClient)
+	articleService := service.NewArticleService(contentService)
+	commentService := service.NewCommentService(contentService)
+	linkService := service.NewLinkService(contentService)
+	siteService := service.NewSiteService(contentService)
+	integrationService := service.NewIntegrationService(contentService)
+	translationService := service.NewTranslationService(contentService)
+	timelineService := service.NewTimelineService(contentService)
 
 	var uploader storage.Uploader
 	return &App{
 		AuthHandler:   handler.NewAuthHandler(authService),
-		PublicHandler: handler.NewPublicHandler(contentService),
-		AdminHandler:  handler.NewAdminHandler(contentService),
+		PublicHandler: handler.NewPublicHandler(articleService, commentService, linkService, siteService, timelineService),
+		AdminHandler:  handler.NewAdminHandler(articleService, commentService, linkService, siteService, integrationService, translationService),
 		UploadHandler: handler.NewUploadHandler(uploader),
 		AuthService:   authService,
 	}, nil

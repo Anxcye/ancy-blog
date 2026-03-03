@@ -20,7 +20,14 @@ import (
 func TestPublicArticleBySlugNotFound(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	repo := &handlerRepoStub{}
-	h := NewPublicHandler(service.NewContentService(repo, nil))
+	core := service.NewContentService(repo, nil)
+	h := NewPublicHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewTimelineService(core),
+	)
 
 	r := gin.New()
 	r.GET("/articles/:slug", h.ArticleBySlug)
@@ -42,7 +49,14 @@ func TestPublicAddCommentSuccess(t *testing.T) {
 		comment.ID = "c1"
 		return comment, nil
 	}}
-	h := NewPublicHandler(service.NewContentService(repo, nil))
+	core := service.NewContentService(repo, nil)
+	h := NewPublicHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewTimelineService(core),
+	)
 
 	r := gin.New()
 	r.POST("/comments", h.AddComment)
@@ -70,7 +84,14 @@ func TestPublicSiteFooterGroupedByRow(t *testing.T) {
 	repo := &handlerRepoStub{listFooterItemsFunc: func() []domain.FooterItem {
 		return []domain.FooterItem{{ID: "1", Label: "About", RowNum: 1, OrderNum: 1}, {ID: "2", Label: "ICP", RowNum: 2, OrderNum: 1}}
 	}}
-	h := NewPublicHandler(service.NewContentService(repo, nil))
+	core := service.NewContentService(repo, nil)
+	h := NewPublicHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewTimelineService(core),
+	)
 
 	r := gin.New()
 	r.GET("/footer", h.SiteFooter)

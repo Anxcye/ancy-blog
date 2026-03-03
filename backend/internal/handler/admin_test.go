@@ -7,11 +7,11 @@ package handler
 import (
 	"bytes"
 	"encoding/json"
-	"errors"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 
+	"github.com/anxcye/ancy-blog/backend/internal/apperr"
 	"github.com/anxcye/ancy-blog/backend/internal/domain"
 	"github.com/anxcye/ancy-blog/backend/internal/middleware"
 	"github.com/anxcye/ancy-blog/backend/internal/response"
@@ -33,7 +33,15 @@ func TestAdminListIntegrations(t *testing.T) {
 	repo := &handlerRepoStub{listIntegrationProvidersFunc: func(providerType string) []domain.IntegrationProvider {
 		return []domain.IntegrationProvider{{ProviderKey: "cloudflare_r2", ProviderType: "object_storage", Enabled: true, ConfigJSON: []byte(`{"access_key_id":"x"}`)}}
 	}}
-	h := NewAdminHandler(service.NewContentService(repo, nil))
+	core := service.NewContentService(repo, nil)
+	h := NewAdminHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewIntegrationService(core),
+		service.NewTranslationService(core),
+	)
 	r := adminRouter(h)
 	r.GET("/integrations", h.ListIntegrations)
 
@@ -49,9 +57,17 @@ func TestAdminListIntegrations(t *testing.T) {
 func TestAdminUpdateIntegrationProviderNotFound(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	repo := &handlerRepoStub{updateIntegrationProvider: func(string, bool, []byte, []byte) (domain.IntegrationProvider, error) {
-		return domain.IntegrationProvider{}, errors.New("provider not found")
+		return domain.IntegrationProvider{}, apperr.ErrProviderNotFound
 	}}
-	h := NewAdminHandler(service.NewContentService(repo, nil))
+	core := service.NewContentService(repo, nil)
+	h := NewAdminHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewIntegrationService(core),
+		service.NewTranslationService(core),
+	)
 	r := adminRouter(h)
 	r.PUT("/integrations/:providerKey", h.UpdateIntegration)
 
@@ -84,7 +100,15 @@ func TestAdminCreateTranslationJobSuccess(t *testing.T) {
 			return job, nil
 		},
 	}
-	h := NewAdminHandler(service.NewContentService(repo, nil))
+	core := service.NewContentService(repo, nil)
+	h := NewAdminHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewIntegrationService(core),
+		service.NewTranslationService(core),
+	)
 	r := adminRouter(h)
 	r.POST("/translations/jobs", h.CreateTranslationJob)
 
@@ -101,7 +125,15 @@ func TestAdminCreateTranslationJobSuccess(t *testing.T) {
 
 func TestAdminTranslationJobDetailNotFound(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	h := NewAdminHandler(service.NewContentService(&handlerRepoStub{}, nil))
+	core := service.NewContentService(&handlerRepoStub{}, nil)
+	h := NewAdminHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewIntegrationService(core),
+		service.NewTranslationService(core),
+	)
 	r := adminRouter(h)
 	r.GET("/translations/jobs/:id", h.TranslationJobDetail)
 

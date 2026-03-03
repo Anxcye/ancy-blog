@@ -12,6 +12,20 @@ cd backend
 go run ./cmd/server
 ```
 
+## Database Migrations (golang-migrate)
+```bash
+cd backend
+go run ./cmd/migrate -action up
+go run ./cmd/migrate -action version
+```
+
+Quick shortcuts:
+```bash
+cd backend
+make migrate-up
+make migrate-version
+```
+
 ## Environment Variables
 - `APP_NAME` (default: `ancy-blog-api`)
 - `APP_ENV` (default: `dev`)
@@ -83,3 +97,5 @@ curl -X POST http://127.0.0.1:8080/api/v1/auth/login \
 - The HTTP layer uses `gin-gonic/gin` with:
   - `gin.Recovery()` for panic recovery.
   - A custom structured request logging middleware.
+- Handler dependencies are module-oriented (`article/comment/link/site/integration/translation/timeline` services).
+- Request payloads use DTO structs under `internal/handler/dto` to decouple transport schema from domain models.

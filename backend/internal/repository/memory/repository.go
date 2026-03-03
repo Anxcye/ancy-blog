@@ -5,12 +5,12 @@
 package memory
 
 import (
-	"errors"
 	"sort"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/anxcye/ancy-blog/backend/internal/apperr"
 	"github.com/anxcye/ancy-blog/backend/internal/domain"
 	"github.com/google/uuid"
 )
@@ -133,7 +133,7 @@ func (r *Repository) CreateArticle(article domain.Article) (domain.Article, erro
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if r.slugExists(article.Slug, "") {
-		return domain.Article{}, errors.New("slug already exists")
+		return domain.Article{}, apperr.ErrSlugAlreadyExists
 	}
 	now := time.Now().UTC()
 	article.ID = uuid.NewString()
@@ -151,10 +151,10 @@ func (r *Repository) UpdateArticle(id string, article domain.Article) (domain.Ar
 	defer r.mu.Unlock()
 	current, ok := r.articles[id]
 	if !ok {
-		return domain.Article{}, errors.New("article not found")
+		return domain.Article{}, apperr.ErrArticleNotFound
 	}
 	if r.slugExists(article.Slug, id) {
-		return domain.Article{}, errors.New("slug already exists")
+		return domain.Article{}, apperr.ErrSlugAlreadyExists
 	}
 	article.ID = id
 	article.CreatedAt = current.CreatedAt
@@ -284,7 +284,7 @@ func (r *Repository) ReviewLink(id, reviewStatus, reviewNote, relatedArticleID s
 	defer r.mu.Unlock()
 	link, ok := r.links[id]
 	if !ok {
-		return domain.Link{}, errors.New("link not found")
+		return domain.Link{}, apperr.ErrLinkNotFound
 	}
 	link.ReviewStatus = reviewStatus
 	link.ReviewNote = reviewNote
@@ -344,7 +344,7 @@ func (r *Repository) UpdateFooterItem(id string, item domain.FooterItem) (domain
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if _, ok := r.footerItems[id]; !ok {
-		return domain.FooterItem{}, errors.New("footer item not found")
+		return domain.FooterItem{}, apperr.ErrFooterItemNotFound
 	}
 	item.ID = id
 	r.footerItems[id] = item
@@ -391,7 +391,7 @@ func (r *Repository) UpdateSocialLink(id string, item domain.SocialLink) (domain
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if _, ok := r.socialLinks[id]; !ok {
-		return domain.SocialLink{}, errors.New("social link not found")
+		return domain.SocialLink{}, apperr.ErrSocialLinkNotFound
 	}
 	item.ID = id
 	r.socialLinks[id] = item
@@ -433,7 +433,7 @@ func (r *Repository) UpdateNavItem(id string, item domain.NavItem) (domain.NavIt
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if _, ok := r.navItems[id]; !ok {
-		return domain.NavItem{}, errors.New("nav item not found")
+		return domain.NavItem{}, apperr.ErrNavItemNotFound
 	}
 	item.ID = id
 	r.navItems[id] = item
@@ -467,7 +467,7 @@ func (r *Repository) CreateContentSlot(slot domain.ContentSlot) (domain.ContentS
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if _, ok := r.slots[slot.SlotKey]; ok {
-		return domain.ContentSlot{}, errors.New("slot already exists")
+		return domain.ContentSlot{}, apperr.ErrValidation
 	}
 	slot.ID = uuid.NewString()
 	r.slots[slot.SlotKey] = slot
@@ -479,7 +479,7 @@ func (r *Repository) CreateSlotItem(slotKey string, item domain.SlotItem) (domai
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if _, ok := r.slots[slotKey]; !ok {
-		return domain.SlotItem{}, errors.New("slot not found")
+		return domain.SlotItem{}, apperr.ErrSlotNotFound
 	}
 	item.ID = uuid.NewString()
 	item.SlotKey = slotKey

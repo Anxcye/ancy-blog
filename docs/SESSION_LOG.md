@@ -137,6 +137,16 @@
   - `internal/repository/memory/repository_test.go`
 - Validation run after second expansion:
   - `go test ./...` passed with executed tests in `app/cache/redis/config/handler/logger/middleware/repository/memory/repository/postgres/response/server/service`
+- Maintainer-focused refactor completed:
+  - split handler dependencies to module services (`ArticleService`, `CommentService`, `LinkService`, `SiteService`, `IntegrationService`, `TranslationService`, `TimelineService`)
+  - added transport DTO package `internal/handler/dto` and replaced direct domain binding for key admin/public/auth inputs
+  - introduced typed error package `internal/apperr` and switched handler not-found matching from string comparison to `errors.Is`
+- Migration system introduced:
+  - added `cmd/migrate` CLI based on `golang-migrate`
+  - added versioned SQL files under `backend/migrations` (`000001_init.up.sql`, `000001_init.down.sql`)
+  - added `backend/Makefile` commands: `migrate-up`, `migrate-down`, `migrate-version`
+- Validation run after refactor:
+  - `go test ./...` passed including new `cmd/migrate` build target
 
 ### Next Suggested Tasks
 1. Implement translation worker execution (`queued -> running -> succeeded/failed`) and persistence update API.

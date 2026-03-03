@@ -32,6 +32,10 @@
 - [x] Added backend unit tests for auth service, auth middleware, and integration/translation business validation.
 - [x] Added handler/config/logger/response/postgres-helper test suites and wired them into `go test ./...`.
 - [x] Added tests for `app`, `server`, `cache/redis`, and `repository/memory`.
+- [x] Refactored handlers to module-oriented service dependencies (`article/comment/link/site/integration/translation/timeline`).
+- [x] Introduced handler DTO layer (`internal/handler/dto`) for transport payload isolation.
+- [x] Introduced typed application error taxonomy (`internal/apperr`) and replaced string-based handler matching.
+- [x] Added versioned migration mechanism with `golang-migrate` (`cmd/migrate` + `migrations/*.sql` + `Makefile` shortcuts).
 
 ## Blocked
 - None.

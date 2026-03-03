@@ -46,7 +46,8 @@ All inline code comments must be in English.
 2. Configuration: environment-driven config only; no hardcoded secrets.
 3. API standard: versioned routes (`/api/v1`), unified response envelope, stable error codes.
 4. Layering: `handler -> service -> repository`, with clear dependency direction.
-5. Quality gates: run lint/test/build before merge; keep code production-ready by default.
+5. Database change management: versioned SQL migrations via `golang-migrate` (`backend/migrations` + `cmd/migrate`).
+6. Quality gates: run lint/test/build before merge; keep code production-ready by default.
 
 ## Definition of Done
 A task is done only if:

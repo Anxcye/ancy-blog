@@ -5,6 +5,7 @@
 package handler
 
 import (
+	"github.com/anxcye/ancy-blog/backend/internal/handler/dto"
 	"github.com/anxcye/ancy-blog/backend/internal/middleware"
 	"github.com/anxcye/ancy-blog/backend/internal/response"
 	"github.com/anxcye/ancy-blog/backend/internal/service"
@@ -19,17 +20,8 @@ func NewAuthHandler(authService *service.AuthService) *AuthHandler {
 	return &AuthHandler{authService: authService}
 }
 
-type loginRequest struct {
-	Username string `json:"username"`
-	Password string `json:"password"`
-}
-
-type refreshRequest struct {
-	RefreshToken string `json:"refreshToken"`
-}
-
 func (h *AuthHandler) Login(c *gin.Context) {
-	var req loginRequest
+	var req dto.LoginRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		badRequest(c, "VALIDATION_ERROR", "invalid request body")
 		return
@@ -43,7 +35,7 @@ func (h *AuthHandler) Login(c *gin.Context) {
 }
 
 func (h *AuthHandler) Refresh(c *gin.Context) {
-	var req refreshRequest
+	var req dto.RefreshRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		badRequest(c, "VALIDATION_ERROR", "invalid request body")
 		return

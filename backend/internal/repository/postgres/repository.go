@@ -14,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/anxcye/ancy-blog/backend/internal/apperr"
 	"github.com/anxcye/ancy-blog/backend/internal/config"
 	"github.com/anxcye/ancy-blog/backend/internal/domain"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -70,7 +71,7 @@ RETURNING id::text, created_at, updated_at, published_at
 		Scan(&id, &createdAt, &updatedAt, &publishedAt)
 	if err != nil {
 		if isUniqueViolation(err) {
-			return domain.Article{}, errors.New("slug already exists")
+			return domain.Article{}, apperr.ErrSlugAlreadyExists
 		}
 		return domain.Article{}, err
 	}
@@ -88,7 +89,7 @@ func (r *Repository) UpdateArticle(id string, article domain.Article) (domain.Ar
 	err := r.db.QueryRow(`SELECT created_at FROM articles WHERE id=$1 AND deleted_at IS NULL`, id).Scan(&createdAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return domain.Article{}, errors.New("article not found")
+			return domain.Article{}, apperr.ErrArticleNotFound
 		}
 		return domain.Article{}, err
 	}
@@ -120,10 +121,10 @@ RETURNING updated_at, published_at
 		nullableString(article.CoverImage), nullableTime(article.PublishedAt)).Scan(&updatedAt, &publishedAt)
 	if err != nil {
 		if isUniqueViolation(err) {
-			return domain.Article{}, errors.New("slug already exists")
+			return domain.Article{}, apperr.ErrSlugAlreadyExists
 		}
 		if errors.Is(err, sql.ErrNoRows) {
-			return domain.Article{}, errors.New("article not found")
+			return domain.Article{}, apperr.ErrArticleNotFound
 		}
 		return domain.Article{}, err
 	}
@@ -448,7 +449,7 @@ RETURNING id::text, article_id::text, COALESCE(parent_id::text,''), COALESCE(roo
 		&c.Nickname, &c.Email, &c.Website, &c.AvatarURL, &c.Source, &c.IP, &c.UserAgent, &c.CreatedAt, &c.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return domain.Comment{}, errors.New("comment not found")
+			return domain.Comment{}, apperr.ErrCommentNotFound
 		}
 		return domain.Comment{}, err
 	}
@@ -559,7 +560,7 @@ RETURNING id::text, name, url, COALESCE(avatar_url,''), COALESCE(description,'')
 `, id, reviewStatus, nullableString(reviewNote), nullableUUID(relatedArticleID), approvedAt).Scan(&l.ID, &l.Name, &l.URL, &l.AvatarURL, &l.Description, &l.ContactEmail, &l.ReviewStatus, &l.ReviewNote, &l.RelatedArticleID, &l.CreatedAt, &l.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return domain.Link{}, errors.New("link not found")
+			return domain.Link{}, apperr.ErrLinkNotFound
 		}
 		return domain.Link{}, err
 	}
@@ -651,7 +652,7 @@ WHERE id=$1 AND deleted_at IS NULL
 	}
 	n, _ := res.RowsAffected()
 	if n == 0 {
-		return domain.FooterItem{}, errors.New("footer item not found")
+		return domain.FooterItem{}, apperr.ErrFooterItemNotFound
 	}
 	item.ID = id
 	return item, nil
@@ -712,7 +713,7 @@ WHERE id=$1 AND deleted_at IS NULL
 	}
 	n, _ := res.RowsAffected()
 	if n == 0 {
-		return domain.SocialLink{}, errors.New("social link not found")
+		return domain.SocialLink{}, apperr.ErrSocialLinkNotFound
 	}
 	item.ID = id
 	return item, nil
@@ -757,7 +758,7 @@ RETURNING id::text
 `, item.Name, item.Key, item.Type, item.TargetType, nullableString(item.TargetValue), item.OrderNum, item.Enabled).Scan(&id)
 	if err != nil {
 		if isUniqueViolation(err) {
-			return domain.NavItem{}, errors.New("name and key are required")
+			return domain.NavItem{}, apperr.ErrValidation
 		}
 		return domain.NavItem{}, err
 	}
@@ -776,7 +777,7 @@ WHERE id=$1 AND deleted_at IS NULL
 	}
 	n, _ := res.RowsAffected()
 	if n == 0 {
-		return domain.NavItem{}, errors.New("nav item not found")
+		return domain.NavItem{}, apperr.ErrNavItemNotFound
 	}
 	item.ID = id
 	return item, nil
@@ -821,7 +822,7 @@ RETURNING id::text
 `, slot.SlotKey, slot.Name, nullableString(slot.Description), slot.Enabled).Scan(&id)
 	if err != nil {
 		if isUniqueViolation(err) {
-			return domain.ContentSlot{}, errors.New("slot already exists")
+			return domain.ContentSlot{}, apperr.ErrValidation
 		}
 		return domain.ContentSlot{}, err
 	}
@@ -838,7 +839,7 @@ RETURNING id::text
 `, slotKey, item.ContentType, item.ContentID, item.OrderNum, item.Enabled).Scan(&id)
 	if err != nil {
 		if isForeignKeyViolation(err) {
-			return domain.SlotItem{}, errors.New("slot not found")
+			return domain.SlotItem{}, apperr.ErrSlotNotFound
 		}
 		return domain.SlotItem{}, err
 	}
@@ -961,7 +962,7 @@ RETURNING id::text, provider_type, provider_key, name, enabled, config_json::tex
 		Scan(&p.ID, &p.ProviderType, &p.ProviderKey, &p.Name, &p.Enabled, &configText, &metaText, &p.CreatedAt, &p.UpdatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
-			return domain.IntegrationProvider{}, errors.New("provider not found")
+			return domain.IntegrationProvider{}, apperr.ErrProviderNotFound
 		}
 		return domain.IntegrationProvider{}, err
 	}
@@ -981,7 +982,7 @@ RETURNING id::text, created_at, updated_at, finished_at, error_message
 		Scan(&job.ID, &job.CreatedAt, &job.UpdatedAt, &finishedAt, &errorMessage)
 	if err != nil {
 		if isForeignKeyViolation(err) {
-			return domain.TranslationJob{}, errors.New("provider not found")
+			return domain.TranslationJob{}, apperr.ErrProviderNotFound
 		}
 		return domain.TranslationJob{}, err
 	}
