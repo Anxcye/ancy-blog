@@ -1,0 +1,43 @@
+# Repository Guidelines
+
+## Purpose
+This repository is a full rewrite of the blog system using `Go + PostgreSQL + Redis + Vue3`.  
+Development is AI-assisted and document-driven.
+
+## Project Structure
+- `backend/`: Go API service.
+- `frontend-admin/`: Vue3 admin app.
+- `frontend-blog/`: Vue3 public blog app.
+- `deploy/`: deployment scripts and runtime manifests.
+- `docs/`: roadmap, progress, API contracts, decisions, and session logs.
+
+## Mandatory File Header Rule
+Every source code file must start with a short header comment (3-6 lines) describing:
+1. File purpose.
+2. Module and layer position.
+3. Main dependencies or related modules.
+
+Example:
+```go
+// File: auth_handler.go
+// Purpose: Handles login and token refresh HTTP endpoints.
+// Module: backend/auth, presentation layer.
+// Related: auth_service, token_store, user_repository.
+```
+
+## Comment Language
+All inline code comments must be in English.
+
+## Workflow Rules
+1. Update `docs/API_CONTRACT.md` before implementing or changing endpoints.
+2. Update `docs/PROGRESS.md` when a task status changes.
+3. Record architecture choices in `docs/DECISIONS.md`.
+4. At the end of each work session, append to `docs/SESSION_LOG.md`.
+
+## Definition of Done
+A task is done only if:
+1. Code is implemented.
+2. Lint/test/build pass locally.
+3. Contract/docs are updated.
+4. Progress and session log are updated.
+
