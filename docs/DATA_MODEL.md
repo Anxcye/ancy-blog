@@ -304,6 +304,7 @@ Fields:
 - `model_name` (required)
 - `status` (`queued | running | succeeded | failed`)
 - `error_message` (nullable)
+- `result_text` (nullable, translated output from worker)
 - `requested_by` (nullable, admin user id)
 - `created_at`
 - `updated_at`

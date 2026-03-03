@@ -93,11 +93,11 @@ func (r *Repository) CreateTranslationJob(job domain.TranslationJob) (domain.Tra
 	var finishedAt sql.NullTime
 	var errorMessage sql.NullString
 	err := r.db.QueryRow(`
-INSERT INTO translation_jobs (source_type, source_id, source_locale, target_locale, provider_key, model_name, status, error_message, requested_by)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
-RETURNING id::text, created_at, updated_at, finished_at, error_message
+INSERT INTO translation_jobs (source_type, source_id, source_locale, target_locale, provider_key, model_name, status, error_message, result_text, requested_by)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
+RETURNING id::text, created_at, updated_at, finished_at, error_message, COALESCE(result_text,'')
 `, job.SourceType, job.SourceID, job.SourceLocale, job.TargetLocale, job.ProviderKey, job.ModelName, job.Status, nullableString(job.ErrorMessage), nullableUUID(job.RequestedBy)).
-		Scan(&job.ID, &job.CreatedAt, &job.UpdatedAt, &finishedAt, &errorMessage)
+		Scan(&job.ID, &job.CreatedAt, &job.UpdatedAt, &finishedAt, &errorMessage, &job.ResultText)
 	if err != nil {
 		if isForeignKeyViolation(err) {
 			return domain.TranslationJob{}, apperr.ErrProviderNotFound
@@ -150,7 +150,7 @@ func (r *Repository) ListTranslationJobs(page, pageSize int, status, sourceType,
 	args = append(args, pageSize, offset)
 	query := fmt.Sprintf(`
 SELECT id::text, source_type, source_id::text, source_locale, target_locale, provider_key, model_name,
-       status, COALESCE(error_message,''), COALESCE(requested_by::text,''), created_at, updated_at, finished_at
+       status, COALESCE(error_message,''), COALESCE(result_text,''), COALESCE(requested_by::text,''), created_at, updated_at, finished_at
 FROM translation_jobs
 WHERE %s
 ORDER BY created_at DESC
@@ -168,7 +168,7 @@ LIMIT $%d OFFSET $%d
 		var j domain.TranslationJob
 		var finishedAt sql.NullTime
 		if err := rows.Scan(&j.ID, &j.SourceType, &j.SourceID, &j.SourceLocale, &j.TargetLocale, &j.ProviderKey, &j.ModelName,
-			&j.Status, &j.ErrorMessage, &j.RequestedBy, &j.CreatedAt, &j.UpdatedAt, &finishedAt); err == nil {
+			&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.CreatedAt, &j.UpdatedAt, &finishedAt); err == nil {
 			if finishedAt.Valid {
 				j.FinishedAt = finishedAt.Time
 			}
@@ -183,11 +183,11 @@ func (r *Repository) GetTranslationJobByID(id string) (domain.TranslationJob, bo
 	var finishedAt sql.NullTime
 	err := r.db.QueryRow(`
 SELECT id::text, source_type, source_id::text, source_locale, target_locale, provider_key, model_name,
-       status, COALESCE(error_message,''), COALESCE(requested_by::text,''), created_at, updated_at, finished_at
+       status, COALESCE(error_message,''), COALESCE(result_text,''), COALESCE(requested_by::text,''), created_at, updated_at, finished_at
 FROM translation_jobs
 WHERE id=$1
 `, id).Scan(&j.ID, &j.SourceType, &j.SourceID, &j.SourceLocale, &j.TargetLocale, &j.ProviderKey, &j.ModelName,
-		&j.Status, &j.ErrorMessage, &j.RequestedBy, &j.CreatedAt, &j.UpdatedAt, &finishedAt)
+		&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.CreatedAt, &j.UpdatedAt, &finishedAt)
 	if err != nil {
 		return domain.TranslationJob{}, false
 	}
@@ -195,4 +195,108 @@ WHERE id=$1
 		j.FinishedAt = finishedAt.Time
 	}
 	return j, true
+}
+
+func (r *Repository) ClaimNextQueuedTranslationJob() (domain.TranslationJob, bool, error) {
+	tx, err := r.db.Begin()
+	if err != nil {
+		return domain.TranslationJob{}, false, err
+	}
+	defer func() { _ = tx.Rollback() }()
+
+	var id string
+	err = tx.QueryRow(`
+SELECT id::text
+FROM translation_jobs
+WHERE status='queued'
+ORDER BY created_at ASC
+FOR UPDATE SKIP LOCKED
+LIMIT 1
+`).Scan(&id)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.TranslationJob{}, false, nil
+		}
+		return domain.TranslationJob{}, false, err
+	}
+
+	var j domain.TranslationJob
+	var finishedAt sql.NullTime
+	err = tx.QueryRow(`
+UPDATE translation_jobs
+SET status='running', updated_at=NOW()
+WHERE id=$1
+RETURNING id::text, source_type, source_id::text, source_locale, target_locale, provider_key, model_name,
+          status, COALESCE(error_message,''), COALESCE(result_text,''), COALESCE(requested_by::text,''), created_at, updated_at, finished_at
+`, id).Scan(&j.ID, &j.SourceType, &j.SourceID, &j.SourceLocale, &j.TargetLocale, &j.ProviderKey, &j.ModelName,
+		&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.CreatedAt, &j.UpdatedAt, &finishedAt)
+	if err != nil {
+		return domain.TranslationJob{}, false, err
+	}
+	if finishedAt.Valid {
+		j.FinishedAt = finishedAt.Time
+	}
+	if err := tx.Commit(); err != nil {
+		return domain.TranslationJob{}, false, err
+	}
+	return j, true, nil
+}
+
+func (r *Repository) MarkTranslationJobRunning(id string) error {
+	_, err := r.db.Exec(`UPDATE translation_jobs SET status='running', updated_at=NOW() WHERE id=$1`, id)
+	return err
+}
+
+func (r *Repository) MarkTranslationJobSucceeded(id, resultText string) error {
+	_, err := r.db.Exec(`
+UPDATE translation_jobs
+SET status='succeeded', result_text=$2, error_message=NULL, updated_at=NOW(), finished_at=NOW()
+WHERE id=$1
+`, id, nullableString(resultText))
+	return err
+}
+
+func (r *Repository) MarkTranslationJobFailed(id, errorMessage string) error {
+	_, err := r.db.Exec(`
+UPDATE translation_jobs
+SET status='failed', error_message=$2, updated_at=NOW(), finished_at=NOW()
+WHERE id=$1
+`, id, nullableString(errorMessage))
+	return err
+}
+
+func (r *Repository) GetTranslationSourceText(sourceType, sourceID string) (string, bool, error) {
+	switch sourceType {
+	case "article":
+		var title, summary, content string
+		err := r.db.QueryRow(`
+SELECT COALESCE(title,''), COALESCE(summary,''), COALESCE(content,'')
+FROM articles
+WHERE id=$1 AND deleted_at IS NULL
+`, sourceID).Scan(&title, &summary, &content)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return "", false, nil
+			}
+			return "", false, err
+		}
+		payload := fmt.Sprintf("# %s\n\n%s\n\n%s", title, summary, content)
+		return strings.TrimSpace(payload), true, nil
+	case "moment":
+		var content string
+		err := r.db.QueryRow(`
+SELECT COALESCE(content,'')
+FROM moments
+WHERE id=$1 AND deleted_at IS NULL
+`, sourceID).Scan(&content)
+		if err != nil {
+			if errors.Is(err, sql.ErrNoRows) {
+				return "", false, nil
+			}
+			return "", false, err
+		}
+		return content, true, nil
+	default:
+		return "", false, nil
+	}
 }

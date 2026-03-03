@@ -285,6 +285,7 @@ CREATE TABLE IF NOT EXISTS translation_jobs (
     model_name VARCHAR(128) NOT NULL,
     status VARCHAR(16) NOT NULL CHECK (status IN ('queued', 'running', 'succeeded', 'failed')),
     error_message TEXT,
+    result_text TEXT,
     requested_by UUID,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

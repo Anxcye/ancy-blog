@@ -49,6 +49,8 @@ make migrate-version
 - `REDIS_DB` (default: `0`)
 - `REDIS_POOL_SIZE` (default: `10`)
 - `REDIS_MIN_IDLE_CONNS` (default: `2`)
+- `TRANSLATION_WORKER_ENABLED` (default: `true`)
+- `TRANSLATION_WORKER_POLL_INTERVAL_MS` (default: `3000`)
 
 ## Health Check
 - `GET /healthz`
@@ -99,3 +101,8 @@ curl -X POST http://127.0.0.1:8080/api/v1/auth/login \
   - A custom structured request logging middleware.
 - Handler dependencies are module-oriented (`article/comment/link/site/integration/translation/timeline` services).
 - Request payloads use DTO structs under `internal/handler/dto` to decouple transport schema from domain models.
+- Translation worker:
+  - polls `translation_jobs` in `queued` status
+  - claims one job with DB lock (`FOR UPDATE SKIP LOCKED`)
+  - calls OpenAI-compatible `/chat/completions`
+  - updates job to `succeeded/failed` and writes `result_text`

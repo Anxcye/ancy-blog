@@ -6,7 +6,7 @@
 - [ ] Set up lint/test/build scripts.
 
 ## In Progress
-- [ ] Design and implement translation job worker execution flow.
+- [ ] Add integration tests for real PostgreSQL queries against a test container.
 - [ ] Add integration tests for real PostgreSQL queries against a test container.
 
 ## Done
@@ -36,6 +36,7 @@
 - [x] Introduced handler DTO layer (`internal/handler/dto`) for transport payload isolation.
 - [x] Introduced typed application error taxonomy (`internal/apperr`) and replaced string-based handler matching.
 - [x] Added versioned migration mechanism with `golang-migrate` (`cmd/migrate` + `migrations/*.sql` + `Makefile` shortcuts).
+- [x] Implemented translation worker runtime (`queued -> running -> succeeded/failed`) with OpenAI-compatible execution path.
 
 ## Blocked
 - None.

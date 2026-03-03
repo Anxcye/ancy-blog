@@ -61,6 +61,11 @@ type ContentRepository interface {
 	CreateTranslationJob(job domain.TranslationJob) (domain.TranslationJob, error)
 	ListTranslationJobs(page, pageSize int, status, sourceType, sourceID string) ([]domain.TranslationJob, int)
 	GetTranslationJobByID(id string) (domain.TranslationJob, bool)
+	ClaimNextQueuedTranslationJob() (domain.TranslationJob, bool, error)
+	MarkTranslationJobRunning(id string) error
+	MarkTranslationJobSucceeded(id, resultText string) error
+	MarkTranslationJobFailed(id, errorMessage string) error
+	GetTranslationSourceText(sourceType, sourceID string) (string, bool, error)
 
 	ListTimeline(page, pageSize int) ([]domain.TimelineItem, int)
 }

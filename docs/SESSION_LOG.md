@@ -147,6 +147,18 @@
   - added `backend/Makefile` commands: `migrate-up`, `migrate-down`, `migrate-version`
 - Validation run after refactor:
   - `go test ./...` passed including new `cmd/migrate` build target
+- Implemented translation execution worker:
+  - added `internal/worker/translation.go`
+  - worker polls queued jobs, claims with DB lock, executes OpenAI-compatible translation, and writes `result_text`
+  - wired worker startup into HTTP server runtime with config flags
+- Added schema evolution for translation output:
+  - migration files `000002_translation_job_result.up/down.sql`
+  - `translation_jobs.result_text` in runtime schema and domain model
+- Added translation worker runtime configuration:
+  - `TRANSLATION_WORKER_ENABLED`
+  - `TRANSLATION_WORKER_POLL_INTERVAL_MS`
+- Validation run after worker implementation:
+  - `go test ./...` passed with worker and translation flow changes
 
 ### Next Suggested Tasks
 1. Implement translation worker execution (`queued -> running -> succeeded/failed`) and persistence update API.

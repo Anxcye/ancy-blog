@@ -133,6 +133,9 @@ func (s *SiteService) ListSlotContent(slotKey string, limit int) ([]domain.SlotC
 func (s *IntegrationService) ListIntegrationProviders(providerType string) []domain.IntegrationProvider {
 	return s.core.ListIntegrationProviders(providerType)
 }
+func (s *IntegrationService) GetIntegrationProviderForRuntime(providerKey string) (domain.IntegrationProvider, bool) {
+	return s.core.GetIntegrationProviderForRuntime(providerKey)
+}
 func (s *IntegrationService) UpdateIntegrationProvider(providerKey string, enabled bool, configJSON, metaJSON []byte) (domain.IntegrationProvider, error) {
 	return s.core.UpdateIntegrationProvider(providerKey, enabled, configJSON, metaJSON)
 }
@@ -148,6 +151,18 @@ func (s *TranslationService) ListTranslationJobs(page, pageSize int, status, sou
 }
 func (s *TranslationService) GetTranslationJobByID(id string) (domain.TranslationJob, bool) {
 	return s.core.GetTranslationJobByID(id)
+}
+func (s *TranslationService) ClaimNextQueuedTranslationJob() (domain.TranslationJob, bool, error) {
+	return s.core.ClaimNextQueuedTranslationJob()
+}
+func (s *TranslationService) MarkTranslationJobSucceeded(id, resultText string) error {
+	return s.core.MarkTranslationJobSucceeded(id, resultText)
+}
+func (s *TranslationService) MarkTranslationJobFailed(id, errorMessage string) error {
+	return s.core.MarkTranslationJobFailed(id, errorMessage)
+}
+func (s *TranslationService) GetTranslationSourceText(sourceType, sourceID string) (string, bool, error) {
+	return s.core.GetTranslationSourceText(sourceType, sourceID)
 }
 
 func (s *TimelineService) ListTimeline(page, pageSize int) ([]domain.TimelineItem, int) {

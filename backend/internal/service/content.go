@@ -496,6 +496,26 @@ func (s *ContentService) GetTranslationJobByID(id string) (domain.TranslationJob
 	return s.repo.GetTranslationJobByID(id)
 }
 
+func (s *ContentService) ClaimNextQueuedTranslationJob() (domain.TranslationJob, bool, error) {
+	return s.repo.ClaimNextQueuedTranslationJob()
+}
+
+func (s *ContentService) MarkTranslationJobSucceeded(id, resultText string) error {
+	return s.repo.MarkTranslationJobSucceeded(id, resultText)
+}
+
+func (s *ContentService) MarkTranslationJobFailed(id, errorMessage string) error {
+	return s.repo.MarkTranslationJobFailed(id, errorMessage)
+}
+
+func (s *ContentService) GetTranslationSourceText(sourceType, sourceID string) (string, bool, error) {
+	return s.repo.GetTranslationSourceText(sourceType, sourceID)
+}
+
+func (s *ContentService) GetIntegrationProviderForRuntime(providerKey string) (domain.IntegrationProvider, bool) {
+	return s.repo.GetIntegrationProvider(providerKey)
+}
+
 func (s *ContentService) ListTimeline(page, pageSize int) ([]domain.TimelineItem, int) {
 	return s.repo.ListTimeline(page, pageSize)
 }

@@ -12,11 +12,12 @@ import (
 )
 
 type Config struct {
-	App   AppConfig
-	HTTP  HTTPConfig
-	Auth  AuthConfig
-	DB    DBConfig
-	Redis RedisConfig
+	App         AppConfig
+	HTTP        HTTPConfig
+	Auth        AuthConfig
+	DB          DBConfig
+	Redis       RedisConfig
+	Translation TranslationConfig
 }
 
 type AppConfig struct {
@@ -56,6 +57,11 @@ type RedisConfig struct {
 	MinIdleConns int
 }
 
+type TranslationConfig struct {
+	WorkerEnabled  bool
+	PollIntervalMS int
+}
+
 func Load() (*Config, error) {
 	port, err := parseInt(getEnv("HTTP_PORT", "8080"))
 	if err != nil {
@@ -93,6 +99,10 @@ func Load() (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("invalid REDIS_MIN_IDLE_CONNS: %w", err)
 	}
+	translationPollIntervalMS, err := parseInt(getEnv("TRANSLATION_WORKER_POLL_INTERVAL_MS", "3000"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid TRANSLATION_WORKER_POLL_INTERVAL_MS: %w", err)
+	}
 
 	cfg := &Config{
 		App: AppConfig{
@@ -126,6 +136,10 @@ func Load() (*Config, error) {
 			DB:           redisDB,
 			PoolSize:     redisPoolSize,
 			MinIdleConns: redisMinIdle,
+		},
+		Translation: TranslationConfig{
+			WorkerEnabled:  parseBool(getEnv("TRANSLATION_WORKER_ENABLED", "true")),
+			PollIntervalMS: translationPollIntervalMS,
 		},
 	}
 

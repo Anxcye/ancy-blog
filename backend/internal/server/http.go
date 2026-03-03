@@ -19,9 +19,10 @@ import (
 )
 
 type HTTPServer struct {
-	cfg    *config.Config
-	logger *slog.Logger
-	server *http.Server
+	cfg               *config.Config
+	logger            *slog.Logger
+	server            *http.Server
+	translationWorker interface{ Run(context.Context) }
 }
 
 func NewHTTPServer(cfg *config.Config, logger *slog.Logger) (*HTTPServer, error) {
@@ -118,11 +119,19 @@ func NewHTTPServer(cfg *config.Config, logger *slog.Logger) (*HTTPServer, error)
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	return &HTTPServer{cfg: cfg, logger: logger, server: srv}, nil
+	return &HTTPServer{
+		cfg:               cfg,
+		logger:            logger,
+		server:            srv,
+		translationWorker: container.TranslationWorker,
+	}, nil
 }
 
 func (s *HTTPServer) Start(ctx context.Context) error {
 	errCh := make(chan error, 1)
+	if s.translationWorker != nil {
+		go s.translationWorker.Run(ctx)
+	}
 
 	go func() {
 		s.logger.Info("http server started", "addr", s.server.Addr)

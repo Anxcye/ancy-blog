@@ -18,14 +18,16 @@ import (
 	"github.com/anxcye/ancy-blog/backend/internal/repository/postgres"
 	"github.com/anxcye/ancy-blog/backend/internal/service"
 	"github.com/anxcye/ancy-blog/backend/internal/storage"
+	"github.com/anxcye/ancy-blog/backend/internal/worker"
 )
 
 type App struct {
-	AuthHandler   *handler.AuthHandler
-	PublicHandler *handler.PublicHandler
-	AdminHandler  *handler.AdminHandler
-	UploadHandler *handler.UploadHandler
-	AuthService   *service.AuthService
+	AuthHandler       *handler.AuthHandler
+	PublicHandler     *handler.PublicHandler
+	AdminHandler      *handler.AdminHandler
+	UploadHandler     *handler.UploadHandler
+	AuthService       *service.AuthService
+	TranslationWorker *worker.TranslationWorker
 }
 
 func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
@@ -63,13 +65,23 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 	integrationService := service.NewIntegrationService(contentService)
 	translationService := service.NewTranslationService(contentService)
 	timelineService := service.NewTimelineService(contentService)
+	var translationWorker *worker.TranslationWorker
+	if cfg.Translation.WorkerEnabled {
+		translationWorker = worker.NewTranslationWorker(
+			logger,
+			translationService,
+			integrationService,
+			time.Duration(cfg.Translation.PollIntervalMS)*time.Millisecond,
+		)
+	}
 
 	var uploader storage.Uploader
 	return &App{
-		AuthHandler:   handler.NewAuthHandler(authService),
-		PublicHandler: handler.NewPublicHandler(articleService, commentService, linkService, siteService, timelineService),
-		AdminHandler:  handler.NewAdminHandler(articleService, commentService, linkService, siteService, integrationService, translationService),
-		UploadHandler: handler.NewUploadHandler(uploader),
-		AuthService:   authService,
+		AuthHandler:       handler.NewAuthHandler(authService),
+		PublicHandler:     handler.NewPublicHandler(articleService, commentService, linkService, siteService, timelineService),
+		AdminHandler:      handler.NewAdminHandler(articleService, commentService, linkService, siteService, integrationService, translationService),
+		UploadHandler:     handler.NewUploadHandler(uploader),
+		AuthService:       authService,
+		TranslationWorker: translationWorker,
 	}, nil
 }

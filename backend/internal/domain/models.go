@@ -201,6 +201,7 @@ type TranslationJob struct {
 	ModelName    string    `json:"modelName"`
 	Status       string    `json:"status"`
 	ErrorMessage string    `json:"errorMessage,omitempty"`
+	ResultText   string    `json:"resultText,omitempty"`
 	RequestedBy  string    `json:"requestedBy,omitempty"`
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
