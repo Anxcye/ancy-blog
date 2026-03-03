@@ -7,6 +7,7 @@
 
 ## In Progress
 - [ ] Design and implement translation job worker execution flow.
+- [ ] Expand backend tests to cover handlers and PostgreSQL repository behaviors.
 
 ## Done
 - [x] Created tracking docs and collaboration guidelines.
@@ -28,6 +29,7 @@
 - [x] Removed in-memory fallback: backend now fails fast when PostgreSQL init fails.
 - [x] Implemented comments APIs for public and admin flows.
 - [x] Implemented integration-center APIs (`integration_providers`, `translation_jobs`).
+- [x] Added backend unit tests for auth service, auth middleware, and integration/translation business validation.
 
 ## Blocked
 - None.

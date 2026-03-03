@@ -104,8 +104,19 @@
   - `openai_compatible`
 - Validated build after integration changes:
   - `go test ./...` passed (with local `source ~/.zshrc` to load Go path)
+- Added backend unit tests:
+  - `internal/service/auth_test.go`
+  - `internal/middleware/auth_test.go`
+  - `internal/service/content_test.go`
+- Current test coverage focus:
+  - auth login/refresh/token rotation behavior
+  - bearer middleware unauthorized/authorized flow
+  - integration config validation and secret masking
+  - translation job input/provider validation
+- Validation run:
+  - `go test ./...` passed with actual executed tests in `service` and `middleware` packages
 
 ### Next Suggested Tasks
 1. Implement translation worker execution (`queued -> running -> succeeded/failed`) and persistence update API.
-2. Add integration provider connectivity checks with real outbound requests (R2 and OpenAI-compatible).
-3. Initialize `frontend-admin/` and bind integration/translation pages to the new APIs.
+2. Add handler-level tests for new admin integration and translation APIs.
+3. Add repository-level tests for PostgreSQL queries with a test database container.
