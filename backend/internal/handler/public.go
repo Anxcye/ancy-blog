@@ -56,6 +56,48 @@ func (h *PublicHandler) Moments(c *gin.Context) {
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.Moment]{Total: total, Rows: rows}})
 }
 
+func (h *PublicHandler) CommentByArticle(c *gin.Context) {
+	articleID := c.Param("articleId")
+	page := getIntQuery(c, "page", 1)
+	pageSize := getIntQuery(c, "pageSize", 10)
+	rows, total := h.contentService.ListArticleComments(articleID, page, pageSize)
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.Comment]{Total: total, Rows: rows}})
+}
+
+func (h *PublicHandler) CommentChildren(c *gin.Context) {
+	parentID := c.Param("id")
+	page := getIntQuery(c, "page", 1)
+	pageSize := getIntQuery(c, "pageSize", 10)
+	rows, total := h.contentService.ListCommentChildren(parentID, page, pageSize)
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.Comment]{Total: total, Rows: rows}})
+}
+
+func (h *PublicHandler) CommentArticleTotal(c *gin.Context) {
+	articleID := c.Param("articleId")
+	total, err := h.contentService.CountArticleComments(articleID)
+	if err != nil {
+		response.JSON(c, http.StatusInternalServerError, response.Envelope{Code: "INTERNAL_ERROR", Message: "failed to count comments"})
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: total})
+}
+
+func (h *PublicHandler) AddComment(c *gin.Context) {
+	var req domain.Comment
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequest(c, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+	req.IP = c.ClientIP()
+	req.UserAgent = c.GetHeader("User-Agent")
+	comment, err := h.contentService.CreateComment(req)
+	if err != nil {
+		badRequest(c, "VALIDATION_ERROR", err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: map[string]string{"id": comment.ID}})
+}
+
 func (h *PublicHandler) SubmitLink(c *gin.Context) {
 	var req domain.Link
 	if err := c.ShouldBindJSON(&req); err != nil {

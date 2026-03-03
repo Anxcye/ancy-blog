@@ -6,6 +6,7 @@ package app
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"time"
 
@@ -14,7 +15,6 @@ import (
 	"github.com/anxcye/ancy-blog/backend/internal/config"
 	"github.com/anxcye/ancy-blog/backend/internal/handler"
 	"github.com/anxcye/ancy-blog/backend/internal/repository"
-	"github.com/anxcye/ancy-blog/backend/internal/repository/memory"
 	"github.com/anxcye/ancy-blog/backend/internal/repository/postgres"
 	"github.com/anxcye/ancy-blog/backend/internal/service"
 	"github.com/anxcye/ancy-blog/backend/internal/storage"
@@ -28,7 +28,7 @@ type App struct {
 	AuthService   *service.AuthService
 }
 
-func New(cfg *config.Config, logger *slog.Logger) *App {
+func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 	authService := service.NewAuthService(
 		cfg.Auth.AdminUsername,
 		cfg.Auth.AdminPassword,
@@ -36,15 +36,13 @@ func New(cfg *config.Config, logger *slog.Logger) *App {
 		time.Duration(cfg.Auth.RefreshTokenTTLSeconds)*time.Second,
 	)
 
-	var repo repository.ContentRepository
 	pgRepo, err := postgres.New(context.Background(), cfg.DB)
 	if err != nil {
-		logger.Error("postgres repository init failed, falling back to memory", "error", err)
-		repo = memory.NewRepository()
-	} else {
-		logger.Info("postgres repository initialized", "host", cfg.DB.Host, "db", cfg.DB.Name)
-		repo = pgRepo
+		logger.Error("postgres repository init failed", "error", err)
+		return nil, errors.New("postgres repository initialization failed")
 	}
+	logger.Info("postgres repository initialized", "host", cfg.DB.Host, "db", cfg.DB.Name)
+	var repo repository.ContentRepository = pgRepo
 
 	var cacheClient cache.Cache
 	if cfg.Redis.Enabled {
@@ -66,5 +64,5 @@ func New(cfg *config.Config, logger *slog.Logger) *App {
 		AdminHandler:  handler.NewAdminHandler(contentService),
 		UploadHandler: handler.NewUploadHandler(uploader),
 		AuthService:   authService,
-	}
+	}, nil
 }

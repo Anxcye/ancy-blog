@@ -24,12 +24,16 @@ type HTTPServer struct {
 	server *http.Server
 }
 
-func NewHTTPServer(cfg *config.Config, logger *slog.Logger) *HTTPServer {
+func NewHTTPServer(cfg *config.Config, logger *slog.Logger) (*HTTPServer, error) {
 	if cfg.App.Env != "dev" {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	container := app.New(cfg, logger)
+	container, err := app.New(cfg, logger)
+	if err != nil {
+		logger.Error("app initialization failed", "error", err)
+		return nil, err
+	}
 	engine := gin.New()
 	engine.Use(gin.Recovery())
 	engine.Use(middleware.RequestLogger(logger))
@@ -50,6 +54,10 @@ func NewHTTPServer(cfg *config.Config, logger *slog.Logger) *HTTPServer {
 			pub.GET("/articles/:slug", container.PublicHandler.ArticleBySlug)
 			pub.GET("/articles/by-category/:categorySlug", container.PublicHandler.ArticleByCategory)
 			pub.GET("/moments", container.PublicHandler.Moments)
+			pub.GET("/comments/article/:articleId", container.PublicHandler.CommentByArticle)
+			pub.GET("/comments/:id/children", container.PublicHandler.CommentChildren)
+			pub.GET("/comments/article/:articleId/total", container.PublicHandler.CommentArticleTotal)
+			pub.POST("/comments", container.PublicHandler.AddComment)
 			pub.POST("/links/submissions", container.PublicHandler.SubmitLink)
 			pub.GET("/links", container.PublicHandler.ApprovedLinks)
 			pub.GET("/categories", container.PublicHandler.Categories)
@@ -68,6 +76,8 @@ func NewHTTPServer(cfg *config.Config, logger *slog.Logger) *HTTPServer {
 			admin.POST("/articles", container.AdminHandler.CreateArticle)
 			admin.PUT("/articles/:id", container.AdminHandler.UpdateArticle)
 			admin.POST("/moments", container.AdminHandler.CreateMoment)
+			admin.GET("/comments", container.AdminHandler.CommentPage)
+			admin.PUT("/comments/:id", container.AdminHandler.CommentUpdate)
 
 			admin.GET("/links", container.AdminHandler.ListLinkSubmissions)
 			admin.PATCH("/links/:id/review", container.AdminHandler.ReviewLink)
@@ -100,7 +110,7 @@ func NewHTTPServer(cfg *config.Config, logger *slog.Logger) *HTTPServer {
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	return &HTTPServer{cfg: cfg, logger: logger, server: srv}
+	return &HTTPServer{cfg: cfg, logger: logger, server: srv}, nil
 }
 
 func (s *HTTPServer) Start(ctx context.Context) error {

@@ -87,6 +87,13 @@
   - wired optional Redis client initialization at startup
   - implemented cache read/write/invalidate in content service for site/nav/slot endpoints
   - added Redis environment configuration and README guidance
+- Hardened runtime behavior:
+  - removed in-memory fallback for repository initialization
+  - application now fails fast if PostgreSQL is unavailable
+- Implemented comment module endpoints:
+  - public comment create/list/children/total APIs
+  - admin comment page/update APIs
+  - PostgreSQL repository methods for comment read/write and moderation update
 
 ### Next Suggested Tasks
 1. Install Go `1.22+`, run `go mod tidy`, then `go run ./cmd/server` under `backend/`.

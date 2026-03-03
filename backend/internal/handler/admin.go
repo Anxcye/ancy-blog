@@ -68,6 +68,38 @@ func (h *AdminHandler) CreateMoment(c *gin.Context) {
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: map[string]string{"id": moment.ID}})
 }
 
+func (h *AdminHandler) CommentPage(c *gin.Context) {
+	page := getIntQuery(c, "page", 1)
+	pageSize := getIntQuery(c, "pageSize", 10)
+	status := c.Query("status")
+	rows, total := h.contentService.ListCommentPage(page, pageSize, status)
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.Comment]{Total: total, Rows: rows}})
+}
+
+type commentUpdateRequest struct {
+	Status   string `json:"status"`
+	IsPinned string `json:"isPinned"`
+}
+
+func (h *AdminHandler) CommentUpdate(c *gin.Context) {
+	id := c.Param("id")
+	var req commentUpdateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequest(c, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+	comment, err := h.contentService.UpdateCommentAdmin(id, req.Status, req.IsPinned)
+	if err != nil {
+		if err.Error() == "comment not found" {
+			response.JSON(c, http.StatusNotFound, response.Envelope{Code: "COMMENT_NOT_FOUND", Message: "comment not found"})
+			return
+		}
+		badRequest(c, "VALIDATION_ERROR", err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: comment})
+}
+
 func (h *AdminHandler) ListLinkSubmissions(c *gin.Context) {
 	page := getIntQuery(c, "page", 1)
 	pageSize := getIntQuery(c, "pageSize", 10)

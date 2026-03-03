@@ -44,6 +44,28 @@ type Moment struct {
 	UpdatedAt    time.Time `json:"updatedAt"`
 }
 
+type Comment struct {
+	ID                string    `json:"id"`
+	ArticleID         string    `json:"articleId"`
+	ParentID          string    `json:"parentId,omitempty"`
+	RootID            string    `json:"rootId,omitempty"`
+	Content           string    `json:"content"`
+	Status            string    `json:"status"`
+	IsPinned          string    `json:"isPinned"`
+	LikeCount         int       `json:"likeCount"`
+	ReplyCount        int       `json:"replyCount"`
+	Nickname          string    `json:"nickname"`
+	Email             string    `json:"email,omitempty"`
+	Website           string    `json:"website,omitempty"`
+	AvatarURL         string    `json:"avatarUrl,omitempty"`
+	Source            string    `json:"source"`
+	IP                string    `json:"ip,omitempty"`
+	UserAgent         string    `json:"userAgent,omitempty"`
+	ToCommentID       string    `json:"toCommentId,omitempty"`
+	ToCommentNickname string    `json:"toCommentNickname,omitempty"`
+	CreatedAt         time.Time `json:"createdAt"`
+	UpdatedAt         time.Time `json:"updatedAt"`
+}
 type Link struct {
 	ID                 string    `json:"id"`
 	Name               string    `json:"name"`

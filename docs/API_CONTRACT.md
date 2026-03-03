@@ -141,6 +141,61 @@
 - Response: created moment id
 - Error Codes: VALIDATION_ERROR, AUTH_UNAUTHORIZED
 
+## Public/Admin - Comments
+- ID: PUB-COMMENT-001
+- Method: GET
+- Path: /api/v1/public/comments/article/{articleId}
+- Auth Required: No
+- Request: query `page`, `pageSize`
+- Response: paginated root comments
+- Error Codes: None
+
+- ID: PUB-COMMENT-002
+- Method: GET
+- Path: /api/v1/public/comments/{id}/children
+- Auth Required: No
+- Request: query `page`, `pageSize`
+- Response: paginated child comments
+- Error Codes: None
+
+- ID: PUB-COMMENT-003
+- Method: GET
+- Path: /api/v1/public/comments/article/{articleId}/total
+- Auth Required: No
+- Request: None
+- Response: total approved comments count
+- Error Codes: None
+
+- ID: PUB-COMMENT-004
+- Method: POST
+- Path: /api/v1/public/comments
+- Auth Required: No
+- Request: comment create payload
+- Response: created comment id
+- Error Codes: VALIDATION_ERROR
+
+- ID: ADM-COMMENT-001
+- Method: GET
+- Path: /api/v1/admin/comments
+- Auth Required: Yes
+- Request: query `page`, `pageSize`, `status`
+- Response: paginated comments
+- Error Codes: AUTH_UNAUTHORIZED
+
+- ID: ADM-COMMENT-002
+- Method: PUT
+- Path: /api/v1/admin/comments/{id}
+- Auth Required: Yes
+- Request:
+```json
+{
+  "status": "approved",
+  "isPinned": "1"
+}
+```
+- Response: updated comment object
+- Error Codes: COMMENT_NOT_FOUND, VALIDATION_ERROR
+
 ## Public/Admin - Links
 - ID: PUB-LINK-001
 - Method: POST

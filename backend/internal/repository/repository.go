@@ -1,7 +1,7 @@
 // File: repository.go
 // Purpose: Declare persistence contracts for content-related domains.
 // Module: backend/internal/repository, repository abstraction layer.
-// Related: memory repository implementation and content service orchestration.
+// Related: repository implementations and content service orchestration.
 package repository
 
 import "github.com/anxcye/ancy-blog/backend/internal/domain"
@@ -15,6 +15,13 @@ type ContentRepository interface {
 
 	CreateMoment(moment domain.Moment) (domain.Moment, error)
 	ListPublishedMoments(page, pageSize int) ([]domain.Moment, int)
+
+	CreateComment(comment domain.Comment) (domain.Comment, error)
+	ListArticleComments(articleID string, page, pageSize int) ([]domain.Comment, int)
+	ListCommentChildren(parentID string, page, pageSize int) ([]domain.Comment, int)
+	CountArticleComments(articleID string) (int, error)
+	ListCommentPage(page, pageSize int, status string) ([]domain.Comment, int)
+	UpdateCommentAdmin(id string, status, isPinned string) (domain.Comment, error)
 
 	SubmitLink(link domain.Link) (domain.Link, error)
 	ListApprovedLinks() []domain.Link

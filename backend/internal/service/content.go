@@ -96,6 +96,48 @@ func (s *ContentService) ListPublishedMoments(page, pageSize int) ([]domain.Mome
 	return s.repo.ListPublishedMoments(page, pageSize)
 }
 
+func (s *ContentService) CreateComment(comment domain.Comment) (domain.Comment, error) {
+	if strings.TrimSpace(comment.ArticleID) == "" {
+		return domain.Comment{}, errors.New("articleId is required")
+	}
+	if strings.TrimSpace(comment.Content) == "" {
+		return domain.Comment{}, errors.New("content is required")
+	}
+	if strings.TrimSpace(comment.Nickname) == "" {
+		return domain.Comment{}, errors.New("nickname is required")
+	}
+	if comment.Status == "" {
+		comment.Status = "approved"
+	}
+	return s.repo.CreateComment(comment)
+}
+
+func (s *ContentService) ListArticleComments(articleID string, page, pageSize int) ([]domain.Comment, int) {
+	return s.repo.ListArticleComments(articleID, page, pageSize)
+}
+
+func (s *ContentService) ListCommentChildren(parentID string, page, pageSize int) ([]domain.Comment, int) {
+	return s.repo.ListCommentChildren(parentID, page, pageSize)
+}
+
+func (s *ContentService) CountArticleComments(articleID string) (int, error) {
+	return s.repo.CountArticleComments(articleID)
+}
+
+func (s *ContentService) ListCommentPage(page, pageSize int, status string) ([]domain.Comment, int) {
+	return s.repo.ListCommentPage(page, pageSize, status)
+}
+
+func (s *ContentService) UpdateCommentAdmin(id, status, isPinned string) (domain.Comment, error) {
+	if strings.TrimSpace(id) == "" {
+		return domain.Comment{}, errors.New("id is required")
+	}
+	if status == "" {
+		status = "approved"
+	}
+	return s.repo.UpdateCommentAdmin(id, status, isPinned)
+}
+
 func (s *ContentService) SubmitLink(link domain.Link) (domain.Link, error) {
 	if strings.TrimSpace(link.Name) == "" || strings.TrimSpace(link.URL) == "" {
 		return domain.Link{}, errors.New("name and url are required")

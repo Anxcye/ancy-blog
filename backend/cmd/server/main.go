@@ -27,7 +27,10 @@ func main() {
 	lg := logger.New(cfg.App.Env)
 	lg.Info("service booting", "env", cfg.App.Env, "port", cfg.HTTP.Port)
 
-	srv := server.NewHTTPServer(cfg, lg)
+	srv, err := server.NewHTTPServer(cfg, lg)
+	if err != nil {
+		log.Fatalf("init server failed: %v", err)
+	}
 	if err := srv.Start(ctx); err != nil {
 		lg.Error("service exited with error", "error", err)
 		log.Fatalf("service exited: %v", err)

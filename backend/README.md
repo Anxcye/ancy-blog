@@ -53,14 +53,24 @@ go run ./cmd/server
 - Note: provider configuration is planned via integration center (DB-backed).
 
 ## Repository Mode
-- The app now uses PostgreSQL repository by default.
-- If PostgreSQL connection fails at startup, it falls back to in-memory repository and logs the reason.
+- The app requires PostgreSQL repository at startup.
+- If PostgreSQL connection fails, server initialization fails and the process exits.
 - When Redis is enabled and reachable, site-related reads use cache-aside:
   - `site:settings:default`
   - `site:footer:default`
   - `site:social:default`
   - `site:nav:default`
   - `site:slot:{slotKey}:default`
+
+## Comment APIs (Implemented)
+- Public:
+  - `GET /api/v1/public/comments/article/:articleId`
+  - `GET /api/v1/public/comments/:id/children`
+  - `GET /api/v1/public/comments/article/:articleId/total`
+  - `POST /api/v1/public/comments`
+- Admin:
+  - `GET /api/v1/admin/comments`
+  - `PUT /api/v1/admin/comments/:id`
 
 ## Demo Login
 ```bash
