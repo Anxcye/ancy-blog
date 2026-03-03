@@ -3,9 +3,9 @@
 ## Todo
 - [ ] Initialize `frontend-admin/` Vue3 scaffold.
 - [ ] Initialize `frontend-blog/` Vue3 scaffold.
-- [ ] Define PostgreSQL schema v1 and migration files.
-- [ ] Define authentication API contract.
+- [ ] Implement PostgreSQL schema in code (migration not required in current plan).
 - [ ] Set up lint/test/build scripts.
+- [ ] Implement auth and content APIs based on current contract (`auth/public/admin` groups).
 
 ## In Progress
 - [ ] Set up lint/test/build scripts.
@@ -15,6 +15,12 @@
 - [x] Established file header and English comment rules.
 - [x] Initialized `backend/` Go service scaffold (`cmd`, `internal`, `healthz`, config, logger).
 - [x] Switched HTTP stack to Gin and added request logging middleware.
+- [x] Defined v1 data model for `articles/comments/reactions` in `docs/DATA_MODEL.md`.
+- [x] Defined product-level business rules in `docs/PRODUCT_RULES.md`.
+- [x] Expanded data model for `categories/tags/article_tags/moments/links`.
+- [x] Expanded API contract for `public/admin/auth` route groups and core resources.
+- [x] Defined site config domain (`site_settings/footer_items/social_links`) and Redis cache policy.
+- [x] Defined dynamic nav/slot model and timeline API for frontend interaction design.
 
 ## Blocked
 - None.

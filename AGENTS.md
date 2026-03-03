@@ -29,10 +29,17 @@ Example:
 All inline code comments must be in English.
 
 ## Workflow Rules
-1. Update `docs/API_CONTRACT.md` before implementing or changing endpoints.
-2. Update `docs/PROGRESS.md` when a task status changes.
-3. Record architecture choices in `docs/DECISIONS.md`.
-4. At the end of each work session, append to `docs/SESSION_LOG.md`.
+1. Update `docs/PRODUCT_RULES.md` when business behavior changes.
+2. Update `docs/DATA_MODEL.md` when entity fields/relations change.
+3. Update `docs/API_CONTRACT.md` before implementing or changing endpoints.
+4. Update `docs/PROGRESS.md` when a task status changes.
+5. Record architecture choices in `docs/DECISIONS.md`.
+6. At the end of each work session, append to `docs/SESSION_LOG.md`.
+
+## Content Modeling Rules
+1. Use unified `articles` with `content_kind` (`post | page`) instead of a separate `pages` table.
+2. Use slot mapping (`content_slots` + `content_slot_items`) for content placement, not hardcoded placement fields.
+3. Use dynamic navigation (`nav_items`) for top menu and hover/dropdown behavior.
 
 ## Engineering Baseline (Enterprise-Oriented)
 1. Backend framework: `Gin` with structured logging and recovery middleware.
