@@ -115,8 +115,23 @@
   - translation job input/provider validation
 - Validation run:
   - `go test ./...` passed with actual executed tests in `service` and `middleware` packages
+- Expanded backend test suites (no production code changes):
+  - `internal/handler/auth_test.go`
+  - `internal/handler/health_test.go`
+  - `internal/handler/public_test.go`
+  - `internal/handler/admin_test.go`
+  - `internal/handler/upload_test.go`
+  - `internal/config/config_test.go`
+  - `internal/logger/logger_test.go`
+  - `internal/middleware/request_logger_test.go`
+  - `internal/repository/postgres/repository_test.go`
+  - `internal/response/response_test.go`
+- Added handler test helper stub:
+  - `internal/handler/content_stub_test.go`
+- Validation run after expansion:
+  - `go test ./...` passed with executed tests in `config/handler/logger/middleware/repository/postgres/response/service`
 
 ### Next Suggested Tasks
 1. Implement translation worker execution (`queued -> running -> succeeded/failed`) and persistence update API.
-2. Add handler-level tests for new admin integration and translation APIs.
-3. Add repository-level tests for PostgreSQL queries with a test database container.
+2. Add PostgreSQL integration tests using a dedicated test database container.
+3. Add startup/runtime tests for `internal/app` and `internal/server` with dependency injection seam.
