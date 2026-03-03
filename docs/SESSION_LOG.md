@@ -130,8 +130,15 @@
   - `internal/handler/content_stub_test.go`
 - Validation run after expansion:
   - `go test ./...` passed with executed tests in `config/handler/logger/middleware/repository/postgres/response/service`
+- Added additional runtime/infrastructure tests:
+  - `internal/app/app_test.go`
+  - `internal/server/http_test.go`
+  - `internal/cache/redis/cache_test.go`
+  - `internal/repository/memory/repository_test.go`
+- Validation run after second expansion:
+  - `go test ./...` passed with executed tests in `app/cache/redis/config/handler/logger/middleware/repository/memory/repository/postgres/response/server/service`
 
 ### Next Suggested Tasks
 1. Implement translation worker execution (`queued -> running -> succeeded/failed`) and persistence update API.
 2. Add PostgreSQL integration tests using a dedicated test database container.
-3. Add startup/runtime tests for `internal/app` and `internal/server` with dependency injection seam.
+3. Add e2e API smoke tests that run against local PostgreSQL + Redis docker compose services.

@@ -7,7 +7,7 @@
 
 ## In Progress
 - [ ] Design and implement translation job worker execution flow.
-- [ ] Expand backend tests to cover app/server startup and Redis cache integration behaviors.
+- [ ] Add integration tests for real PostgreSQL queries against a test container.
 
 ## Done
 - [x] Created tracking docs and collaboration guidelines.
@@ -31,6 +31,7 @@
 - [x] Implemented integration-center APIs (`integration_providers`, `translation_jobs`).
 - [x] Added backend unit tests for auth service, auth middleware, and integration/translation business validation.
 - [x] Added handler/config/logger/response/postgres-helper test suites and wired them into `go test ./...`.
+- [x] Added tests for `app`, `server`, `cache/redis`, and `repository/memory`.
 
 ## Blocked
 - None.
