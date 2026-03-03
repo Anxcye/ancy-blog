@@ -83,6 +83,13 @@ func (s *ContentService) GetPublishedArticleBySlug(slug string) (domain.Article,
 	return s.repo.GetPublishedArticleBySlug(slug)
 }
 
+func (s *ContentService) GetPublishedArticleBySlugWithLocale(slug, locale string) (domain.Article, bool) {
+	if strings.TrimSpace(locale) == "" {
+		return s.repo.GetPublishedArticleBySlug(slug)
+	}
+	return s.repo.GetPublishedArticleBySlugWithLocale(slug, locale)
+}
+
 func (s *ContentService) CreateMoment(moment domain.Moment) (domain.Moment, error) {
 	if strings.TrimSpace(moment.Content) == "" {
 		return domain.Moment{}, fmt.Errorf("%w: content is required", apperr.ErrValidation)
@@ -510,6 +517,17 @@ func (s *ContentService) MarkTranslationJobFailed(id, errorMessage string) error
 
 func (s *ContentService) GetTranslationSourceText(sourceType, sourceID string) (string, bool, error) {
 	return s.repo.GetTranslationSourceText(sourceType, sourceID)
+}
+
+func (s *ContentService) UpsertTranslationResult(sourceType, sourceID, targetLocale, content, translatedByJobID string) error {
+	switch sourceType {
+	case "article":
+		return s.repo.UpsertArticleTranslation(sourceID, targetLocale, content, translatedByJobID)
+	case "moment":
+		return s.repo.UpsertMomentTranslation(sourceID, targetLocale, content, translatedByJobID)
+	default:
+		return fmt.Errorf("%w: unsupported sourceType", apperr.ErrValidation)
+	}
 }
 
 func (s *ContentService) GetIntegrationProviderForRuntime(providerKey string) (domain.IntegrationProvider, bool) {

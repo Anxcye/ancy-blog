@@ -7,7 +7,7 @@
 
 ## In Progress
 - [ ] Add worker-oriented tests for translation execution with mocked LLM responses.
-- [ ] Add integration tests for real PostgreSQL queries against a test container.
+- [ ] Add localized content read APIs for moments and timeline (`locale` aware).
 
 ## Done
 - [x] Created tracking docs and collaboration guidelines.
@@ -39,6 +39,8 @@
 - [x] Implemented translation worker runtime (`queued -> running -> succeeded/failed`) with OpenAI-compatible execution path.
 - [x] Added PostgreSQL integration tests (`-tags=integration`) for article/comment/translation lifecycle.
 - [x] Added API e2e smoke test (`-tags=integration`) covering auth/admin/public/translation flows.
+- [x] Added locale translation persistence (`article_translations`, `moment_translations`) and worker writeback.
+- [x] Added article detail `locale` query support with translation fallback.
 
 ## Blocked
 - None.

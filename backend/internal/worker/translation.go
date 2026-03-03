@@ -101,6 +101,11 @@ func (w *TranslationWorker) processOnce(ctx context.Context) error {
 		return nil
 	}
 
+	if err := w.translationService.UpsertTranslationResult(job.SourceType, job.SourceID, job.TargetLocale, translated, job.ID); err != nil {
+		_ = w.translationService.MarkTranslationJobFailed(job.ID, fmt.Sprintf("persist translation failed: %v", err))
+		return nil
+	}
+
 	if err := w.translationService.MarkTranslationJobSucceeded(job.ID, translated); err != nil {
 		return err
 	}

@@ -176,8 +176,17 @@
 - Validation run after e2e smoke:
   - `go test ./...` passed
   - `go test -tags=integration ./internal/server -run TestAPISmokeFlow -count=1` passed
+- Added translation result writeback model and runtime:
+  - new tables `article_translations` and `moment_translations`
+  - migration files `000003_content_translations.up/down.sql`
+  - worker now persists translated text into locale tables before marking job succeeded
+  - public article detail supports `locale` query with translated content fallback
+- Validation run after locale writeback changes:
+  - `go test ./...` passed
+  - `go test -tags=integration ./internal/repository/postgres -run TestRepositoryIntegration -count=1` passed
+  - `go test -tags=integration ./internal/server -run TestAPISmokeFlow -count=1` passed
 
 ### Next Suggested Tasks
-1. Implement translation worker execution (`queued -> running -> succeeded/failed`) and persistence update API.
-2. Add PostgreSQL integration tests using a dedicated test database container.
-3. Add e2e API smoke tests that run against local PostgreSQL + Redis docker compose services.
+1. Add worker-focused tests with mocked LLM responses (success/failure/invalid payload/timeout).
+2. Add locale-aware read support for moments and timeline APIs.
+3. Expose admin APIs for querying and manually overriding localized content records.

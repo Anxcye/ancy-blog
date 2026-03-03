@@ -50,7 +50,8 @@ func (h *PublicHandler) Articles(c *gin.Context) {
 
 func (h *PublicHandler) ArticleBySlug(c *gin.Context) {
 	slug := c.Param("slug")
-	article, ok := h.articleService.GetPublishedArticleBySlug(slug)
+	locale := c.Query("locale")
+	article, ok := h.articleService.GetPublishedArticleBySlugWithLocale(slug, locale)
 	if !ok {
 		response.JSON(c, http.StatusNotFound, response.Envelope{Code: "ARTICLE_NOT_FOUND", Message: "article not found"})
 		return

@@ -94,9 +94,10 @@
 - Method: GET
 - Path: /api/v1/public/articles/{slug}
 - Auth Required: No
-- Request: None
+- Request: query `locale` (optional, e.g. `en-US`)
 - Response: article detail (includes `allowComment`, AI disclosure, source info, `contentKind`)
 - Error Codes: ARTICLE_NOT_FOUND
+- Notes: when `locale` is provided and translation exists, response content returns localized variant.
 
 - ID: PUB-ARTICLE-003
 - Method: GET

@@ -44,6 +44,9 @@ func (s *ArticleService) ListPublishedArticles(page, pageSize int, category, tag
 func (s *ArticleService) GetPublishedArticleBySlug(slug string) (domain.Article, bool) {
 	return s.core.GetPublishedArticleBySlug(slug)
 }
+func (s *ArticleService) GetPublishedArticleBySlugWithLocale(slug, locale string) (domain.Article, bool) {
+	return s.core.GetPublishedArticleBySlugWithLocale(slug, locale)
+}
 func (s *ArticleService) CreateMoment(moment domain.Moment) (domain.Moment, error) {
 	return s.core.CreateMoment(moment)
 }
@@ -163,6 +166,9 @@ func (s *TranslationService) MarkTranslationJobFailed(id, errorMessage string) e
 }
 func (s *TranslationService) GetTranslationSourceText(sourceType, sourceID string) (string, bool, error) {
 	return s.core.GetTranslationSourceText(sourceType, sourceID)
+}
+func (s *TranslationService) UpsertTranslationResult(sourceType, sourceID, targetLocale, content, translatedByJobID string) error {
+	return s.core.UpsertTranslationResult(sourceType, sourceID, targetLocale, content, translatedByJobID)
 }
 
 func (s *TimelineService) ListTimeline(page, pageSize int) ([]domain.TimelineItem, int) {

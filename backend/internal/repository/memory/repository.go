@@ -206,6 +206,11 @@ func (r *Repository) GetPublishedArticleBySlug(slug string) (domain.Article, boo
 	return domain.Article{}, false
 }
 
+func (r *Repository) GetPublishedArticleBySlugWithLocale(slug, locale string) (domain.Article, bool) {
+	_ = locale
+	return r.GetPublishedArticleBySlug(slug)
+}
+
 func (r *Repository) GetArticleByID(id string) (domain.Article, bool) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -553,6 +558,64 @@ func (r *Repository) ListTimeline(page, pageSize int) ([]domain.TimelineItem, in
 	}
 	sort.Slice(items, func(i, j int) bool { return items[i].PublishedAt.After(items[j].PublishedAt) })
 	return paginateTimeline(items, page, pageSize)
+}
+
+func (r *Repository) ClaimNextQueuedTranslationJob() (domain.TranslationJob, bool, error) {
+	return domain.TranslationJob{}, false, nil
+}
+
+func (r *Repository) MarkTranslationJobRunning(id string) error {
+	_ = id
+	return nil
+}
+
+func (r *Repository) MarkTranslationJobSucceeded(id, resultText string) error {
+	_ = id
+	_ = resultText
+	return nil
+}
+
+func (r *Repository) MarkTranslationJobFailed(id, errorMessage string) error {
+	_ = id
+	_ = errorMessage
+	return nil
+}
+
+func (r *Repository) GetTranslationSourceText(sourceType, sourceID string) (string, bool, error) {
+	switch sourceType {
+	case "article":
+		a, ok := r.GetArticleByID(sourceID)
+		if !ok {
+			return "", false, nil
+		}
+		return strings.TrimSpace(a.Title + "\n\n" + a.Summary + "\n\n" + a.Content), true, nil
+	case "moment":
+		r.mu.RLock()
+		defer r.mu.RUnlock()
+		m, ok := r.moments[sourceID]
+		if !ok {
+			return "", false, nil
+		}
+		return m.Content, true, nil
+	default:
+		return "", false, nil
+	}
+}
+
+func (r *Repository) UpsertArticleTranslation(articleID, locale, content, translatedByJobID string) error {
+	_ = articleID
+	_ = locale
+	_ = content
+	_ = translatedByJobID
+	return nil
+}
+
+func (r *Repository) UpsertMomentTranslation(momentID, locale, content, translatedByJobID string) error {
+	_ = momentID
+	_ = locale
+	_ = content
+	_ = translatedByJobID
+	return nil
 }
 
 func (r *Repository) slugExists(slug, excludedID string) bool {

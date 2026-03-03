@@ -46,6 +46,7 @@ func resetTestDatabase(t *testing.T, db *sql.DB) {
 	execSQLFile(t, db, migrationFilePath(t, "000001_init.down.sql"))
 	execSQLFile(t, db, migrationFilePath(t, "000001_init.up.sql"))
 	execSQLFile(t, db, migrationFilePath(t, "000002_translation_job_result.up.sql"))
+	execSQLFile(t, db, migrationFilePath(t, "000003_content_translations.up.sql"))
 }
 
 func migrationFilePath(t *testing.T, name string) string {
@@ -228,5 +229,16 @@ func TestRepositoryIntegration_TranslationJobLifecycle(t *testing.T) {
 	}
 	if !ok || strings.TrimSpace(sourceText) == "" {
 		t.Fatalf("expected non-empty source text")
+	}
+
+	if err := repo.UpsertArticleTranslation(article.ID, "en-US", "translated body", job.ID); err != nil {
+		t.Fatalf("upsert article translation failed: %v", err)
+	}
+	localized, ok := repo.GetPublishedArticleBySlugWithLocale("translate-me", "en-US")
+	if !ok {
+		t.Fatalf("expected localized article")
+	}
+	if localized.Content != "translated body" {
+		t.Fatalf("expected localized content, got: %s", localized.Content)
 	}
 }

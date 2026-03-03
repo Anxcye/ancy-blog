@@ -11,6 +11,7 @@ type ContentRepository interface {
 	UpdateArticle(id string, article domain.Article) (domain.Article, error)
 	ListPublishedArticles(page, pageSize int, category, tag, contentKind string) ([]domain.Article, int)
 	GetPublishedArticleBySlug(slug string) (domain.Article, bool)
+	GetPublishedArticleBySlugWithLocale(slug, locale string) (domain.Article, bool)
 	GetArticleByID(id string) (domain.Article, bool)
 
 	CreateMoment(moment domain.Moment) (domain.Moment, error)
@@ -66,6 +67,8 @@ type ContentRepository interface {
 	MarkTranslationJobSucceeded(id, resultText string) error
 	MarkTranslationJobFailed(id, errorMessage string) error
 	GetTranslationSourceText(sourceType, sourceID string) (string, bool, error)
+	UpsertArticleTranslation(articleID, locale, content, translatedByJobID string) error
+	UpsertMomentTranslation(momentID, locale, content, translatedByJobID string) error
 
 	ListTimeline(page, pageSize int) ([]domain.TimelineItem, int)
 }

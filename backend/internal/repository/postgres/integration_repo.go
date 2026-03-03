@@ -300,3 +300,23 @@ WHERE id=$1 AND deleted_at IS NULL
 		return "", false, nil
 	}
 }
+
+func (r *Repository) UpsertArticleTranslation(articleID, locale, content, translatedByJobID string) error {
+	_, err := r.db.Exec(`
+INSERT INTO article_translations (article_id, locale, content, translated_by_job_id, created_at, updated_at)
+VALUES ($1, $2, $3, $4, NOW(), NOW())
+ON CONFLICT (article_id, locale)
+DO UPDATE SET content = EXCLUDED.content, translated_by_job_id = EXCLUDED.translated_by_job_id, updated_at = NOW()
+`, articleID, locale, nullableString(content), nullableUUID(translatedByJobID))
+	return err
+}
+
+func (r *Repository) UpsertMomentTranslation(momentID, locale, content, translatedByJobID string) error {
+	_, err := r.db.Exec(`
+INSERT INTO moment_translations (moment_id, locale, content, translated_by_job_id, created_at, updated_at)
+VALUES ($1, $2, $3, $4, NOW(), NOW())
+ON CONFLICT (moment_id, locale)
+DO UPDATE SET content = EXCLUDED.content, translated_by_job_id = EXCLUDED.translated_by_job_id, updated_at = NOW()
+`, momentID, locale, nullableString(content), nullableUUID(translatedByJobID))
+	return err
+}
