@@ -9,6 +9,8 @@ import (
 	"log/slog"
 	"time"
 
+	"github.com/anxcye/ancy-blog/backend/internal/cache"
+	rediscache "github.com/anxcye/ancy-blog/backend/internal/cache/redis"
 	"github.com/anxcye/ancy-blog/backend/internal/config"
 	"github.com/anxcye/ancy-blog/backend/internal/handler"
 	"github.com/anxcye/ancy-blog/backend/internal/repository"
@@ -44,7 +46,18 @@ func New(cfg *config.Config, logger *slog.Logger) *App {
 		repo = pgRepo
 	}
 
-	contentService := service.NewContentService(repo)
+	var cacheClient cache.Cache
+	if cfg.Redis.Enabled {
+		rc, err := rediscache.New(context.Background(), cfg.Redis)
+		if err != nil {
+			logger.Error("redis cache init failed, disabling cache", "error", err)
+		} else {
+			cacheClient = rc
+			logger.Info("redis cache initialized", "addr", cfg.Redis.Addr, "db", cfg.Redis.DB)
+		}
+	}
+
+	contentService := service.NewContentService(repo, cacheClient)
 
 	var uploader storage.Uploader
 	return &App{

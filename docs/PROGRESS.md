@@ -4,10 +4,10 @@
 - [ ] Initialize `frontend-admin/` Vue3 scaffold.
 - [ ] Initialize `frontend-blog/` Vue3 scaffold.
 - [ ] Set up lint/test/build scripts.
-- [ ] Replace in-memory repository with PostgreSQL + Redis cache-aside.
+- [ ] Remove in-memory repository fallback after PG/Redis environment is stable.
 
 ## In Progress
-- [ ] Replace in-memory repository with PostgreSQL + Redis cache-aside.
+- [ ] Remove in-memory repository fallback after PG/Redis environment is stable.
 
 ## Done
 - [x] Created tracking docs and collaboration guidelines.
@@ -25,6 +25,7 @@
 - [x] Defined unified integration-center docs for R2 + LLM config and translation jobs.
 - [x] Added `backend/sql/schema_v1.sql` for PostgreSQL schema initialization.
 - [x] Implemented PostgreSQL repository and runtime fallback to in-memory when DB unavailable.
+- [x] Implemented Redis cache-aside for `site/settings/footer/social/nav/slot`.
 
 ## Blocked
 - None.

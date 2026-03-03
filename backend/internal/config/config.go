@@ -12,10 +12,11 @@ import (
 )
 
 type Config struct {
-	App  AppConfig
-	HTTP HTTPConfig
-	Auth AuthConfig
-	DB   DBConfig
+	App   AppConfig
+	HTTP  HTTPConfig
+	Auth  AuthConfig
+	DB    DBConfig
+	Redis RedisConfig
 }
 
 type AppConfig struct {
@@ -46,6 +47,15 @@ type DBConfig struct {
 	MaxIdleConns int
 }
 
+type RedisConfig struct {
+	Enabled      bool
+	Addr         string
+	Password     string
+	DB           int
+	PoolSize     int
+	MinIdleConns int
+}
+
 func Load() (*Config, error) {
 	port, err := parseInt(getEnv("HTTP_PORT", "8080"))
 	if err != nil {
@@ -70,6 +80,18 @@ func Load() (*Config, error) {
 	maxIdleConns, err := parseInt(getEnv("DB_MAX_IDLE_CONNS", "5"))
 	if err != nil {
 		return nil, fmt.Errorf("invalid DB_MAX_IDLE_CONNS: %w", err)
+	}
+	redisDB, err := parseInt(getEnv("REDIS_DB", "0"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid REDIS_DB: %w", err)
+	}
+	redisPoolSize, err := parseInt(getEnv("REDIS_POOL_SIZE", "10"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid REDIS_POOL_SIZE: %w", err)
+	}
+	redisMinIdle, err := parseInt(getEnv("REDIS_MIN_IDLE_CONNS", "2"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid REDIS_MIN_IDLE_CONNS: %w", err)
 	}
 
 	cfg := &Config{
@@ -97,6 +119,14 @@ func Load() (*Config, error) {
 			MaxOpenConns: maxOpenConns,
 			MaxIdleConns: maxIdleConns,
 		},
+		Redis: RedisConfig{
+			Enabled:      parseBool(getEnv("REDIS_ENABLED", "false")),
+			Addr:         getEnv("REDIS_ADDR", "127.0.0.1:6379"),
+			Password:     getEnv("REDIS_PASSWORD", ""),
+			DB:           redisDB,
+			PoolSize:     redisPoolSize,
+			MinIdleConns: redisMinIdle,
+		},
 	}
 
 	return cfg, nil
@@ -115,4 +145,13 @@ func parseInt(raw string) (int, error) {
 		return 0, err
 	}
 	return v, nil
+}
+
+func parseBool(raw string) bool {
+	switch strings.ToLower(strings.TrimSpace(raw)) {
+	case "1", "true", "yes", "y", "on":
+		return true
+	default:
+		return false
+	}
 }

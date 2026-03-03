@@ -29,6 +29,12 @@ go run ./cmd/server
 - `DB_SSLMODE` (default: `disable`)
 - `DB_MAX_OPEN_CONNS` (default: `20`)
 - `DB_MAX_IDLE_CONNS` (default: `5`)
+- `REDIS_ENABLED` (default: `false`)
+- `REDIS_ADDR` (default: `127.0.0.1:6379`)
+- `REDIS_PASSWORD` (default: empty)
+- `REDIS_DB` (default: `0`)
+- `REDIS_POOL_SIZE` (default: `10`)
+- `REDIS_MIN_IDLE_CONNS` (default: `2`)
 
 ## Health Check
 - `GET /healthz`
@@ -49,6 +55,12 @@ go run ./cmd/server
 ## Repository Mode
 - The app now uses PostgreSQL repository by default.
 - If PostgreSQL connection fails at startup, it falls back to in-memory repository and logs the reason.
+- When Redis is enabled and reachable, site-related reads use cache-aside:
+  - `site:settings:default`
+  - `site:footer:default`
+  - `site:social:default`
+  - `site:nav:default`
+  - `site:slot:{slotKey}:default`
 
 ## Demo Login
 ```bash

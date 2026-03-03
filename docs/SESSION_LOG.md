@@ -82,6 +82,11 @@
   - implemented `internal/repository/postgres` with current API coverage
   - wired app startup to use PostgreSQL first, fallback to memory on connection failure
   - added DB environment configuration in backend runtime config
+- Added Redis cache-aside runtime path:
+  - introduced cache abstraction and Redis cache provider
+  - wired optional Redis client initialization at startup
+  - implemented cache read/write/invalidate in content service for site/nav/slot endpoints
+  - added Redis environment configuration and README guidance
 
 ### Next Suggested Tasks
 1. Install Go `1.22+`, run `go mod tidy`, then `go run ./cmd/server` under `backend/`.

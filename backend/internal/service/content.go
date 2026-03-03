@@ -1,25 +1,40 @@
 // File: content.go
 // Purpose: Orchestrate content, site configuration, and timeline business operations.
 // Module: backend/internal/service, content service layer.
-// Related: content repository implementations and HTTP handlers.
+// Related: content repository implementations, cache layer, and HTTP handlers.
 package service
 
 import (
+	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
 	"net/url"
 	"strings"
+	"time"
 
+	"github.com/anxcye/ancy-blog/backend/internal/cache"
 	"github.com/anxcye/ancy-blog/backend/internal/domain"
 	"github.com/anxcye/ancy-blog/backend/internal/repository"
 )
 
 type ContentService struct {
-	repo repository.ContentRepository
+	repo  repository.ContentRepository
+	cache cache.Cache
 }
 
-func NewContentService(repo repository.ContentRepository) *ContentService {
-	return &ContentService{repo: repo}
+func NewContentService(repo repository.ContentRepository, cacheClient cache.Cache) *ContentService {
+	return &ContentService{repo: repo, cache: cacheClient}
 }
+
+const (
+	cacheTTL             = 30 * time.Minute
+	cacheSiteSettingsKey = "site:settings:default"
+	cacheSiteFooterKey   = "site:footer:default"
+	cacheSiteSocialKey   = "site:social:default"
+	cacheSiteNavKey      = "site:nav:default"
+	cacheSiteSlotKeyFmt  = "site:slot:%s:default"
+)
 
 func (s *ContentService) CreateArticle(article domain.Article) (domain.Article, error) {
 	if strings.TrimSpace(article.Title) == "" || strings.TrimSpace(article.Slug) == "" {
@@ -120,14 +135,24 @@ func (s *ContentService) ListTags() []domain.Tag {
 }
 
 func (s *ContentService) GetSiteSettings() domain.SiteSettings {
-	return s.repo.GetSiteSettings()
+	if s.cache != nil {
+		var cached domain.SiteSettings
+		if ok := s.getCache(cacheSiteSettingsKey, &cached); ok {
+			return cached
+		}
+	}
+	settings := s.repo.GetSiteSettings()
+	s.setCache(cacheSiteSettingsKey, settings)
+	return settings
 }
 
 func (s *ContentService) UpdateSiteSettings(settings domain.SiteSettings) domain.SiteSettings {
 	if settings.DefaultLocale == "" {
 		settings.DefaultLocale = "en"
 	}
-	return s.repo.UpdateSiteSettings(settings)
+	updated := s.repo.UpdateSiteSettings(settings)
+	s.delCache(cacheSiteSettingsKey)
+	return updated
 }
 
 func (s *ContentService) CreateFooterItem(item domain.FooterItem) (domain.FooterItem, error) {
@@ -143,10 +168,14 @@ func (s *ContentService) CreateFooterItem(item domain.FooterItem) (domain.Footer
 			return domain.FooterItem{}, errors.New("internal article slug must point to a published page")
 		}
 	}
-	if item.Enabled == false && item.OrderNum == 0 {
+	if !item.Enabled && item.OrderNum == 0 {
 		item.OrderNum = 1
 	}
-	return s.repo.CreateFooterItem(item)
+	created, err := s.repo.CreateFooterItem(item)
+	if err == nil {
+		s.delCache(cacheSiteFooterKey)
+	}
+	return created, err
 }
 
 func (s *ContentService) UpdateFooterItem(id string, item domain.FooterItem) (domain.FooterItem, error) {
@@ -159,66 +188,126 @@ func (s *ContentService) UpdateFooterItem(id string, item domain.FooterItem) (do
 			return domain.FooterItem{}, errors.New("internal article slug must point to a published page")
 		}
 	}
-	return s.repo.UpdateFooterItem(id, item)
+	updated, err := s.repo.UpdateFooterItem(id, item)
+	if err == nil {
+		s.delCache(cacheSiteFooterKey)
+	}
+	return updated, err
 }
 
 func (s *ContentService) DeleteFooterItem(id string) bool {
-	return s.repo.DeleteFooterItem(id)
+	ok := s.repo.DeleteFooterItem(id)
+	if ok {
+		s.delCache(cacheSiteFooterKey)
+	}
+	return ok
 }
 
 func (s *ContentService) ListFooterItems() []domain.FooterItem {
-	return s.repo.ListFooterItems()
+	if s.cache != nil {
+		var cached []domain.FooterItem
+		if ok := s.getCache(cacheSiteFooterKey, &cached); ok {
+			return cached
+		}
+	}
+	items := s.repo.ListFooterItems()
+	s.setCache(cacheSiteFooterKey, items)
+	return items
 }
 
 func (s *ContentService) CreateSocialLink(item domain.SocialLink) (domain.SocialLink, error) {
 	if strings.TrimSpace(item.Title) == "" || strings.TrimSpace(item.URL) == "" {
 		return domain.SocialLink{}, errors.New("title and url are required")
 	}
-	return s.repo.CreateSocialLink(item)
+	created, err := s.repo.CreateSocialLink(item)
+	if err == nil {
+		s.delCache(cacheSiteSocialKey)
+	}
+	return created, err
 }
 
 func (s *ContentService) UpdateSocialLink(id string, item domain.SocialLink) (domain.SocialLink, error) {
 	if strings.TrimSpace(item.Title) == "" || strings.TrimSpace(item.URL) == "" {
 		return domain.SocialLink{}, errors.New("title and url are required")
 	}
-	return s.repo.UpdateSocialLink(id, item)
+	updated, err := s.repo.UpdateSocialLink(id, item)
+	if err == nil {
+		s.delCache(cacheSiteSocialKey)
+	}
+	return updated, err
 }
 
 func (s *ContentService) DeleteSocialLink(id string) bool {
-	return s.repo.DeleteSocialLink(id)
+	ok := s.repo.DeleteSocialLink(id)
+	if ok {
+		s.delCache(cacheSiteSocialKey)
+	}
+	return ok
 }
 
 func (s *ContentService) ListSocialLinks() []domain.SocialLink {
-	return s.repo.ListSocialLinks()
+	if s.cache != nil {
+		var cached []domain.SocialLink
+		if ok := s.getCache(cacheSiteSocialKey, &cached); ok {
+			return cached
+		}
+	}
+	items := s.repo.ListSocialLinks()
+	s.setCache(cacheSiteSocialKey, items)
+	return items
 }
 
 func (s *ContentService) CreateNavItem(item domain.NavItem) (domain.NavItem, error) {
 	if strings.TrimSpace(item.Name) == "" || strings.TrimSpace(item.Key) == "" {
 		return domain.NavItem{}, errors.New("name and key are required")
 	}
-	return s.repo.CreateNavItem(item)
+	created, err := s.repo.CreateNavItem(item)
+	if err == nil {
+		s.delCache(cacheSiteNavKey)
+	}
+	return created, err
 }
 
 func (s *ContentService) UpdateNavItem(id string, item domain.NavItem) (domain.NavItem, error) {
 	if strings.TrimSpace(item.Name) == "" || strings.TrimSpace(item.Key) == "" {
 		return domain.NavItem{}, errors.New("name and key are required")
 	}
-	return s.repo.UpdateNavItem(id, item)
+	updated, err := s.repo.UpdateNavItem(id, item)
+	if err == nil {
+		s.delCache(cacheSiteNavKey)
+	}
+	return updated, err
 }
 
 func (s *ContentService) DeleteNavItem(id string) bool {
-	return s.repo.DeleteNavItem(id)
+	ok := s.repo.DeleteNavItem(id)
+	if ok {
+		s.delCache(cacheSiteNavKey)
+	}
+	return ok
 }
 
 func (s *ContentService) ListNavItems() []domain.NavItem {
-	return s.repo.ListNavItems()
+	if s.cache != nil {
+		var cached []domain.NavItem
+		if ok := s.getCache(cacheSiteNavKey, &cached); ok {
+			return cached
+		}
+	}
+	items := s.repo.ListNavItems()
+	s.setCache(cacheSiteNavKey, items)
+	return items
 }
 
 func (s *ContentService) CreateContentSlot(slot domain.ContentSlot) (domain.ContentSlot, error) {
 	if strings.TrimSpace(slot.SlotKey) == "" || strings.TrimSpace(slot.Name) == "" {
 		return domain.ContentSlot{}, errors.New("slotKey and name are required")
 	}
-	return s.repo.CreateContentSlot(slot)
+	created, err := s.repo.CreateContentSlot(slot)
+	if err == nil {
+		s.delCache(fmt.Sprintf(cacheSiteSlotKeyFmt, slot.SlotKey))
+	}
+	return created, err
 }
 
 func (s *ContentService) CreateSlotItem(slotKey string, item domain.SlotItem) (domain.SlotItem, error) {
@@ -230,17 +319,71 @@ func (s *ContentService) CreateSlotItem(slotKey string, item domain.SlotItem) (d
 			return domain.SlotItem{}, errors.New("article not found")
 		}
 	}
-	return s.repo.CreateSlotItem(slotKey, item)
+	created, err := s.repo.CreateSlotItem(slotKey, item)
+	if err == nil {
+		s.delCache(fmt.Sprintf(cacheSiteSlotKeyFmt, slotKey))
+	}
+	return created, err
 }
 
 func (s *ContentService) DeleteSlotItem(slotKey, itemID string) bool {
-	return s.repo.DeleteSlotItem(slotKey, itemID)
+	ok := s.repo.DeleteSlotItem(slotKey, itemID)
+	if ok {
+		s.delCache(fmt.Sprintf(cacheSiteSlotKeyFmt, slotKey))
+	}
+	return ok
 }
 
 func (s *ContentService) ListSlotContent(slotKey string, limit int) ([]domain.SlotContentItem, bool) {
-	return s.repo.ListSlotContent(slotKey, limit)
+	cacheKey := fmt.Sprintf(cacheSiteSlotKeyFmt, slotKey)
+	if s.cache != nil {
+		var cached []domain.SlotContentItem
+		if ok := s.getCache(cacheKey, &cached); ok {
+			if limit > 0 && len(cached) > limit {
+				return cached[:limit], true
+			}
+			return cached, true
+		}
+	}
+	items, exists := s.repo.ListSlotContent(slotKey, limit)
+	if exists {
+		s.setCache(cacheKey, items)
+	}
+	return items, exists
 }
 
 func (s *ContentService) ListTimeline(page, pageSize int) ([]domain.TimelineItem, int) {
 	return s.repo.ListTimeline(page, pageSize)
+}
+
+func (s *ContentService) getCache(key string, out any) bool {
+	if s.cache == nil {
+		return false
+	}
+	raw, ok, err := s.cache.Get(context.Background(), key)
+	if err != nil || !ok {
+		return false
+	}
+	if err := json.Unmarshal([]byte(raw), out); err != nil {
+		return false
+	}
+	return true
+}
+
+func (s *ContentService) setCache(key string, value any) {
+	if s.cache == nil {
+		return
+	}
+	b, err := json.Marshal(value)
+	if err != nil {
+		return
+	}
+	_ = s.cache.Set(context.Background(), key, string(b), cacheTTL)
+}
+
+func (s *ContentService) delCache(keys ...string) {
+	if s.cache == nil {
+		return
+	}
+	_ = s.cache.Del(context.Background(), keys...)
 }
