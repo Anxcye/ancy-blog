@@ -48,3 +48,51 @@ func TestCreateSlotItemRequiresSlot(t *testing.T) {
 		t.Fatalf("expected slot not found error")
 	}
 }
+
+func TestLocaleTranslationForMomentAndTimeline(t *testing.T) {
+	repo := NewRepository()
+
+	moments, total := repo.ListPublishedMoments(1, 10, "")
+	if total == 0 || len(moments) == 0 {
+		t.Fatalf("expected seeded published moments")
+	}
+	momentID := moments[0].ID
+	originalContent := moments[0].Content
+
+	if err := repo.UpsertMomentTranslation(momentID, "en-US", "translated moment", "job-1"); err != nil {
+		t.Fatalf("upsert moment translation failed: %v", err)
+	}
+
+	localizedMoments, _ := repo.ListPublishedMoments(1, 10, "en-US")
+	if localizedMoments[0].Content != "translated moment" {
+		t.Fatalf("expected localized moment content, got %s", localizedMoments[0].Content)
+	}
+
+	defaultTimeline, _ := repo.ListTimeline(1, 50, "")
+	foundDefault := false
+	for _, item := range defaultTimeline {
+		if item.ContentType == "moment" && item.ID == momentID {
+			foundDefault = true
+			if item.Content != originalContent {
+				t.Fatalf("expected default timeline content, got %s", item.Content)
+			}
+		}
+	}
+	if !foundDefault {
+		t.Fatalf("expected moment in timeline")
+	}
+
+	localizedTimeline, _ := repo.ListTimeline(1, 50, "en-US")
+	foundLocalized := false
+	for _, item := range localizedTimeline {
+		if item.ContentType == "moment" && item.ID == momentID {
+			foundLocalized = true
+			if item.Content != "translated moment" {
+				t.Fatalf("expected localized timeline content, got %s", item.Content)
+			}
+		}
+	}
+	if !foundLocalized {
+		t.Fatalf("expected localized moment in timeline")
+	}
+}

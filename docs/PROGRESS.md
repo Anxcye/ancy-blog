@@ -6,7 +6,6 @@
 - [ ] Set up lint/test/build scripts.
 
 ## In Progress
-- [ ] Add localized content read APIs for moments and timeline (`locale` aware).
 - [ ] Add admin APIs for browsing and manually overriding localized content records.
 
 ## Done
@@ -43,6 +42,7 @@
 - [x] Added article detail `locale` query support with translation fallback.
 - [x] Added translation worker unit tests with mocked LLM responses (success/failure/empty output/provider disabled).
 - [x] Added non-streaming admin AI assist endpoints for article summary and slug suggestion (`/api/v1/admin/ai/summary`, `/api/v1/admin/ai/slug`) with deterministic fallback and slug de-duplication.
+- [x] Added locale-aware read support for public moments and timeline APIs (`locale` query passthrough + repository translation readback).
 
 ## Blocked
 - None.

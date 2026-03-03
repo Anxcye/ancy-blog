@@ -51,8 +51,8 @@ func (s *ArticleService) SlugExists(slug string) bool { return s.core.SlugExists
 func (s *ArticleService) CreateMoment(moment domain.Moment) (domain.Moment, error) {
 	return s.core.CreateMoment(moment)
 }
-func (s *ArticleService) ListPublishedMoments(page, pageSize int) ([]domain.Moment, int) {
-	return s.core.ListPublishedMoments(page, pageSize)
+func (s *ArticleService) ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int) {
+	return s.core.ListPublishedMoments(page, pageSize, locale)
 }
 func (s *ArticleService) ListCategories() []domain.Category { return s.core.ListCategories() }
 func (s *ArticleService) ListTags() []domain.Tag            { return s.core.ListTags() }
@@ -172,6 +172,6 @@ func (s *TranslationService) UpsertTranslationResult(sourceType, sourceID, targe
 	return s.core.UpsertTranslationResult(sourceType, sourceID, targetLocale, content, translatedByJobID)
 }
 
-func (s *TimelineService) ListTimeline(page, pageSize int) ([]domain.TimelineItem, int) {
-	return s.core.ListTimeline(page, pageSize)
+func (s *TimelineService) ListTimeline(page, pageSize int, locale string) ([]domain.TimelineItem, int) {
+	return s.core.ListTimeline(page, pageSize, locale)
 }

@@ -130,7 +130,7 @@
 - Method: GET
 - Path: /api/v1/public/moments
 - Auth Required: No
-- Request: query `page`, `pageSize`
+- Request: query `page`, `pageSize`, `locale` (optional)
 - Response: paginated moments
 - Error Codes: None
 
@@ -313,7 +313,7 @@
 - Method: GET
 - Path: /api/v1/public/timeline
 - Auth Required: No
-- Request: query `page`, `pageSize`
+- Request: query `page`, `pageSize`, `locale` (optional)
 - Response: mixed timeline feed (`article` + `moment`) sorted by publish time desc.
 - Error Codes: None
 

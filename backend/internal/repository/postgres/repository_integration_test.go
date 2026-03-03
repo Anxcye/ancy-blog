@@ -241,4 +241,45 @@ func TestRepositoryIntegration_TranslationJobLifecycle(t *testing.T) {
 	if localized.Content != "translated body" {
 		t.Fatalf("expected localized content, got: %s", localized.Content)
 	}
+
+	moment, err := repo.CreateMoment(domain.Moment{
+		Content:      "zh content",
+		Status:       "published",
+		AllowComment: true,
+		PublishedAt:  now,
+	})
+	if err != nil {
+		t.Fatalf("create moment failed: %v", err)
+	}
+	if err := repo.UpsertMomentTranslation(moment.ID, "en-US", "translated moment body", job.ID); err != nil {
+		t.Fatalf("upsert moment translation failed: %v", err)
+	}
+
+	moments, _ := repo.ListPublishedMoments(1, 10, "en-US")
+	foundLocalizedMoment := false
+	for _, m := range moments {
+		if m.ID == moment.ID {
+			foundLocalizedMoment = true
+			if m.Content != "translated moment body" {
+				t.Fatalf("expected localized moment content, got: %s", m.Content)
+			}
+		}
+	}
+	if !foundLocalizedMoment {
+		t.Fatalf("expected localized moment in list")
+	}
+
+	timeline, _ := repo.ListTimeline(1, 50, "en-US")
+	foundLocalizedTimelineMoment := false
+	for _, item := range timeline {
+		if item.ContentType == "moment" && item.ID == moment.ID {
+			foundLocalizedTimelineMoment = true
+			if item.Content != "translated moment body" {
+				t.Fatalf("expected localized timeline content, got: %s", item.Content)
+			}
+		}
+	}
+	if !foundLocalizedTimelineMoment {
+		t.Fatalf("expected localized moment in timeline")
+	}
 }

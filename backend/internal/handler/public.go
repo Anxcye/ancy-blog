@@ -70,7 +70,8 @@ func (h *PublicHandler) ArticleByCategory(c *gin.Context) {
 func (h *PublicHandler) Moments(c *gin.Context) {
 	page := getIntQuery(c, "page", 1)
 	pageSize := getIntQuery(c, "pageSize", 10)
-	rows, total := h.articleService.ListPublishedMoments(page, pageSize)
+	locale := c.Query("locale")
+	rows, total := h.articleService.ListPublishedMoments(page, pageSize, locale)
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.Moment]{Total: total, Rows: rows}})
 }
 
@@ -197,6 +198,7 @@ func (h *PublicHandler) SiteSlotContent(c *gin.Context) {
 func (h *PublicHandler) Timeline(c *gin.Context) {
 	page := getIntQuery(c, "page", 1)
 	pageSize := getIntQuery(c, "pageSize", 10)
-	rows, total := h.timelineService.ListTimeline(page, pageSize)
+	locale := c.Query("locale")
+	rows, total := h.timelineService.ListTimeline(page, pageSize, locale)
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.TimelineItem]{Total: total, Rows: rows}})
 }

@@ -16,7 +16,7 @@ type ContentRepository interface {
 	GetArticleByID(id string) (domain.Article, bool)
 
 	CreateMoment(moment domain.Moment) (domain.Moment, error)
-	ListPublishedMoments(page, pageSize int) ([]domain.Moment, int)
+	ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int)
 
 	CreateComment(comment domain.Comment) (domain.Comment, error)
 	ListArticleComments(articleID string, page, pageSize int) ([]domain.Comment, int)
@@ -71,5 +71,5 @@ type ContentRepository interface {
 	UpsertArticleTranslation(articleID, locale, content, translatedByJobID string) error
 	UpsertMomentTranslation(momentID, locale, content, translatedByJobID string) error
 
-	ListTimeline(page, pageSize int) ([]domain.TimelineItem, int)
+	ListTimeline(page, pageSize int, locale string) ([]domain.TimelineItem, int)
 }

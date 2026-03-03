@@ -22,6 +22,9 @@ type Repository struct {
 	moments  map[string]domain.Moment
 	links    map[string]domain.Link
 
+	articleTranslations map[string]map[string]string
+	momentTranslations  map[string]map[string]string
+
 	categories []domain.Category
 	tags       []domain.Tag
 
@@ -36,9 +39,11 @@ type Repository struct {
 func NewRepository() *Repository {
 	now := time.Now().UTC()
 	r := &Repository{
-		articles: make(map[string]domain.Article),
-		moments:  make(map[string]domain.Moment),
-		links:    make(map[string]domain.Link),
+		articles:            make(map[string]domain.Article),
+		moments:             make(map[string]domain.Moment),
+		links:               make(map[string]domain.Link),
+		articleTranslations: make(map[string]map[string]string),
+		momentTranslations:  make(map[string]map[string]string),
 		categories: []domain.Category{
 			{ID: uuid.NewString(), Name: "Tech", Slug: "tech"},
 			{ID: uuid.NewString(), Name: "Life", Slug: "life"},
@@ -207,8 +212,19 @@ func (r *Repository) GetPublishedArticleBySlug(slug string) (domain.Article, boo
 }
 
 func (r *Repository) GetPublishedArticleBySlugWithLocale(slug, locale string) (domain.Article, bool) {
-	_ = locale
-	return r.GetPublishedArticleBySlug(slug)
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	for _, a := range r.articles {
+		if a.Slug == slug && a.Status == "published" {
+			if strings.TrimSpace(locale) != "" {
+				if content, ok := r.getArticleTranslation(a.ID, locale); ok {
+					a.Content = content
+				}
+			}
+			return a, true
+		}
+	}
+	return domain.Article{}, false
 }
 
 func (r *Repository) GetArticleByID(id string) (domain.Article, bool) {
@@ -238,12 +254,17 @@ func (r *Repository) CreateMoment(moment domain.Moment) (domain.Moment, error) {
 	return moment, nil
 }
 
-func (r *Repository) ListPublishedMoments(page, pageSize int) ([]domain.Moment, int) {
+func (r *Repository) ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	items := make([]domain.Moment, 0)
 	for _, m := range r.moments {
 		if m.Status == "published" {
+			if strings.TrimSpace(locale) != "" {
+				if content, ok := r.getMomentTranslation(m.ID, locale); ok {
+					m.Content = content
+				}
+			}
 			items = append(items, m)
 		}
 	}
@@ -548,18 +569,38 @@ func (r *Repository) ListSlotContent(slotKey string, limit int) ([]domain.SlotCo
 	return out, true
 }
 
-func (r *Repository) ListTimeline(page, pageSize int) ([]domain.TimelineItem, int) {
+func (r *Repository) ListTimeline(page, pageSize int, locale string) ([]domain.TimelineItem, int) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	items := make([]domain.TimelineItem, 0)
 	for _, a := range r.articles {
 		if a.Status == "published" {
-			items = append(items, domain.TimelineItem{ContentType: "article", ID: a.ID, Title: a.Title, Summary: a.Summary, Slug: a.Slug, PublishedAt: a.PublishedAt})
+			content := ""
+			if strings.TrimSpace(locale) != "" {
+				if translated, ok := r.getArticleTranslation(a.ID, locale); ok {
+					content = translated
+				}
+			}
+			items = append(items, domain.TimelineItem{
+				ContentType: "article",
+				ID:          a.ID,
+				Title:       a.Title,
+				Summary:     a.Summary,
+				Slug:        a.Slug,
+				Content:     content,
+				PublishedAt: a.PublishedAt,
+			})
 		}
 	}
 	for _, m := range r.moments {
 		if m.Status == "published" {
-			items = append(items, domain.TimelineItem{ContentType: "moment", ID: m.ID, Content: m.Content, PublishedAt: m.PublishedAt})
+			content := m.Content
+			if strings.TrimSpace(locale) != "" {
+				if translated, ok := r.getMomentTranslation(m.ID, locale); ok {
+					content = translated
+				}
+			}
+			items = append(items, domain.TimelineItem{ContentType: "moment", ID: m.ID, Content: content, PublishedAt: m.PublishedAt})
 		}
 	}
 	sort.Slice(items, func(i, j int) bool { return items[i].PublishedAt.After(items[j].PublishedAt) })
@@ -609,19 +650,43 @@ func (r *Repository) GetTranslationSourceText(sourceType, sourceID string) (stri
 }
 
 func (r *Repository) UpsertArticleTranslation(articleID, locale, content, translatedByJobID string) error {
-	_ = articleID
-	_ = locale
-	_ = content
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if _, ok := r.articleTranslations[articleID]; !ok {
+		r.articleTranslations[articleID] = map[string]string{}
+	}
+	r.articleTranslations[articleID][locale] = content
 	_ = translatedByJobID
 	return nil
 }
 
 func (r *Repository) UpsertMomentTranslation(momentID, locale, content, translatedByJobID string) error {
-	_ = momentID
-	_ = locale
-	_ = content
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if _, ok := r.momentTranslations[momentID]; !ok {
+		r.momentTranslations[momentID] = map[string]string{}
+	}
+	r.momentTranslations[momentID][locale] = content
 	_ = translatedByJobID
 	return nil
+}
+
+func (r *Repository) getArticleTranslation(articleID, locale string) (string, bool) {
+	translations, ok := r.articleTranslations[articleID]
+	if !ok {
+		return "", false
+	}
+	content, ok := translations[locale]
+	return content, ok
+}
+
+func (r *Repository) getMomentTranslation(momentID, locale string) (string, bool) {
+	translations, ok := r.momentTranslations[momentID]
+	if !ok {
+		return "", false
+	}
+	content, ok := translations[locale]
+	return content, ok
 }
 
 func (r *Repository) slugExists(slug, excludedID string) bool {

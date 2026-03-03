@@ -236,7 +236,7 @@ RETURNING id::text, created_at, updated_at, published_at
 	return moment, nil
 }
 
-func (r *Repository) ListPublishedMoments(page, pageSize int) ([]domain.Moment, int) {
+func (r *Repository) ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int) {
 	page, pageSize = normalizePagination(page, pageSize)
 	offset := (page - 1) * pageSize
 	var total int
@@ -244,12 +244,14 @@ func (r *Repository) ListPublishedMoments(page, pageSize int) ([]domain.Moment, 
 		return []domain.Moment{}, 0
 	}
 	rows, err := r.db.Query(`
-SELECT id::text, content, status, allow_comment, COALESCE(published_at, created_at), created_at, updated_at
-FROM moments
-WHERE status='published' AND deleted_at IS NULL
-ORDER BY published_at DESC NULLS LAST, created_at DESC
-LIMIT $1 OFFSET $2
-`, pageSize, offset)
+SELECT m.id::text, COALESCE(mt.content, m.content), m.status, m.allow_comment,
+       COALESCE(m.published_at, m.created_at), m.created_at, m.updated_at
+FROM moments m
+LEFT JOIN moment_translations mt ON mt.moment_id = m.id AND mt.locale = $1
+WHERE m.status='published' AND m.deleted_at IS NULL
+ORDER BY m.published_at DESC NULLS LAST, m.created_at DESC
+LIMIT $2 OFFSET $3
+`, locale, pageSize, offset)
 	if err != nil {
 		return []domain.Moment{}, total
 	}

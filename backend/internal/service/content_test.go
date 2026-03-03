@@ -27,6 +27,8 @@ type contentRepoStub struct {
 	createSlotItemFunc            func(slotKey string, item domain.SlotItem) (domain.SlotItem, error)
 	getSiteSettingsFunc           func() domain.SiteSettings
 	listIntegrationProvidersFunc  func(providerType string) []domain.IntegrationProvider
+	listPublishedMomentsFunc      func(page, pageSize int, locale string) ([]domain.Moment, int)
+	listTimelineFunc              func(page, pageSize int, locale string) ([]domain.TimelineItem, int)
 
 	getIntegrationProviderFunc    func(providerKey string) (domain.IntegrationProvider, bool)
 	updateIntegrationProviderFunc func(providerKey string, enabled bool, configJSON, metaJSON []byte) (domain.IntegrationProvider, error)
@@ -101,6 +103,20 @@ func (s *contentRepoStub) ListIntegrationProviders(providerType string) []domain
 		return s.listIntegrationProvidersFunc(providerType)
 	}
 	return nil
+}
+
+func (s *contentRepoStub) ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int) {
+	if s.listPublishedMomentsFunc != nil {
+		return s.listPublishedMomentsFunc(page, pageSize, locale)
+	}
+	return nil, 0
+}
+
+func (s *contentRepoStub) ListTimeline(page, pageSize int, locale string) ([]domain.TimelineItem, int) {
+	if s.listTimelineFunc != nil {
+		return s.listTimelineFunc(page, pageSize, locale)
+	}
+	return nil, 0
 }
 
 func (s *contentRepoStub) GetIntegrationProvider(providerKey string) (domain.IntegrationProvider, bool) {
@@ -299,6 +315,44 @@ func TestUpdateIntegrationProviderMasksSecrets(t *testing.T) {
 	}
 	if payload["access_key_id"] != "******" || payload["secret_access_key"] != "******" {
 		t.Fatalf("expected secret keys to be masked, got: %#v", payload)
+	}
+}
+
+func TestListPublishedMomentsPassesLocale(t *testing.T) {
+	capturedLocale := ""
+	repo := &contentRepoStub{
+		listPublishedMomentsFunc: func(_ int, _ int, locale string) ([]domain.Moment, int) {
+			capturedLocale = locale
+			return []domain.Moment{{ID: "m1", Content: "translated"}}, 1
+		},
+	}
+	svc := NewContentService(repo, nil)
+
+	rows, total := svc.ListPublishedMoments(1, 10, "en-US")
+	if total != 1 || len(rows) != 1 {
+		t.Fatalf("expected one moment, total=%d len=%d", total, len(rows))
+	}
+	if capturedLocale != "en-US" {
+		t.Fatalf("expected locale en-US, got %s", capturedLocale)
+	}
+}
+
+func TestListTimelinePassesLocale(t *testing.T) {
+	capturedLocale := ""
+	repo := &contentRepoStub{
+		listTimelineFunc: func(_ int, _ int, locale string) ([]domain.TimelineItem, int) {
+			capturedLocale = locale
+			return []domain.TimelineItem{{ContentType: "moment", ID: "m1", Content: "translated"}}, 1
+		},
+	}
+	svc := NewContentService(repo, nil)
+
+	rows, total := svc.ListTimeline(1, 10, "en-US")
+	if total != 1 || len(rows) != 1 {
+		t.Fatalf("expected one timeline item, total=%d len=%d", total, len(rows))
+	}
+	if capturedLocale != "en-US" {
+		t.Fatalf("expected locale en-US, got %s", capturedLocale)
 	}
 }
 

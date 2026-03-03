@@ -205,6 +205,22 @@
   - updated handler/app/server wiring and related test stubs
 - Validation run after AI assist addition:
   - `go test ./...` passed
+- Added locale-aware public read support for moments and timeline:
+  - `GET /api/v1/public/moments?locale=...`
+  - `GET /api/v1/public/timeline?locale=...`
+  - handler/service/repository signature chain now passes locale end-to-end
+- Implemented translation readback in repositories:
+  - PostgreSQL: joined `moment_translations` in moment list and timeline queries
+  - In-memory: persisted translation maps and applied locale overrides for article/moment reads
+- Added/updated tests:
+  - handler: locale passthrough tests for moments and timeline
+  - service: locale passthrough tests for moments and timeline
+  - memory repository: locale translation behavior test
+  - postgres integration: localized moment list and timeline validation
+- Validation run after locale feature:
+  - `go test ./...` passed
+  - `go test -tags=integration ./internal/repository/postgres -run TestRepositoryIntegration -count=1` passed
+  - `go test -tags=integration ./internal/server -run TestAPISmokeFlow -count=1` passed
 
 ### Next Suggested Tasks
 1. Add locale-aware read support for moments and timeline APIs.

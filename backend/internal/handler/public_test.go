@@ -111,3 +111,69 @@ func TestPublicSiteFooterGroupedByRow(t *testing.T) {
 		t.Fatalf("unexpected code: %s", env.Code)
 	}
 }
+
+func TestPublicMomentsPassesLocale(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	capturedLocale := ""
+	repo := &handlerRepoStub{
+		listPublishedMomentsFunc: func(_ int, _ int, locale string) ([]domain.Moment, int) {
+			capturedLocale = locale
+			return []domain.Moment{{ID: "m1", Content: "hello"}}, 1
+		},
+	}
+	core := service.NewContentService(repo, nil)
+	h := NewPublicHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewTimelineService(core),
+	)
+
+	r := gin.New()
+	r.GET("/moments", h.Moments)
+
+	req := httptest.NewRequest(http.MethodGet, "/moments?locale=en-US", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	if capturedLocale != "en-US" {
+		t.Fatalf("expected locale en-US, got %s", capturedLocale)
+	}
+}
+
+func TestPublicTimelinePassesLocale(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	capturedLocale := ""
+	repo := &handlerRepoStub{
+		listTimelineFunc: func(_ int, _ int, locale string) ([]domain.TimelineItem, int) {
+			capturedLocale = locale
+			return []domain.TimelineItem{{ContentType: "moment", ID: "m1", Content: "hello"}}, 1
+		},
+	}
+	core := service.NewContentService(repo, nil)
+	h := NewPublicHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewTimelineService(core),
+	)
+
+	r := gin.New()
+	r.GET("/timeline", h.Timeline)
+
+	req := httptest.NewRequest(http.MethodGet, "/timeline?locale=en-US", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	if capturedLocale != "en-US" {
+		t.Fatalf("expected locale en-US, got %s", capturedLocale)
+	}
+}

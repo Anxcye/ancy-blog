@@ -104,8 +104,8 @@ func (s *ContentService) CreateMoment(moment domain.Moment) (domain.Moment, erro
 	return s.repo.CreateMoment(moment)
 }
 
-func (s *ContentService) ListPublishedMoments(page, pageSize int) ([]domain.Moment, int) {
-	return s.repo.ListPublishedMoments(page, pageSize)
+func (s *ContentService) ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int) {
+	return s.repo.ListPublishedMoments(page, pageSize, locale)
 }
 
 func (s *ContentService) CreateComment(comment domain.Comment) (domain.Comment, error) {
@@ -538,8 +538,8 @@ func (s *ContentService) GetIntegrationProviderForRuntime(providerKey string) (d
 	return s.repo.GetIntegrationProvider(providerKey)
 }
 
-func (s *ContentService) ListTimeline(page, pageSize int) ([]domain.TimelineItem, int) {
-	return s.repo.ListTimeline(page, pageSize)
+func (s *ContentService) ListTimeline(page, pageSize int, locale string) ([]domain.TimelineItem, int) {
+	return s.repo.ListTimeline(page, pageSize, locale)
 }
 
 func maskSecretJSON(raw []byte) []byte {
