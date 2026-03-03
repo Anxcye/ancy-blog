@@ -1,7 +1,7 @@
 // File: http.go
 // Purpose: Construct and run the HTTP server, including route registration and graceful shutdown.
 // Module: backend/internal/server, transport runtime layer.
-// Related: cmd/server bootstrap, internal/handler endpoints, internal/middleware.
+// Related: cmd/server bootstrap, internal/app container, and middleware chain.
 package server
 
 import (
@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/anxcye/ancy-blog/backend/internal/app"
 	"github.com/anxcye/ancy-blog/backend/internal/config"
 	"github.com/anxcye/ancy-blog/backend/internal/handler"
 	"github.com/anxcye/ancy-blog/backend/internal/middleware"
@@ -28,10 +29,67 @@ func NewHTTPServer(cfg *config.Config, logger *slog.Logger) *HTTPServer {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
+	container := app.New(cfg)
 	engine := gin.New()
 	engine.Use(gin.Recovery())
 	engine.Use(middleware.RequestLogger(logger))
 	engine.GET("/healthz", handler.Healthz)
+
+	api := engine.Group("/api/v1")
+	{
+		auth := api.Group("/auth")
+		{
+			auth.POST("/login", container.AuthHandler.Login)
+			auth.POST("/refresh", container.AuthHandler.Refresh)
+			auth.GET("/me", middleware.AuthRequired(container.AuthService), container.AuthHandler.Me)
+		}
+
+		pub := api.Group("/public")
+		{
+			pub.GET("/articles", container.PublicHandler.Articles)
+			pub.GET("/articles/:slug", container.PublicHandler.ArticleBySlug)
+			pub.GET("/articles/by-category/:categorySlug", container.PublicHandler.ArticleByCategory)
+			pub.GET("/moments", container.PublicHandler.Moments)
+			pub.POST("/links/submissions", container.PublicHandler.SubmitLink)
+			pub.GET("/links", container.PublicHandler.ApprovedLinks)
+			pub.GET("/categories", container.PublicHandler.Categories)
+			pub.GET("/tags", container.PublicHandler.Tags)
+			pub.GET("/site/settings", container.PublicHandler.SiteSettings)
+			pub.GET("/site/footer", container.PublicHandler.SiteFooter)
+			pub.GET("/site/social-links", container.PublicHandler.SiteSocialLinks)
+			pub.GET("/site/nav", container.PublicHandler.SiteNav)
+			pub.GET("/site/slots/:slotKey", container.PublicHandler.SiteSlotContent)
+			pub.GET("/timeline", container.PublicHandler.Timeline)
+		}
+
+		admin := api.Group("/admin")
+		admin.Use(middleware.AuthRequired(container.AuthService))
+		{
+			admin.POST("/articles", container.AdminHandler.CreateArticle)
+			admin.PUT("/articles/:id", container.AdminHandler.UpdateArticle)
+			admin.POST("/moments", container.AdminHandler.CreateMoment)
+
+			admin.GET("/links", container.AdminHandler.ListLinkSubmissions)
+			admin.PATCH("/links/:id/review", container.AdminHandler.ReviewLink)
+
+			admin.PUT("/site/settings", container.AdminHandler.UpdateSiteSettings)
+			admin.POST("/site/footer-items", container.AdminHandler.CreateFooterItem)
+			admin.PUT("/site/footer-items/:id", container.AdminHandler.UpdateFooterItem)
+			admin.DELETE("/site/footer-items/:id", container.AdminHandler.DeleteFooterItem)
+
+			admin.POST("/site/social-links", container.AdminHandler.CreateSocialLink)
+			admin.PUT("/site/social-links/:id", container.AdminHandler.UpdateSocialLink)
+			admin.DELETE("/site/social-links/:id", container.AdminHandler.DeleteSocialLink)
+
+			admin.POST("/site/nav-items", container.AdminHandler.CreateNavItem)
+			admin.PUT("/site/nav-items/:id", container.AdminHandler.UpdateNavItem)
+			admin.DELETE("/site/nav-items/:id", container.AdminHandler.DeleteNavItem)
+
+			admin.POST("/site/slots", container.AdminHandler.CreateSlot)
+			admin.POST("/site/slots/:slotKey/items", container.AdminHandler.CreateSlotItem)
+			admin.DELETE("/site/slots/:slotKey/items/:id", container.AdminHandler.DeleteSlotItem)
+		}
+	}
 
 	addr := fmt.Sprintf("%s:%d", cfg.HTTP.Host, cfg.HTTP.Port)
 	srv := &http.Server{
@@ -40,11 +98,7 @@ func NewHTTPServer(cfg *config.Config, logger *slog.Logger) *HTTPServer {
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 
-	return &HTTPServer{
-		cfg:    cfg,
-		logger: logger,
-		server: srv,
-	}
+	return &HTTPServer{cfg: cfg, logger: logger, server: srv}
 }
 
 func (s *HTTPServer) Start(ctx context.Context) error {

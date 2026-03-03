@@ -1,7 +1,7 @@
 // File: config.go
 // Purpose: Define runtime configuration schema and load values from environment variables.
 // Module: backend/internal/config, application configuration layer.
-// Related: cmd/server main bootstrap and internal/server startup.
+// Related: cmd/server bootstrap and internal/server startup.
 package config
 
 import (
@@ -14,6 +14,7 @@ import (
 type Config struct {
 	App  AppConfig
 	HTTP HTTPConfig
+	Auth AuthConfig
 }
 
 type AppConfig struct {
@@ -26,10 +27,25 @@ type HTTPConfig struct {
 	Port int
 }
 
+type AuthConfig struct {
+	AdminUsername          string
+	AdminPassword          string
+	AccessTokenTTLSeconds  int
+	RefreshTokenTTLSeconds int
+}
+
 func Load() (*Config, error) {
 	port, err := parseInt(getEnv("HTTP_PORT", "8080"))
 	if err != nil {
 		return nil, fmt.Errorf("invalid HTTP_PORT: %w", err)
+	}
+	accessTTL, err := parseInt(getEnv("AUTH_ACCESS_TOKEN_TTL_SECONDS", "3600"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid AUTH_ACCESS_TOKEN_TTL_SECONDS: %w", err)
+	}
+	refreshTTL, err := parseInt(getEnv("AUTH_REFRESH_TOKEN_TTL_SECONDS", "604800"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid AUTH_REFRESH_TOKEN_TTL_SECONDS: %w", err)
 	}
 
 	cfg := &Config{
@@ -40,6 +56,12 @@ func Load() (*Config, error) {
 		HTTP: HTTPConfig{
 			Host: getEnv("HTTP_HOST", "0.0.0.0"),
 			Port: port,
+		},
+		Auth: AuthConfig{
+			AdminUsername:          getEnv("AUTH_ADMIN_USERNAME", "admin"),
+			AdminPassword:          getEnv("AUTH_ADMIN_PASSWORD", "123456"),
+			AccessTokenTTLSeconds:  accessTTL,
+			RefreshTokenTTLSeconds: refreshTTL,
 		},
 	}
 
@@ -60,4 +82,3 @@ func parseInt(raw string) (int, error) {
 	}
 	return v, nil
 }
-

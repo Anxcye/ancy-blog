@@ -25,4 +25,3 @@ func RequestLogger(logger *slog.Logger) gin.HandlerFunc {
 		)
 	}
 }
-

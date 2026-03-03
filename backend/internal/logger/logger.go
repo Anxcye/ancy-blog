@@ -20,4 +20,3 @@ func New(env string) *slog.Logger {
 	handler := slog.NewJSONHandler(os.Stdout, opts)
 	return slog.New(handler)
 }
-

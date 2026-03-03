@@ -1,0 +1,51 @@
+// File: repository.go
+// Purpose: Declare persistence contracts for content-related domains.
+// Module: backend/internal/repository, repository abstraction layer.
+// Related: memory repository implementation and content service orchestration.
+package repository
+
+import "github.com/anxcye/ancy-blog/backend/internal/domain"
+
+type ContentRepository interface {
+	CreateArticle(article domain.Article) (domain.Article, error)
+	UpdateArticle(id string, article domain.Article) (domain.Article, error)
+	ListPublishedArticles(page, pageSize int, category, tag, contentKind string) ([]domain.Article, int)
+	GetPublishedArticleBySlug(slug string) (domain.Article, bool)
+	GetArticleByID(id string) (domain.Article, bool)
+
+	CreateMoment(moment domain.Moment) (domain.Moment, error)
+	ListPublishedMoments(page, pageSize int) ([]domain.Moment, int)
+
+	SubmitLink(link domain.Link) (domain.Link, error)
+	ListApprovedLinks() []domain.Link
+	ListLinkSubmissions(page, pageSize int, reviewStatus string) ([]domain.Link, int)
+	ReviewLink(id, reviewStatus, reviewNote, relatedArticleID string) (domain.Link, error)
+
+	ListCategories() []domain.Category
+	ListTags() []domain.Tag
+
+	GetSiteSettings() domain.SiteSettings
+	UpdateSiteSettings(settings domain.SiteSettings) domain.SiteSettings
+
+	CreateFooterItem(item domain.FooterItem) (domain.FooterItem, error)
+	UpdateFooterItem(id string, item domain.FooterItem) (domain.FooterItem, error)
+	DeleteFooterItem(id string) bool
+	ListFooterItems() []domain.FooterItem
+
+	CreateSocialLink(item domain.SocialLink) (domain.SocialLink, error)
+	UpdateSocialLink(id string, item domain.SocialLink) (domain.SocialLink, error)
+	DeleteSocialLink(id string) bool
+	ListSocialLinks() []domain.SocialLink
+
+	CreateNavItem(item domain.NavItem) (domain.NavItem, error)
+	UpdateNavItem(id string, item domain.NavItem) (domain.NavItem, error)
+	DeleteNavItem(id string) bool
+	ListNavItems() []domain.NavItem
+
+	CreateContentSlot(slot domain.ContentSlot) (domain.ContentSlot, error)
+	CreateSlotItem(slotKey string, item domain.SlotItem) (domain.SlotItem, error)
+	DeleteSlotItem(slotKey, itemID string) bool
+	ListSlotContent(slotKey string, limit int) ([]domain.SlotContentItem, bool)
+
+	ListTimeline(page, pageSize int) ([]domain.TimelineItem, int)
+}
