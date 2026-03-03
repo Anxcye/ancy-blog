@@ -105,6 +105,7 @@ type CreateTranslationJobRequest struct {
 	TargetLocale string `json:"targetLocale"`
 	ProviderKey  string `json:"providerKey"`
 	ModelName    string `json:"modelName"`
+	MaxRetries   int    `json:"maxRetries"`
 }
 
 type UpsertTranslationContentRequest struct {

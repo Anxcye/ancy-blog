@@ -9,6 +9,7 @@ import (
 	"errors"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/anxcye/ancy-blog/backend/internal/apperr"
 	"github.com/anxcye/ancy-blog/backend/internal/domain"
@@ -90,14 +91,20 @@ RETURNING id::text, provider_type, provider_key, name, enabled, config_json::tex
 }
 
 func (r *Repository) CreateTranslationJob(job domain.TranslationJob) (domain.TranslationJob, error) {
+	if job.MaxRetries <= 0 {
+		job.MaxRetries = 3
+	}
+	if job.NextRetryAt.IsZero() {
+		job.NextRetryAt = time.Now().UTC()
+	}
 	var finishedAt sql.NullTime
 	var errorMessage sql.NullString
 	err := r.db.QueryRow(`
-INSERT INTO translation_jobs (source_type, source_id, source_locale, target_locale, provider_key, model_name, status, error_message, result_text, requested_by)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10)
-RETURNING id::text, created_at, updated_at, finished_at, error_message, COALESCE(result_text,'')
-`, job.SourceType, job.SourceID, job.SourceLocale, job.TargetLocale, job.ProviderKey, job.ModelName, job.Status, nullableString(job.ErrorMessage), nullableUUID(job.RequestedBy)).
-		Scan(&job.ID, &job.CreatedAt, &job.UpdatedAt, &finishedAt, &errorMessage, &job.ResultText)
+INSERT INTO translation_jobs (source_type, source_id, source_locale, target_locale, provider_key, model_name, status, error_message, result_text, requested_by, retry_count, max_retries, next_retry_at)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+RETURNING id::text, retry_count, max_retries, next_retry_at, created_at, updated_at, finished_at, error_message, COALESCE(result_text,'')
+`, job.SourceType, job.SourceID, job.SourceLocale, job.TargetLocale, job.ProviderKey, job.ModelName, job.Status, nullableString(job.ErrorMessage), nullableString(job.ResultText), nullableUUID(job.RequestedBy), job.RetryCount, job.MaxRetries, job.NextRetryAt).
+		Scan(&job.ID, &job.RetryCount, &job.MaxRetries, &job.NextRetryAt, &job.CreatedAt, &job.UpdatedAt, &finishedAt, &errorMessage, &job.ResultText)
 	if err != nil {
 		if isForeignKeyViolation(err) {
 			return domain.TranslationJob{}, apperr.ErrProviderNotFound
@@ -150,7 +157,7 @@ func (r *Repository) ListTranslationJobs(page, pageSize int, status, sourceType,
 	args = append(args, pageSize, offset)
 	query := fmt.Sprintf(`
 SELECT id::text, source_type, source_id::text, source_locale, target_locale, provider_key, model_name,
-       status, COALESCE(error_message,''), COALESCE(result_text,''), COALESCE(requested_by::text,''), created_at, updated_at, finished_at
+       status, COALESCE(error_message,''), COALESCE(result_text,''), COALESCE(requested_by::text,''), retry_count, max_retries, next_retry_at, created_at, updated_at, finished_at
 FROM translation_jobs
 WHERE %s
 ORDER BY created_at DESC
@@ -168,7 +175,7 @@ LIMIT $%d OFFSET $%d
 		var j domain.TranslationJob
 		var finishedAt sql.NullTime
 		if err := rows.Scan(&j.ID, &j.SourceType, &j.SourceID, &j.SourceLocale, &j.TargetLocale, &j.ProviderKey, &j.ModelName,
-			&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.CreatedAt, &j.UpdatedAt, &finishedAt); err == nil {
+			&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.RetryCount, &j.MaxRetries, &j.NextRetryAt, &j.CreatedAt, &j.UpdatedAt, &finishedAt); err == nil {
 			if finishedAt.Valid {
 				j.FinishedAt = finishedAt.Time
 			}
@@ -183,11 +190,11 @@ func (r *Repository) GetTranslationJobByID(id string) (domain.TranslationJob, bo
 	var finishedAt sql.NullTime
 	err := r.db.QueryRow(`
 SELECT id::text, source_type, source_id::text, source_locale, target_locale, provider_key, model_name,
-       status, COALESCE(error_message,''), COALESCE(result_text,''), COALESCE(requested_by::text,''), created_at, updated_at, finished_at
+       status, COALESCE(error_message,''), COALESCE(result_text,''), COALESCE(requested_by::text,''), retry_count, max_retries, next_retry_at, created_at, updated_at, finished_at
 FROM translation_jobs
 WHERE id=$1
 `, id).Scan(&j.ID, &j.SourceType, &j.SourceID, &j.SourceLocale, &j.TargetLocale, &j.ProviderKey, &j.ModelName,
-		&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.CreatedAt, &j.UpdatedAt, &finishedAt)
+		&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.RetryCount, &j.MaxRetries, &j.NextRetryAt, &j.CreatedAt, &j.UpdatedAt, &finishedAt)
 	if err != nil {
 		return domain.TranslationJob{}, false
 	}
@@ -208,8 +215,8 @@ func (r *Repository) ClaimNextQueuedTranslationJob() (domain.TranslationJob, boo
 	err = tx.QueryRow(`
 SELECT id::text
 FROM translation_jobs
-WHERE status='queued'
-ORDER BY created_at ASC
+WHERE status='queued' AND next_retry_at <= NOW()
+ORDER BY next_retry_at ASC, created_at ASC
 FOR UPDATE SKIP LOCKED
 LIMIT 1
 `).Scan(&id)
@@ -227,9 +234,9 @@ UPDATE translation_jobs
 SET status='running', updated_at=NOW()
 WHERE id=$1
 RETURNING id::text, source_type, source_id::text, source_locale, target_locale, provider_key, model_name,
-          status, COALESCE(error_message,''), COALESCE(result_text,''), COALESCE(requested_by::text,''), created_at, updated_at, finished_at
+          status, COALESCE(error_message,''), COALESCE(result_text,''), COALESCE(requested_by::text,''), retry_count, max_retries, next_retry_at, created_at, updated_at, finished_at
 `, id).Scan(&j.ID, &j.SourceType, &j.SourceID, &j.SourceLocale, &j.TargetLocale, &j.ProviderKey, &j.ModelName,
-		&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.CreatedAt, &j.UpdatedAt, &finishedAt)
+		&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.RetryCount, &j.MaxRetries, &j.NextRetryAt, &j.CreatedAt, &j.UpdatedAt, &finishedAt)
 	if err != nil {
 		return domain.TranslationJob{}, false, err
 	}
@@ -263,6 +270,49 @@ SET status='failed', error_message=$2, updated_at=NOW(), finished_at=NOW()
 WHERE id=$1
 `, id, nullableString(errorMessage))
 	return err
+}
+
+func (r *Repository) ScheduleTranslationJobRetry(id, errorMessage string, nextRetryAt time.Time) error {
+	_, err := r.db.Exec(`
+UPDATE translation_jobs
+SET status='queued',
+    error_message=$2,
+    retry_count=retry_count+1,
+    next_retry_at=$3,
+    updated_at=NOW(),
+    finished_at=NULL
+WHERE id=$1
+`, id, nullableString(errorMessage), nextRetryAt)
+	return err
+}
+
+func (r *Repository) RetryTranslationJob(id string) (domain.TranslationJob, error) {
+	var j domain.TranslationJob
+	var finishedAt sql.NullTime
+	err := r.db.QueryRow(`
+UPDATE translation_jobs
+SET status='queued',
+    error_message=NULL,
+    finished_at=NULL,
+    retry_count=0,
+    next_retry_at=NOW(),
+    updated_at=NOW()
+WHERE id=$1 AND status='failed'
+RETURNING id::text, source_type, source_id::text, source_locale, target_locale, provider_key, model_name,
+          status, COALESCE(error_message,''), COALESCE(result_text,''), COALESCE(requested_by::text,''),
+          retry_count, max_retries, next_retry_at, created_at, updated_at, finished_at
+`, id).Scan(&j.ID, &j.SourceType, &j.SourceID, &j.SourceLocale, &j.TargetLocale, &j.ProviderKey, &j.ModelName,
+		&j.Status, &j.ErrorMessage, &j.ResultText, &j.RequestedBy, &j.RetryCount, &j.MaxRetries, &j.NextRetryAt, &j.CreatedAt, &j.UpdatedAt, &finishedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.TranslationJob{}, apperr.ErrTranslationJobNotFound
+		}
+		return domain.TranslationJob{}, err
+	}
+	if finishedAt.Valid {
+		j.FinishedAt = finishedAt.Time
+	}
+	return j, nil
 }
 
 func (r *Repository) GetTranslationSourceText(sourceType, sourceID string) (string, bool, error) {

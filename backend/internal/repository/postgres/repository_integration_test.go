@@ -47,6 +47,7 @@ func resetTestDatabase(t *testing.T, db *sql.DB) {
 	execSQLFile(t, db, migrationFilePath(t, "000001_init.up.sql"))
 	execSQLFile(t, db, migrationFilePath(t, "000002_translation_job_result.up.sql"))
 	execSQLFile(t, db, migrationFilePath(t, "000003_content_translations.up.sql"))
+	execSQLFile(t, db, migrationFilePath(t, "000004_translation_retry.up.sql"))
 }
 
 func migrationFilePath(t *testing.T, name string) string {
@@ -305,5 +306,75 @@ func TestRepositoryIntegration_TranslationJobLifecycle(t *testing.T) {
 	}
 	if manual.Content != "manual override" {
 		t.Fatalf("expected manual override content, got: %s", manual.Content)
+	}
+}
+
+func TestRepositoryIntegration_TranslationRetryFlow(t *testing.T) {
+	repo := newIntegrationRepo(t)
+	now := time.Now().UTC()
+
+	article, err := repo.CreateArticle(domain.Article{
+		Title:         "Retry Me",
+		Slug:          "retry-me",
+		ContentKind:   "post",
+		Summary:       "summary",
+		Content:       "content",
+		Status:        "published",
+		Visibility:    "public",
+		AllowComment:  true,
+		OriginType:    "original",
+		AIAssistLevel: "none",
+		PublishedAt:   now,
+	})
+	if err != nil {
+		t.Fatalf("create article failed: %v", err)
+	}
+
+	_, err = repo.UpdateIntegrationProvider("openai_compatible", true, []byte(`{"base_url":"https://example.com/v1","api_key":"k","model":"gpt-4.1-mini"}`), []byte(`{"health":"ok"}`))
+	if err != nil {
+		t.Fatalf("update provider failed: %v", err)
+	}
+
+	job, err := repo.CreateTranslationJob(domain.TranslationJob{
+		SourceType:   "article",
+		SourceID:     article.ID,
+		SourceLocale: "zh-CN",
+		TargetLocale: "en-US",
+		ProviderKey:  "openai_compatible",
+		ModelName:    "gpt-4.1-mini",
+		Status:       "queued",
+		MaxRetries:   3,
+		NextRetryAt:  now,
+	})
+	if err != nil {
+		t.Fatalf("create job failed: %v", err)
+	}
+
+	nextRetry := now.Add(5 * time.Second)
+	if err := repo.ScheduleTranslationJobRetry(job.ID, "temporary failure", nextRetry); err != nil {
+		t.Fatalf("schedule retry failed: %v", err)
+	}
+	afterSchedule, ok := repo.GetTranslationJobByID(job.ID)
+	if !ok {
+		t.Fatalf("expected job after schedule")
+	}
+	if afterSchedule.Status != "queued" || afterSchedule.RetryCount != 1 {
+		t.Fatalf("unexpected schedule state: %#v", afterSchedule)
+	}
+
+	if err := repo.MarkTranslationJobFailed(job.ID, "failed finally"); err != nil {
+		t.Fatalf("mark failed failed: %v", err)
+	}
+	afterFail, ok := repo.GetTranslationJobByID(job.ID)
+	if !ok || afterFail.Status != "failed" {
+		t.Fatalf("expected failed job state")
+	}
+
+	retried, err := repo.RetryTranslationJob(job.ID)
+	if err != nil {
+		t.Fatalf("manual retry failed: %v", err)
+	}
+	if retried.Status != "queued" || retried.RetryCount != 0 {
+		t.Fatalf("unexpected retried job: %#v", retried)
 	}
 }

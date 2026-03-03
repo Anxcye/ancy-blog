@@ -60,6 +60,8 @@ type RedisConfig struct {
 type TranslationConfig struct {
 	WorkerEnabled  bool
 	PollIntervalMS int
+	BackoffBaseMS  int
+	BackoffMaxMS   int
 }
 
 func Load() (*Config, error) {
@@ -103,6 +105,14 @@ func Load() (*Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("invalid TRANSLATION_WORKER_POLL_INTERVAL_MS: %w", err)
 	}
+	translationBackoffBaseMS, err := parseInt(getEnv("TRANSLATION_WORKER_BACKOFF_BASE_MS", "3000"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid TRANSLATION_WORKER_BACKOFF_BASE_MS: %w", err)
+	}
+	translationBackoffMaxMS, err := parseInt(getEnv("TRANSLATION_WORKER_BACKOFF_MAX_MS", "60000"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid TRANSLATION_WORKER_BACKOFF_MAX_MS: %w", err)
+	}
 
 	cfg := &Config{
 		App: AppConfig{
@@ -140,6 +150,8 @@ func Load() (*Config, error) {
 		Translation: TranslationConfig{
 			WorkerEnabled:  parseBool(getEnv("TRANSLATION_WORKER_ENABLED", "true")),
 			PollIntervalMS: translationPollIntervalMS,
+			BackoffBaseMS:  translationBackoffBaseMS,
+			BackoffMaxMS:   translationBackoffMaxMS,
 		},
 	}
 

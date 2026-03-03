@@ -203,6 +203,9 @@ type TranslationJob struct {
 	ErrorMessage string    `json:"errorMessage,omitempty"`
 	ResultText   string    `json:"resultText,omitempty"`
 	RequestedBy  string    `json:"requestedBy,omitempty"`
+	RetryCount   int       `json:"retryCount"`
+	MaxRetries   int       `json:"maxRetries"`
+	NextRetryAt  time.Time `json:"nextRetryAt,omitempty"`
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
 	FinishedAt   time.Time `json:"finishedAt,omitempty"`

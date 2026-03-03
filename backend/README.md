@@ -65,6 +65,8 @@ go test -tags=integration ./internal/server -run TestAPISmokeFlow -count=1
 - `REDIS_MIN_IDLE_CONNS` (default: `2`)
 - `TRANSLATION_WORKER_ENABLED` (default: `true`)
 - `TRANSLATION_WORKER_POLL_INTERVAL_MS` (default: `3000`)
+- `TRANSLATION_WORKER_BACKOFF_BASE_MS` (default: `3000`)
+- `TRANSLATION_WORKER_BACKOFF_MAX_MS` (default: `60000`)
 
 ## Health Check
 - `GET /healthz`
@@ -117,6 +119,9 @@ curl -X POST http://127.0.0.1:8080/api/v1/auth/login \
 - Request payloads use DTO structs under `internal/handler/dto` to decouple transport schema from domain models.
 - Translation worker:
   - polls `translation_jobs` in `queued` status
+  - only claims jobs with `next_retry_at <= now()`
   - claims one job with DB lock (`FOR UPDATE SKIP LOCKED`)
   - calls OpenAI-compatible `/chat/completions`
+  - retries failures with exponential backoff until `max_retries`
+  - supports manual retry via `POST /api/v1/admin/translations/jobs/:id/retry`
   - updates job to `succeeded/failed` and writes `result_text`

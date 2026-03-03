@@ -287,6 +287,9 @@ CREATE TABLE IF NOT EXISTS translation_jobs (
     error_message TEXT,
     result_text TEXT,
     requested_by UUID,
+    retry_count INTEGER NOT NULL DEFAULT 0,
+    max_retries INTEGER NOT NULL DEFAULT 3,
+    next_retry_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     finished_at TIMESTAMPTZ
@@ -296,6 +299,8 @@ CREATE INDEX IF NOT EXISTS idx_translation_jobs_source_target
     ON translation_jobs (source_type, source_id, target_locale);
 CREATE INDEX IF NOT EXISTS idx_translation_jobs_status_created_at
     ON translation_jobs (status, created_at DESC);
+CREATE INDEX IF NOT EXISTS idx_translation_jobs_status_next_retry
+    ON translation_jobs (status, next_retry_at ASC, created_at ASC);
 
 CREATE TABLE IF NOT EXISTS article_translations (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),

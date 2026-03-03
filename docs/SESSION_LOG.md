@@ -240,6 +240,23 @@
   - `go test ./...` passed
   - `go test -tags=integration ./internal/repository/postgres -run TestRepositoryIntegration -count=1` passed
   - `go test -tags=integration ./internal/server -run TestAPISmokeFlow -count=1` passed
+- Added translation retry/backoff capability:
+  - migration `000004_translation_retry.up/down.sql`
+  - new `translation_jobs` fields: `retry_count`, `max_retries`, `next_retry_at`
+  - worker failure flow now schedules retry with exponential backoff until max retries
+  - manual retry endpoint added: `POST /api/v1/admin/translations/jobs/{id}/retry`
+- Extended translation domain/runtime contract:
+  - `TranslationJob` now includes retry metadata fields
+  - create translation job request supports optional `maxRetries`
+  - repository/service methods added for `ScheduleTranslationJobRetry` and `RetryTranslationJob`
+- Added retry-related tests:
+  - worker tests for scheduled retry and exhausted-retry terminal failure
+  - admin handler tests for manual retry success/not-found
+  - postgres integration test for retry scheduling + manual retry
+- Validation run after retry/backoff implementation:
+  - `go test ./...` passed
+  - `go test -tags=integration ./internal/repository/postgres -run TestRepositoryIntegration -count=1` passed
+  - `go test -tags=integration ./internal/server -run TestAPISmokeFlow -count=1` passed
 
 ### Next Suggested Tasks
 1. Add locale-aware read support for moments and timeline APIs.

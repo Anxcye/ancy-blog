@@ -489,6 +489,7 @@ func (h *AdminHandler) CreateTranslationJob(c *gin.Context) {
 		TargetLocale: req.TargetLocale,
 		ProviderKey:  req.ProviderKey,
 		ModelName:    req.ModelName,
+		MaxRetries:   req.MaxRetries,
 		RequestedBy:  user.ID,
 	})
 	if err != nil {
@@ -517,6 +518,20 @@ func (h *AdminHandler) TranslationJobDetail(c *gin.Context) {
 	job, ok := h.translationService.GetTranslationJobByID(id)
 	if !ok {
 		response.JSON(c, http.StatusNotFound, response.Envelope{Code: "TRANSLATION_JOB_NOT_FOUND", Message: "translation job not found"})
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: job})
+}
+
+func (h *AdminHandler) RetryTranslationJob(c *gin.Context) {
+	id := c.Param("id")
+	job, err := h.translationService.RetryTranslationJob(id)
+	if err != nil {
+		if errors.Is(err, apperr.ErrTranslationJobNotFound) {
+			response.JSON(c, http.StatusNotFound, response.Envelope{Code: "TRANSLATION_JOB_NOT_FOUND", Message: "translation job not found"})
+			return
+		}
+		badRequest(c, "VALIDATION_ERROR", err.Error())
 		return
 	}
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: job})

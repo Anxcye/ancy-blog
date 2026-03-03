@@ -489,7 +489,8 @@
   "sourceLocale": "zh-CN",
   "targetLocale": "en-US",
   "providerKey": "openai_compatible",
-  "modelName": "gpt-4.1-mini"
+  "modelName": "gpt-4.1-mini",
+  "maxRetries": 3
 }
 ```
 - Response: created job id
@@ -512,6 +513,15 @@
 - Error Codes: TRANSLATION_JOB_NOT_FOUND
 
 - ID: ADM-TR-004
+- Method: POST
+- Path: /api/v1/admin/translations/jobs/{id}/retry
+- Auth Required: Yes
+- Request: None
+- Response: queued translation job object
+- Error Codes: TRANSLATION_JOB_NOT_FOUND, VALIDATION_ERROR
+- Notes: Manual retry resets `retryCount` to `0` and re-queues job immediately.
+
+- ID: ADM-TR-005
 - Method: GET
 - Path: /api/v1/admin/translations/contents
 - Auth Required: Yes
@@ -519,7 +529,7 @@
 - Response: paginated translation content rows
 - Error Codes: VALIDATION_ERROR, AUTH_UNAUTHORIZED
 
-- ID: ADM-TR-005
+- ID: ADM-TR-006
 - Method: GET
 - Path: /api/v1/admin/translations/contents/{sourceType}/{sourceId}/{locale}
 - Auth Required: Yes
@@ -527,7 +537,7 @@
 - Response: translation content detail
 - Error Codes: TRANSLATION_CONTENT_NOT_FOUND, VALIDATION_ERROR
 
-- ID: ADM-TR-006
+- ID: ADM-TR-007
 - Method: PUT
 - Path: /api/v1/admin/translations/contents
 - Auth Required: Yes

@@ -73,6 +73,8 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 			translationService,
 			integrationService,
 			time.Duration(cfg.Translation.PollIntervalMS)*time.Millisecond,
+			time.Duration(cfg.Translation.BackoffBaseMS)*time.Millisecond,
+			time.Duration(cfg.Translation.BackoffMaxMS)*time.Millisecond,
 		)
 	}
 

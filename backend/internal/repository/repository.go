@@ -4,7 +4,11 @@
 // Related: repository implementations and content service orchestration.
 package repository
 
-import "github.com/anxcye/ancy-blog/backend/internal/domain"
+import (
+	"time"
+
+	"github.com/anxcye/ancy-blog/backend/internal/domain"
+)
 
 type ContentRepository interface {
 	CreateArticle(article domain.Article) (domain.Article, error)
@@ -67,6 +71,8 @@ type ContentRepository interface {
 	MarkTranslationJobRunning(id string) error
 	MarkTranslationJobSucceeded(id, resultText string) error
 	MarkTranslationJobFailed(id, errorMessage string) error
+	ScheduleTranslationJobRetry(id, errorMessage string, nextRetryAt time.Time) error
+	RetryTranslationJob(id string) (domain.TranslationJob, error)
 	GetTranslationSourceText(sourceType, sourceID string) (string, bool, error)
 	UpsertArticleTranslation(articleID, locale, content, translatedByJobID string) error
 	UpsertMomentTranslation(momentID, locale, content, translatedByJobID string) error

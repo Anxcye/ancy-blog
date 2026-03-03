@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/anxcye/ancy-blog/backend/internal/domain"
 	"github.com/anxcye/ancy-blog/backend/internal/service"
 )
 
@@ -23,6 +24,8 @@ type TranslationWorker struct {
 	translationService *service.TranslationService
 	integrationService *service.IntegrationService
 	pollInterval       time.Duration
+	backoffBase        time.Duration
+	backoffMax         time.Duration
 	httpClient         *http.Client
 }
 
@@ -31,15 +34,28 @@ func NewTranslationWorker(
 	translationService *service.TranslationService,
 	integrationService *service.IntegrationService,
 	pollInterval time.Duration,
+	backoffBase time.Duration,
+	backoffMax time.Duration,
 ) *TranslationWorker {
 	if pollInterval <= 0 {
 		pollInterval = 3 * time.Second
+	}
+	if backoffBase <= 0 {
+		backoffBase = 3 * time.Second
+	}
+	if backoffMax <= 0 {
+		backoffMax = 60 * time.Second
+	}
+	if backoffMax < backoffBase {
+		backoffMax = backoffBase
 	}
 	return &TranslationWorker{
 		logger:             logger,
 		translationService: translationService,
 		integrationService: integrationService,
 		pollInterval:       pollInterval,
+		backoffBase:        backoffBase,
+		backoffMax:         backoffMax,
 		httpClient:         &http.Client{Timeout: 45 * time.Second},
 	}
 }
@@ -73,36 +89,36 @@ func (w *TranslationWorker) processOnce(ctx context.Context) error {
 
 	sourceText, sourceOK, err := w.translationService.GetTranslationSourceText(job.SourceType, job.SourceID)
 	if err != nil {
-		_ = w.translationService.MarkTranslationJobFailed(job.ID, fmt.Sprintf("load source failed: %v", err))
+		w.handleFailure(job, fmt.Sprintf("load source failed: %v", err))
 		return nil
 	}
 	if !sourceOK || strings.TrimSpace(sourceText) == "" {
-		_ = w.translationService.MarkTranslationJobFailed(job.ID, "source not found or empty")
+		w.handleFailure(job, "source not found or empty")
 		return nil
 	}
 
 	provider, providerOK := w.integrationService.GetIntegrationProviderForRuntime(job.ProviderKey)
 	if !providerOK {
-		_ = w.translationService.MarkTranslationJobFailed(job.ID, "provider not found")
+		w.handleFailure(job, "provider not found")
 		return nil
 	}
 	if !provider.Enabled {
-		_ = w.translationService.MarkTranslationJobFailed(job.ID, "provider is disabled")
+		w.handleFailure(job, "provider is disabled")
 		return nil
 	}
 
 	translated, err := w.translateWithProvider(ctx, provider.ConfigJSON, job.ModelName, job.SourceLocale, job.TargetLocale, sourceText)
 	if err != nil {
-		_ = w.translationService.MarkTranslationJobFailed(job.ID, err.Error())
+		w.handleFailure(job, err.Error())
 		return nil
 	}
 	if strings.TrimSpace(translated) == "" {
-		_ = w.translationService.MarkTranslationJobFailed(job.ID, "empty translation output")
+		w.handleFailure(job, "empty translation output")
 		return nil
 	}
 
 	if err := w.translationService.UpsertTranslationResult(job.SourceType, job.SourceID, job.TargetLocale, translated, job.ID); err != nil {
-		_ = w.translationService.MarkTranslationJobFailed(job.ID, fmt.Sprintf("persist translation failed: %v", err))
+		w.handleFailure(job, fmt.Sprintf("persist translation failed: %v", err))
 		return nil
 	}
 
@@ -111,6 +127,44 @@ func (w *TranslationWorker) processOnce(ctx context.Context) error {
 	}
 	w.logger.Info("translation job succeeded", "job_id", job.ID, "provider_key", job.ProviderKey)
 	return nil
+}
+
+func (w *TranslationWorker) handleFailure(job domain.TranslationJob, errorMessage string) {
+	if job.RetryCount < job.MaxRetries {
+		delay := w.computeBackoff(job.RetryCount)
+		nextRetryAt := time.Now().UTC().Add(delay)
+		if err := w.translationService.ScheduleTranslationJobRetry(job.ID, errorMessage, nextRetryAt); err != nil {
+			w.logger.Error("schedule translation retry failed", "job_id", job.ID, "error", err)
+			_ = w.translationService.MarkTranslationJobFailed(job.ID, errorMessage)
+			return
+		}
+		w.logger.Warn("translation job scheduled for retry",
+			"job_id", job.ID,
+			"retry_count", job.RetryCount+1,
+			"max_retries", job.MaxRetries,
+			"next_retry_at", nextRetryAt.Format(time.RFC3339),
+		)
+		return
+	}
+	_ = w.translationService.MarkTranslationJobFailed(job.ID, errorMessage)
+	w.logger.Warn("translation job marked failed", "job_id", job.ID, "retry_count", job.RetryCount, "max_retries", job.MaxRetries)
+}
+
+func (w *TranslationWorker) computeBackoff(retryCount int) time.Duration {
+	if retryCount < 0 {
+		retryCount = 0
+	}
+	delay := w.backoffBase
+	for i := 0; i < retryCount; i++ {
+		delay *= 2
+		if delay >= w.backoffMax {
+			return w.backoffMax
+		}
+	}
+	if delay > w.backoffMax {
+		return w.backoffMax
+	}
+	return delay
 }
 
 func (w *TranslationWorker) translateWithProvider(ctx context.Context, configJSON []byte, modelName, sourceLocale, targetLocale, sourceText string) (string, error) {

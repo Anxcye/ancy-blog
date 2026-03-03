@@ -6,7 +6,7 @@
 - [ ] Set up lint/test/build scripts.
 
 ## In Progress
-- [ ] Add translation worker retry/backoff policy and retry endpoint for failed jobs.
+- [ ] Add API rate limiting for auth/comment/AI/translation-create endpoints.
 
 ## Done
 - [x] Created tracking docs and collaboration guidelines.
@@ -44,6 +44,7 @@
 - [x] Added non-streaming admin AI assist endpoints for article summary and slug suggestion (`/api/v1/admin/ai/summary`, `/api/v1/admin/ai/slug`) with deterministic fallback and slug de-duplication.
 - [x] Added locale-aware read support for public moments and timeline APIs (`locale` query passthrough + repository translation readback).
 - [x] Added admin translation-content management APIs for browse/detail/manual override (`/api/v1/admin/translations/contents*`).
+- [x] Added translation worker retry/backoff and manual retry endpoint for failed jobs (`/api/v1/admin/translations/jobs/{id}/retry`).
 
 ## Blocked
 - None.

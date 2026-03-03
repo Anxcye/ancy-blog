@@ -4,7 +4,11 @@
 // Related: content.go core logic and handler constructors.
 package service
 
-import "github.com/anxcye/ancy-blog/backend/internal/domain"
+import (
+	"time"
+
+	"github.com/anxcye/ancy-blog/backend/internal/domain"
+)
 
 type ArticleService struct{ core *ContentService }
 
@@ -164,6 +168,12 @@ func (s *TranslationService) MarkTranslationJobSucceeded(id, resultText string) 
 }
 func (s *TranslationService) MarkTranslationJobFailed(id, errorMessage string) error {
 	return s.core.MarkTranslationJobFailed(id, errorMessage)
+}
+func (s *TranslationService) ScheduleTranslationJobRetry(id, errorMessage string, nextRetryAt time.Time) error {
+	return s.core.ScheduleTranslationJobRetry(id, errorMessage, nextRetryAt)
+}
+func (s *TranslationService) RetryTranslationJob(id string) (domain.TranslationJob, error) {
+	return s.core.RetryTranslationJob(id)
 }
 func (s *TranslationService) GetTranslationSourceText(sourceType, sourceID string) (string, bool, error) {
 	return s.core.GetTranslationSourceText(sourceType, sourceID)

@@ -33,6 +33,7 @@ type contentRepoStub struct {
 	getIntegrationProviderFunc    func(providerKey string) (domain.IntegrationProvider, bool)
 	updateIntegrationProviderFunc func(providerKey string, enabled bool, configJSON, metaJSON []byte) (domain.IntegrationProvider, error)
 	createTranslationJobFunc      func(job domain.TranslationJob) (domain.TranslationJob, error)
+	retryTranslationJobFunc       func(id string) (domain.TranslationJob, error)
 	listTranslationContentsFunc   func(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int)
 	getTranslationContentFunc     func(sourceType, sourceID, locale string) (domain.TranslationContent, bool)
 	upsertTranslationContentFunc  func(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error)
@@ -141,6 +142,13 @@ func (s *contentRepoStub) CreateTranslationJob(job domain.TranslationJob) (domai
 		return s.createTranslationJobFunc(job)
 	}
 	return job, nil
+}
+
+func (s *contentRepoStub) RetryTranslationJob(id string) (domain.TranslationJob, error) {
+	if s.retryTranslationJobFunc != nil {
+		return s.retryTranslationJobFunc(id)
+	}
+	return domain.TranslationJob{}, nil
 }
 
 func (s *contentRepoStub) ListTranslationContents(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int) {
@@ -467,6 +475,9 @@ func TestCreateTranslationJobValidation(t *testing.T) {
 	if job.Status != "queued" {
 		t.Fatalf("expected queued status, got %s", job.Status)
 	}
+	if job.MaxRetries != 3 {
+		t.Fatalf("expected default max retries=3, got %d", job.MaxRetries)
+	}
 }
 
 func TestCreateTranslationJobRejectsSameLocale(t *testing.T) {
@@ -495,5 +506,12 @@ func TestUpsertTranslationContentValidation(t *testing.T) {
 	svc := NewContentService(&contentRepoStub{}, nil)
 	if _, err := svc.UpsertTranslationContent("article", "a1", "en-US", "", ""); err == nil {
 		t.Fatalf("expected validation error for empty content")
+	}
+}
+
+func TestRetryTranslationJobValidation(t *testing.T) {
+	svc := NewContentService(&contentRepoStub{}, nil)
+	if _, err := svc.RetryTranslationJob(""); err == nil {
+		t.Fatalf("expected validation error for empty id")
 	}
 }

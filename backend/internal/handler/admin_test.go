@@ -150,6 +150,62 @@ func TestAdminTranslationJobDetailNotFound(t *testing.T) {
 	}
 }
 
+func TestAdminRetryTranslationJobSuccess(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	repo := &handlerRepoStub{
+		retryTranslationJobFunc: func(id string) (domain.TranslationJob, error) {
+			return domain.TranslationJob{ID: id, Status: "queued"}, nil
+		},
+	}
+	core := service.NewContentService(repo, nil)
+	h := NewAdminHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewIntegrationService(core),
+		service.NewTranslationService(core),
+		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+	)
+	r := adminRouter(h)
+	r.POST("/translations/jobs/:id/retry", h.RetryTranslationJob)
+
+	req := httptest.NewRequest(http.MethodPost, "/translations/jobs/job-1/retry", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", w.Code, w.Body.String())
+	}
+}
+
+func TestAdminRetryTranslationJobNotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	repo := &handlerRepoStub{
+		retryTranslationJobFunc: func(id string) (domain.TranslationJob, error) {
+			return domain.TranslationJob{}, apperr.ErrTranslationJobNotFound
+		},
+	}
+	core := service.NewContentService(repo, nil)
+	h := NewAdminHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewIntegrationService(core),
+		service.NewTranslationService(core),
+		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+	)
+	r := adminRouter(h)
+	r.POST("/translations/jobs/:id/retry", h.RetryTranslationJob)
+
+	req := httptest.NewRequest(http.MethodPost, "/translations/jobs/job-1/retry", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d body=%s", w.Code, w.Body.String())
+	}
+}
+
 func TestAdminListTranslationContents(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	repo := &handlerRepoStub{

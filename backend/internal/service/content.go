@@ -495,6 +495,16 @@ func (s *ContentService) CreateTranslationJob(job domain.TranslationJob) (domain
 	if !provider.Enabled {
 		return domain.TranslationJob{}, fmt.Errorf("%w: provider is disabled", apperr.ErrValidation)
 	}
+	if job.MaxRetries <= 0 {
+		job.MaxRetries = 3
+	}
+	if job.MaxRetries > 10 {
+		return domain.TranslationJob{}, fmt.Errorf("%w: maxRetries must be <= 10", apperr.ErrValidation)
+	}
+	job.RetryCount = 0
+	if job.NextRetryAt.IsZero() {
+		job.NextRetryAt = time.Now().UTC()
+	}
 	job.Status = "queued"
 	return s.repo.CreateTranslationJob(job)
 }
@@ -517,6 +527,23 @@ func (s *ContentService) MarkTranslationJobSucceeded(id, resultText string) erro
 
 func (s *ContentService) MarkTranslationJobFailed(id, errorMessage string) error {
 	return s.repo.MarkTranslationJobFailed(id, errorMessage)
+}
+
+func (s *ContentService) ScheduleTranslationJobRetry(id, errorMessage string, nextRetryAt time.Time) error {
+	if strings.TrimSpace(id) == "" {
+		return fmt.Errorf("%w: id is required", apperr.ErrValidation)
+	}
+	if nextRetryAt.IsZero() {
+		nextRetryAt = time.Now().UTC()
+	}
+	return s.repo.ScheduleTranslationJobRetry(id, errorMessage, nextRetryAt)
+}
+
+func (s *ContentService) RetryTranslationJob(id string) (domain.TranslationJob, error) {
+	if strings.TrimSpace(id) == "" {
+		return domain.TranslationJob{}, fmt.Errorf("%w: id is required", apperr.ErrValidation)
+	}
+	return s.repo.RetryTranslationJob(id)
 }
 
 func (s *ContentService) GetTranslationSourceText(sourceType, sourceID string) (string, bool, error) {

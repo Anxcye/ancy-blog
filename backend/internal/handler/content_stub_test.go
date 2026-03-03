@@ -27,6 +27,7 @@ type handlerRepoStub struct {
 	getIntegrationProviderFunc   func(providerKey string) (domain.IntegrationProvider, bool)
 	createTranslationJobFunc     func(job domain.TranslationJob) (domain.TranslationJob, error)
 	getTranslationJobByIDFunc    func(id string) (domain.TranslationJob, bool)
+	retryTranslationJobFunc      func(id string) (domain.TranslationJob, error)
 	listTranslationContentsFunc  func(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int)
 	getTranslationContentFunc    func(sourceType, sourceID, locale string) (domain.TranslationContent, bool)
 	upsertTranslationContentFunc func(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error)
@@ -122,6 +123,13 @@ func (s *handlerRepoStub) GetTranslationJobByID(id string) (domain.TranslationJo
 		return s.getTranslationJobByIDFunc(id)
 	}
 	return domain.TranslationJob{}, false
+}
+
+func (s *handlerRepoStub) RetryTranslationJob(id string) (domain.TranslationJob, error) {
+	if s.retryTranslationJobFunc != nil {
+		return s.retryTranslationJobFunc(id)
+	}
+	return domain.TranslationJob{}, errors.New("not implemented")
 }
 
 func (s *handlerRepoStub) ListTranslationContents(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int) {
