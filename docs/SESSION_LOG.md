@@ -159,6 +159,16 @@
   - `TRANSLATION_WORKER_POLL_INTERVAL_MS`
 - Validation run after worker implementation:
   - `go test ./...` passed with worker and translation flow changes
+- Added PostgreSQL integration test suite with build tag:
+  - `internal/repository/postgres/repository_integration_test.go`
+  - requires `TEST_DB_DSN` and runs with `-tags=integration`
+  - includes DB reset via migrations and verifies:
+    - article publish/list/read flow
+    - comment create/list/count flow
+    - translation job queue claim + success update + source text lookup
+- Validation run after integration tests:
+  - `go test ./...` passed
+  - `go test -tags=integration ./internal/repository/postgres -run TestRepositoryIntegration -count=1` passed
 
 ### Next Suggested Tasks
 1. Implement translation worker execution (`queued -> running -> succeeded/failed`) and persistence update API.

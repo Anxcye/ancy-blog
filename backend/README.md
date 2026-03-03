@@ -26,6 +26,13 @@ make migrate-up
 make migrate-version
 ```
 
+Run PostgreSQL integration tests:
+```bash
+cd backend
+TEST_DB_DSN='postgres://user:pass@127.0.0.1:5432/ancy_blog?sslmode=disable' \
+go test -tags=integration ./internal/repository/postgres -run TestRepositoryIntegration -count=1
+```
+
 ## Environment Variables
 - `APP_NAME` (default: `ancy-blog-api`)
 - `APP_ENV` (default: `dev`)
