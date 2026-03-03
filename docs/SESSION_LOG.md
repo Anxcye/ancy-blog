@@ -185,8 +185,17 @@
   - `go test ./...` passed
   - `go test -tags=integration ./internal/repository/postgres -run TestRepositoryIntegration -count=1` passed
   - `go test -tags=integration ./internal/server -run TestAPISmokeFlow -count=1` passed
+- Added translation worker unit tests with mocked LLM server:
+  - `internal/worker/translation_test.go`
+  - covered paths:
+    - successful translation + writeback + job success mark
+    - provider disabled -> failed mark
+    - LLM non-2xx response -> failed mark
+    - empty translated output -> failed mark
+- Validation run after worker tests:
+  - `go test ./...` passed, including `internal/worker` package tests
 
 ### Next Suggested Tasks
-1. Add worker-focused tests with mocked LLM responses (success/failure/invalid payload/timeout).
-2. Add locale-aware read support for moments and timeline APIs.
-3. Expose admin APIs for querying and manually overriding localized content records.
+1. Add locale-aware read support for moments and timeline APIs.
+2. Expose admin APIs for querying and manually overriding localized content records.
+3. Add translation worker retry/backoff policy and a retry endpoint for failed jobs.

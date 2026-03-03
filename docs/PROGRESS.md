@@ -6,8 +6,8 @@
 - [ ] Set up lint/test/build scripts.
 
 ## In Progress
-- [ ] Add worker-oriented tests for translation execution with mocked LLM responses.
 - [ ] Add localized content read APIs for moments and timeline (`locale` aware).
+- [ ] Add admin APIs for browsing and manually overriding localized content records.
 
 ## Done
 - [x] Created tracking docs and collaboration guidelines.
@@ -41,6 +41,7 @@
 - [x] Added API e2e smoke test (`-tags=integration`) covering auth/admin/public/translation flows.
 - [x] Added locale translation persistence (`article_translations`, `moment_translations`) and worker writeback.
 - [x] Added article detail `locale` query support with translation fallback.
+- [x] Added translation worker unit tests with mocked LLM responses (success/failure/empty output/provider disabled).
 
 ## Blocked
 - None.
