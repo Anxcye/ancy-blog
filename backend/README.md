@@ -21,6 +21,13 @@ go run ./cmd/server
 - `AUTH_ADMIN_PASSWORD` (default: `123456`)
 - `AUTH_ACCESS_TOKEN_TTL_SECONDS` (default: `3600`)
 - `AUTH_REFRESH_TOKEN_TTL_SECONDS` (default: `604800`)
+- `R2_ENABLED` (default: `false`)
+- `R2_ACCOUNT_ID`
+- `R2_ACCESS_KEY_ID`
+- `R2_SECRET_ACCESS_KEY`
+- `R2_BUCKET`
+- `R2_PUBLIC_BASE_URL` (e.g. CDN/custom domain base URL)
+- `R2_REGION` (default: `auto`)
 
 ## Health Check
 - `GET /healthz`
@@ -29,6 +36,13 @@ go run ./cmd/server
 - Auth: `/api/v1/auth/*`
 - Public: `/api/v1/public/*`
 - Admin: `/api/v1/admin/*` (Bearer token required)
+
+## Image Upload (CF R2)
+- Endpoint: `POST /api/v1/admin/upload/image`
+- Auth: Bearer token required
+- Content-Type: `multipart/form-data`
+- Form field: `file`
+- Current limit: `10MB`
 
 ## Demo Login
 ```bash

@@ -371,6 +371,22 @@
 - Error Codes: SLOT_ITEM_NOT_FOUND
 - Notes: Invalidate `site:slot:{slotKey}:{locale}` cache on slot updates.
 
+## Admin - Upload
+- ID: ADM-UPLOAD-001
+- Method: POST
+- Path: /api/v1/admin/upload/image
+- Auth Required: Yes
+- Request: `multipart/form-data` with `file`
+- Response:
+```json
+{
+  "key": "uploads/images/202603/uuid.png",
+  "url": "https://cdn.example.com/uploads/images/202603/uuid.png"
+}
+```
+- Error Codes: UPLOAD_NOT_CONFIGURED, VALIDATION_ERROR, UPLOAD_FAILED
+- Notes: Uses Cloudflare R2 when configured.
+
 ## System
 - ID: SYS-001
 - Method: GET

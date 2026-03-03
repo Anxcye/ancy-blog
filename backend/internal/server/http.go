@@ -29,7 +29,7 @@ func NewHTTPServer(cfg *config.Config, logger *slog.Logger) *HTTPServer {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	container := app.New(cfg)
+	container := app.New(cfg, logger)
 	engine := gin.New()
 	engine.Use(gin.Recovery())
 	engine.Use(middleware.RequestLogger(logger))
@@ -88,6 +88,8 @@ func NewHTTPServer(cfg *config.Config, logger *slog.Logger) *HTTPServer {
 			admin.POST("/site/slots", container.AdminHandler.CreateSlot)
 			admin.POST("/site/slots/:slotKey/items", container.AdminHandler.CreateSlotItem)
 			admin.DELETE("/site/slots/:slotKey/items/:id", container.AdminHandler.DeleteSlotItem)
+
+			admin.POST("/upload/image", container.UploadHandler.UploadImage)
 		}
 	}
 

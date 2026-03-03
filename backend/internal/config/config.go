@@ -15,6 +15,7 @@ type Config struct {
 	App  AppConfig
 	HTTP HTTPConfig
 	Auth AuthConfig
+	R2   R2Config
 }
 
 type AppConfig struct {
@@ -32,6 +33,16 @@ type AuthConfig struct {
 	AdminPassword          string
 	AccessTokenTTLSeconds  int
 	RefreshTokenTTLSeconds int
+}
+
+type R2Config struct {
+	Enabled         bool
+	AccountID       string
+	AccessKeyID     string
+	SecretAccessKey string
+	Bucket          string
+	PublicBaseURL   string
+	Region          string
 }
 
 func Load() (*Config, error) {
@@ -63,6 +74,15 @@ func Load() (*Config, error) {
 			AccessTokenTTLSeconds:  accessTTL,
 			RefreshTokenTTLSeconds: refreshTTL,
 		},
+		R2: R2Config{
+			Enabled:         parseBool(getEnv("R2_ENABLED", "false")),
+			AccountID:       getEnv("R2_ACCOUNT_ID", ""),
+			AccessKeyID:     getEnv("R2_ACCESS_KEY_ID", ""),
+			SecretAccessKey: getEnv("R2_SECRET_ACCESS_KEY", ""),
+			Bucket:          getEnv("R2_BUCKET", ""),
+			PublicBaseURL:   strings.TrimRight(getEnv("R2_PUBLIC_BASE_URL", ""), "/"),
+			Region:          getEnv("R2_REGION", "auto"),
+		},
 	}
 
 	return cfg, nil
@@ -81,4 +101,13 @@ func parseInt(raw string) (int, error) {
 		return 0, err
 	}
 	return v, nil
+}
+
+func parseBool(raw string) bool {
+	switch strings.ToLower(strings.TrimSpace(raw)) {
+	case "1", "true", "yes", "y", "on":
+		return true
+	default:
+		return false
+	}
 }

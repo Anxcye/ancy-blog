@@ -22,6 +22,7 @@
 - [x] Defined site config domain (`site_settings/footer_items/social_links`) and Redis cache policy.
 - [x] Defined dynamic nav/slot model and timeline API for frontend interaction design.
 - [x] Implemented backend v1 APIs (`auth/public/admin`) with Gin, in-memory repository, and auth middleware.
+- [x] Added Cloudflare R2 image upload support (`/api/v1/admin/upload/image`).
 
 ## Blocked
 - None.

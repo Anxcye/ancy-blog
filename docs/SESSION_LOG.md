@@ -67,6 +67,11 @@
 - Verified compile and smoke test:
   - `go test ./...` passed
   - `/healthz`, `/api/v1/auth/login`, and `/api/v1/public/timeline` returned expected results
+- Added Cloudflare R2 image upload capability:
+  - new storage abstraction and R2 uploader
+  - new admin endpoint `POST /api/v1/admin/upload/image`
+  - new R2 environment configuration fields
+  - updated backend usage docs and API contract
 
 ### Next Suggested Tasks
 1. Install Go `1.22+`, run `go mod tidy`, then `go run ./cmd/server` under `backend/`.
