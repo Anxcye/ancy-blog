@@ -33,6 +33,9 @@ type contentRepoStub struct {
 	getIntegrationProviderFunc    func(providerKey string) (domain.IntegrationProvider, bool)
 	updateIntegrationProviderFunc func(providerKey string, enabled bool, configJSON, metaJSON []byte) (domain.IntegrationProvider, error)
 	createTranslationJobFunc      func(job domain.TranslationJob) (domain.TranslationJob, error)
+	listTranslationContentsFunc   func(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int)
+	getTranslationContentFunc     func(sourceType, sourceID, locale string) (domain.TranslationContent, bool)
+	upsertTranslationContentFunc  func(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error)
 }
 
 func (s *contentRepoStub) CreateArticle(article domain.Article) (domain.Article, error) {
@@ -138,6 +141,27 @@ func (s *contentRepoStub) CreateTranslationJob(job domain.TranslationJob) (domai
 		return s.createTranslationJobFunc(job)
 	}
 	return job, nil
+}
+
+func (s *contentRepoStub) ListTranslationContents(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int) {
+	if s.listTranslationContentsFunc != nil {
+		return s.listTranslationContentsFunc(page, pageSize, sourceType, sourceID, locale)
+	}
+	return nil, 0
+}
+
+func (s *contentRepoStub) GetTranslationContent(sourceType, sourceID, locale string) (domain.TranslationContent, bool) {
+	if s.getTranslationContentFunc != nil {
+		return s.getTranslationContentFunc(sourceType, sourceID, locale)
+	}
+	return domain.TranslationContent{}, false
+}
+
+func (s *contentRepoStub) UpsertTranslationContent(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error) {
+	if s.upsertTranslationContentFunc != nil {
+		return s.upsertTranslationContentFunc(sourceType, sourceID, locale, content, translatedByJobID)
+	}
+	return domain.TranslationContent{}, nil
 }
 
 type fakeCache struct {
@@ -457,5 +481,19 @@ func TestCreateTranslationJobRejectsSameLocale(t *testing.T) {
 	})
 	if err == nil {
 		t.Fatalf("expected error when sourceLocale equals targetLocale")
+	}
+}
+
+func TestListTranslationContentsValidation(t *testing.T) {
+	svc := NewContentService(&contentRepoStub{}, nil)
+	if _, _, err := svc.ListTranslationContents(1, 10, "invalid", "", ""); err == nil {
+		t.Fatalf("expected validation error for invalid sourceType")
+	}
+}
+
+func TestUpsertTranslationContentValidation(t *testing.T) {
+	svc := NewContentService(&contentRepoStub{}, nil)
+	if _, err := svc.UpsertTranslationContent("article", "a1", "en-US", "", ""); err == nil {
+		t.Fatalf("expected validation error for empty content")
 	}
 }

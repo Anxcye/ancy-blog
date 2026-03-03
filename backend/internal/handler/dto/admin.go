@@ -106,3 +106,11 @@ type CreateTranslationJobRequest struct {
 	ProviderKey  string `json:"providerKey"`
 	ModelName    string `json:"modelName"`
 }
+
+type UpsertTranslationContentRequest struct {
+	SourceType        string `json:"sourceType"`
+	SourceID          string `json:"sourceId"`
+	Locale            string `json:"locale"`
+	Content           string `json:"content"`
+	TranslatedByJobID string `json:"translatedByJobId"`
+}

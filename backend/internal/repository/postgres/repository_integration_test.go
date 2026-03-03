@@ -282,4 +282,28 @@ func TestRepositoryIntegration_TranslationJobLifecycle(t *testing.T) {
 	if !foundLocalizedTimelineMoment {
 		t.Fatalf("expected localized moment in timeline")
 	}
+
+	items, total := repo.ListTranslationContents(1, 20, "article", article.ID, "en-US")
+	if total < 1 || len(items) == 0 {
+		t.Fatalf("expected translation contents, total=%d len=%d", total, len(items))
+	}
+	if items[0].Content == "" {
+		t.Fatalf("expected non-empty translation content")
+	}
+
+	gotTranslation, ok := repo.GetTranslationContent("article", article.ID, "en-US")
+	if !ok {
+		t.Fatalf("expected translation content detail")
+	}
+	if gotTranslation.Content != "translated body" {
+		t.Fatalf("unexpected translation detail content: %s", gotTranslation.Content)
+	}
+
+	manual, err := repo.UpsertTranslationContent("article", article.ID, "en-US", "manual override", "")
+	if err != nil {
+		t.Fatalf("upsert translation content failed: %v", err)
+	}
+	if manual.Content != "manual override" {
+		t.Fatalf("expected manual override content, got: %s", manual.Content)
+	}
 }

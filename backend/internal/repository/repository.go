@@ -70,6 +70,9 @@ type ContentRepository interface {
 	GetTranslationSourceText(sourceType, sourceID string) (string, bool, error)
 	UpsertArticleTranslation(articleID, locale, content, translatedByJobID string) error
 	UpsertMomentTranslation(momentID, locale, content, translatedByJobID string) error
+	ListTranslationContents(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int)
+	GetTranslationContent(sourceType, sourceID, locale string) (domain.TranslationContent, bool)
+	UpsertTranslationContent(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error)
 
 	ListTimeline(page, pageSize int, locale string) ([]domain.TimelineItem, int)
 }

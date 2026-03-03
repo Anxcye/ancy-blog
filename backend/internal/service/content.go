@@ -534,6 +534,38 @@ func (s *ContentService) UpsertTranslationResult(sourceType, sourceID, targetLoc
 	}
 }
 
+func (s *ContentService) ListTranslationContents(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int, error) {
+	if sourceType != "article" && sourceType != "moment" {
+		return nil, 0, fmt.Errorf("%w: sourceType must be article or moment", apperr.ErrValidation)
+	}
+	rows, total := s.repo.ListTranslationContents(page, pageSize, sourceType, sourceID, locale)
+	return rows, total, nil
+}
+
+func (s *ContentService) GetTranslationContent(sourceType, sourceID, locale string) (domain.TranslationContent, bool, error) {
+	if sourceType != "article" && sourceType != "moment" {
+		return domain.TranslationContent{}, false, fmt.Errorf("%w: sourceType must be article or moment", apperr.ErrValidation)
+	}
+	if strings.TrimSpace(sourceID) == "" || strings.TrimSpace(locale) == "" {
+		return domain.TranslationContent{}, false, fmt.Errorf("%w: sourceId and locale are required", apperr.ErrValidation)
+	}
+	row, ok := s.repo.GetTranslationContent(sourceType, sourceID, locale)
+	return row, ok, nil
+}
+
+func (s *ContentService) UpsertTranslationContent(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error) {
+	if sourceType != "article" && sourceType != "moment" {
+		return domain.TranslationContent{}, fmt.Errorf("%w: sourceType must be article or moment", apperr.ErrValidation)
+	}
+	if strings.TrimSpace(sourceID) == "" || strings.TrimSpace(locale) == "" {
+		return domain.TranslationContent{}, fmt.Errorf("%w: sourceId and locale are required", apperr.ErrValidation)
+	}
+	if strings.TrimSpace(content) == "" {
+		return domain.TranslationContent{}, fmt.Errorf("%w: content is required", apperr.ErrValidation)
+	}
+	return s.repo.UpsertTranslationContent(sourceType, sourceID, locale, content, translatedByJobID)
+}
+
 func (s *ContentService) GetIntegrationProviderForRuntime(providerKey string) (domain.IntegrationProvider, bool) {
 	return s.repo.GetIntegrationProvider(providerKey)
 }

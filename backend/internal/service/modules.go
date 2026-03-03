@@ -171,6 +171,15 @@ func (s *TranslationService) GetTranslationSourceText(sourceType, sourceID strin
 func (s *TranslationService) UpsertTranslationResult(sourceType, sourceID, targetLocale, content, translatedByJobID string) error {
 	return s.core.UpsertTranslationResult(sourceType, sourceID, targetLocale, content, translatedByJobID)
 }
+func (s *TranslationService) ListTranslationContents(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int, error) {
+	return s.core.ListTranslationContents(page, pageSize, sourceType, sourceID, locale)
+}
+func (s *TranslationService) GetTranslationContent(sourceType, sourceID, locale string) (domain.TranslationContent, bool, error) {
+	return s.core.GetTranslationContent(sourceType, sourceID, locale)
+}
+func (s *TranslationService) UpsertTranslationContent(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error) {
+	return s.core.UpsertTranslationContent(sourceType, sourceID, locale, content, translatedByJobID)
+}
 
 func (s *TimelineService) ListTimeline(page, pageSize int, locale string) ([]domain.TimelineItem, int) {
 	return s.core.ListTimeline(page, pageSize, locale)

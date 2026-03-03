@@ -150,6 +150,99 @@ func TestAdminTranslationJobDetailNotFound(t *testing.T) {
 	}
 }
 
+func TestAdminListTranslationContents(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	repo := &handlerRepoStub{
+		listTranslationContentsFunc: func(_ int, _ int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int) {
+			if sourceType != "article" || sourceID != "a1" || locale != "en-US" {
+				t.Fatalf("unexpected filters sourceType=%s sourceID=%s locale=%s", sourceType, sourceID, locale)
+			}
+			return []domain.TranslationContent{{SourceType: "article", SourceID: "a1", Locale: "en-US", Content: "hello"}}, 1
+		},
+	}
+	core := service.NewContentService(repo, nil)
+	h := NewAdminHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewIntegrationService(core),
+		service.NewTranslationService(core),
+		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+	)
+	r := adminRouter(h)
+	r.GET("/translations/contents", h.ListTranslationContents)
+
+	req := httptest.NewRequest(http.MethodGet, "/translations/contents?sourceType=article&sourceId=a1&locale=en-US", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", w.Code, w.Body.String())
+	}
+}
+
+func TestAdminUpsertTranslationContent(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	repo := &handlerRepoStub{
+		upsertTranslationContentFunc: func(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error) {
+			return domain.TranslationContent{
+				SourceType:        sourceType,
+				SourceID:          sourceID,
+				Locale:            locale,
+				Content:           content,
+				TranslatedByJobID: translatedByJobID,
+			}, nil
+		},
+	}
+	core := service.NewContentService(repo, nil)
+	h := NewAdminHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewIntegrationService(core),
+		service.NewTranslationService(core),
+		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+	)
+	r := adminRouter(h)
+	r.PUT("/translations/contents", h.UpsertTranslationContent)
+
+	body := bytes.NewBufferString(`{"sourceType":"article","sourceId":"a1","locale":"en-US","content":"translated","translatedByJobId":"job-1"}`)
+	req := httptest.NewRequest(http.MethodPut, "/translations/contents", body)
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", w.Code, w.Body.String())
+	}
+}
+
+func TestAdminTranslationContentDetailNotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	core := service.NewContentService(&handlerRepoStub{}, nil)
+	h := NewAdminHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewIntegrationService(core),
+		service.NewTranslationService(core),
+		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+	)
+	r := adminRouter(h)
+	r.GET("/translations/contents/:sourceType/:sourceId/:locale", h.TranslationContentDetail)
+
+	req := httptest.NewRequest(http.MethodGet, "/translations/contents/article/a1/en-US", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d", w.Code)
+	}
+}
+
 func TestAdminAISuggestSlugFallback(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	repo := &handlerRepoStub{slugExistsFunc: func(slug string) bool { return slug == "my-title" }}

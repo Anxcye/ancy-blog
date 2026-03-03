@@ -96,3 +96,33 @@ func TestLocaleTranslationForMomentAndTimeline(t *testing.T) {
 		t.Fatalf("expected localized moment in timeline")
 	}
 }
+
+func TestTranslationContentCRUD(t *testing.T) {
+	repo := NewRepository()
+	articles, total := repo.ListPublishedArticles(1, 10, "", "", "post")
+	if total == 0 || len(articles) == 0 {
+		t.Fatalf("expected seeded article")
+	}
+	articleID := articles[0].ID
+
+	row, err := repo.UpsertTranslationContent("article", articleID, "en-US", "translated article", "job-1")
+	if err != nil {
+		t.Fatalf("upsert translation content failed: %v", err)
+	}
+	if row.Content != "translated article" {
+		t.Fatalf("unexpected upserted content: %s", row.Content)
+	}
+
+	got, ok := repo.GetTranslationContent("article", articleID, "en-US")
+	if !ok {
+		t.Fatalf("expected translation content detail")
+	}
+	if got.Content != "translated article" {
+		t.Fatalf("unexpected translation content detail: %s", got.Content)
+	}
+
+	items, count := repo.ListTranslationContents(1, 10, "article", articleID, "en-US")
+	if count != 1 || len(items) != 1 {
+		t.Fatalf("expected one translation content row, count=%d len=%d", count, len(items))
+	}
+}

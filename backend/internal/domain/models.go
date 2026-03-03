@@ -207,3 +207,13 @@ type TranslationJob struct {
 	UpdatedAt    time.Time `json:"updatedAt"`
 	FinishedAt   time.Time `json:"finishedAt,omitempty"`
 }
+
+type TranslationContent struct {
+	SourceType        string    `json:"sourceType"`
+	SourceID          string    `json:"sourceId"`
+	Locale            string    `json:"locale"`
+	Content           string    `json:"content"`
+	TranslatedByJobID string    `json:"translatedByJobId,omitempty"`
+	CreatedAt         time.Time `json:"createdAt"`
+	UpdatedAt         time.Time `json:"updatedAt"`
+}

@@ -22,8 +22,8 @@ type Repository struct {
 	moments  map[string]domain.Moment
 	links    map[string]domain.Link
 
-	articleTranslations map[string]map[string]string
-	momentTranslations  map[string]map[string]string
+	articleTranslations map[string]map[string]translationRecord
+	momentTranslations  map[string]map[string]translationRecord
 
 	categories []domain.Category
 	tags       []domain.Tag
@@ -36,14 +36,21 @@ type Repository struct {
 	slotItems    map[string]map[string]domain.SlotItem
 }
 
+type translationRecord struct {
+	content           string
+	translatedByJobID string
+	createdAt         time.Time
+	updatedAt         time.Time
+}
+
 func NewRepository() *Repository {
 	now := time.Now().UTC()
 	r := &Repository{
 		articles:            make(map[string]domain.Article),
 		moments:             make(map[string]domain.Moment),
 		links:               make(map[string]domain.Link),
-		articleTranslations: make(map[string]map[string]string),
-		momentTranslations:  make(map[string]map[string]string),
+		articleTranslations: make(map[string]map[string]translationRecord),
+		momentTranslations:  make(map[string]map[string]translationRecord),
 		categories: []domain.Category{
 			{ID: uuid.NewString(), Name: "Tech", Slug: "tech"},
 			{ID: uuid.NewString(), Name: "Life", Slug: "life"},
@@ -653,10 +660,17 @@ func (r *Repository) UpsertArticleTranslation(articleID, locale, content, transl
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if _, ok := r.articleTranslations[articleID]; !ok {
-		r.articleTranslations[articleID] = map[string]string{}
+		r.articleTranslations[articleID] = map[string]translationRecord{}
 	}
-	r.articleTranslations[articleID][locale] = content
-	_ = translatedByJobID
+	now := time.Now().UTC()
+	current, exists := r.articleTranslations[articleID][locale]
+	if !exists {
+		current.createdAt = now
+	}
+	current.content = content
+	current.translatedByJobID = translatedByJobID
+	current.updatedAt = now
+	r.articleTranslations[articleID][locale] = current
 	return nil
 }
 
@@ -664,10 +678,17 @@ func (r *Repository) UpsertMomentTranslation(momentID, locale, content, translat
 	r.mu.Lock()
 	defer r.mu.Unlock()
 	if _, ok := r.momentTranslations[momentID]; !ok {
-		r.momentTranslations[momentID] = map[string]string{}
+		r.momentTranslations[momentID] = map[string]translationRecord{}
 	}
-	r.momentTranslations[momentID][locale] = content
-	_ = translatedByJobID
+	now := time.Now().UTC()
+	current, exists := r.momentTranslations[momentID][locale]
+	if !exists {
+		current.createdAt = now
+	}
+	current.content = content
+	current.translatedByJobID = translatedByJobID
+	current.updatedAt = now
+	r.momentTranslations[momentID][locale] = current
 	return nil
 }
 
@@ -676,8 +697,8 @@ func (r *Repository) getArticleTranslation(articleID, locale string) (string, bo
 	if !ok {
 		return "", false
 	}
-	content, ok := translations[locale]
-	return content, ok
+	row, ok := translations[locale]
+	return row.content, ok
 }
 
 func (r *Repository) getMomentTranslation(momentID, locale string) (string, bool) {
@@ -685,8 +706,134 @@ func (r *Repository) getMomentTranslation(momentID, locale string) (string, bool
 	if !ok {
 		return "", false
 	}
-	content, ok := translations[locale]
-	return content, ok
+	row, ok := translations[locale]
+	return row.content, ok
+}
+
+func (r *Repository) ListTranslationContents(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	rows := make([]domain.TranslationContent, 0)
+	switch sourceType {
+	case "article":
+		rows = r.listArticleTranslationContents(sourceID, locale)
+	case "moment":
+		rows = r.listMomentTranslationContents(sourceID, locale)
+	default:
+		return []domain.TranslationContent{}, 0
+	}
+	sort.Slice(rows, func(i, j int) bool { return rows[i].UpdatedAt.After(rows[j].UpdatedAt) })
+	return paginateTranslationContents(rows, page, pageSize)
+}
+
+func (r *Repository) GetTranslationContent(sourceType, sourceID, locale string) (domain.TranslationContent, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	switch sourceType {
+	case "article":
+		translations, ok := r.articleTranslations[sourceID]
+		if !ok {
+			return domain.TranslationContent{}, false
+		}
+		row, ok := translations[locale]
+		if !ok {
+			return domain.TranslationContent{}, false
+		}
+		return domain.TranslationContent{
+			SourceType:        "article",
+			SourceID:          sourceID,
+			Locale:            locale,
+			Content:           row.content,
+			TranslatedByJobID: row.translatedByJobID,
+			CreatedAt:         row.createdAt,
+			UpdatedAt:         row.updatedAt,
+		}, true
+	case "moment":
+		translations, ok := r.momentTranslations[sourceID]
+		if !ok {
+			return domain.TranslationContent{}, false
+		}
+		row, ok := translations[locale]
+		if !ok {
+			return domain.TranslationContent{}, false
+		}
+		return domain.TranslationContent{
+			SourceType:        "moment",
+			SourceID:          sourceID,
+			Locale:            locale,
+			Content:           row.content,
+			TranslatedByJobID: row.translatedByJobID,
+			CreatedAt:         row.createdAt,
+			UpdatedAt:         row.updatedAt,
+		}, true
+	default:
+		return domain.TranslationContent{}, false
+	}
+}
+
+func (r *Repository) UpsertTranslationContent(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error) {
+	switch sourceType {
+	case "article":
+		if err := r.UpsertArticleTranslation(sourceID, locale, content, translatedByJobID); err != nil {
+			return domain.TranslationContent{}, err
+		}
+	case "moment":
+		if err := r.UpsertMomentTranslation(sourceID, locale, content, translatedByJobID); err != nil {
+			return domain.TranslationContent{}, err
+		}
+	default:
+		return domain.TranslationContent{}, apperr.ErrValidation
+	}
+	row, _ := r.GetTranslationContent(sourceType, sourceID, locale)
+	return row, nil
+}
+
+func (r *Repository) listArticleTranslationContents(sourceID, locale string) []domain.TranslationContent {
+	rows := make([]domain.TranslationContent, 0)
+	for articleID, translations := range r.articleTranslations {
+		if strings.TrimSpace(sourceID) != "" && articleID != sourceID {
+			continue
+		}
+		for lc, rec := range translations {
+			if strings.TrimSpace(locale) != "" && lc != locale {
+				continue
+			}
+			rows = append(rows, domain.TranslationContent{
+				SourceType:        "article",
+				SourceID:          articleID,
+				Locale:            lc,
+				Content:           rec.content,
+				TranslatedByJobID: rec.translatedByJobID,
+				CreatedAt:         rec.createdAt,
+				UpdatedAt:         rec.updatedAt,
+			})
+		}
+	}
+	return rows
+}
+
+func (r *Repository) listMomentTranslationContents(sourceID, locale string) []domain.TranslationContent {
+	rows := make([]domain.TranslationContent, 0)
+	for momentID, translations := range r.momentTranslations {
+		if strings.TrimSpace(sourceID) != "" && momentID != sourceID {
+			continue
+		}
+		for lc, rec := range translations {
+			if strings.TrimSpace(locale) != "" && lc != locale {
+				continue
+			}
+			rows = append(rows, domain.TranslationContent{
+				SourceType:        "moment",
+				SourceID:          momentID,
+				Locale:            lc,
+				Content:           rec.content,
+				TranslatedByJobID: rec.translatedByJobID,
+				CreatedAt:         rec.createdAt,
+				UpdatedAt:         rec.updatedAt,
+			})
+		}
+	}
+	return rows
 }
 
 func (r *Repository) slugExists(slug, excludedID string) bool {
@@ -768,6 +915,20 @@ func paginateTimeline(items []domain.TimelineItem, page, pageSize int) ([]domain
 	start := (page - 1) * pageSize
 	if start >= total {
 		return []domain.TimelineItem{}, total
+	}
+	end := start + pageSize
+	if end > total {
+		end = total
+	}
+	return items[start:end], total
+}
+
+func paginateTranslationContents(items []domain.TranslationContent, page, pageSize int) ([]domain.TranslationContent, int) {
+	page, pageSize = normalizePagination(page, pageSize)
+	total := len(items)
+	start := (page - 1) * pageSize
+	if start >= total {
+		return []domain.TranslationContent{}, total
 	}
 	end := start + pageSize
 	if end > total {

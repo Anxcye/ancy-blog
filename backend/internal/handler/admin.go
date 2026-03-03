@@ -522,6 +522,50 @@ func (h *AdminHandler) TranslationJobDetail(c *gin.Context) {
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: job})
 }
 
+func (h *AdminHandler) ListTranslationContents(c *gin.Context) {
+	page := getIntQuery(c, "page", 1)
+	pageSize := getIntQuery(c, "pageSize", 10)
+	sourceType := c.Query("sourceType")
+	sourceID := c.Query("sourceId")
+	locale := c.Query("locale")
+	rows, total, err := h.translationService.ListTranslationContents(page, pageSize, sourceType, sourceID, locale)
+	if err != nil {
+		badRequest(c, "VALIDATION_ERROR", err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.TranslationContent]{Total: total, Rows: rows}})
+}
+
+func (h *AdminHandler) TranslationContentDetail(c *gin.Context) {
+	sourceType := c.Param("sourceType")
+	sourceID := c.Param("sourceId")
+	locale := c.Param("locale")
+	row, ok, err := h.translationService.GetTranslationContent(sourceType, sourceID, locale)
+	if err != nil {
+		badRequest(c, "VALIDATION_ERROR", err.Error())
+		return
+	}
+	if !ok {
+		response.JSON(c, http.StatusNotFound, response.Envelope{Code: "TRANSLATION_CONTENT_NOT_FOUND", Message: "translation content not found"})
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: row})
+}
+
+func (h *AdminHandler) UpsertTranslationContent(c *gin.Context) {
+	var req dto.UpsertTranslationContentRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequest(c, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+	row, err := h.translationService.UpsertTranslationContent(req.SourceType, req.SourceID, req.Locale, req.Content, req.TranslatedByJobID)
+	if err != nil {
+		badRequest(c, "VALIDATION_ERROR", err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: row})
+}
+
 type aiSummaryRequest struct {
 	Title       string `json:"title"`
 	Content     string `json:"content"`

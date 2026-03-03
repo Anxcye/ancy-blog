@@ -6,7 +6,7 @@
 - [ ] Set up lint/test/build scripts.
 
 ## In Progress
-- [ ] Add admin APIs for browsing and manually overriding localized content records.
+- [ ] Add translation worker retry/backoff policy and retry endpoint for failed jobs.
 
 ## Done
 - [x] Created tracking docs and collaboration guidelines.
@@ -43,6 +43,7 @@
 - [x] Added translation worker unit tests with mocked LLM responses (success/failure/empty output/provider disabled).
 - [x] Added non-streaming admin AI assist endpoints for article summary and slug suggestion (`/api/v1/admin/ai/summary`, `/api/v1/admin/ai/slug`) with deterministic fallback and slug de-duplication.
 - [x] Added locale-aware read support for public moments and timeline APIs (`locale` query passthrough + repository translation readback).
+- [x] Added admin translation-content management APIs for browse/detail/manual override (`/api/v1/admin/translations/contents*`).
 
 ## Blocked
 - None.

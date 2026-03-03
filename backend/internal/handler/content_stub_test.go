@@ -27,6 +27,9 @@ type handlerRepoStub struct {
 	getIntegrationProviderFunc   func(providerKey string) (domain.IntegrationProvider, bool)
 	createTranslationJobFunc     func(job domain.TranslationJob) (domain.TranslationJob, error)
 	getTranslationJobByIDFunc    func(id string) (domain.TranslationJob, bool)
+	listTranslationContentsFunc  func(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int)
+	getTranslationContentFunc    func(sourceType, sourceID, locale string) (domain.TranslationContent, bool)
+	upsertTranslationContentFunc func(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error)
 }
 
 func (s *handlerRepoStub) CreateComment(comment domain.Comment) (domain.Comment, error) {
@@ -119,4 +122,25 @@ func (s *handlerRepoStub) GetTranslationJobByID(id string) (domain.TranslationJo
 		return s.getTranslationJobByIDFunc(id)
 	}
 	return domain.TranslationJob{}, false
+}
+
+func (s *handlerRepoStub) ListTranslationContents(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int) {
+	if s.listTranslationContentsFunc != nil {
+		return s.listTranslationContentsFunc(page, pageSize, sourceType, sourceID, locale)
+	}
+	return nil, 0
+}
+
+func (s *handlerRepoStub) GetTranslationContent(sourceType, sourceID, locale string) (domain.TranslationContent, bool) {
+	if s.getTranslationContentFunc != nil {
+		return s.getTranslationContentFunc(sourceType, sourceID, locale)
+	}
+	return domain.TranslationContent{}, false
+}
+
+func (s *handlerRepoStub) UpsertTranslationContent(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error) {
+	if s.upsertTranslationContentFunc != nil {
+		return s.upsertTranslationContentFunc(sourceType, sourceID, locale, content, translatedByJobID)
+	}
+	return domain.TranslationContent{}, errors.New("not implemented")
 }

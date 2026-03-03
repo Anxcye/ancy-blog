@@ -221,6 +221,25 @@
   - `go test ./...` passed
   - `go test -tags=integration ./internal/repository/postgres -run TestRepositoryIntegration -count=1` passed
   - `go test -tags=integration ./internal/server -run TestAPISmokeFlow -count=1` passed
+- Added admin translation-content management APIs:
+  - `GET /api/v1/admin/translations/contents`
+  - `GET /api/v1/admin/translations/contents/{sourceType}/{sourceId}/{locale}`
+  - `PUT /api/v1/admin/translations/contents`
+  - use cases: browse localized records, inspect one record, and manual override content
+- Added translation-content domain and repository capabilities:
+  - new domain model `TranslationContent`
+  - new repository APIs for list/detail/upsert localized content
+  - PostgreSQL implementation over `article_translations` and `moment_translations`
+  - memory implementation aligned for local/dev parity
+- Added tests for translation-content management:
+  - handler tests for list/upsert/detail-not-found flows
+  - service validation tests
+  - memory repository CRUD tests
+  - postgres integration tests for list/detail/upsert translation content
+- Validation run after translation-content APIs:
+  - `go test ./...` passed
+  - `go test -tags=integration ./internal/repository/postgres -run TestRepositoryIntegration -count=1` passed
+  - `go test -tags=integration ./internal/server -run TestAPISmokeFlow -count=1` passed
 
 ### Next Suggested Tasks
 1. Add locale-aware read support for moments and timeline APIs.

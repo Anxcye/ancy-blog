@@ -511,6 +511,40 @@
 - Response: translation job detail
 - Error Codes: TRANSLATION_JOB_NOT_FOUND
 
+- ID: ADM-TR-004
+- Method: GET
+- Path: /api/v1/admin/translations/contents
+- Auth Required: Yes
+- Request: query `sourceType` (`article|moment`, required), `sourceId` (optional), `locale` (optional), `page`, `pageSize`
+- Response: paginated translation content rows
+- Error Codes: VALIDATION_ERROR, AUTH_UNAUTHORIZED
+
+- ID: ADM-TR-005
+- Method: GET
+- Path: /api/v1/admin/translations/contents/{sourceType}/{sourceId}/{locale}
+- Auth Required: Yes
+- Request: None
+- Response: translation content detail
+- Error Codes: TRANSLATION_CONTENT_NOT_FOUND, VALIDATION_ERROR
+
+- ID: ADM-TR-006
+- Method: PUT
+- Path: /api/v1/admin/translations/contents
+- Auth Required: Yes
+- Request:
+```json
+{
+  "sourceType": "article",
+  "sourceId": "uuid",
+  "locale": "en-US",
+  "content": "manual translation override",
+  "translatedByJobId": "uuid"
+}
+```
+- Response: saved translation content row
+- Error Codes: VALIDATION_ERROR
+- Notes: Supports manual correction/override after machine translation.
+
 ## Admin - AI Assist
 - ID: ADM-AI-001
 - Method: POST

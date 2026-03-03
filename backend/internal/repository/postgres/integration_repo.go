@@ -320,3 +320,112 @@ DO UPDATE SET content = EXCLUDED.content, translated_by_job_id = EXCLUDED.transl
 `, momentID, locale, nullableString(content), nullableUUID(translatedByJobID))
 	return err
 }
+
+func (r *Repository) ListTranslationContents(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int) {
+	page, pageSize = normalizePagination(page, pageSize)
+	offset := (page - 1) * pageSize
+
+	where := []string{"1=1"}
+	args := make([]any, 0, 4)
+	idx := 1
+	if strings.TrimSpace(sourceID) != "" {
+		where = append(where, fmt.Sprintf("source_id=$%d", idx))
+		args = append(args, sourceID)
+		idx++
+	}
+	if strings.TrimSpace(locale) != "" {
+		where = append(where, fmt.Sprintf("locale=$%d", idx))
+		args = append(args, locale)
+		idx++
+	}
+	cond := strings.Join(where, " AND ")
+
+	var baseQuery string
+	switch sourceType {
+	case "article":
+		baseQuery = `
+SELECT article_id::text AS source_id, locale, COALESCE(content,''), COALESCE(translated_by_job_id::text,''), created_at, updated_at
+FROM article_translations`
+	case "moment":
+		baseQuery = `
+SELECT moment_id::text AS source_id, locale, COALESCE(content,''), COALESCE(translated_by_job_id::text,''), created_at, updated_at
+FROM moment_translations`
+	default:
+		return []domain.TranslationContent{}, 0
+	}
+
+	var total int
+	countSQL := fmt.Sprintf("SELECT COUNT(*) FROM (%s) t WHERE %s", baseQuery, cond)
+	if err := r.db.QueryRow(countSQL, args...).Scan(&total); err != nil {
+		return []domain.TranslationContent{}, 0
+	}
+
+	listArgs := append(args, pageSize, offset)
+	listSQL := fmt.Sprintf(`
+SELECT source_id, locale, content, translated_by_job_id, created_at, updated_at
+FROM (%s) t
+WHERE %s
+ORDER BY updated_at DESC
+LIMIT $%d OFFSET $%d
+`, baseQuery, cond, idx, idx+1)
+	rows, err := r.db.Query(listSQL, listArgs...)
+	if err != nil {
+		return []domain.TranslationContent{}, total
+	}
+	defer rows.Close()
+
+	out := make([]domain.TranslationContent, 0)
+	for rows.Next() {
+		var item domain.TranslationContent
+		item.SourceType = sourceType
+		if err := rows.Scan(&item.SourceID, &item.Locale, &item.Content, &item.TranslatedByJobID, &item.CreatedAt, &item.UpdatedAt); err == nil {
+			out = append(out, item)
+		}
+	}
+	return out, total
+}
+
+func (r *Repository) GetTranslationContent(sourceType, sourceID, locale string) (domain.TranslationContent, bool) {
+	row := domain.TranslationContent{SourceType: sourceType}
+	var err error
+	switch sourceType {
+	case "article":
+		err = r.db.QueryRow(`
+SELECT article_id::text, locale, COALESCE(content,''), COALESCE(translated_by_job_id::text,''), created_at, updated_at
+FROM article_translations
+WHERE article_id=$1 AND locale=$2
+`, sourceID, locale).Scan(&row.SourceID, &row.Locale, &row.Content, &row.TranslatedByJobID, &row.CreatedAt, &row.UpdatedAt)
+	case "moment":
+		err = r.db.QueryRow(`
+SELECT moment_id::text, locale, COALESCE(content,''), COALESCE(translated_by_job_id::text,''), created_at, updated_at
+FROM moment_translations
+WHERE moment_id=$1 AND locale=$2
+`, sourceID, locale).Scan(&row.SourceID, &row.Locale, &row.Content, &row.TranslatedByJobID, &row.CreatedAt, &row.UpdatedAt)
+	default:
+		return domain.TranslationContent{}, false
+	}
+	if err != nil {
+		return domain.TranslationContent{}, false
+	}
+	return row, true
+}
+
+func (r *Repository) UpsertTranslationContent(sourceType, sourceID, locale, content, translatedByJobID string) (domain.TranslationContent, error) {
+	switch sourceType {
+	case "article":
+		if err := r.UpsertArticleTranslation(sourceID, locale, content, translatedByJobID); err != nil {
+			return domain.TranslationContent{}, err
+		}
+	case "moment":
+		if err := r.UpsertMomentTranslation(sourceID, locale, content, translatedByJobID); err != nil {
+			return domain.TranslationContent{}, err
+		}
+	default:
+		return domain.TranslationContent{}, apperr.ErrValidation
+	}
+	row, ok := r.GetTranslationContent(sourceType, sourceID, locale)
+	if !ok {
+		return domain.TranslationContent{}, sql.ErrNoRows
+	}
+	return row, nil
+}
