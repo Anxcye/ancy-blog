@@ -77,6 +77,11 @@
   - added data model tables: `integration_providers`, `translation_jobs`
   - expanded API contract with integration management and translation job endpoints
   - updated roadmap/progress to include integration center milestone
+- Added PostgreSQL runtime path:
+  - created `backend/sql/schema_v1.sql`
+  - implemented `internal/repository/postgres` with current API coverage
+  - wired app startup to use PostgreSQL first, fallback to memory on connection failure
+  - added DB environment configuration in backend runtime config
 
 ### Next Suggested Tasks
 1. Install Go `1.22+`, run `go mod tidy`, then `go run ./cmd/server` under `backend/`.

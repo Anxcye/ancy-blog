@@ -15,6 +15,7 @@ type Config struct {
 	App  AppConfig
 	HTTP HTTPConfig
 	Auth AuthConfig
+	DB   DBConfig
 }
 
 type AppConfig struct {
@@ -34,6 +35,17 @@ type AuthConfig struct {
 	RefreshTokenTTLSeconds int
 }
 
+type DBConfig struct {
+	Host         string
+	Port         int
+	Name         string
+	User         string
+	Password     string
+	SSLMode      string
+	MaxOpenConns int
+	MaxIdleConns int
+}
+
 func Load() (*Config, error) {
 	port, err := parseInt(getEnv("HTTP_PORT", "8080"))
 	if err != nil {
@@ -46,6 +58,18 @@ func Load() (*Config, error) {
 	refreshTTL, err := parseInt(getEnv("AUTH_REFRESH_TOKEN_TTL_SECONDS", "604800"))
 	if err != nil {
 		return nil, fmt.Errorf("invalid AUTH_REFRESH_TOKEN_TTL_SECONDS: %w", err)
+	}
+	dbPort, err := parseInt(getEnv("DB_PORT", "5432"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid DB_PORT: %w", err)
+	}
+	maxOpenConns, err := parseInt(getEnv("DB_MAX_OPEN_CONNS", "20"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid DB_MAX_OPEN_CONNS: %w", err)
+	}
+	maxIdleConns, err := parseInt(getEnv("DB_MAX_IDLE_CONNS", "5"))
+	if err != nil {
+		return nil, fmt.Errorf("invalid DB_MAX_IDLE_CONNS: %w", err)
 	}
 
 	cfg := &Config{
@@ -62,6 +86,16 @@ func Load() (*Config, error) {
 			AdminPassword:          getEnv("AUTH_ADMIN_PASSWORD", "123456"),
 			AccessTokenTTLSeconds:  accessTTL,
 			RefreshTokenTTLSeconds: refreshTTL,
+		},
+		DB: DBConfig{
+			Host:         getEnv("DB_HOST", "127.0.0.1"),
+			Port:         dbPort,
+			Name:         getEnv("DB_NAME", "ancy_blog"),
+			User:         getEnv("DB_USER", "ancy"),
+			Password:     getEnv("DB_PASSWORD", "ancy_dev_password"),
+			SSLMode:      getEnv("DB_SSLMODE", "disable"),
+			MaxOpenConns: maxOpenConns,
+			MaxIdleConns: maxIdleConns,
 		},
 	}
 

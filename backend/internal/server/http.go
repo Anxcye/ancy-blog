@@ -29,7 +29,7 @@ func NewHTTPServer(cfg *config.Config, logger *slog.Logger) *HTTPServer {
 		gin.SetMode(gin.ReleaseMode)
 	}
 
-	container := app.New(cfg)
+	container := app.New(cfg, logger)
 	engine := gin.New()
 	engine.Use(gin.Recovery())
 	engine.Use(middleware.RequestLogger(logger))

@@ -3,7 +3,6 @@
 ## Todo
 - [ ] Initialize `frontend-admin/` Vue3 scaffold.
 - [ ] Initialize `frontend-blog/` Vue3 scaffold.
-- [ ] Implement PostgreSQL schema in code (migration not required in current plan).
 - [ ] Set up lint/test/build scripts.
 - [ ] Replace in-memory repository with PostgreSQL + Redis cache-aside.
 
@@ -24,6 +23,8 @@
 - [x] Implemented backend v1 APIs (`auth/public/admin`) with Gin, in-memory repository, and auth middleware.
 - [x] Added Cloudflare R2 image upload support (`/api/v1/admin/upload/image`).
 - [x] Defined unified integration-center docs for R2 + LLM config and translation jobs.
+- [x] Added `backend/sql/schema_v1.sql` for PostgreSQL schema initialization.
+- [x] Implemented PostgreSQL repository and runtime fallback to in-memory when DB unavailable.
 
 ## Blocked
 - None.
