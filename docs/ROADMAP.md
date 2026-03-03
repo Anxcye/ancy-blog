@@ -14,15 +14,18 @@ Build a clean, maintainable blog platform from scratch with `Go + PostgreSQL + R
 - Article list/detail, category/tag filters, site settings.
 5. Interactions and Delivery
 - Comments, upload, caching strategy, production deployment.
+6. Integration Center
+- Unified admin config for object storage and LLM providers.
+- Async translation workflow and job tracking.
 
 ## Initial Scope (MVP)
 - Single admin account authentication.
 - Article publishing and reading.
 - Categories and tags.
 - Basic site settings.
+- Unified integration config center (`cloudflare_r2` + `openai_compatible`).
 
 ## Out of Scope (for now)
 - Multi-role RBAC.
 - Multi-tenant support.
 - Complex analytics pipeline.
-

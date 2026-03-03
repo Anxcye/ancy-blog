@@ -23,6 +23,7 @@
 - [x] Defined dynamic nav/slot model and timeline API for frontend interaction design.
 - [x] Implemented backend v1 APIs (`auth/public/admin`) with Gin, in-memory repository, and auth middleware.
 - [x] Added Cloudflare R2 image upload support (`/api/v1/admin/upload/image`).
+- [x] Defined unified integration-center docs for R2 + LLM config and translation jobs.
 
 ## Blocked
 - None.

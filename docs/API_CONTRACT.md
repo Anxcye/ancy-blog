@@ -387,6 +387,74 @@
 - Error Codes: UPLOAD_NOT_CONFIGURED, VALIDATION_ERROR, UPLOAD_FAILED
 - Notes: Uses Cloudflare R2 when configured.
 
+## Admin - Integrations
+- ID: ADM-INT-001
+- Method: GET
+- Path: /api/v1/admin/integrations
+- Auth Required: Yes
+- Request: query `providerType` (optional)
+- Response: integration provider list (secret fields masked)
+- Error Codes: AUTH_UNAUTHORIZED
+
+- ID: ADM-INT-002
+- Method: PUT
+- Path: /api/v1/admin/integrations/{providerKey}
+- Auth Required: Yes
+- Request: provider config payload (`enabled`, `configJson`, `metaJson`)
+- Response: success boolean
+- Error Codes: PROVIDER_NOT_FOUND, VALIDATION_ERROR
+- Notes: Supports both `cloudflare_r2` and `openai_compatible` in one management flow.
+
+- ID: ADM-INT-003
+- Method: POST
+- Path: /api/v1/admin/integrations/{providerKey}/test
+- Auth Required: Yes
+- Request: optional test payload
+- Response:
+```json
+{
+  "ok": true,
+  "message": "connection ok",
+  "latencyMs": 120
+}
+```
+- Error Codes: PROVIDER_NOT_FOUND, PROVIDER_TEST_FAILED
+
+## Admin - Translation
+- ID: ADM-TR-001
+- Method: POST
+- Path: /api/v1/admin/translations/jobs
+- Auth Required: Yes
+- Request:
+```json
+{
+  "sourceType": "article",
+  "sourceId": "uuid",
+  "sourceLocale": "zh-CN",
+  "targetLocale": "en-US",
+  "providerKey": "openai_compatible",
+  "modelName": "gpt-4.1-mini"
+}
+```
+- Response: created job id
+- Error Codes: VALIDATION_ERROR, PROVIDER_NOT_FOUND
+
+- ID: ADM-TR-002
+- Method: GET
+- Path: /api/v1/admin/translations/jobs
+- Auth Required: Yes
+- Request: query `status`, `sourceType`, `sourceId`, `page`, `pageSize`
+- Response: paginated translation jobs
+- Error Codes: AUTH_UNAUTHORIZED
+
+- ID: ADM-TR-003
+- Method: GET
+- Path: /api/v1/admin/translations/jobs/{id}
+- Auth Required: Yes
+- Request: None
+- Response: translation job detail
+- Error Codes: TRANSLATION_JOB_NOT_FOUND
+
 ## System
 - ID: SYS-001
 - Method: GET

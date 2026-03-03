@@ -273,6 +273,46 @@ Fields:
 Indexes/Constraints:
 - Index: `(enabled, order_num ASC)`
 
+## Table: `integration_providers`
+Purpose: Unified provider configuration center for external integrations (R2, LLM, etc.).
+
+Fields:
+- `id`
+- `provider_type` (`object_storage | llm`)
+- `provider_key` (required, unique, e.g. `cloudflare_r2`, `openai_compatible`)
+- `name` (required)
+- `enabled` (bool, default false)
+- `config_json` (required, encrypted/masked for secret fields)
+- `meta_json` (nullable, for health check info and non-secret runtime metadata)
+- `created_at`
+- `updated_at`
+
+Indexes/Constraints:
+- Unique: `provider_key`
+- Index: `(provider_type, enabled)`
+
+## Table: `translation_jobs`
+Purpose: Track async translation workflow for articles/moments/pages.
+
+Fields:
+- `id`
+- `source_type` (`article | moment`)
+- `source_id` (required)
+- `source_locale` (required)
+- `target_locale` (required)
+- `provider_key` (required, FK to `integration_providers.provider_key`)
+- `model_name` (required)
+- `status` (`queued | running | succeeded | failed`)
+- `error_message` (nullable)
+- `requested_by` (nullable, admin user id)
+- `created_at`
+- `updated_at`
+- `finished_at` (nullable)
+
+Indexes/Constraints:
+- Index: `(source_type, source_id, target_locale)`
+- Index: `(status, created_at DESC)`
+
 ## Table: `reactions`
 Purpose: Generic reaction records for article/comment (like/upvote/love/etc.).
 

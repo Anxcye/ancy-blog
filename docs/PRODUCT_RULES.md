@@ -71,6 +71,26 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
   - Default UI layout uses 3 rows (`row_num` from 1 to 3)
 - Homepage social links (e.g. GitHub, email) are managed items with ordering and enable flags.
 
+## Integration Configuration Rules
+- External integrations must be managed in a unified admin configuration center.
+- R2 image storage and LLM provider config should share one management domain and one UI module.
+- Integration config fields are editable in admin UI and stored in DB (not hardcoded).
+- Secret fields (API keys/tokens) are write-only in UI and must be masked in read responses.
+- Integrations must support:
+  - `enabled` switch
+  - provider type
+  - connection settings
+  - health-check status metadata
+- Initial integration scopes:
+  - Object storage (`cloudflare_r2`)
+  - LLM translation (`openai_compatible`)
+
+## AI Translation Rules
+- Translation should be asynchronous (job-based), not blocking publish flow.
+- Translation task uses configured LLM provider from integration center.
+- Translation output should be stored in locale-specific content records.
+- Translation result must include metadata: provider, model, status, and error message (if failed).
+
 ## Navigation Rules
 - Top navigation is dynamically managed by admin.
 - Default menu items:
@@ -96,12 +116,14 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
   - social links
   - top navigation
   - homepage/hover slot content
+  - integration public capabilities (optional)
 - Key examples:
   - `site:settings:{locale}`
   - `site:footer:{locale}`
   - `site:social:{locale}`
   - `site:nav:{locale}`
   - `site:slot:{slot_key}:{locale}`
+  - `integration:capabilities`
 - Pattern: cache-aside.
   - Public read APIs: read cache first, fallback to DB, then set cache.
   - Admin update APIs: write DB first, then invalidate related cache keys.

@@ -72,6 +72,11 @@
   - new admin endpoint `POST /api/v1/admin/upload/image`
   - new R2 environment configuration fields
   - updated backend usage docs and API contract
+- Refined documentation-only design for unified integration center:
+  - grouped R2 and LLM config into one admin integration domain
+  - added data model tables: `integration_providers`, `translation_jobs`
+  - expanded API contract with integration management and translation job endpoints
+  - updated roadmap/progress to include integration center milestone
 
 ### Next Suggested Tasks
 1. Install Go `1.22+`, run `go mod tidy`, then `go run ./cmd/server` under `backend/`.
