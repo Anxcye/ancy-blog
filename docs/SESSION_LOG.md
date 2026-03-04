@@ -26,9 +26,19 @@
 - Updated documentation to align editor model details:
   - `PRODUCT_RULES` editor section now includes embed block requirements
   - `DATA_MODEL` article `content` field clarified as rich-text JSON (not markdown)
+- Reworked editor toolbar from handcrafted controls to UI-library-first patterns:
+  - introduced `NButtonGroup` + `NDropdown` command menus for text/block actions
+  - replaced prompt-based embed insertion with typed `NModal` forms for `x_post` and `tmdb_card`
+  - aligned tool actions with icon-based controls for better visual hierarchy and maintainability
+- Initialized React admin rewrite workspace:
+  - scaffolded `frontend-admin-react` via Vite + TypeScript
+  - integrated `react-router-dom`, `zustand`, `axios`, `@tanstack/react-query`, and `antd`
+  - implemented baseline modules: auth store, axios auth interceptor, protected routing, login page, admin layout, and dashboard placeholder
+  - applied global style baseline for clean enterprise admin shell
 - Validation run:
   - `source ~/.zshrc && cd backend && go test ./...` passed
   - `cd frontend-admin && pnpm run build` passed
+  - `cd frontend-admin-react && pnpm run build` passed
 
 ## 2026-03-03
 ### Summary

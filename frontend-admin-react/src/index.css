@@ -1,0 +1,70 @@
+/**
+ * File: index.css
+ * Purpose: Define global visual baseline and layout tokens for React admin rewrite.
+ * Module: frontend-admin-react/styles, global style layer.
+ * Related: AdminLayout, login page, and all route-level pages.
+ */
+:root {
+  font-family: 'PingFang SC', 'Noto Sans SC', 'Microsoft YaHei', sans-serif;
+  color: #1f1f1f;
+  background: #f4f7f8;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  width: 100%;
+  min-height: 100%;
+}
+
+body {
+  min-height: 100vh;
+  background: linear-gradient(180deg, rgba(31, 143, 138, 0.08) 0%, #f4f7f8 260px);
+}
+
+.admin-layout {
+  min-height: 100vh;
+}
+
+.sider-logo {
+  height: 56px;
+  margin: 12px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  background: rgba(255, 255, 255, 0.18);
+}
+
+.admin-header {
+  background: #fff !important;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 18px !important;
+  border-bottom: 1px solid #edf0f2;
+}
+
+.admin-content {
+  padding: 18px;
+}
+
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+}
+
+.login-card {
+  width: min(440px, 96vw);
+  border-radius: 14px;
+  box-shadow: 0 10px 40px rgba(18, 40, 43, 0.08);
+}

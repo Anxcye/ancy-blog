@@ -1,32 +1,33 @@
 <!--
 File: RichTextEditor.vue
-Purpose: Provide reusable rich-text editor with TipTap toolbar, link tools, and image upload insertion support.
+Purpose: Provide reusable rich-text editor with component-library-driven toolbar and extensible embed insertion.
 Module: frontend-admin/components/editor, editor UI layer.
-Related: ArticleEditorView, RichTextPreview, and admin upload API module.
+Related: ArticleEditorView, RichTextPreview, upload API module, and embed extensions.
 -->
 <template>
   <div class="editor-root">
     <div class="toolbar-shell">
-      <div class="toolbar-group">
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('bold') }" :disabled="isReadonly" @click="toggleBold">B</NButton></template><span>Bold</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('italic') }" :disabled="isReadonly" @click="toggleItalic">I</NButton></template><span>Italic</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('strike') }" :disabled="isReadonly" @click="toggleStrike">S</NButton></template><span>Strike</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn code-btn" :class="{ 'is-active': isActive('code') }" :disabled="isReadonly" @click="toggleInlineCode">&lt;/&gt;</NButton></template><span>Inline Code</span></NTooltip>
-      </div>
+      <div class="toolbar-row">
+        <NButtonGroup size="small">
+          <NTooltip trigger="hover"><template #trigger><NButton class="tool-btn" :class="{ 'is-active': isActive('bold') }" :disabled="isReadonly" @click="toggleBold"><template #icon><NIcon><TextOutline /></NIcon></template>B</NButton></template><span>Bold</span></NTooltip>
+          <NTooltip trigger="hover"><template #trigger><NButton class="tool-btn" :class="{ 'is-active': isActive('italic') }" :disabled="isReadonly" @click="toggleItalic"><template #icon><NIcon><TextOutline /></NIcon></template>I</NButton></template><span>Italic</span></NTooltip>
+          <NTooltip trigger="hover"><template #trigger><NButton class="tool-btn" :class="{ 'is-active': isActive('strike') }" :disabled="isReadonly" @click="toggleStrike"><template #icon><NIcon><TextOutline /></NIcon></template>S</NButton></template><span>Strike</span></NTooltip>
+          <NTooltip trigger="hover"><template #trigger><NButton class="tool-btn" :class="{ 'is-active': isActive('code') }" :disabled="isReadonly" @click="toggleInlineCode"><template #icon><NIcon><CodeSlashOutline /></NIcon></template></NButton></template><span>Inline Code</span></NTooltip>
+        </NButtonGroup>
 
-      <div class="toolbar-group">
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('heading', { level: 2 }) }" :disabled="isReadonly" @click="setHeading(2)">H2</NButton></template><span>Heading 2</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('heading', { level: 3 }) }" :disabled="isReadonly" @click="setHeading(3)">H3</NButton></template><span>Heading 3</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('bulletList') }" :disabled="isReadonly" @click="toggleBulletList">• List</NButton></template><span>Bullet List</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('orderedList') }" :disabled="isReadonly" @click="toggleOrderedList">1. List</NButton></template><span>Ordered List</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('blockquote') }" :disabled="isReadonly" @click="toggleBlockquote">Quote</NButton></template><span>Blockquote</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('codeBlock') }" :disabled="isReadonly" @click="toggleCodeBlock">Code</NButton></template><span>Code Block</span></NTooltip>
-      </div>
+        <NDropdown trigger="click" :options="blockMenuOptions" @select="onSelectBlockMenu">
+          <NButton size="small" class="menu-btn" :disabled="isReadonly">
+            <template #icon><NIcon><ListOutline /></NIcon></template>
+            Block
+            <NIcon class="menu-caret"><ChevronDownOutline /></NIcon>
+          </NButton>
+        </NDropdown>
 
-      <div class="toolbar-group">
         <NPopover trigger="click" :show="linkPopoverVisible" @update:show="onLinkPopoverVisibleChange">
           <template #trigger>
-            <NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('link') }" :disabled="isReadonly" @click="prepareLinkInput">Link</NButton>
+            <NButton size="small" class="tool-btn" :class="{ 'is-active': isActive('link') }" :disabled="isReadonly" @click="prepareLinkInput">
+              <template #icon><NIcon><LinkOutline /></NIcon></template>
+            </NButton>
           </template>
           <div class="link-popover">
             <NInput v-model:value="linkInput" placeholder="https://example.com" size="small" />
@@ -36,19 +37,24 @@ Related: ArticleEditorView, RichTextPreview, and admin upload API module.
             </div>
           </div>
         </NPopover>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :loading="uploading" :disabled="isReadonly" @click="pickImage">Image</NButton></template><span>Upload Image</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :disabled="isReadonly" @click="insertHorizontalRule">Divider</NButton></template><span>Horizontal Rule</span></NTooltip>
-      </div>
 
-      <div class="toolbar-group">
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :disabled="isReadonly" @click="insertXPostEmbed">X Post</NButton></template><span>Insert X Post Block</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :disabled="isReadonly" @click="insertTmdbCardEmbed">TMDB</NButton></template><span>Insert TMDB Card Block</span></NTooltip>
-      </div>
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" class="tool-btn" :loading="uploading" :disabled="isReadonly" @click="pickImage"><template #icon><NIcon><ImageOutline /></NIcon></template></NButton></template><span>Upload Image</span></NTooltip>
 
-      <div class="toolbar-group">
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :disabled="isReadonly || !canUndo" @click="undo">Undo</NButton></template><span>Undo</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :disabled="isReadonly || !canRedo" @click="redo">Redo</NButton></template><span>Redo</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn clear-btn" :disabled="isReadonly" @click="clearContent">Clear</NButton></template><span>Clear Content</span></NTooltip>
+        <NDropdown trigger="click" :options="embedMenuOptions" @select="onSelectEmbedMenu">
+          <NButton size="small" class="menu-btn" :disabled="isReadonly">
+            <template #icon><NIcon><AddCircleOutline /></NIcon></template>
+            Embed
+            <NIcon class="menu-caret"><ChevronDownOutline /></NIcon>
+          </NButton>
+        </NDropdown>
+
+        <div class="toolbar-spacer" />
+
+        <NButtonGroup size="small">
+          <NTooltip trigger="hover"><template #trigger><NButton class="tool-btn" :disabled="isReadonly || !canUndo" @click="undo"><template #icon><NIcon><ArrowUndoOutline /></NIcon></template></NButton></template><span>Undo</span></NTooltip>
+          <NTooltip trigger="hover"><template #trigger><NButton class="tool-btn" :disabled="isReadonly || !canRedo" @click="redo"><template #icon><NIcon><ArrowRedoOutline /></NIcon></template></NButton></template><span>Redo</span></NTooltip>
+          <NTooltip trigger="hover"><template #trigger><NButton class="tool-btn clear-btn" :disabled="isReadonly" @click="clearContent"><template #icon><NIcon><TrashOutline /></NIcon></template></NButton></template><span>Clear Content</span></NTooltip>
+        </NButtonGroup>
       </div>
     </div>
 
@@ -57,18 +63,67 @@ Related: ArticleEditorView, RichTextPreview, and admin upload API module.
     </div>
 
     <input ref="imageInputRef" class="hidden-input" type="file" accept="image/*" @change="onImageSelected" />
+
+    <NModal v-model:show="embedModal.show" preset="card" :title="embedModalTitle" style="width: min(520px, 96vw)">
+      <NForm label-placement="top">
+        <template v-if="embedModal.type === 'x_post'">
+          <NFormItem label="Post ID">
+            <NInput v-model:value="embedModal.xPost.postId" placeholder="e.g. 1860000000000000000" />
+          </NFormItem>
+          <NFormItem label="Author (optional)">
+            <NInput v-model:value="embedModal.xPost.author" placeholder="@username" />
+          </NFormItem>
+        </template>
+
+        <template v-else-if="embedModal.type === 'tmdb_card'">
+          <NFormItem label="TMDB Type">
+            <NSelect v-model:value="embedModal.tmdb.mediaType" :options="tmdbTypeOptions" />
+          </NFormItem>
+          <NFormItem label="TMDB ID">
+            <NInput v-model:value="embedModal.tmdb.tmdbId" placeholder="e.g. 603" />
+          </NFormItem>
+          <NFormItem label="Title (optional)">
+            <NInput v-model:value="embedModal.tmdb.title" placeholder="The Matrix" />
+          </NFormItem>
+        </template>
+      </NForm>
+
+      <template #footer>
+        <div class="modal-actions">
+          <NButton @click="embedModal.show = false">Cancel</NButton>
+          <NButton type="primary" :disabled="isReadonly" @click="confirmEmbedInsert">Insert</NButton>
+        </div>
+      </template>
+    </NModal>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref, watch } from 'vue';
+import { computed, h, onBeforeUnmount, reactive, ref, watch } from 'vue';
 import { EditorContent, useEditor } from '@tiptap/vue-3';
 import type { JSONContent } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
-import { NButton, NInput, NPopover, NTooltip } from 'naive-ui';
+import type { DropdownOption } from 'naive-ui';
+import { NButton, NButtonGroup, NDropdown, NForm, NFormItem, NIcon, NInput, NModal, NPopover, NSelect, NTooltip } from 'naive-ui';
+import {
+  AddCircleOutline,
+  ArrowRedoOutline,
+  ArrowUndoOutline,
+  ChevronDownOutline,
+  CodeSlashOutline,
+  ImageOutline,
+  LinkOutline,
+  ListOutline,
+  LogoTwitter,
+  FilmOutline,
+  RemoveOutline,
+  TextOutline,
+  TrashOutline,
+} from '@vicons/ionicons5';
+
 import { TmdbCardEmbed, XPostEmbed } from '@/components/editor/extensions/embeds';
 
 const props = withDefaults(
@@ -94,6 +149,57 @@ const imageInputRef = ref<HTMLInputElement | null>(null);
 const uploading = ref(false);
 const linkPopoverVisible = ref(false);
 const linkInput = ref('');
+
+const embedModal = reactive({
+  show: false,
+  type: '' as '' | 'x_post' | 'tmdb_card',
+  xPost: {
+    postId: '',
+    author: '',
+  },
+  tmdb: {
+    mediaType: 'movie',
+    tmdbId: '',
+    title: '',
+  },
+});
+
+const tmdbTypeOptions = [
+  { label: 'Movie', value: 'movie' },
+  { label: 'TV', value: 'tv' },
+];
+
+const embedModalTitle = computed(() => {
+  if (embedModal.type === 'x_post') {
+    return 'Insert X Post';
+  }
+  if (embedModal.type === 'tmdb_card') {
+    return 'Insert TMDB Card';
+  }
+  return 'Insert Embed';
+});
+
+function renderIcon(icon: any) {
+  return () => h(NIcon, null, { default: () => h(icon) });
+}
+
+const blockMenuOptions: DropdownOption[] = [
+  { label: 'Paragraph', key: 'paragraph', icon: renderIcon(TextOutline) },
+  { label: 'Heading 2', key: 'h2', icon: renderIcon(TextOutline) },
+  { label: 'Heading 3', key: 'h3', icon: renderIcon(TextOutline) },
+  { type: 'divider', key: 'd1' },
+  { label: 'Bullet List', key: 'bullet', icon: renderIcon(ListOutline) },
+  { label: 'Ordered List', key: 'ordered', icon: renderIcon(ListOutline) },
+  { label: 'Blockquote', key: 'quote', icon: renderIcon(LogoTwitter) },
+  { label: 'Code Block', key: 'codeblock', icon: renderIcon(CodeSlashOutline) },
+  { type: 'divider', key: 'd2' },
+  { label: 'Divider', key: 'divider', icon: renderIcon(RemoveOutline) },
+];
+
+const embedMenuOptions: DropdownOption[] = [
+  { label: 'X Post', key: 'x_post', icon: renderIcon(LogoTwitter) },
+  { label: 'TMDB Card', key: 'tmdb_card', icon: renderIcon(FilmOutline) },
+];
 
 function emptyDoc(): JSONContent {
   return { type: 'doc', content: [{ type: 'paragraph' }] };
@@ -193,24 +299,98 @@ function toggleInlineCode(): void {
   editor.value?.chain().focus().toggleCode().run();
 }
 
-function setHeading(level: 2 | 3): void {
-  editor.value?.chain().focus().toggleHeading({ level }).run();
+function onSelectBlockMenu(key: string): void {
+  if (!editor.value) {
+    return;
+  }
+  const chain = editor.value.chain().focus();
+  switch (key) {
+    case 'paragraph':
+      chain.setParagraph().run();
+      break;
+    case 'h2':
+      chain.toggleHeading({ level: 2 }).run();
+      break;
+    case 'h3':
+      chain.toggleHeading({ level: 3 }).run();
+      break;
+    case 'bullet':
+      chain.toggleBulletList().run();
+      break;
+    case 'ordered':
+      chain.toggleOrderedList().run();
+      break;
+    case 'quote':
+      chain.toggleBlockquote().run();
+      break;
+    case 'codeblock':
+      chain.toggleCodeBlock().run();
+      break;
+    case 'divider':
+      chain.setHorizontalRule().run();
+      break;
+    default:
+      break;
+  }
 }
 
-function toggleBulletList(): void {
-  editor.value?.chain().focus().toggleBulletList().run();
+function onSelectEmbedMenu(key: string): void {
+  if (key === 'x_post') {
+    embedModal.type = 'x_post';
+    embedModal.show = true;
+    return;
+  }
+  if (key === 'tmdb_card') {
+    embedModal.type = 'tmdb_card';
+    embedModal.show = true;
+  }
 }
 
-function toggleOrderedList(): void {
-  editor.value?.chain().focus().toggleOrderedList().run();
-}
+function confirmEmbedInsert(): void {
+  if (!editor.value || !embedModal.type) {
+    return;
+  }
 
-function toggleBlockquote(): void {
-  editor.value?.chain().focus().toggleBlockquote().run();
-}
+  if (embedModal.type === 'x_post') {
+    const postID = embedModal.xPost.postId.trim();
+    if (!postID) {
+      emit('upload-error', 'Post ID is required.');
+      return;
+    }
+    editor.value
+      .chain()
+      .focus()
+      .insertContent({
+        type: 'xPostEmbed',
+        attrs: {
+          postId: postID,
+          author: embedModal.xPost.author.trim(),
+        },
+      })
+      .run();
+  }
 
-function toggleCodeBlock(): void {
-  editor.value?.chain().focus().toggleCodeBlock().run();
+  if (embedModal.type === 'tmdb_card') {
+    const tmdbID = embedModal.tmdb.tmdbId.trim();
+    if (!tmdbID) {
+      emit('upload-error', 'TMDB ID is required.');
+      return;
+    }
+    editor.value
+      .chain()
+      .focus()
+      .insertContent({
+        type: 'tmdbCardEmbed',
+        attrs: {
+          mediaType: embedModal.tmdb.mediaType === 'tv' ? 'tv' : 'movie',
+          tmdbId: tmdbID,
+          title: embedModal.tmdb.title.trim(),
+        },
+      })
+      .run();
+  }
+
+  embedModal.show = false;
 }
 
 function prepareLinkInput(): void {
@@ -243,51 +423,6 @@ function clearContent(): void {
 
 function pickImage(): void {
   imageInputRef.value?.click();
-}
-
-function insertHorizontalRule(): void {
-  editor.value?.chain().focus().setHorizontalRule().run();
-}
-
-function insertXPostEmbed(): void {
-  const postID = window.prompt('X post id');
-  if (postID === null) {
-    return;
-  }
-  const author = window.prompt('X author (optional)') || '';
-  editor.value
-    ?.chain()
-    .focus()
-    .insertContent({
-      type: 'xPostEmbed',
-      attrs: {
-        postId: postID.trim(),
-        author: author.trim(),
-      },
-    })
-    .run();
-}
-
-function insertTmdbCardEmbed(): void {
-  const tmdbID = window.prompt('TMDB id');
-  if (tmdbID === null) {
-    return;
-  }
-  const mediaTypeInput = (window.prompt('TMDB type: movie or tv') || 'movie').trim().toLowerCase();
-  const mediaType = mediaTypeInput === 'tv' ? 'tv' : 'movie';
-  const title = window.prompt('Title (optional)') || '';
-  editor.value
-    ?.chain()
-    .focus()
-    .insertContent({
-      type: 'tmdbCardEmbed',
-      attrs: {
-        mediaType,
-        tmdbId: tmdbID.trim(),
-        title: title.trim(),
-      },
-    })
-    .run();
 }
 
 function undo(): void {
@@ -334,11 +469,6 @@ onBeforeUnmount(() => {
 }
 
 .toolbar-shell {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  align-items: center;
-  padding: 8px;
   border: 1px solid var(--n-border-color);
   border-radius: 12px;
   background: color-mix(in srgb, var(--n-card-color) 92%, var(--n-primary-color) 8%);
@@ -346,35 +476,28 @@ onBeforeUnmount(() => {
   top: 8px;
   z-index: 12;
   backdrop-filter: blur(6px);
+  padding: 8px;
 }
 
-.toolbar-group {
-  display: inline-flex;
+.toolbar-row {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
-  padding: 4px;
+  gap: 8px;
+}
+
+.toolbar-spacer {
+  flex: 1;
+}
+
+.tool-btn,
+.menu-btn {
   border-radius: 10px;
-  background: var(--n-color);
-  border: 1px solid var(--n-border-color);
 }
 
-.tool-btn {
-  min-width: 44px;
-  font-weight: 600;
-  border-radius: 9px;
-  border: 1px solid color-mix(in srgb, var(--n-border-color) 75%, transparent);
-  background: color-mix(in srgb, var(--n-card-color) 92%, var(--n-primary-color) 8%);
-  transition: transform 140ms ease, border-color 140ms ease, background-color 140ms ease, color 140ms ease;
-}
-
-.tool-btn:hover {
-  transform: translateY(-1px);
-  border-color: color-mix(in srgb, var(--n-primary-color) 48%, var(--n-border-color));
-  background: color-mix(in srgb, var(--n-card-color) 85%, var(--n-primary-color) 15%);
-}
-
-.tool-btn:active {
-  transform: translateY(0);
+.menu-caret {
+  margin-left: 4px;
+  opacity: 0.7;
 }
 
 .tool-btn.is-active {
@@ -387,12 +510,8 @@ onBeforeUnmount(() => {
   );
 }
 
-.code-btn {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-
 .clear-btn {
-  min-width: 56px;
+  color: var(--n-error-color);
 }
 
 .link-popover {
@@ -401,10 +520,11 @@ onBeforeUnmount(() => {
   gap: 8px;
 }
 
-.link-actions {
+.link-actions,
+.modal-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 6px;
+  gap: 8px;
 }
 
 .editor-shell {
@@ -504,6 +624,10 @@ onBeforeUnmount(() => {
 @media (max-width: 720px) {
   .toolbar-shell {
     position: static;
+  }
+
+  .toolbar-row {
+    gap: 6px;
   }
 
   .editor-shell {

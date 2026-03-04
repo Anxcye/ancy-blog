@@ -3,6 +3,7 @@
 ## Todo
 - [ ] Initialize `frontend-blog/` Vue3 scaffold.
 - [ ] Set up lint/test/build scripts for frontend workspaces.
+- [ ] Migrate `frontend-admin` business modules to `frontend-admin-react` (content/site/interaction/system).
 
 ## In Progress
 - [ ] Add API rate limiting for auth/comment/AI/translation-create endpoints.
@@ -74,6 +75,8 @@
 - [x] Unified admin pages (`site/interaction/system/moments`) onto consistent Naive UI layout and theme behavior.
 - [x] Upgraded TipTap editor UX with grouped sticky toolbar, link popover actions, undo/redo, and richer typography styling.
 - [x] Added extensible embed-block baseline in TipTap editor/preview (`x_post`, `tmdb_card`) for future custom content modules.
+- [x] Migrated TipTap toolbar to component-library-first interactions (button groups, dropdown command menus, and modal-based embed insertion).
+- [x] Initialized `frontend-admin-react` rewrite baseline (`React + TypeScript + Ant Design + React Router + Zustand + React Query + Axios`) with login/auth-guard/layout/dashboard skeleton.
 
 ## Blocked
 - None.
