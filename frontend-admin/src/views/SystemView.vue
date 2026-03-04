@@ -1,52 +1,172 @@
 <!--
 File: SystemView.vue
-Purpose: Manage external integration providers and run connectivity tests.
+Purpose: Manage integrations and translation jobs/content operations in a unified system workspace.
 Module: frontend-admin/views/system, presentation layer.
-Related: integration API module and backend integration endpoints.
+Related: integrations API module, translations API module, and backend admin system endpoints.
 -->
 <template>
   <section class="system-page">
     <h1>{{ t('system.title') }}</h1>
     <p class="subtitle">{{ t('system.subtitle') }}</p>
 
+    <div class="mode-tabs">
+      <button :class="{ active: tab === 'integrations' }" @click="tab = 'integrations'">{{ t('system.tabIntegrations') }}</button>
+      <button :class="{ active: tab === 'translations' }" @click="tab = 'translations'">{{ t('system.tabTranslations') }}</button>
+    </div>
+
     <p v-if="errorText" class="error">{{ errorText }}</p>
     <p v-if="successText" class="success">{{ successText }}</p>
 
-    <article v-for="provider in providers" :key="provider.providerKey" class="panel">
-      <header class="panel-header">
-        <div>
-          <h2>{{ provider.name }}</h2>
-          <p>{{ provider.providerKey }} · {{ provider.providerType }}</p>
-        </div>
-        <label class="switch-row">
-          <input v-model="provider.enabled" type="checkbox" />
-          <span>{{ provider.enabled ? t('system.enabled') : t('system.disabled') }}</span>
+    <template v-if="tab === 'integrations'">
+      <article v-for="provider in providers" :key="provider.providerKey" class="panel">
+        <header class="panel-header">
+          <div>
+            <h2>{{ provider.name }}</h2>
+            <p>{{ provider.providerKey }} · {{ provider.providerType }}</p>
+          </div>
+          <label class="switch-row">
+            <input v-model="provider.enabled" type="checkbox" />
+            <span>{{ provider.enabled ? t('system.enabled') : t('system.disabled') }}</span>
+          </label>
+        </header>
+
+        <label>
+          <span>{{ t('system.configJson') }}</span>
+          <textarea v-model="provider.configRaw" rows="6" />
         </label>
-      </header>
 
-      <label>
-        <span>{{ t('system.configJson') }}</span>
-        <textarea v-model="provider.configRaw" rows="6" />
-      </label>
+        <label>
+          <span>{{ t('system.metaJson') }}</span>
+          <textarea v-model="provider.metaRaw" rows="4" />
+        </label>
 
-      <label>
-        <span>{{ t('system.metaJson') }}</span>
-        <textarea v-model="provider.metaRaw" rows="4" />
-      </label>
+        <div class="actions">
+          <button :disabled="loading" @click="saveProvider(provider)">{{ t('common.save') }}</button>
+          <button :disabled="loading" @click="testProvider(provider.providerKey)">{{ t('system.test') }}</button>
+        </div>
+      </article>
+    </template>
 
-      <div class="actions">
-        <button :disabled="loading" @click="saveProvider(provider)">{{ t('common.save') }}</button>
-        <button :disabled="loading" @click="testProvider(provider.providerKey)">{{ t('system.test') }}</button>
-      </div>
-    </article>
+    <template v-else>
+      <article class="panel">
+        <h2>{{ t('system.translationCreateTitle') }}</h2>
+        <div class="grid-2">
+          <label>
+            <span>sourceType</span>
+            <select v-model="jobForm.sourceType">
+              <option value="article">article</option>
+              <option value="moment">moment</option>
+            </select>
+          </label>
+          <label>
+            <span>sourceId</span>
+            <input v-model.trim="jobForm.sourceId" type="text" />
+          </label>
+          <label>
+            <span>sourceLocale</span>
+            <input v-model.trim="jobForm.sourceLocale" type="text" placeholder="zh-CN" />
+          </label>
+          <label>
+            <span>targetLocale</span>
+            <input v-model.trim="jobForm.targetLocale" type="text" placeholder="en-US" />
+          </label>
+          <label>
+            <span>providerKey</span>
+            <input v-model.trim="jobForm.providerKey" type="text" placeholder="openai_compatible" />
+          </label>
+          <label>
+            <span>modelName</span>
+            <input v-model.trim="jobForm.modelName" type="text" placeholder="gpt-4.1-mini" />
+          </label>
+          <label>
+            <span>maxRetries</span>
+            <input v-model.number="jobForm.maxRetries" type="number" min="0" max="10" />
+          </label>
+          <label>
+            <span>publishAt</span>
+            <input v-model="jobPublishAtLocal" type="datetime-local" />
+          </label>
+          <label class="switch-row">
+            <input v-model="jobForm.autoPublish" type="checkbox" />
+            <span>autoPublish</span>
+          </label>
+        </div>
+        <div class="actions">
+          <button :disabled="loading" @click="createJob">{{ t('system.createTranslationJob') }}</button>
+        </div>
+      </article>
+
+      <article class="panel">
+        <header class="panel-header">
+          <h2>{{ t('system.translationJobsTitle') }}</h2>
+          <div class="toolbar">
+            <select v-model="jobStatusFilter" @change="loadJobs()">
+              <option value="">all</option>
+              <option value="queued">queued</option>
+              <option value="running">running</option>
+              <option value="succeeded">succeeded</option>
+              <option value="failed">failed</option>
+            </select>
+          </div>
+        </header>
+
+        <ul class="list">
+          <li v-for="job in jobs" :key="job.id" class="item">
+            <div>
+              <p class="item-title">{{ job.sourceType }} · {{ job.targetLocale }} · {{ job.status }}</p>
+              <p class="item-content">{{ job.id }}</p>
+              <p class="item-meta">retry {{ job.retryCount }}/{{ job.maxRetries }} · {{ formatDate(job.updatedAt) }}</p>
+            </div>
+            <div class="item-actions">
+              <button :disabled="loading || job.status !== 'failed'" @click="retryJob(job.id)">{{ t('system.retry') }}</button>
+            </div>
+          </li>
+        </ul>
+      </article>
+
+      <article class="panel">
+        <header class="panel-header">
+          <h2>{{ t('system.translationContentsTitle') }}</h2>
+          <div class="toolbar grid-mini">
+            <select v-model="contentFilter.sourceType" @change="loadContents()">
+              <option value="">all</option>
+              <option value="article">article</option>
+              <option value="moment">moment</option>
+            </select>
+            <input v-model.trim="contentFilter.sourceId" placeholder="sourceId" @keyup.enter="loadContents" />
+            <input v-model.trim="contentFilter.locale" placeholder="locale" @keyup.enter="loadContents" />
+            <button :disabled="loading" @click="loadContents">{{ t('common.search') }}</button>
+          </div>
+        </header>
+
+        <ul class="list">
+          <li v-for="row in contents" :key="`${row.sourceType}:${row.sourceId}:${row.locale}`" class="item-col">
+            <p class="item-title">{{ row.sourceType }} · {{ row.sourceId }} · {{ row.locale }}</p>
+            <input v-model="row.title" :placeholder="t('editor.fieldTitle')" />
+            <input v-model="row.summary" :placeholder="t('editor.fieldSummary')" />
+            <textarea v-model="row.content" rows="6" />
+            <div class="grid-mini">
+              <select v-model="row.status">
+                <option value="draft">draft</option>
+                <option value="published">published</option>
+              </select>
+              <input v-model="row.publishedAt" placeholder="2026-03-04T12:00:00Z" />
+              <button :disabled="loading" @click="saveContent(row)">{{ t('common.save') }}</button>
+            </div>
+          </li>
+        </ul>
+      </article>
+    </template>
   </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { listIntegrations, testIntegration, updateIntegration } from '@/api/modules/integrations';
+import { createTranslationJob, listTranslationContents, listTranslationJobs, retryTranslationJob, upsertTranslationContent } from '@/api/modules/translations';
+import type { TranslationContent, TranslationJob } from '@/api/types';
 
 type IntegrationViewModel = {
   providerKey: string;
@@ -57,31 +177,43 @@ type IntegrationViewModel = {
   metaRaw: string;
 };
 
+type TabName = 'integrations' | 'translations';
+
 const { t } = useI18n();
 
+const tab = ref<TabName>('integrations');
 const loading = ref(false);
 const errorText = ref('');
 const successText = ref('');
 const providers = ref<IntegrationViewModel[]>([]);
 
-async function loadProviders(): Promise<void> {
-  loading.value = true;
-  errorText.value = '';
-  try {
-    const rows = await listIntegrations();
-    providers.value = rows.map((item) => ({
-      providerKey: item.providerKey,
-      providerType: item.providerType,
-      name: item.name,
-      enabled: item.enabled,
-      configRaw: JSON.stringify(item.configJson ?? {}, null, 2),
-      metaRaw: JSON.stringify(item.metaJson ?? {}, null, 2),
-    }));
-  } catch {
-    errorText.value = t('common.loadFailed');
-  } finally {
-    loading.value = false;
+const jobStatusFilter = ref('');
+const jobs = ref<TranslationJob[]>([]);
+const jobPublishAtLocal = ref('');
+const jobForm = reactive({
+  sourceType: 'article',
+  sourceId: '',
+  sourceLocale: 'zh-CN',
+  targetLocale: 'en-US',
+  providerKey: 'openai_compatible',
+  modelName: '',
+  maxRetries: 3,
+  autoPublish: true,
+  publishAt: '',
+});
+
+const contentFilter = reactive({
+  sourceType: '',
+  sourceId: '',
+  locale: '',
+});
+const contents = ref<TranslationContent[]>([]);
+
+function formatDate(value: string): string {
+  if (!value) {
+    return '-';
   }
+  return new Date(value).toLocaleString();
 }
 
 function parseJSON(value: string): Record<string, unknown> {
@@ -93,6 +225,18 @@ function parseJSON(value: string): Record<string, unknown> {
     throw new Error('invalid json object');
   }
   return parsed as Record<string, unknown>;
+}
+
+async function loadProviders(): Promise<void> {
+  const rows = await listIntegrations();
+  providers.value = rows.map((item) => ({
+    providerKey: item.providerKey,
+    providerType: item.providerType,
+    name: item.name,
+    enabled: item.enabled,
+    configRaw: JSON.stringify(item.configJson ?? {}, null, 2),
+    metaRaw: JSON.stringify(item.metaJson ?? {}, null, 2),
+  }));
 }
 
 async function saveProvider(item: IntegrationViewModel): Promise<void> {
@@ -127,8 +271,119 @@ async function testProvider(providerKey: string): Promise<void> {
   }
 }
 
+async function loadJobs(): Promise<void> {
+  loading.value = true;
+  errorText.value = '';
+  try {
+    const result = await listTranslationJobs({
+      page: 1,
+      pageSize: 50,
+      status: jobStatusFilter.value || undefined,
+    });
+    jobs.value = result.rows;
+  } catch {
+    errorText.value = t('common.loadFailed');
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function createJob(): Promise<void> {
+  if (!jobForm.sourceId) {
+    errorText.value = t('system.translationJobMissingSourceId');
+    return;
+  }
+  loading.value = true;
+  errorText.value = '';
+  successText.value = '';
+  try {
+    jobForm.publishAt = jobPublishAtLocal.value ? new Date(jobPublishAtLocal.value).toISOString() : '';
+    const id = await createTranslationJob({
+      sourceType: jobForm.sourceType,
+      sourceId: jobForm.sourceId,
+      sourceLocale: jobForm.sourceLocale,
+      targetLocale: jobForm.targetLocale,
+      providerKey: jobForm.providerKey,
+      modelName: jobForm.modelName,
+      maxRetries: jobForm.maxRetries,
+      autoPublish: jobForm.autoPublish,
+      publishAt: jobForm.publishAt || undefined,
+    });
+    successText.value = `${t('system.translationJobCreated')} ${id}`;
+    await loadJobs();
+  } catch {
+    errorText.value = t('common.saveFailed');
+    loading.value = false;
+  }
+}
+
+async function retryJob(id: string): Promise<void> {
+  loading.value = true;
+  errorText.value = '';
+  successText.value = '';
+  try {
+    await retryTranslationJob(id);
+    successText.value = t('system.retrySuccess');
+    await loadJobs();
+  } catch {
+    errorText.value = t('system.retryFailed');
+    loading.value = false;
+  }
+}
+
+async function loadContents(): Promise<void> {
+  loading.value = true;
+  errorText.value = '';
+  try {
+    const result = await listTranslationContents({
+      page: 1,
+      pageSize: 50,
+      sourceType: contentFilter.sourceType || undefined,
+      sourceId: contentFilter.sourceId || undefined,
+      locale: contentFilter.locale || undefined,
+    });
+    contents.value = result.rows;
+  } catch {
+    errorText.value = t('common.loadFailed');
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function saveContent(row: TranslationContent): Promise<void> {
+  loading.value = true;
+  errorText.value = '';
+  successText.value = '';
+  try {
+    await upsertTranslationContent({
+      sourceType: row.sourceType,
+      sourceId: row.sourceId,
+      locale: row.locale,
+      title: row.title,
+      summary: row.summary,
+      content: row.content,
+      status: row.status,
+      publishedAt: row.publishedAt || undefined,
+      translatedByJobId: row.translatedByJobId || undefined,
+    });
+    successText.value = t('common.saveSuccess');
+  } catch {
+    errorText.value = t('common.saveFailed');
+  } finally {
+    loading.value = false;
+  }
+}
+
 onMounted(async () => {
-  await loadProviders();
+  loading.value = true;
+  errorText.value = '';
+  try {
+    await Promise.all([loadProviders(), loadJobs(), loadContents()]);
+  } catch {
+    errorText.value = t('common.loadFailed');
+  } finally {
+    loading.value = false;
+  }
 });
 </script>
 
@@ -146,6 +401,31 @@ h2 {
 .subtitle {
   margin: -4px 0 0;
   color: var(--muted);
+}
+
+.mode-tabs {
+  display: inline-flex;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  overflow: hidden;
+}
+
+.mode-tabs button {
+  border: 0;
+  border-right: 1px solid var(--border);
+  padding: 8px 12px;
+  background: var(--surface);
+  cursor: pointer;
+}
+
+.mode-tabs button:last-child {
+  border-right: 0;
+}
+
+.mode-tabs button.active {
+  background: var(--accent-soft);
+  color: var(--accent-hover);
+  font-weight: 600;
 }
 
 .panel {
@@ -175,17 +455,30 @@ h2 {
   gap: 6px;
 }
 
+.grid-2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
 label {
   display: grid;
   gap: 6px;
 }
 
+input,
+select,
 textarea,
 button {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 8px 10px;
   font: inherit;
+  background: var(--surface);
+}
+
+button {
+  cursor: pointer;
 }
 
 .actions {
@@ -193,9 +486,61 @@ button {
   gap: 8px;
 }
 
-button {
-  cursor: pointer;
-  background: var(--surface);
+.toolbar {
+  display: flex;
+  gap: 8px;
+}
+
+.grid-mini {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.item {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.item-col {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px;
+  display: grid;
+  gap: 8px;
+}
+
+.item-title,
+.item-content,
+.item-meta {
+  margin: 0;
+}
+
+.item-title {
+  font-weight: 600;
+}
+
+.item-meta {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.item-actions {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
 }
 
 .error {
@@ -209,14 +554,22 @@ button {
 }
 
 @media (max-width: 900px) {
-  .panel-header {
+  .grid-2,
+  .grid-mini {
+    grid-template-columns: 1fr;
+  }
+
+  .panel-header,
+  .item {
     flex-direction: column;
   }
 
+  .item-actions,
   .actions {
     width: 100%;
   }
 
+  .item-actions button,
   .actions button {
     flex: 1;
   }

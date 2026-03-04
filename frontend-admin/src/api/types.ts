@@ -135,3 +135,39 @@ export interface LinkSubmission {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface TranslationJob {
+  id: string;
+  sourceType: 'article' | 'moment' | string;
+  sourceId: string;
+  sourceLocale: string;
+  targetLocale: string;
+  providerKey: string;
+  modelName: string;
+  status: 'queued' | 'running' | 'succeeded' | 'failed' | string;
+  errorMessage: string;
+  resultText: string;
+  requestedBy: string;
+  retryCount: number;
+  maxRetries: number;
+  nextRetryAt: string;
+  autoPublish: boolean;
+  publishAt: string;
+  createdAt: string;
+  updatedAt: string;
+  finishedAt: string;
+}
+
+export interface TranslationContent {
+  sourceType: 'article' | 'moment' | string;
+  sourceId: string;
+  locale: string;
+  title: string;
+  summary: string;
+  content: string;
+  status: 'draft' | 'published' | string;
+  publishedAt: string;
+  translatedByJobId: string;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -347,3 +347,17 @@
 - Extended i18n dictionaries for interaction page labels.
 - Validation:
   - `npm --prefix frontend-admin run build` passed.
+
+## 2026-03-04 (Translation center + AI editor assist)
+- Extended admin system workspace with translation center tab:
+  - Create translation jobs (`sourceType/sourceId/sourceLocale/targetLocale/provider/model/maxRetries/autoPublish/publishAt`).
+  - List translation jobs with status filter.
+  - Retry failed translation jobs.
+  - Browse and manually override translation content rows.
+- Added frontend translation API module for job/content operations.
+- Enhanced article editor with AI-assisted actions:
+  - "Generate Summary by AI" fills summary via `/api/v1/admin/ai/summary`.
+  - "Suggest Slug by AI" fills slug via `/api/v1/admin/ai/slug`.
+  - Added optional AI provider/model inputs in metadata section.
+- Validation:
+  - `npm --prefix frontend-admin run build` passed.

@@ -52,6 +52,8 @@
 - [x] Added admin article management baseline: backend list/detail endpoints and frontend list+editor pages (content/meta/preview modes).
 - [x] Added admin site/system operation pages: site settings/footer/social/nav management and integration-center config/test UI.
 - [x] Added admin interaction center page with comment moderation and friend-link review operations.
+- [x] Added translation operations center (job create/list/retry + translation content override) under admin system workspace.
+- [x] Added AI assist actions in article editor (summary generation and slug suggestion).
 
 ## Blocked
 - None.
