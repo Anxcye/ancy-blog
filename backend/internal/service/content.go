@@ -145,6 +145,22 @@ func (s *ContentService) ListMoments(page, pageSize int, status string) ([]domai
 	return s.repo.ListMoments(page, pageSize, status)
 }
 
+func (s *ContentService) DeleteMoment(id string) bool {
+	return s.repo.DeleteMoment(id)
+}
+
+func (s *ContentService) BatchUpdateMomentStatus(ids []string, status string) (int, error) {
+	if len(ids) == 0 {
+		return 0, fmt.Errorf("%w: ids are required", apperr.ErrValidation)
+	}
+	switch status {
+	case "draft", "published", "scheduled":
+	default:
+		return 0, fmt.Errorf("%w: invalid status", apperr.ErrValidation)
+	}
+	return s.repo.BatchUpdateMomentStatus(ids, status), nil
+}
+
 func (s *ContentService) ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int) {
 	return s.repo.ListPublishedMoments(page, pageSize, locale)
 }
@@ -476,6 +492,9 @@ func (s *ContentService) UpdateIntegrationProvider(providerKey string, enabled b
 	if len(metaJSON) == 0 {
 		metaJSON = []byte(defaultJSONObj)
 	}
+	if existingProvider, exists := s.repo.GetIntegrationProvider(providerKey); exists {
+		configJSON = preserveMaskedSecrets(configJSON, existingProvider.ConfigJSON)
+	}
 	provider, err := s.repo.UpdateIntegrationProvider(providerKey, enabled, configJSON, metaJSON)
 	if err != nil {
 		return domain.IntegrationProvider{}, err
@@ -695,6 +714,43 @@ func maskSecretJSON(raw []byte) []byte {
 		return raw
 	}
 	return masked
+}
+
+func preserveMaskedSecrets(newRaw, oldRaw []byte) []byte {
+	if len(newRaw) == 0 || len(oldRaw) == 0 || !json.Valid(newRaw) || !json.Valid(oldRaw) {
+		return newRaw
+	}
+	var newPayload map[string]any
+	if err := json.Unmarshal(newRaw, &newPayload); err != nil {
+		return newRaw
+	}
+	var oldPayload map[string]any
+	if err := json.Unmarshal(oldRaw, &oldPayload); err != nil {
+		return newRaw
+	}
+	secretKeys := map[string]struct{}{
+		"access_key_id":     {},
+		"secret_access_key": {},
+		"api_key":           {},
+		"token":             {},
+		"secret":            {},
+	}
+	for key, value := range newPayload {
+		if _, isSecret := secretKeys[strings.ToLower(key)]; !isSecret {
+			continue
+		}
+		if strings.TrimSpace(fmt.Sprintf("%v", value)) != "******" {
+			continue
+		}
+		if oldValue, ok := oldPayload[key]; ok {
+			newPayload[key] = oldValue
+		}
+	}
+	merged, err := json.Marshal(newPayload)
+	if err != nil {
+		return newRaw
+	}
+	return merged
 }
 
 func (s *ContentService) getCache(key string, out any) bool {

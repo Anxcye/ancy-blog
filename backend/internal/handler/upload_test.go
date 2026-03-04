@@ -33,7 +33,7 @@ func (m *uploaderMock) Upload(ctx context.Context, objectKey string, body io.Rea
 
 func TestUploadImageNotConfigured(t *testing.T) {
 	gin.SetMode(gin.TestMode)
-	h := NewUploadHandler(nil)
+	h := NewUploadHandler(nil, nil)
 	r := gin.New()
 	r.POST("/upload", h.UploadImage)
 
@@ -56,7 +56,7 @@ func TestUploadImageSuccess(t *testing.T) {
 			t.Fatalf("unexpected content type: %s", contentType)
 		}
 		return "https://cdn.example.com/" + objectKey, nil
-	}})
+	}}, nil)
 
 	r := gin.New()
 	r.POST("/upload", h.UploadImage)

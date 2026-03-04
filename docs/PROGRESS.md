@@ -65,6 +65,9 @@
 
 - [x] Added quick jump from article rows to translation center with prefilled source context.
 - [x] Upgraded admin UI to Naive UI design system with enterprise shell (responsive sider/header/drawer, theme + locale switch, refined login/dashboard/articles pages).
+- [x] Replaced raw article textarea editor with TipTap rich-text editor (toolbar, JSON content persistence, and inline image insertion).
+- [x] Added structured integration-center forms for `openai_compatible` and `cloudflare_r2` with optional advanced JSON section.
+- [x] Enabled runtime-refresh R2 upload configuration (no backend restart needed after integration save) and protected masked secrets from accidental overwrite.
 
 ## Blocked
 - None.

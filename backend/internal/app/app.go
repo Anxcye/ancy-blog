@@ -17,7 +17,6 @@ import (
 	"github.com/anxcye/ancy-blog/backend/internal/repository"
 	"github.com/anxcye/ancy-blog/backend/internal/repository/postgres"
 	"github.com/anxcye/ancy-blog/backend/internal/service"
-	"github.com/anxcye/ancy-blog/backend/internal/storage"
 	"github.com/anxcye/ancy-blog/backend/internal/worker"
 )
 
@@ -78,12 +77,11 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 		)
 	}
 
-	var uploader storage.Uploader
 	return &App{
 		AuthHandler:       handler.NewAuthHandler(authService),
 		PublicHandler:     handler.NewPublicHandler(articleService, commentService, linkService, siteService, timelineService),
 		AdminHandler:      handler.NewAdminHandler(articleService, commentService, linkService, siteService, integrationService, translationService, aiAssistService),
-		UploadHandler:     handler.NewUploadHandler(uploader),
+		UploadHandler:     handler.NewUploadHandler(nil, integrationService),
 		AuthService:       authService,
 		TranslationWorker: translationWorker,
 	}, nil

@@ -482,3 +482,24 @@
 - Updated i18n resources with `layout` strings and login success message.
 - Validation run:
   - `pnpm --dir frontend-admin run build` passed.
+
+## 2026-03-04 (Rich editor + immediate R2/LLM config usability)
+- Replaced admin article content textarea with TipTap-based rich-text editor:
+  - added reusable `RichTextEditor` component with toolbar actions.
+  - persisted editor data as JSON string in existing article `content` field.
+  - added inline image insertion flow backed by admin upload endpoint.
+- Added upload API module for frontend editor image uploads:
+  - `frontend-admin/src/api/modules/upload.ts`.
+- Improved AI summary generation behavior in editor:
+  - extract plain text from rich-text JSON before sending AI summary request.
+- Upgraded integration-center UX from raw JSON-only to structured forms:
+  - `openai_compatible`: `base_url`, `api_key`, `model`.
+  - `cloudflare_r2`: `account_id`, `bucket`, `public_base_url`, `access_key_id`, `secret_access_key`.
+  - retained optional advanced JSON collapse section.
+- Fixed backend R2 runtime wiring and config lifecycle:
+  - added R2 uploader implementation (`internal/storage/r2_uploader.go`).
+  - upload handler now resolves uploader from latest integration config at request time (no restart required).
+  - fixed masked secret overwrite risk by preserving existing secret values when incoming payload uses `******`.
+- Validation:
+  - `pnpm --dir frontend-admin run build` passed.
+  - `go test ./internal/app ./internal/handler ./internal/service ./internal/storage ./internal/server` passed.

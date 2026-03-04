@@ -79,6 +79,7 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 - External integrations must be managed in a unified admin configuration center.
 - R2 image storage and LLM provider config should share one management domain and one UI module.
 - Integration config fields are editable in admin UI and stored in DB (not hardcoded).
+- Integration config updates must take effect immediately for runtime actions (e.g., image upload) without requiring service restart.
 - Secret fields (API keys/tokens) are write-only in UI and must be masked in read responses.
 - Integrations must support:
   - `enabled` switch
@@ -105,6 +106,10 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
   - Translation job supports `auto_publish` switch.
   - Translation job supports `publish_at` for scheduled publish.
   - When `auto_publish=false`, localized content remains draft until manual publish.
+
+## Editor Rules
+- Admin article editor uses rich-text JSON as persisted content format.
+- Editor image insertion must upload through configured object storage integration (`cloudflare_r2`) and store URL references in content JSON.
 
 ## Navigation Rules
 - Top navigation is dynamically managed by admin.

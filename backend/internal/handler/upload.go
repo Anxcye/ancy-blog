@@ -12,22 +12,43 @@ import (
 	"time"
 
 	"github.com/anxcye/ancy-blog/backend/internal/response"
+	"github.com/anxcye/ancy-blog/backend/internal/service"
 	"github.com/anxcye/ancy-blog/backend/internal/storage"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type UploadHandler struct {
-	uploader storage.Uploader
+	uploader           storage.Uploader
+	integrationService *service.IntegrationService
 }
 
-func NewUploadHandler(uploader storage.Uploader) *UploadHandler {
-	return &UploadHandler{uploader: uploader}
+func NewUploadHandler(uploader storage.Uploader, integrationService *service.IntegrationService) *UploadHandler {
+	return &UploadHandler{uploader: uploader, integrationService: integrationService}
+}
+
+func (h *UploadHandler) resolveUploader() (storage.Uploader, error) {
+	if h.uploader != nil {
+		return h.uploader, nil
+	}
+	if h.integrationService == nil {
+		return nil, fmt.Errorf("image storage is not configured")
+	}
+	provider, ok := h.integrationService.GetIntegrationProviderForRuntime("cloudflare_r2")
+	if !ok || !provider.Enabled {
+		return nil, fmt.Errorf("cloudflare_r2 provider is disabled or missing")
+	}
+	uploader, err := storage.NewR2UploaderFromConfigJSON(provider.ConfigJSON)
+	if err != nil {
+		return nil, fmt.Errorf("invalid cloudflare_r2 configuration: %w", err)
+	}
+	return uploader, nil
 }
 
 func (h *UploadHandler) UploadImage(c *gin.Context) {
-	if h.uploader == nil {
-		response.JSON(c, http.StatusNotImplemented, response.Envelope{Code: "UPLOAD_NOT_CONFIGURED", Message: "image storage is not configured"})
+	uploader, resolveErr := h.resolveUploader()
+	if resolveErr != nil {
+		response.JSON(c, http.StatusNotImplemented, response.Envelope{Code: "UPLOAD_NOT_CONFIGURED", Message: resolveErr.Error()})
 		return
 	}
 
@@ -60,7 +81,7 @@ func (h *UploadHandler) UploadImage(c *gin.Context) {
 		ext = ".bin"
 	}
 	objectKey := fmt.Sprintf("uploads/images/%s/%s%s", time.Now().UTC().Format("200601"), uuid.NewString(), ext)
-	url, err := h.uploader.Upload(c.Request.Context(), objectKey, src, contentType)
+	url, err := uploader.Upload(c.Request.Context(), objectKey, src, contentType)
 	if err != nil {
 		response.JSON(c, http.StatusInternalServerError, response.Envelope{Code: "UPLOAD_FAILED", Message: err.Error()})
 		return

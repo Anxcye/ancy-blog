@@ -1,178 +1,176 @@
 <!--
 File: SystemView.vue
-Purpose: Manage integrations and translation jobs/content operations in a unified system workspace.
+Purpose: Manage integrations and translation jobs/content operations with unified Naive UI components.
 Module: frontend-admin/views/system, presentation layer.
 Related: integrations API module, translations API module, and backend admin system endpoints.
 -->
 <template>
   <section class="system-page">
-    <h1>{{ t('system.title') }}</h1>
-    <p class="subtitle">{{ t('system.subtitle') }}</p>
-
-    <div class="mode-tabs">
-      <button :class="{ active: tab === 'integrations' }" @click="tab = 'integrations'">{{ t('system.tabIntegrations') }}</button>
-      <button :class="{ active: tab === 'translations' }" @click="tab = 'translations'">{{ t('system.tabTranslations') }}</button>
-    </div>
-
-    <p v-if="errorText" class="error">{{ errorText }}</p>
-    <p v-if="successText" class="success">{{ successText }}</p>
-
-    <template v-if="tab === 'integrations'">
-      <article v-for="provider in providers" :key="provider.providerKey" class="panel">
-        <header class="panel-header">
-          <div>
-            <h2>{{ provider.name }}</h2>
-            <p>{{ provider.providerKey }} · {{ provider.providerType }}</p>
-          </div>
-          <label class="switch-row">
-            <input v-model="provider.enabled" type="checkbox" />
-            <span>{{ provider.enabled ? t('system.enabled') : t('system.disabled') }}</span>
-          </label>
-        </header>
-
-        <label>
-          <span>{{ t('system.configJson') }}</span>
-          <textarea v-model="provider.configRaw" rows="6" />
-        </label>
-
-        <label>
-          <span>{{ t('system.metaJson') }}</span>
-          <textarea v-model="provider.metaRaw" rows="4" />
-        </label>
-
-        <div class="actions">
-          <button :disabled="loading" @click="saveProvider(provider)">{{ t('common.save') }}</button>
-          <button :disabled="loading" @click="testProvider(provider.providerKey)">{{ t('system.test') }}</button>
+    <NCard :bordered="false" class="section-card">
+      <div class="topbar">
+        <div class="tab-switch">
+          <NButton :type="tab === 'integrations' ? 'primary' : 'default'" secondary @click="tab = 'integrations'">{{ t('system.tabIntegrations') }}</NButton>
+          <NButton :type="tab === 'translations' ? 'primary' : 'default'" secondary @click="tab = 'translations'">{{ t('system.tabTranslations') }}</NButton>
         </div>
-      </article>
-    </template>
+      </div>
 
-    <template v-else>
-      <article class="panel">
-        <h2>{{ t('system.translationCreateTitle') }}</h2>
-        <div class="grid-2">
-          <label>
-            <span>sourceType</span>
-            <select v-model="jobForm.sourceType">
-              <option value="article">article</option>
-              <option value="moment">moment</option>
-            </select>
-          </label>
-          <label>
-            <span>sourceId</span>
-            <input v-model.trim="jobForm.sourceId" type="text" />
-          </label>
-          <label>
-            <span>sourceLocale</span>
-            <input v-model.trim="jobForm.sourceLocale" type="text" placeholder="zh-CN" />
-          </label>
-          <label>
-            <span>targetLocale</span>
-            <input v-model.trim="jobForm.targetLocale" type="text" placeholder="en-US" />
-          </label>
-          <label>
-            <span>providerKey</span>
-            <input v-model.trim="jobForm.providerKey" type="text" placeholder="openai_compatible" />
-          </label>
-          <label>
-            <span>modelName</span>
-            <input v-model.trim="jobForm.modelName" type="text" placeholder="gpt-4.1-mini" />
-          </label>
-          <label>
-            <span>maxRetries</span>
-            <input v-model.number="jobForm.maxRetries" type="number" min="0" max="10" />
-          </label>
-          <label>
-            <span>publishAt</span>
-            <input v-model="jobPublishAtLocal" type="datetime-local" />
-          </label>
-          <label class="switch-row">
-            <input v-model="jobForm.autoPublish" type="checkbox" />
-            <span>autoPublish</span>
-          </label>
-        </div>
-        <div class="actions">
-          <button :disabled="loading" @click="createJob">{{ t('system.createTranslationJob') }}</button>
-        </div>
-      </article>
+      <NAlert v-if="errorText" type="error" :show-icon="false">{{ errorText }}</NAlert>
+      <NAlert v-if="successText" type="success" :show-icon="false">{{ successText }}</NAlert>
 
-      <article class="panel">
-        <header class="panel-header">
-          <h2>{{ t('system.translationJobsTitle') }}</h2>
-          <div class="toolbar">
-            <select v-model="jobStatusFilter" @change="loadJobs()">
-              <option value="">all</option>
-              <option value="queued">queued</option>
-              <option value="running">running</option>
-              <option value="succeeded">succeeded</option>
-              <option value="failed">failed</option>
-            </select>
+      <template v-if="tab === 'integrations'">
+        <NCard v-for="provider in providers" :key="provider.providerKey" size="small" :bordered="true" class="provider-card">
+          <template #header>
+            <div class="provider-header">
+              <div>
+                <strong>{{ provider.name }}</strong>
+                <p>{{ provider.providerKey }} · {{ provider.providerType }}</p>
+              </div>
+              <NSwitch v-model:value="provider.enabled" />
+            </div>
+          </template>
+
+          <NForm label-placement="top">
+            <div v-if="provider.providerKey === 'openai_compatible'" class="grid-3">
+              <NFormItem label="base_url">
+                <NInput :value="getConfigField(provider, 'base_url')" placeholder="https://api.openai.com/v1" @update:value="(v) => setConfigField(provider, 'base_url', v)" />
+              </NFormItem>
+              <NFormItem label="api_key">
+                <NInput type="password" show-password-on="click" :value="getConfigField(provider, 'api_key')" placeholder="sk-..." @update:value="(v) => setConfigField(provider, 'api_key', v)" />
+              </NFormItem>
+              <NFormItem label="model">
+                <NInput :value="getConfigField(provider, 'model')" placeholder="gpt-4.1-mini" @update:value="(v) => setConfigField(provider, 'model', v)" />
+              </NFormItem>
+            </div>
+
+            <div v-else-if="provider.providerKey === 'cloudflare_r2'" class="grid-3">
+              <NFormItem label="account_id">
+                <NInput :value="getConfigField(provider, 'account_id')" @update:value="(v) => setConfigField(provider, 'account_id', v)" />
+              </NFormItem>
+              <NFormItem label="bucket">
+                <NInput :value="getConfigField(provider, 'bucket')" @update:value="(v) => setConfigField(provider, 'bucket', v)" />
+              </NFormItem>
+              <NFormItem label="public_base_url">
+                <NInput :value="getConfigField(provider, 'public_base_url')" placeholder="https://cdn.example.com" @update:value="(v) => setConfigField(provider, 'public_base_url', v)" />
+              </NFormItem>
+              <NFormItem label="access_key_id">
+                <NInput :value="getConfigField(provider, 'access_key_id')" @update:value="(v) => setConfigField(provider, 'access_key_id', v)" />
+              </NFormItem>
+              <NFormItem label="secret_access_key">
+                <NInput type="password" show-password-on="click" :value="getConfigField(provider, 'secret_access_key')" @update:value="(v) => setConfigField(provider, 'secret_access_key', v)" />
+              </NFormItem>
+            </div>
+
+            <NCollapse>
+              <NCollapseItem title="高级 JSON（可选）" name="advanced">
+                <NFormItem :label="t('system.configJson')">
+                  <NInput v-model:value="provider.configRaw" type="textarea" :autosize="{ minRows: 4, maxRows: 10 }" />
+                </NFormItem>
+                <NFormItem :label="t('system.metaJson')">
+                  <NInput v-model:value="provider.metaRaw" type="textarea" :autosize="{ minRows: 3, maxRows: 8 }" />
+                </NFormItem>
+              </NCollapseItem>
+            </NCollapse>
+          </NForm>
+
+          <NSpace>
+            <NButton :loading="loading" @click="saveProvider(provider)">{{ t('common.save') }}</NButton>
+            <NButton :loading="loading" @click="testProvider(provider.providerKey)">{{ t('system.test') }}</NButton>
+          </NSpace>
+        </NCard>
+      </template>
+
+      <template v-else>
+        <NCard size="small" :bordered="true">
+          <template #header>{{ t('system.translationCreateTitle') }}</template>
+          <NForm label-placement="top">
+            <div class="grid-3">
+              <NFormItem label="sourceType">
+                <NSelect v-model:value="jobForm.sourceType" :options="sourceTypeOptions" />
+              </NFormItem>
+              <NFormItem label="sourceId">
+                <NInput v-model:value="jobForm.sourceId" />
+              </NFormItem>
+              <NFormItem label="sourceLocale">
+                <NInput v-model:value="jobForm.sourceLocale" placeholder="zh-CN" />
+              </NFormItem>
+              <NFormItem label="targetLocale">
+                <NInput v-model:value="jobForm.targetLocale" placeholder="en-US" />
+              </NFormItem>
+              <NFormItem label="providerKey">
+                <NInput v-model:value="jobForm.providerKey" placeholder="openai_compatible" />
+              </NFormItem>
+              <NFormItem label="modelName">
+                <NInput v-model:value="jobForm.modelName" placeholder="gpt-4.1-mini" />
+              </NFormItem>
+              <NFormItem label="maxRetries">
+                <NInputNumber v-model:value="jobForm.maxRetries" :min="0" :max="10" style="width: 100%" />
+              </NFormItem>
+              <NFormItem label="publishAt">
+                <NDatePicker v-model:value="jobPublishAtTs" type="datetime" clearable style="width: 100%" />
+              </NFormItem>
+              <NFormItem label="autoPublish">
+                <NSwitch v-model:value="jobForm.autoPublish" />
+              </NFormItem>
+            </div>
+          </NForm>
+          <NButton type="primary" :loading="loading" @click="createJob">{{ t('system.createTranslationJob') }}</NButton>
+        </NCard>
+
+        <NCard size="small" :bordered="true">
+          <template #header>{{ t('system.translationJobsTitle') }}</template>
+          <template #header-extra>
+            <NSelect
+              v-model:value="jobStatusFilter"
+              clearable
+              :options="jobStatusOptions"
+              style="width: 160px"
+              @update:value="() => loadJobs(1)"
+            />
+          </template>
+
+          <NDataTable remote :loading="loading" :columns="jobColumns" :data="jobs" :pagination="false" :row-key="rowKey" />
+
+          <div class="footer-row">
+            <span class="hint">{{ t('articles.total', { total: jobTotal }) }}</span>
+            <NPagination :page="jobPage" :page-size="jobPageSize" :item-count="jobTotal" :page-slot="7" @update:page="loadJobs" />
           </div>
-        </header>
+        </NCard>
 
-        <ul class="list">
-          <li v-for="job in jobs" :key="job.id" class="item">
-            <div>
-              <p class="item-title">{{ job.sourceType }} · {{ job.targetLocale }} · {{ job.status }}</p>
-              <p class="item-content">{{ job.id }}</p>
-              <p class="item-meta">retry {{ job.retryCount }}/{{ job.maxRetries }} · {{ formatDate(job.updatedAt) }}</p>
-            </div>
-            <div class="item-actions">
-              <button :disabled="loading || job.status !== 'failed'" @click="retryJob(job.id)">{{ t('system.retry') }}</button>
-            </div>
-          </li>
-        </ul>
-        <footer class="pager">
-          <button :disabled="loading || jobPage <= 1" @click="loadJobs(jobPage - 1)">{{ t('common.prev') }}</button>
-          <span>{{ jobPage }} / {{ jobTotalPages }}</span>
-          <button :disabled="loading || jobPage >= jobTotalPages" @click="loadJobs(jobPage + 1)">{{ t('common.next') }}</button>
-        </footer>
-      </article>
+        <NCard size="small" :bordered="true">
+          <template #header>{{ t('system.translationContentsTitle') }}</template>
+          <NForm inline :show-label="false" class="filters" @submit.prevent="loadContents(1)">
+            <NFormItem>
+              <NSelect v-model:value="contentFilter.sourceType" :options="sourceTypeOptions" style="width: 130px" />
+            </NFormItem>
+            <NFormItem>
+              <NInput v-model:value="contentFilter.sourceId" placeholder="sourceId" />
+            </NFormItem>
+            <NFormItem>
+              <NInput v-model:value="contentFilter.locale" placeholder="locale" />
+            </NFormItem>
+            <NFormItem>
+              <NButton attr-type="submit">{{ t('common.search') }}</NButton>
+            </NFormItem>
+          </NForm>
 
-      <article class="panel">
-        <header class="panel-header">
-          <h2>{{ t('system.translationContentsTitle') }}</h2>
-          <div class="toolbar grid-mini">
-            <select v-model="contentFilter.sourceType" @change="() => loadContents(1)">
-              <option value="article">article</option>
-              <option value="moment">moment</option>
-            </select>
-            <input v-model.trim="contentFilter.sourceId" placeholder="sourceId" @keyup.enter="() => loadContents(1)" />
-            <input v-model.trim="contentFilter.locale" placeholder="locale" @keyup.enter="() => loadContents(1)" />
-            <button :disabled="loading" @click="() => loadContents(1)">{{ t('common.search') }}</button>
+          <NDataTable remote :loading="loading" :columns="contentColumns" :data="contents" :pagination="false" :row-key="contentRowKey" />
+
+          <div class="footer-row">
+            <span class="hint">{{ t('articles.total', { total: contentTotal }) }}</span>
+            <NPagination :page="contentPage" :page-size="contentPageSize" :item-count="contentTotal" :page-slot="7" @update:page="loadContents" />
           </div>
-        </header>
-
-        <ul class="list">
-          <li v-for="row in contents" :key="`${row.sourceType}:${row.sourceId}:${row.locale}`" class="item-col">
-            <p class="item-title">{{ row.sourceType }} · {{ row.sourceId }} · {{ row.locale }}</p>
-            <input v-model="row.title" :placeholder="t('editor.fieldTitle')" />
-            <input v-model="row.summary" :placeholder="t('editor.fieldSummary')" />
-            <textarea v-model="row.content" rows="6" />
-            <div class="grid-mini">
-              <select v-model="row.status">
-                <option value="draft">draft</option>
-                <option value="published">published</option>
-              </select>
-              <input v-model="row.publishedAt" placeholder="2026-03-04T12:00:00Z" />
-              <button :disabled="loading" @click="saveContent(row)">{{ t('common.save') }}</button>
-            </div>
-          </li>
-        </ul>
-        <footer class="pager">
-          <button :disabled="loading || contentPage <= 1" @click="loadContents(contentPage - 1)">{{ t('common.prev') }}</button>
-          <span>{{ contentPage }} / {{ contentTotalPages }}</span>
-          <button :disabled="loading || contentPage >= contentTotalPages" @click="loadContents(contentPage + 1)">{{ t('common.next') }}</button>
-        </footer>
-      </article>
-    </template>
+        </NCard>
+      </template>
+    </NCard>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, h, onMounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import type { DataTableColumns } from 'naive-ui';
+import { NAlert, NButton, NCard, NCollapse, NCollapseItem, NDataTable, NDatePicker, NForm, NFormItem, NInput, NInputNumber, NPagination, NSelect, NSpace, NSwitch } from 'naive-ui';
 
 import { listIntegrations, testIntegration, updateIntegration } from '@/api/modules/integrations';
 import { createTranslationJob, listTranslationContents, listTranslationJobs, retryTranslationJob, upsertTranslationContent } from '@/api/modules/translations';
@@ -183,6 +181,8 @@ type IntegrationViewModel = {
   providerType: string;
   name: string;
   enabled: boolean;
+  configJson: Record<string, unknown>;
+  metaJson: Record<string, unknown>;
   configRaw: string;
   metaRaw: string;
 };
@@ -198,12 +198,12 @@ const errorText = ref('');
 const successText = ref('');
 const providers = ref<IntegrationViewModel[]>([]);
 
-const jobStatusFilter = ref('');
+const jobStatusFilter = ref<string | null>(null);
 const jobs = ref<TranslationJob[]>([]);
 const jobPage = ref(1);
 const jobTotal = ref(0);
 const jobPageSize = 20;
-const jobPublishAtLocal = ref('');
+const jobPublishAtTs = ref<number | null>(null);
 const jobForm = reactive({
   sourceType: 'article',
   sourceId: '',
@@ -226,8 +226,25 @@ const contentPage = ref(1);
 const contentTotal = ref(0);
 const contentPageSize = 20;
 
-const jobTotalPages = computed(() => Math.max(1, Math.ceil(jobTotal.value / jobPageSize)));
-const contentTotalPages = computed(() => Math.max(1, Math.ceil(contentTotal.value / contentPageSize)));
+const sourceTypeOptions = [
+  { label: 'article', value: 'article' },
+  { label: 'moment', value: 'moment' },
+];
+
+const jobStatusOptions = [
+  { label: 'queued', value: 'queued' },
+  { label: 'running', value: 'running' },
+  { label: 'succeeded', value: 'succeeded' },
+  { label: 'failed', value: 'failed' },
+];
+
+function rowKey(row: TranslationJob): string {
+  return row.id;
+}
+
+function contentRowKey(row: TranslationContent): string {
+  return `${row.sourceType}:${row.sourceId}:${row.locale}`;
+}
 
 function formatDate(value: string): string {
   if (!value) {
@@ -247,6 +264,127 @@ function parseJSON(value: string): Record<string, unknown> {
   return parsed as Record<string, unknown>;
 }
 
+function toPrettyJSON(value: Record<string, unknown>): string {
+  return JSON.stringify(value ?? {}, null, 2);
+}
+
+function getConfigField(provider: IntegrationViewModel, key: string): string {
+  return String(provider.configJson[key] ?? '');
+}
+
+function setConfigField(provider: IntegrationViewModel, key: string, value: string): void {
+  provider.configJson[key] = value;
+  provider.configRaw = toPrettyJSON(provider.configJson);
+}
+
+const jobColumns = computed<DataTableColumns<TranslationJob>>(() => [
+  {
+    title: '任务ID',
+    key: 'id',
+    ellipsis: {
+      tooltip: true,
+    },
+  },
+  {
+    title: '状态',
+    key: 'status',
+    width: 120,
+  },
+  {
+    title: '源/目标',
+    key: 'pair',
+    width: 220,
+    render(row) {
+      return `${row.sourceType} -> ${row.targetLocale}`;
+    },
+  },
+  {
+    title: '重试',
+    key: 'retry',
+    width: 120,
+    render(row) {
+      return `${row.retryCount}/${row.maxRetries}`;
+    },
+  },
+  {
+    title: '更新时间',
+    key: 'updatedAt',
+    width: 180,
+    render(row) {
+      return formatDate(row.updatedAt);
+    },
+  },
+  {
+    title: '操作',
+    key: 'actions',
+    width: 110,
+    render(row) {
+      return h(
+        NButton,
+        {
+          size: 'small',
+          tertiary: true,
+          disabled: loading.value || row.status !== 'failed',
+          onClick: () => retryJob(row.id),
+        },
+        { default: () => t('system.retry') },
+      );
+    },
+  },
+]);
+
+const contentColumns = computed<DataTableColumns<TranslationContent>>(() => [
+  {
+    title: '来源',
+    key: 'origin',
+    width: 260,
+    render(row) {
+      return `${row.sourceType} · ${row.sourceId} · ${row.locale}`;
+    },
+  },
+  {
+    title: t('editor.fieldTitle'),
+    key: 'title',
+    render(row) {
+      return h(NInput, {
+        value: row.title,
+        onUpdateValue: (value: string) => {
+          row.title = value;
+        },
+      });
+    },
+  },
+  {
+    title: t('editor.fieldSummary'),
+    key: 'summary',
+    render(row) {
+      return h(NInput, {
+        value: row.summary,
+        onUpdateValue: (value: string) => {
+          row.summary = value;
+        },
+      });
+    },
+  },
+  {
+    title: '操作',
+    key: 'actions',
+    width: 110,
+    render(row) {
+      return h(
+        NButton,
+        {
+          size: 'small',
+          tertiary: true,
+          disabled: loading.value,
+          onClick: () => saveContent(row),
+        },
+        { default: () => t('common.save') },
+      );
+    },
+  },
+]);
+
 async function loadProviders(): Promise<void> {
   const rows = await listIntegrations();
   providers.value = rows.map((item) => ({
@@ -254,8 +392,10 @@ async function loadProviders(): Promise<void> {
     providerType: item.providerType,
     name: item.name,
     enabled: item.enabled,
-    configRaw: JSON.stringify(item.configJson ?? {}, null, 2),
-    metaRaw: JSON.stringify(item.metaJson ?? {}, null, 2),
+    configJson: { ...(item.configJson ?? {}) },
+    metaJson: { ...(item.metaJson ?? {}) },
+    configRaw: toPrettyJSON(item.configJson ?? {}),
+    metaRaw: toPrettyJSON(item.metaJson ?? {}),
   }));
 }
 
@@ -264,11 +404,15 @@ async function saveProvider(item: IntegrationViewModel): Promise<void> {
   errorText.value = '';
   successText.value = '';
   try {
+    item.configJson = parseJSON(item.configRaw);
+    item.metaJson = parseJSON(item.metaRaw);
     await updateIntegration(item.providerKey, {
       enabled: item.enabled,
-      configJson: parseJSON(item.configRaw),
-      metaJson: parseJSON(item.metaRaw),
+      configJson: item.configJson,
+      metaJson: item.metaJson,
     });
+    item.configRaw = toPrettyJSON(item.configJson);
+    item.metaRaw = toPrettyJSON(item.metaJson);
     successText.value = t('common.saveSuccess');
   } catch {
     errorText.value = t('system.invalidJsonOrSaveFailed');
@@ -319,7 +463,7 @@ async function createJob(): Promise<void> {
   errorText.value = '';
   successText.value = '';
   try {
-    jobForm.publishAt = jobPublishAtLocal.value ? new Date(jobPublishAtLocal.value).toISOString() : '';
+    jobForm.publishAt = jobPublishAtTs.value ? new Date(jobPublishAtTs.value).toISOString() : '';
     const id = await createTranslationJob({
       sourceType: jobForm.sourceType,
       sourceId: jobForm.sourceId,
@@ -431,197 +575,73 @@ onMounted(async () => {
 <style scoped>
 .system-page {
   display: grid;
+}
+
+.section-card {
+  border-radius: 14px;
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--n-text-color) 8%, transparent);
+  display: grid;
   gap: 12px;
 }
 
-h1,
-h2 {
-  margin: 0;
+.topbar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 12px;
 }
 
-.subtitle {
-  margin: -4px 0 0;
-  color: var(--muted);
+.tab-switch {
+  display: flex;
+  gap: 8px;
 }
 
-.mode-tabs {
-  display: inline-flex;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
+.provider-card + .provider-card {
+  margin-top: 10px;
 }
 
-.mode-tabs button {
-  border: 0;
-  border-right: 1px solid var(--border);
-  padding: 8px 12px;
-  background: var(--surface);
-  cursor: pointer;
-}
-
-.mode-tabs button:last-child {
-  border-right: 0;
-}
-
-.mode-tabs button.active {
-  background: var(--accent-soft);
-  color: var(--accent-hover);
-  font-weight: 600;
-}
-
-.panel {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-  padding: 14px;
-  display: grid;
-  gap: 10px;
-}
-
-.panel-header {
+.provider-header {
   display: flex;
   justify-content: space-between;
-  align-items: flex-start;
-  gap: 10px;
+  align-items: center;
+  gap: 12px;
 }
 
-.panel-header p {
+.provider-header p {
   margin: 4px 0 0;
-  color: var(--muted);
+  color: var(--n-text-color-3);
 }
 
-.switch-row {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.grid-2 {
+.grid-3 {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 10px;
 }
 
-label {
-  display: grid;
-  gap: 6px;
+.filters {
+  margin-bottom: 10px;
 }
 
-input,
-select,
-textarea,
-button {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 10px;
-  font: inherit;
-  background: var(--surface);
-}
-
-button {
-  cursor: pointer;
-}
-
-.actions {
-  display: flex;
-  gap: 8px;
-}
-
-.pager {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-}
-
-.toolbar {
-  display: flex;
-  gap: 8px;
-}
-
-.grid-mini {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 8px;
-}
-
-.list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 8px;
-}
-
-.item {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px;
+.footer-row {
+  margin-top: 12px;
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 10px;
 }
 
-.item-col {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px;
-  display: grid;
-  gap: 8px;
-}
-
-.item-title,
-.item-content,
-.item-meta {
-  margin: 0;
-}
-
-.item-title {
-  font-weight: 600;
-}
-
-.item-meta {
-  color: var(--muted);
+.hint {
+  color: var(--n-text-color-3);
   font-size: 13px;
 }
 
-.item-actions {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-}
-
-.error {
-  color: #b64040;
-  margin: 0;
-}
-
-.success {
-  color: var(--accent-hover);
-  margin: 0;
-}
-
 @media (max-width: 900px) {
-  .grid-2,
-  .grid-mini {
+  .grid-3,
+  .footer-row,
+  .topbar {
     grid-template-columns: 1fr;
-  }
-
-  .panel-header,
-  .item {
     flex-direction: column;
-  }
-
-  .item-actions,
-  .actions,
-  .pager {
-    width: 100%;
-  }
-
-  .item-actions button,
-  .actions button,
-  .pager button {
-    flex: 1;
+    align-items: stretch;
   }
 }
 </style>

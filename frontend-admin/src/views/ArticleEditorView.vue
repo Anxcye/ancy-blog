@@ -6,128 +6,105 @@ Related: article APIs, route params, translation and publish workflows.
 -->
 <template>
   <section class="editor-page">
-    <header class="editor-header">
-      <h1>{{ isEdit ? t('editor.editTitle') : t('editor.createTitle') }}</h1>
-      <div class="header-actions">
-        <button :disabled="saving" @click="saveAs('draft')">{{ t('editor.saveDraft') }}</button>
-        <button class="primary" :disabled="saving" @click="saveAs('published')">{{ t('editor.publish') }}</button>
+    <NCard :bordered="false" class="section-card">
+      <header class="editor-header">
+        <h1>{{ isEdit ? t('editor.editTitle') : t('editor.createTitle') }}</h1>
+        <div class="header-actions">
+          <NButton :loading="saving" @click="saveAs('draft')">{{ t('editor.saveDraft') }}</NButton>
+          <NButton type="primary" :loading="saving" @click="saveAs('published')">{{ t('editor.publish') }}</NButton>
+        </div>
+      </header>
+
+      <NAlert v-if="errorText" type="error" :show-icon="false">{{ errorText }}</NAlert>
+      <NAlert v-if="successText" type="success" :show-icon="false">{{ successText }}</NAlert>
+
+      <div class="mode-tabs">
+        <NButton :type="mode === 'content' ? 'primary' : 'default'" secondary @click="mode = 'content'">{{ t('editor.tabContent') }}</NButton>
+        <NButton :type="mode === 'meta' ? 'primary' : 'default'" secondary @click="mode = 'meta'">{{ t('editor.tabMeta') }}</NButton>
+        <NButton :type="mode === 'preview' ? 'primary' : 'default'" secondary @click="mode = 'preview'">{{ t('editor.tabPreview') }}</NButton>
       </div>
-    </header>
 
-    <p v-if="errorText" class="error">{{ errorText }}</p>
-    <p v-if="successText" class="success">{{ successText }}</p>
+      <NForm v-if="mode === 'content'" label-placement="top" class="panel">
+        <NFormItem :label="t('editor.fieldTitle')" required>
+          <NInput v-model:value="form.title" />
+        </NFormItem>
 
-    <div class="mode-tabs">
-      <button :class="{ active: mode === 'content' }" @click="mode = 'content'">{{ t('editor.tabContent') }}</button>
-      <button :class="{ active: mode === 'meta' }" @click="mode = 'meta'">{{ t('editor.tabMeta') }}</button>
-      <button :class="{ active: mode === 'preview' }" @click="mode = 'preview'">{{ t('editor.tabPreview') }}</button>
-    </div>
+        <NFormItem :label="t('editor.fieldSlug')" required>
+          <div class="inline-row">
+            <NInput v-model:value="form.slug" />
+            <NButton :loading="aiLoading" :disabled="saving || aiLoading" @click="onSuggestSlug">{{ t('editor.aiSuggestSlug') }}</NButton>
+          </div>
+        </NFormItem>
 
-    <div v-if="mode === 'content'" class="panel">
-      <label>
-        <span>{{ t('editor.fieldTitle') }}</span>
-        <input v-model.trim="form.title" type="text" required />
-      </label>
-      <label>
-        <span>{{ t('editor.fieldSlug') }}</span>
-        <div class="inline-row">
-          <input v-model.trim="form.slug" type="text" required />
-          <button type="button" :disabled="saving || aiLoading" @click="onSuggestSlug">
-            {{ t('editor.aiSuggestSlug') }}
-          </button>
+        <NFormItem :label="t('editor.fieldSummary')">
+          <div class="inline-col">
+            <NInput v-model:value="form.summary" type="textarea" :autosize="{ minRows: 3, maxRows: 8 }" />
+            <NButton :loading="aiLoading" :disabled="saving || aiLoading" @click="onGenerateSummary">{{ t('editor.aiGenerateSummary') }}</NButton>
+          </div>
+        </NFormItem>
+
+        <NFormItem :label="t('editor.fieldContent')">
+          <RichTextEditor
+            v-model="form.content"
+            :disabled="saving || aiLoading"
+            placeholder="Start writing your article..."
+            :upload-image="uploadEditorImage"
+            @upload-error="onEditorUploadError"
+          />
+        </NFormItem>
+      </NForm>
+
+      <NForm v-else-if="mode === 'meta'" label-placement="top" class="panel">
+        <div class="grid-2">
+          <NFormItem :label="t('editor.fieldKind')">
+            <NSelect v-model:value="form.contentKind" :options="kindOptions" />
+          </NFormItem>
+          <NFormItem :label="t('editor.fieldStatus')">
+            <NSelect v-model:value="form.status" :options="statusOptions" />
+          </NFormItem>
+          <NFormItem :label="t('editor.fieldVisibility')">
+            <NSelect v-model:value="form.visibility" :options="visibilityOptions" />
+          </NFormItem>
+          <NFormItem :label="t('editor.fieldOriginType')">
+            <NSelect v-model:value="form.originType" :options="originOptions" />
+          </NFormItem>
+          <NFormItem :label="t('editor.fieldAIAssistLevel')">
+            <NInput v-model:value="form.aiAssistLevel" placeholder="none" />
+          </NFormItem>
+          <NFormItem :label="t('editor.fieldAIProviderKey')">
+            <NInput v-model:value="aiOptions.providerKey" placeholder="openai_compatible" />
+          </NFormItem>
+          <NFormItem :label="t('editor.fieldAIModelName')">
+            <NInput v-model:value="aiOptions.modelName" placeholder="gpt-4.1-mini" />
+          </NFormItem>
+          <NFormItem :label="t('editor.fieldCategory')">
+            <NInput v-model:value="form.categorySlug" placeholder="tech" />
+          </NFormItem>
+          <NFormItem :label="t('editor.fieldTags')">
+            <NInput v-model:value="tagInput" placeholder="go,backend" />
+          </NFormItem>
+          <NFormItem :label="t('editor.fieldSourceUrl')">
+            <NInput v-model:value="form.sourceUrl" />
+          </NFormItem>
+          <NFormItem :label="t('editor.fieldCoverImage')">
+            <NInput v-model:value="form.coverImage" />
+          </NFormItem>
+          <NFormItem :label="t('editor.fieldPublishedAt')">
+            <NDatePicker v-model:value="publishedAtTs" type="datetime" clearable style="width: 100%" />
+          </NFormItem>
+          <NFormItem>
+            <NCheckbox v-model:checked="form.allowComment">{{ t('editor.fieldAllowComment') }}</NCheckbox>
+          </NFormItem>
         </div>
-      </label>
-      <label>
-        <span>{{ t('editor.fieldSummary') }}</span>
-        <div class="inline-col">
-          <textarea v-model="form.summary" rows="3" />
-          <button type="button" :disabled="saving || aiLoading" @click="onGenerateSummary">
-            {{ t('editor.aiGenerateSummary') }}
-          </button>
-        </div>
-      </label>
-      <label>
-        <span>{{ t('editor.fieldContent') }}</span>
-        <textarea v-model="form.content" rows="18" />
-      </label>
-    </div>
+      </NForm>
 
-    <div v-else-if="mode === 'meta'" class="panel grid-2">
-      <label>
-        <span>{{ t('editor.fieldKind') }}</span>
-        <select v-model="form.contentKind">
-          <option value="post">post</option>
-          <option value="page">page</option>
-        </select>
-      </label>
-      <label>
-        <span>{{ t('editor.fieldStatus') }}</span>
-        <select v-model="form.status">
-          <option value="draft">draft</option>
-          <option value="published">published</option>
-          <option value="scheduled">scheduled</option>
-        </select>
-      </label>
-      <label>
-        <span>{{ t('editor.fieldVisibility') }}</span>
-        <select v-model="form.visibility">
-          <option value="public">public</option>
-          <option value="unlisted">unlisted</option>
-          <option value="private">private</option>
-        </select>
-      </label>
-      <label>
-        <span>{{ t('editor.fieldOriginType') }}</span>
-        <select v-model="form.originType">
-          <option value="original">original</option>
-          <option value="repost">repost</option>
-          <option value="translated">translated</option>
-        </select>
-      </label>
-      <label>
-        <span>{{ t('editor.fieldAIAssistLevel') }}</span>
-        <input v-model.trim="form.aiAssistLevel" type="text" placeholder="none" />
-      </label>
-      <label>
-        <span>{{ t('editor.fieldAIProviderKey') }}</span>
-        <input v-model.trim="aiOptions.providerKey" type="text" placeholder="openai_compatible" />
-      </label>
-      <label>
-        <span>{{ t('editor.fieldAIModelName') }}</span>
-        <input v-model.trim="aiOptions.modelName" type="text" placeholder="gpt-4.1-mini" />
-      </label>
-      <label>
-        <span>{{ t('editor.fieldCategory') }}</span>
-        <input v-model.trim="form.categorySlug" type="text" placeholder="tech" />
-      </label>
-      <label>
-        <span>{{ t('editor.fieldTags') }}</span>
-        <input v-model.trim="tagInput" type="text" placeholder="go,backend" />
-      </label>
-      <label>
-        <span>{{ t('editor.fieldSourceUrl') }}</span>
-        <input v-model.trim="form.sourceUrl" type="url" />
-      </label>
-      <label>
-        <span>{{ t('editor.fieldCoverImage') }}</span>
-        <input v-model.trim="form.coverImage" type="url" />
-      </label>
-      <label>
-        <span>{{ t('editor.fieldPublishedAt') }}</span>
-        <input v-model="publishedAtLocal" type="datetime-local" />
-      </label>
-      <label class="switch-row">
-        <input v-model="form.allowComment" type="checkbox" />
-        <span>{{ t('editor.fieldAllowComment') }}</span>
-      </label>
-    </div>
-
-    <div v-else class="panel preview">
-      <h2>{{ form.title || '-' }}</h2>
-      <p class="preview-meta">/{{ form.slug || '-' }}</p>
-      <p class="preview-summary">{{ form.summary || '-' }}</p>
-      <pre>{{ form.content || '-' }}</pre>
-    </div>
+      <NCard v-else size="small" :bordered="true" class="preview">
+        <h2>{{ form.title || '-' }}</h2>
+        <p class="preview-meta">/{{ form.slug || '-' }}</p>
+        <p class="preview-summary">{{ form.summary || '-' }}</p>
+        <pre>{{ form.content || '-' }}</pre>
+      </NCard>
+    </NCard>
   </section>
 </template>
 
@@ -135,9 +112,12 @@ Related: article APIs, route params, translation and publish workflows.
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import { NAlert, NButton, NCard, NCheckbox, NDatePicker, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 
+import RichTextEditor from '@/components/editor/RichTextEditor.vue';
 import { createArticle, getArticle, updateArticle } from '@/api/modules/articles';
 import { generateSummary, suggestSlug } from '@/api/modules/ai';
+import { uploadImage } from '@/api/modules/upload';
 import type { ArticleUpsertPayload } from '@/api/types';
 
 type EditorMode = 'content' | 'meta' | 'preview';
@@ -153,7 +133,7 @@ const saving = ref(false);
 const aiLoading = ref(false);
 const errorText = ref('');
 const successText = ref('');
-const publishedAtLocal = ref('');
+const publishedAtTs = ref<number | null>(null);
 const tagInput = ref('');
 const aiOptions = reactive({
   providerKey: 'openai_compatible',
@@ -178,6 +158,29 @@ const form = reactive<ArticleUpsertPayload>({
   publishedAt: '',
 });
 
+const kindOptions = [
+  { label: 'post', value: 'post' },
+  { label: 'page', value: 'page' },
+];
+
+const statusOptions = [
+  { label: 'draft', value: 'draft' },
+  { label: 'published', value: 'published' },
+  { label: 'scheduled', value: 'scheduled' },
+];
+
+const visibilityOptions = [
+  { label: 'public', value: 'public' },
+  { label: 'unlisted', value: 'unlisted' },
+  { label: 'private', value: 'private' },
+];
+
+const originOptions = [
+  { label: 'original', value: 'original' },
+  { label: 'repost', value: 'repost' },
+  { label: 'translated', value: 'translated' },
+];
+
 const isEdit = computed(() => Boolean(route.params.id));
 
 watch(tagInput, (value) => {
@@ -187,7 +190,7 @@ watch(tagInput, (value) => {
     .filter((item) => item.length > 0);
 });
 
-watch(publishedAtLocal, (value) => {
+watch(publishedAtTs, (value) => {
   form.publishedAt = value ? new Date(value).toISOString() : '';
 });
 
@@ -215,16 +218,10 @@ async function loadArticle(): Promise<void> {
     form.publishedAt = article.publishedAt || '';
 
     tagInput.value = form.tagSlugs.join(',');
-    publishedAtLocal.value = form.publishedAt ? formatToDateTimeLocal(form.publishedAt) : '';
+    publishedAtTs.value = form.publishedAt ? new Date(form.publishedAt).getTime() : null;
   } catch {
     errorText.value = t('common.loadFailed');
   }
-}
-
-function formatToDateTimeLocal(value: string): string {
-  const date = new Date(value);
-  const pad = (part: number) => String(part).padStart(2, '0');
-  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())}T${pad(date.getHours())}:${pad(date.getMinutes())}`;
 }
 
 function toPayload(status: SaveStatus): ArticleUpsertPayload {
@@ -264,7 +261,8 @@ async function saveAs(status: SaveStatus): Promise<void> {
 }
 
 async function onGenerateSummary(): Promise<void> {
-  if (!form.title && !form.content) {
+  const textContent = extractTextFromContent(form.content);
+  if (!form.title && !textContent) {
     errorText.value = t('editor.requiredHint');
     return;
   }
@@ -274,7 +272,7 @@ async function onGenerateSummary(): Promise<void> {
   try {
     const result = await generateSummary({
       title: form.title,
-      content: form.content,
+      content: textContent,
       providerKey: aiOptions.providerKey || undefined,
       modelName: aiOptions.modelName || undefined,
       maxLength: 180,
@@ -286,6 +284,42 @@ async function onGenerateSummary(): Promise<void> {
   } finally {
     aiLoading.value = false;
   }
+}
+
+function extractTextFromContent(raw: string): string {
+  if (!raw || !raw.trim()) {
+    return '';
+  }
+  try {
+    const parsed = JSON.parse(raw) as Record<string, unknown>;
+    const parts: string[] = [];
+    const walk = (node: unknown): void => {
+      if (!node || typeof node !== 'object') {
+        return;
+      }
+      const map = node as Record<string, unknown>;
+      if (typeof map.text === 'string') {
+        parts.push(map.text);
+      }
+      if (Array.isArray(map.content)) {
+        map.content.forEach(walk);
+      }
+    };
+    walk(parsed);
+    return parts.join(' ').replace(/\s+/g, ' ').trim();
+  } catch {
+    return raw;
+  }
+}
+
+async function uploadEditorImage(file: File): Promise<string> {
+  const result = await uploadImage(file);
+  successText.value = 'Image uploaded successfully.';
+  return result.url;
+}
+
+function onEditorUploadError(message: string): void {
+  errorText.value = message || t('common.saveFailed');
 }
 
 async function onSuggestSlug(): Promise<void> {
@@ -319,6 +353,12 @@ onMounted(async () => {
 <style scoped>
 .editor-page {
   display: grid;
+}
+
+.section-card {
+  border-radius: 14px;
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--n-text-color) 8%, transparent);
+  display: grid;
   gap: 12px;
 }
 
@@ -338,12 +378,14 @@ h1 {
   gap: 8px;
 }
 
-button {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 12px;
-  background: var(--surface);
-  cursor: pointer;
+.mode-tabs {
+  display: flex;
+  gap: 8px;
+}
+
+.panel {
+  display: grid;
+  gap: 12px;
 }
 
 .inline-row {
@@ -351,7 +393,7 @@ button {
   gap: 8px;
 }
 
-.inline-row input {
+.inline-row :deep(.n-input) {
   flex: 1;
 }
 
@@ -360,89 +402,10 @@ button {
   gap: 8px;
 }
 
-button.primary {
-  background: var(--accent);
-  color: #fff;
-}
-
-button:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-
-.error {
-  margin: 0;
-  color: #b64040;
-}
-
-.success {
-  margin: 0;
-  color: var(--accent-hover);
-}
-
-.mode-tabs {
-  display: inline-flex;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.mode-tabs button {
-  border: 0;
-  border-right: 1px solid var(--border);
-  border-radius: 0;
-}
-
-.mode-tabs button:last-child {
-  border-right: 0;
-}
-
-.mode-tabs button.active {
-  background: var(--accent-soft);
-  color: var(--accent-hover);
-  font-weight: 600;
-}
-
-.panel {
-  padding: 16px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-  display: grid;
-  gap: 12px;
-}
-
 .grid-2 {
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-}
-
-label {
   display: grid;
-  gap: 6px;
-}
-
-input,
-select,
-textarea {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 10px;
-  font: inherit;
-  width: 100%;
-}
-
-textarea {
-  resize: vertical;
-}
-
-.switch-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.switch-row input {
-  width: auto;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
 }
 
 .preview h2 {
@@ -451,13 +414,13 @@ textarea {
 
 .preview-meta {
   margin: 4px 0;
-  color: var(--muted);
+  color: var(--n-text-color-3);
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
 .preview-summary {
   margin: 6px 0 10px;
-  color: var(--muted);
+  color: var(--n-text-color-3);
 }
 
 pre {
@@ -477,12 +440,14 @@ pre {
     width: 100%;
   }
 
-  .header-actions button {
+  .header-actions :deep(button) {
     flex: 1;
   }
 
+  .inline-row,
   .grid-2 {
     grid-template-columns: 1fr;
+    flex-direction: column;
   }
 }
 </style>
