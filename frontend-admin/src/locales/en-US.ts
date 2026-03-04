@@ -71,6 +71,7 @@ export default {
     selected: '{count} selected',
     toDraft: 'Set Draft',
     toPublished: 'Set Published',
+    toTranslate: 'Translate',
     tabArticles: 'Articles',
     tabMoments: 'Moments',
   },

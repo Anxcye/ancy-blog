@@ -82,6 +82,9 @@ Related: articles API module, ArticleEditorView route, dashboard workflow.
               <RouterLink :to="{ name: 'article-edit', params: { id: item.id } }">
                 {{ t('articles.edit') }}
               </RouterLink>
+              <RouterLink class="link-btn" :to="{ name: 'system', query: { tab: 'translations', sourceType: 'article', sourceId: item.id } }">
+                {{ t('articles.toTranslate') }}
+              </RouterLink>
               <button class="link-btn danger" :disabled="loading" @click="removeOne(item.id)">{{ t('common.delete') }}</button>
             </td>
           </tr>

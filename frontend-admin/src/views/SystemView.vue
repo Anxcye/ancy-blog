@@ -171,6 +171,7 @@ Related: integrations API module, translations API module, and backend admin sys
 
 <script setup lang="ts">
 import { computed, onMounted, reactive, ref } from 'vue';
+import { useRoute } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 
 import { listIntegrations, testIntegration, updateIntegration } from '@/api/modules/integrations';
@@ -189,6 +190,7 @@ type IntegrationViewModel = {
 type TabName = 'integrations' | 'translations';
 
 const { t } = useI18n();
+const route = useRoute();
 
 const tab = ref<TabName>('integrations');
 const loading = ref(false);
@@ -399,6 +401,21 @@ async function saveContent(row: TranslationContent): Promise<void> {
 }
 
 onMounted(async () => {
+  const queryTab = String(route.query.tab || '');
+  const querySourceType = String(route.query.sourceType || '');
+  const querySourceID = String(route.query.sourceId || '');
+  if (queryTab === 'translations') {
+    tab.value = 'translations';
+  }
+  if (querySourceType === 'article' || querySourceType === 'moment') {
+    jobForm.sourceType = querySourceType;
+    contentFilter.sourceType = querySourceType;
+  }
+  if (querySourceID) {
+    jobForm.sourceId = querySourceID;
+    contentFilter.sourceId = querySourceID;
+  }
+
   loading.value = true;
   errorText.value = '';
   try {

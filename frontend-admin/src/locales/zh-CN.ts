@@ -71,6 +71,7 @@ export default {
     selected: '已选 {count} 项',
     toDraft: '设为草稿',
     toPublished: '设为已发布',
+    toTranslate: '去翻译',
     tabArticles: '文章',
     tabMoments: '日志',
   },

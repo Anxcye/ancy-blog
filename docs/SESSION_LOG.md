@@ -450,3 +450,10 @@
 - Validation:
   - backend tests passed for updated packages.
   - `npm --prefix frontend-admin run build` passed.
+
+## 2026-03-04 (Article-to-translation quick jump)
+- Added quick jump from article list to translation center:
+  - article row action now links to system page with prefilled query (`tab=translations`, `sourceType=article`, `sourceId`).
+- System page now reads route query and auto-prefills translation form/filter context.
+- Validation:
+  - `npm --prefix frontend-admin run build` passed.
