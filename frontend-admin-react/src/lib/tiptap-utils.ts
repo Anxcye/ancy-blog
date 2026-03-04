@@ -17,6 +17,34 @@ import {
 
 export const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 
+// ── TipTap JSON text extraction ────────────────────────────────────────────
+
+interface TiptapNode {
+  type?: string
+  text?: string
+  content?: TiptapNode[]
+}
+
+function collectNodeText(node: TiptapNode): string {
+  if (node.text) return node.text
+  if (node.content) return node.content.map(collectNodeText).join(" ")
+  return ""
+}
+
+/**
+ * Extract plain text from a TipTap JSON string (for AI summary, search, etc.).
+ * Falls back to stripping HTML tags if the input is not valid JSON.
+ */
+export function extractTextFromTiptapJson(jsonString: string): string {
+  if (!jsonString) return ""
+  try {
+    const doc = JSON.parse(jsonString) as TiptapNode
+    return collectNodeText(doc).replace(/\s+/g, " ").trim()
+  } catch {
+    return jsonString.replace(/<[^>]*>/g, " ").replace(/\s+/g, " ").trim()
+  }
+}
+
 export const MAC_SYMBOLS: Record<string, string> = {
   mod: "⌘",
   command: "⌘",

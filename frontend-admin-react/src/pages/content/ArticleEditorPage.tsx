@@ -33,6 +33,7 @@ import {
   getArticle,
   updateArticle,
 } from '../../api/articles';
+import { extractTextFromTiptapJson } from '../../lib/tiptap-utils';
 import type { ArticleFormValues } from '../../types/article';
 
 // Convert a Chinese/English title to a basic URL slug (local fallback)
@@ -118,7 +119,7 @@ export function ArticleEditorPage(): ReactElement {
 
   const handleGenSummary = useCallback(async () => {
     const title: string = form.getFieldValue('title') ?? '';
-    const content: string = form.getFieldValue('content') ?? '';
+    const content: string = extractTextFromTiptapJson(form.getFieldValue('content') ?? '');
     if (!title.trim() && !content.trim()) {
       messageApi.warning('请先填写标题或正文');
       return;

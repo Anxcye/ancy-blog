@@ -177,12 +177,23 @@ const MobileToolbarContent = ({
   </>
 )
 
+/** Parse a stored JSON string into a TipTap-compatible content value. */
+function parseContent(value: string | undefined): Record<string, unknown> | string {
+  if (!value) return ""
+  try {
+    return JSON.parse(value) as Record<string, unknown>
+  } catch {
+    // Legacy HTML content — pass through, TipTap accepts it
+    return value
+  }
+}
+
 export function SimpleEditor({
   value,
   onChange,
 }: {
   value?: string
-  onChange?: (html: string) => void
+  onChange?: (json: string) => void
 }) {
   const isMobile = useIsBreakpoint()
   const [mobileView, setMobileView] = useState<"main" | "highlighter" | "link">(
@@ -231,19 +242,19 @@ export function SimpleEditor({
       XPostEmbed,
       TmdbCardEmbed,
     ],
-    content: value ?? "",
+    content: parseContent(value),
     onUpdate: ({ editor: e }) => {
       if (suppressOnChangeRef.current) return
-      onChange?.(e.getHTML())
+      onChange?.(JSON.stringify(e.getJSON()))
     },
   })
 
   // Sync external value changes (e.g. form.setFieldsValue when loading an article)
   useEffect(() => {
     if (!editor || value === undefined) return
-    if (editor.getHTML() === value) return
+    if (JSON.stringify(editor.getJSON()) === value) return
     suppressOnChangeRef.current = true
-    editor.commands.setContent(value)
+    editor.commands.setContent(parseContent(value))
     suppressOnChangeRef.current = false
   }, [value, editor])
 
