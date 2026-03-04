@@ -28,12 +28,13 @@ type Repository struct {
 	categories []domain.Category
 	tags       []domain.Tag
 
-	siteSettings domain.SiteSettings
-	footerItems  map[string]domain.FooterItem
-	socialLinks  map[string]domain.SocialLink
-	navItems     map[string]domain.NavItem
-	slots        map[string]domain.ContentSlot
-	slotItems    map[string]map[string]domain.SlotItem
+	siteSettings      domain.SiteSettings
+	adminPasswordHash string
+	footerItems       map[string]domain.FooterItem
+	socialLinks       map[string]domain.SocialLink
+	navItems          map[string]domain.NavItem
+	slots             map[string]domain.ContentSlot
+	slotItems         map[string]map[string]domain.SlotItem
 }
 
 type translationRecord struct {
@@ -530,6 +531,22 @@ func (r *Repository) GetTranslationPolicy() domain.TranslationPolicy {
 }
 
 func (r *Repository) UpdateTranslationPolicy(_ domain.TranslationPolicy) error {
+	return nil
+}
+
+func (r *Repository) GetAdminPasswordHash() (string, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	if r.adminPasswordHash == "" {
+		return "", false
+	}
+	return r.adminPasswordHash, true
+}
+
+func (r *Repository) SetAdminPasswordHash(hash string) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	r.adminPasswordHash = hash
 	return nil
 }
 

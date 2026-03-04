@@ -183,8 +183,18 @@ func (s *ContentService) CreateComment(comment domain.Comment) (domain.Comment, 
 	if strings.TrimSpace(comment.Nickname) == "" {
 		return domain.Comment{}, fmt.Errorf("%w: nickname is required", apperr.ErrValidation)
 	}
+
+	// Enforce site-level comment policy
+	settings := s.repo.GetSiteSettings()
+	if !settings.CommentEnabled {
+		return domain.Comment{}, fmt.Errorf("%w: commenting is disabled", apperr.ErrValidation)
+	}
 	if comment.Status == "" {
-		comment.Status = "approved"
+		if settings.CommentRequireApproval {
+			comment.Status = "pending"
+		} else {
+			comment.Status = "approved"
+		}
 	}
 	return s.repo.CreateComment(comment)
 }

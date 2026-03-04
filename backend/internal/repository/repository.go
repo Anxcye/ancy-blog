@@ -97,3 +97,9 @@ type ContentRepository interface {
 
 	ListTimeline(page, pageSize int, locale string) ([]domain.TimelineItem, int)
 }
+
+// CredentialStore persists admin credentials independently of the in-memory session layer.
+type CredentialStore interface {
+	GetAdminPasswordHash() (string, bool)
+	SetAdminPasswordHash(hash string) error
+}

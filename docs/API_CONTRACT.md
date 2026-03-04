@@ -767,3 +767,69 @@
   - For articles with TipTap JSON content, the worker extracts text leaf nodes, translates them
     in a single LLM batch call, then reconstructs the JSON with translated text.
   - Policy is stored as JSONB in the `site_settings` table (migration 000006).
+
+---
+
+## Category & Tag Management (Admin)
+
+### ADM-CAT-001 — Create Category
+- Method: POST
+- Path: `/api/v1/admin/categories`
+- Auth Required: Yes
+- Request: `{ "name": "Tech", "slug": "tech" }`
+- Response: `{ "id": "uuid", "name": "Tech", "slug": "tech" }`
+- Error Codes: AUTH_REQUIRED, VALIDATION_ERROR
+
+### ADM-CAT-002 — Delete Category
+- Method: DELETE
+- Path: `/api/v1/admin/categories/:id`
+- Auth Required: Yes
+- Response: `{}`
+- Error Codes: AUTH_REQUIRED, NOT_FOUND
+
+### ADM-TAG-001 — Create Tag
+- Method: POST
+- Path: `/api/v1/admin/tags`
+- Auth Required: Yes
+- Request: `{ "name": "Go", "slug": "go" }`
+- Response: `{ "id": "uuid", "name": "Go", "slug": "go" }`
+- Error Codes: AUTH_REQUIRED, VALIDATION_ERROR
+
+### ADM-TAG-002 — Delete Tag
+- Method: DELETE
+- Path: `/api/v1/admin/tags/:id`
+- Auth Required: Yes
+- Response: `{}`
+- Error Codes: AUTH_REQUIRED, NOT_FOUND
+
+---
+
+## Account Management (Admin)
+
+### ADM-AUTH-PWD-001 — Change Admin Password
+- Method: PUT
+- Path: `/api/v1/admin/auth/password`
+- Auth Required: Yes
+- Request: `{ "oldPassword": "current", "newPassword": "newpass123" }`
+- Response: `{}`
+- Error Codes: AUTH_REQUIRED, VALIDATION_ERROR (wrong old password / too short)
+- Notes:
+  - Minimum new password length: 6 characters.
+  - All existing sessions are invalidated immediately; re-login required.
+  - Password is stored as bcrypt hash in `site_settings.admin_password_hash` (migration 000010).
+
+---
+
+## Site Settings Extensions
+
+### ADM-SITE-SET-001 (Updated) — Update Site Settings
+- New fields added (migration 000008):
+  - `commentEnabled` (bool) — global switch to allow/disallow new comments.
+  - `commentRequireApproval` (bool) — if true, new comments default to `pending` status.
+  - `siteDescription` (string) — used for SEO meta description.
+  - `seoKeywords` (string) — comma-separated SEO keywords.
+  - `ogImageUrl` (string) — default Open Graph image URL.
+
+### Article Pin / Featured (migration 000009)
+- `isPinned` (bool) — pinned articles sort first in `ListArticles`; shown as badge in admin.
+- `isFeatured` (bool) — featured flag for frontend showcase use; shown as badge in admin.

@@ -84,7 +84,7 @@
 - [x] Implemented categories & tags full CRUD: migration 000007 (`category_id` FK on articles), backend repo write/read helpers (`resolveCategoryID`, `resolveTagIDs`, `syncArticleTags`), admin `POST/DELETE /admin/categories` and `/admin/tags` endpoints, TaxonomyPage management UI under content nav, and inline create in article editor dropdowns for both category and tag.
 - [x] Extended site settings with comment policy (enabled + require approval) and SEO fields (description / keywords / OG image): migration 000008, domain + repo + handler + DTO + frontend SitePage new sections.
 - [x] Added change-admin-password endpoint (`PUT /admin/auth/password`) with session invalidation, and frontend account settings tab in SystemPage.
-- [x] Added article pin/featured flags: migration 000009, domain + repo + handler DTO + editor toggles + list tag indicators.
+- [x] Fixed 6 known issues: ListArticles now includes is_pinned/is_featured (also sorts pinned first); comment policy is enforced in CreateComment (global disable + require approval); admin password persisted as bcrypt hash in DB via CredentialStore interface (migration 000010); ArticleEditorPage publishedAt correctly restored as dayjs object on edit load; unsaved-change guard with useBlocker + beforeunload in editor; API_CONTRACT.md updated with categories/tags/change-password/site-settings/article-flags endpoints.
 
 ## Blocked
 - None.

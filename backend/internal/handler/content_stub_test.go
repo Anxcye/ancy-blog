@@ -45,6 +45,11 @@ func (s *handlerRepoStub) CreateComment(comment domain.Comment) (domain.Comment,
 	return domain.Comment{}, errors.New("not implemented")
 }
 
+// GetSiteSettings returns a permissive default so comment tests pass without extra setup.
+func (s *handlerRepoStub) GetSiteSettings() domain.SiteSettings {
+	return domain.SiteSettings{SiteName: "Test", DefaultLocale: "en", CommentEnabled: true}
+}
+
 func (s *handlerRepoStub) ListArticles(page, pageSize int, status, contentKind, keyword string) ([]domain.Article, int) {
 	if s.listArticlesFunc != nil {
 		return s.listArticlesFunc(page, pageSize, status, contentKind, keyword)

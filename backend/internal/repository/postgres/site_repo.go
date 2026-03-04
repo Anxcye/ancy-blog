@@ -52,6 +52,29 @@ WHERE id=$1
 	return settings
 }
 
+func (r *Repository) GetAdminPasswordHash() (string, bool) {
+	var hash string
+	err := r.db.QueryRow(`SELECT admin_password_hash FROM site_settings WHERE admin_password_hash IS NOT NULL ORDER BY created_at ASC LIMIT 1`).Scan(&hash)
+	if err != nil || hash == "" {
+		return "", false
+	}
+	return hash, true
+}
+
+func (r *Repository) SetAdminPasswordHash(hash string) error {
+	var id string
+	err := r.db.QueryRow(`SELECT id::text FROM site_settings ORDER BY created_at ASC LIMIT 1`).Scan(&id)
+	if err != nil {
+		// No row yet — create default row with hash
+		return r.db.QueryRow(`
+INSERT INTO site_settings (site_name, default_locale, admin_password_hash)
+VALUES ('Ancy Blog','en',$1) RETURNING id::text
+`, hash).Scan(&id)
+	}
+	_, err = r.db.Exec(`UPDATE site_settings SET admin_password_hash=$2, updated_at=NOW() WHERE id=$1`, id, hash)
+	return err
+}
+
 func (r *Repository) GetTranslationPolicy() domain.TranslationPolicy {
 	var raw []byte
 	err := r.db.QueryRow(`SELECT translation_policy FROM site_settings ORDER BY created_at ASC LIMIT 1`).Scan(&raw)

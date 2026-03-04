@@ -15,6 +15,7 @@ import {
   Divider,
   Form,
   Input,
+  Modal,
   Row,
   Select,
   Space,
@@ -28,7 +29,7 @@ import type { UploadChangeParam } from 'antd/es/upload';
 import { SimpleEditor } from '../../components/tiptap-templates/simple/simple-editor';
 import type { ReactElement } from 'react';
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useBlocker, useNavigate, useParams } from 'react-router-dom';
 import dayjs from 'dayjs';
 
 import {
@@ -67,11 +68,20 @@ export function ArticleEditorPage(): ReactElement {
   const [slugLoading, setSlugLoading] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
+  const [isDirty, setIsDirty] = useState(false);
   const [newCatName, setNewCatName] = useState('');
   const [newCatSlug, setNewCatSlug] = useState('');
   const [newTagName, setNewTagName] = useState('');
   const [newTagSlug, setNewTagSlug] = useState('');
   const watchStatus = Form.useWatch('status', form);
+
+  // Also block browser tab close / refresh
+  useEffect(() => {
+    if (!isDirty) return;
+    const handler = (e: BeforeUnloadEvent) => { e.preventDefault(); };
+    window.addEventListener('beforeunload', handler);
+    return () => window.removeEventListener('beforeunload', handler);
+  }, [isDirty]);
 
   // Load existing article data in edit mode
   const { data: article, isLoading: articleLoading } = useQuery({
@@ -108,7 +118,7 @@ export function ArticleEditorPage(): ReactElement {
         tagSlugs: article.tagSlugs ?? [],
         isPinned: article.isPinned ?? false,
         isFeatured: article.isFeatured ?? false,
-        publishedAt: article.publishedAt,
+        publishedAt: article.publishedAt ? (dayjs(article.publishedAt) as unknown as string) : undefined,
       });
     }
   }, [article, form]);
@@ -117,6 +127,7 @@ export function ArticleEditorPage(): ReactElement {
     mutationFn: (values: ArticleFormValues) =>
       isNew ? createArticle(values) : updateArticle(id!, values),
     onSuccess: () => {
+      setIsDirty(false);
       messageApi.success(isNew ? '文章已创建' : '文章已保存');
       queryClient.invalidateQueries({ queryKey: ['articles'] });
       if (isNew) {
@@ -125,6 +136,9 @@ export function ArticleEditorPage(): ReactElement {
     },
     onError: () => messageApi.error('保存失败，请重试'),
   });
+
+  // Block in-app navigation when there are unsaved changes
+  const blocker = useBlocker(isDirty && !saveMut.isPending);
 
   // Inline category create from editor
   const createCatMut = useMutation({
@@ -235,6 +249,19 @@ export function ArticleEditorPage(): ReactElement {
     <section>
       {ctx}
 
+      {/* Leave confirmation dialog */}
+      <Modal
+        open={blocker.state === 'blocked'}
+        title="有未保存的修改"
+        okText="离开"
+        cancelText="继续编辑"
+        okButtonProps={{ danger: true }}
+        onOk={() => blocker.proceed?.()}
+        onCancel={() => blocker.reset?.()}
+      >
+        你有未保存的内容，确定要离开吗？
+      </Modal>
+
       {/* Header */}
       <div
         style={{
@@ -270,6 +297,7 @@ export function ArticleEditorPage(): ReactElement {
         form={form}
         layout="vertical"
         onFinish={handleFinish}
+        onValuesChange={() => setIsDirty(true)}
         initialValues={{
           contentKind: 'post',
           status: 'draft',

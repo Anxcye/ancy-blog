@@ -45,6 +45,9 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 	logger.Info("postgres repository initialized", "host", cfg.DB.Host, "db", cfg.DB.Name)
 	var repo repository.ContentRepository = pgRepo
 
+	// Wire credential store for bcrypt-based persistent password
+	authService.WithCredentialStore(pgRepo)
+
 	var cacheClient cache.Cache
 	if cfg.Redis.Enabled {
 		rc, err := rediscache.New(context.Background(), cfg.Redis)

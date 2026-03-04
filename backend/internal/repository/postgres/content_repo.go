@@ -143,11 +143,11 @@ func (r *Repository) ListArticles(page, pageSize int, status, contentKind, keywo
 	listArgs := append(args, pageSize, offset)
 	query := `
 SELECT id::text, title, slug, content_kind, COALESCE(summary,''), COALESCE(content,''), status, visibility,
-       allow_comment, origin_type, COALESCE(source_url,''), ai_assist_level, COALESCE(cover_image,''),
+       allow_comment, is_pinned, is_featured, origin_type, COALESCE(source_url,''), ai_assist_level, COALESCE(cover_image,''),
        COALESCE(published_at, created_at), created_at, updated_at
 FROM articles
 WHERE ` + whereClause + `
-ORDER BY updated_at DESC, created_at DESC
+ORDER BY is_pinned DESC, updated_at DESC, created_at DESC
 LIMIT $` + strconv.Itoa(len(listArgs)-1) + ` OFFSET $` + strconv.Itoa(len(listArgs))
 	rows, err := r.db.Query(query, listArgs...)
 	if err != nil {
@@ -159,7 +159,7 @@ LIMIT $` + strconv.Itoa(len(listArgs)-1) + ` OFFSET $` + strconv.Itoa(len(listAr
 	for rows.Next() {
 		var a domain.Article
 		if err := rows.Scan(&a.ID, &a.Title, &a.Slug, &a.ContentKind, &a.Summary, &a.Content, &a.Status, &a.Visibility,
-			&a.AllowComment, &a.OriginType, &a.SourceURL, &a.AIAssistLevel, &a.CoverImage, &a.PublishedAt, &a.CreatedAt, &a.UpdatedAt); err == nil {
+			&a.AllowComment, &a.IsPinned, &a.IsFeatured, &a.OriginType, &a.SourceURL, &a.AIAssistLevel, &a.CoverImage, &a.PublishedAt, &a.CreatedAt, &a.UpdatedAt); err == nil {
 			items = append(items, a)
 		}
 	}
