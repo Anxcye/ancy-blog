@@ -4,10 +4,12 @@
  * Module: frontend-admin-react/pages/auth, presentation layer.
  * Related: auth store, http client, and backend auth login endpoint.
  */
-import { useState } from 'react';
-import type { ReactElement } from 'react';
-import { useNavigate } from 'react-router-dom';
+
+import { LockOutlined, UserOutlined } from '@ant-design/icons';
 import { Button, Card, Form, Input, Typography, message } from 'antd';
+import type { ReactElement } from 'react';
+import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import { httpClient } from '../lib/http';
 import { useAuthStore } from '../store/auth';
@@ -37,7 +39,7 @@ export function LoginPage(): ReactElement {
       messageApi.success('登录成功');
       navigate('/');
     } catch {
-      messageApi.error('登录失败，请检查账号密码');
+      messageApi.error('账号或密码有误，请重试');
     } finally {
       setLoading(false);
     }
@@ -47,16 +49,56 @@ export function LoginPage(): ReactElement {
     <main className="login-page">
       {contextHolder}
       <Card className="login-card" bordered={false}>
-        <Typography.Title level={3}>Ancy Blog 管理后台</Typography.Title>
-        <Typography.Paragraph type="secondary">使用管理员账号登录并管理站点内容。</Typography.Paragraph>
-        <Form layout="vertical" onFinish={onFinish} autoComplete="off">
-          <Form.Item label="用户名" name="username" rules={[{ required: true, message: '请输入用户名' }]}>
-            <Input placeholder="admin" />
+        {/* Logo + title */}
+        <div style={{ textAlign: 'center', marginBottom: 28 }}>
+          <div
+            style={{
+              width: 48,
+              height: 48,
+              background: 'linear-gradient(135deg, #1f8f8a 0%, #2bb5b0 100%)',
+              borderRadius: 14,
+              display: 'grid',
+              placeItems: 'center',
+              color: '#fff',
+              fontWeight: 800,
+              fontSize: 22,
+              margin: '0 auto 14px',
+              boxShadow: '0 6px 18px rgba(31,143,138,0.30)',
+            }}
+          >
+            A
+          </div>
+          <Typography.Title level={4} style={{ margin: 0, letterSpacing: '0.02em' }}>
+            Ancy Blog
+          </Typography.Title>
+          <Typography.Text type="secondary" style={{ fontSize: 13 }}>
+            管理后台 · 请使用管理员账号登录
+          </Typography.Text>
+        </div>
+
+        <Form layout="vertical" onFinish={onFinish} autoComplete="off" size="large">
+          <Form.Item
+            name="username"
+            rules={[{ required: true, message: '请输入用户名' }]}
+          >
+            <Input prefix={<UserOutlined style={{ color: '#94a3b8' }} />} placeholder="用户名" />
           </Form.Item>
-          <Form.Item label="密码" name="password" rules={[{ required: true, message: '请输入密码' }]}>
-            <Input.Password placeholder="••••••••" />
+          <Form.Item
+            name="password"
+            rules={[{ required: true, message: '请输入密码' }]}
+          >
+            <Input.Password
+              prefix={<LockOutlined style={{ color: '#94a3b8' }} />}
+              placeholder="密码"
+            />
           </Form.Item>
-          <Button type="primary" htmlType="submit" block loading={loading}>
+          <Button
+            type="primary"
+            htmlType="submit"
+            block
+            loading={loading}
+            style={{ height: 42, fontSize: 15, marginTop: 4 }}
+          >
             登录
           </Button>
         </Form>

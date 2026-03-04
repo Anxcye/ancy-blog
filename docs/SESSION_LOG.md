@@ -1,5 +1,27 @@
-# Session Log
+## 2026-03-04 (session 3)
+### Summary
+- Fixed mobile bottom nav: replaced 文章+瞬间 two tabs with single 内容 tab, added 系统 back; created `ContentLayout` with mobile-only 文章↔瞬间 segmented switcher
+- Visual redesign: light sider, frosted header/bottom-nav, page enter animation, antd token refinement
+- Implemented M3 Interaction module (`src/pages/interaction/InteractionPage.tsx`): comment moderation (approve/reject/spam) + friend-link review (approve/reject-with-note modal)
+- Implemented M4 Site module (`src/pages/site/SitePage.tsx`): 4-tab layout — settings form, social links CRUD, footer items CRUD, nav items CRUD
+- Added types (comment.ts, link.ts, site.ts) and API modules (comments.ts, links.ts, site.ts)
+- Build passes: 0 TS errors, `pnpm run build` ✓
 
+---
+## 2026-03-04 (session 2)
+### Summary
+- Implemented M2 Content Module for `frontend-admin-react`:
+  - added shared domain types (`src/types/api.ts`, `article.ts`, `moment.ts`)
+  - added API modules (`src/api/articles.ts`, `src/api/moments.ts`) with full CRUD + batch ops + AI assist endpoints
+  - built `ArticlesPage` — paginated list, keyword/status/contentKind filters, row selection, batch publish/draft/delete
+  - built `ArticleEditorPage` — two-column form (content + sidebar metadata), AI slug/summary generation with local fallback, handles both create and edit flows
+  - built `MomentsPage` — paginated list, status filter, batch ops, inline Drawer for create/edit
+  - updated `App.tsx` to register all content routes
+  - updated `AdminLayout.tsx` with sub-menu navigation (工作台/内容管理/互动/站点/系统)
+- Build passes: `pnpm run build` exits 0, tsc type errors = 0
+- Content textarea is a placeholder for TipTap integration (tracked in Todo)
+
+---
 ## 2026-03-04
 ### Summary
 - Improved admin article editor resilience and preview quality:
