@@ -58,6 +58,8 @@
 - [x] Added actionable dashboard metrics and quick entries for content/moderation/system workflows.
 - [x] Completed admin site CRUD loop (footer/social/nav create+edit+delete) and added global 401 redirect handling plus translation-center pagination.
 
+- [x] Added pagination to interaction center lists (comments and link submissions).
+
 ## Blocked
 - None.
 
