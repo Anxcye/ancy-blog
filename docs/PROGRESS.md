@@ -3,8 +3,6 @@
 ## Todo
 - [ ] Initialize `frontend-blog/` Vue3 scaffold.
 - [ ] Set up lint/test/build scripts for frontend workspaces.
-- [ ] Integrate TipTap rich-text editor into ArticleEditorPage (content textarea is a placeholder).
-- [ ] System module (integrations + translations) for `frontend-admin-react`.
 
 ## In Progress
 - [ ] Add API rate limiting for auth/comment/AI/translation-create endpoints.
@@ -77,6 +75,7 @@
 - [x] Upgraded TipTap editor UX with grouped sticky toolbar, link popover actions, undo/redo, and richer typography styling.
 - [x] Added extensible embed-block baseline in TipTap editor/preview (`x_post`, `tmdb_card`) for future custom content modules.
 - [x] Migrated TipTap toolbar to component-library-first interactions (button groups, dropdown command menus, and modal-based embed insertion).
+- [x] Integrated TipTap simple-editor template into React admin ArticleEditorPage (full toolbar, image upload, form-controlled value/onChange binding).
 - [x] Initialized `frontend-admin-react` rewrite baseline (`React + TypeScript + Ant Design + React Router + Zustand + React Query + Axios`) with login/auth-guard/layout/dashboard skeleton.
 
 - [x] Implemented M2 content module for `frontend-admin-react`: shared API types, articles and moments API modules, ArticlesPage (filters/batch ops/pagination), ArticleEditorPage (create/edit with AI slug+summary assist), MomentsPage (list+drawer CRUD+batch ops), updated router, and expanded sider navigation.

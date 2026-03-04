@@ -1,11 +1,8 @@
 /**
  * File: ArticleEditorPage.tsx
- * Purpose: Provide article create and edit form with AI-assisted slug/summary generation.
+ * Purpose: Provide article create and edit form with TipTap rich-text editor.
  * Module: frontend-admin-react/pages/content, presentation layer.
- * Related: articles API module, article types, AdminLayout, and ArticlesPage.
- *
- * NOTE: The rich-text content field currently uses Input.TextArea as a placeholder.
- *       TipTap integration is scheduled for M2.5 — see docs/PROGRESS.md.
+ * Related: articles API module, article types, SimpleEditor, AdminLayout, and ArticlesPage.
  */
 
 import { ArrowLeftOutlined, RobotOutlined } from '@ant-design/icons';
@@ -23,6 +20,8 @@ import {
   Typography,
   message,
 } from 'antd';
+
+import { SimpleEditor } from '../../components/tiptap-templates/simple/simple-editor';
 import type { ReactElement } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
@@ -246,22 +245,8 @@ export function ArticleEditorPage(): ReactElement {
               <Input.TextArea rows={3} placeholder="文章摘要（可选）" />
             </Form.Item>
 
-            <Form.Item
-              name="content"
-              label={
-                <Space>
-                  正文
-                  <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                    （富文本编辑器将在后续版本集成）
-                  </Typography.Text>
-                </Space>
-              }
-            >
-              <Input.TextArea
-                rows={22}
-                placeholder="在此输入文章正文内容..."
-                style={{ fontFamily: 'monospace', fontSize: 14 }}
-              />
+            <Form.Item name="content" label="正文">
+              <SimpleEditor />
             </Form.Item>
           </Col>
 

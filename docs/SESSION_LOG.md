@@ -569,3 +569,16 @@
 - Validation:
   - `pnpm --dir frontend-admin run build` passed.
   - `go test ./internal/app ./internal/handler ./internal/service ./internal/storage ./internal/server` passed.
+
+## Session 2026-03-04 (TipTap integration)
+- Task: Integrate TipTap simple-editor template into React admin ArticleEditorPage.
+- Actions:
+  - Installed TipTap simple-editor template via CLI; files placed in `frontend-admin-react/@/`, moved to `src/`.
+  - Installed all required TipTap v3 packages and `sass` (were already present from CLI scaffold).
+  - Configured `@` → `src/` path alias in `vite.config.ts` (`resolve.alias`) and `tsconfig.app.json` (`baseUrl` + `paths`).
+  - Fixed `src/index.css` SCSS import paths from `../@ /styles/` → `./styles/` after directory move.
+  - Updated `handleImageUpload` in `src/lib/tiptap-utils.ts` to POST to `/admin/upload/image` via XHR with Bearer auth and progress events.
+  - Modified `simple-editor.tsx`: removed `"use client"` (Next.js artifact), removed ThemeToggle, added `value`/`onChange` props for Ant Design Form integration, used `suppressOnChangeRef` to prevent setContent → onChange feedback loop.
+  - Replaced `Input.TextArea` placeholder in `ArticleEditorPage.tsx` with `<SimpleEditor />`.
+- Validation:
+  - `pnpm run build` passed (3422 modules, 0 TS errors).
