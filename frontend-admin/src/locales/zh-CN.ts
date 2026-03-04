@@ -179,5 +179,9 @@ export default {
     retryFailed: '重试失败。',
     invalidJsonOrSaveFailed: 'JSON 格式错误或保存失败。',
     testFailed: '测试失败，请检查配置。',
+    testOk: 'OK',
+    testFail: 'FAIL',
+    autoTestOk: '自动测试通过：',
+    autoTestFail: '自动测试未通过：',
   },
 };

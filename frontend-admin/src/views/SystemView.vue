@@ -413,7 +413,12 @@ async function saveProvider(item: IntegrationViewModel): Promise<void> {
     });
     item.configRaw = toPrettyJSON(item.configJson);
     item.metaRaw = toPrettyJSON(item.metaJson);
-    successText.value = t('common.saveSuccess');
+    const result = await testIntegration(item.providerKey);
+    if (result.ok) {
+      successText.value = `${t('common.saveSuccess')} ${t('system.autoTestOk')} ${result.message}`;
+    } else {
+      successText.value = `${t('common.saveSuccess')} ${t('system.autoTestFail')} ${result.message}`;
+    }
   } catch {
     errorText.value = t('system.invalidJsonOrSaveFailed');
   } finally {
@@ -427,7 +432,7 @@ async function testProvider(providerKey: string): Promise<void> {
   successText.value = '';
   try {
     const result = await testIntegration(providerKey);
-    successText.value = `${result.ok ? 'OK' : 'FAIL'} · ${result.message}`;
+    successText.value = `${result.ok ? t('system.testOk') : t('system.testFail')} · ${result.message}`;
   } catch {
     errorText.value = t('system.testFailed');
   } finally {

@@ -7,6 +7,9 @@
   - replaced raw JSON preview block in article editor with rich preview component
   - added debounced local draft autosave for article editor form state
   - added draft restore for create flow and auto-clear after successful save
+- Improved system integration usability:
+  - after provider save, system page now automatically triggers provider test and returns immediate initialization status
+  - aligned test result labels with i18n keys (`OK`/`FAIL`) for consistent feedback copy
 - Validation run:
   - `cd frontend-admin && pnpm run build` passed
 
