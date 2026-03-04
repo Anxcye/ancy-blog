@@ -406,3 +406,11 @@
 - Added missing common locale keys for edit/update/delete and delete-confirm prompts.
 - Validation:
   - `npm --prefix frontend-admin run build` passed.
+
+## 2026-03-04 (Interaction pagination)
+- Improved admin interaction center with pagination support:
+  - Comment moderation list now supports page state + total page navigation.
+  - Friend-link review list now supports page state + total page navigation.
+- Filters now reset list to first page to keep pagination behavior predictable.
+- Validation:
+  - `npm --prefix frontend-admin run build` passed.

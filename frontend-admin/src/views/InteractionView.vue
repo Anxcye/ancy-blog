@@ -19,7 +19,7 @@ Related: interactions API module and backend admin moderation endpoints.
 
     <section v-if="tab === 'comments'" class="panel">
       <div class="toolbar">
-        <select v-model="commentStatus" @change="loadComments(1)">
+        <select v-model="commentStatus" @change="() => loadComments(1)">
           <option value="">{{ t('interaction.allStatus') }}</option>
           <option value="approved">approved</option>
           <option value="pending">pending</option>
@@ -43,11 +43,16 @@ Related: interactions API module and backend admin moderation endpoints.
           </div>
         </li>
       </ul>
+      <footer class="pager">
+        <button :disabled="loading || commentPage <= 1" @click="loadComments(commentPage - 1)">{{ t('common.prev') }}</button>
+        <span>{{ commentPage }} / {{ commentTotalPages }}</span>
+        <button :disabled="loading || commentPage >= commentTotalPages" @click="loadComments(commentPage + 1)">{{ t('common.next') }}</button>
+      </footer>
     </section>
 
     <section v-else class="panel">
       <div class="toolbar">
-        <select v-model="linkStatus" @change="loadLinks(1)">
+        <select v-model="linkStatus" @change="() => loadLinks(1)">
           <option value="">{{ t('interaction.allStatus') }}</option>
           <option value="pending">pending</option>
           <option value="approved">approved</option>
@@ -68,12 +73,17 @@ Related: interactions API module and backend admin moderation endpoints.
           </div>
         </li>
       </ul>
+      <footer class="pager">
+        <button :disabled="loading || linkPage <= 1" @click="loadLinks(linkPage - 1)">{{ t('common.prev') }}</button>
+        <span>{{ linkPage }} / {{ linkTotalPages }}</span>
+        <button :disabled="loading || linkPage >= linkTotalPages" @click="loadLinks(linkPage + 1)">{{ t('common.next') }}</button>
+      </footer>
     </section>
   </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { listComments, listLinkSubmissions, reviewLink, updateComment } from '@/api/modules/interactions';
@@ -90,9 +100,18 @@ const successText = ref('');
 
 const commentStatus = ref('');
 const comments = ref<Comment[]>([]);
+const commentPage = ref(1);
+const commentTotal = ref(0);
+const commentPageSize = 20;
 
 const linkStatus = ref('');
 const links = ref<LinkSubmission[]>([]);
+const linkPage = ref(1);
+const linkTotal = ref(0);
+const linkPageSize = 20;
+
+const commentTotalPages = computed(() => Math.max(1, Math.ceil(commentTotal.value / commentPageSize)));
+const linkTotalPages = computed(() => Math.max(1, Math.ceil(linkTotal.value / linkPageSize)));
 
 function formatDate(value: string): string {
   if (!value) {
@@ -114,8 +133,10 @@ async function loadComments(page: number): Promise<void> {
   loading.value = true;
   errorText.value = '';
   try {
-    const result = await listComments({ page, pageSize: 20, status: commentStatus.value || undefined });
+    const result = await listComments({ page, pageSize: commentPageSize, status: commentStatus.value || undefined });
     comments.value = result.rows;
+    commentTotal.value = result.total;
+    commentPage.value = page;
   } catch {
     errorText.value = t('common.loadFailed');
   } finally {
@@ -130,7 +151,7 @@ async function setCommentStatus(id: string, status: string, isPinned: string): P
   try {
     await updateComment(id, { status, isPinned });
     successText.value = t('common.saveSuccess');
-    await loadComments(1);
+    await loadComments(commentPage.value);
   } catch {
     errorText.value = t('common.saveFailed');
     loading.value = false;
@@ -141,8 +162,10 @@ async function loadLinks(page: number): Promise<void> {
   loading.value = true;
   errorText.value = '';
   try {
-    const result = await listLinkSubmissions({ page, pageSize: 20, reviewStatus: linkStatus.value || undefined });
+    const result = await listLinkSubmissions({ page, pageSize: linkPageSize, reviewStatus: linkStatus.value || undefined });
     links.value = result.rows;
+    linkTotal.value = result.total;
+    linkPage.value = page;
   } catch {
     errorText.value = t('common.loadFailed');
   } finally {
@@ -157,7 +180,7 @@ async function setLinkStatus(id: string, reviewStatus: string): Promise<void> {
   try {
     await reviewLink(id, { reviewStatus, reviewNote: '', relatedArticleId: '' });
     successText.value = t('common.saveSuccess');
-    await loadLinks(1);
+    await loadLinks(linkPage.value);
   } catch {
     errorText.value = t('common.saveFailed');
     loading.value = false;
@@ -221,6 +244,13 @@ h1 {
 .toolbar {
   display: flex;
   justify-content: flex-end;
+}
+
+.pager {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
 }
 
 select,
@@ -300,7 +330,8 @@ button {
     width: 100%;
   }
 
-  .item-actions button {
+  .item-actions button,
+  .pager button {
     flex: 1;
   }
 }
