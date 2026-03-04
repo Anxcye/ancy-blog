@@ -68,7 +68,9 @@ export function ArticleEditorPage(): ReactElement {
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
   const [newCatName, setNewCatName] = useState('');
+  const [newCatSlug, setNewCatSlug] = useState('');
   const [newTagName, setNewTagName] = useState('');
+  const [newTagSlug, setNewTagSlug] = useState('');
   const watchStatus = Form.useWatch('status', form);
 
   // Load existing article data in edit mode
@@ -104,6 +106,8 @@ export function ArticleEditorPage(): ReactElement {
         sourceUrl: article.sourceUrl,
         categorySlug: article.categorySlug,
         tagSlugs: article.tagSlugs ?? [],
+        isPinned: article.isPinned ?? false,
+        isFeatured: article.isFeatured ?? false,
         publishedAt: article.publishedAt,
       });
     }
@@ -124,12 +128,12 @@ export function ArticleEditorPage(): ReactElement {
 
   // Inline category create from editor
   const createCatMut = useMutation({
-    mutationFn: (name: string) =>
-      createCategory({ name, slug: name.toLowerCase().replace(/[\s_]+/g, '-').replace(/[^\w-]/g, '') }),
+    mutationFn: ({ name, slug }: { name: string; slug: string }) => createCategory({ name, slug }),
     onSuccess: (cat) => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       form.setFieldValue('categorySlug', cat.slug);
       setNewCatName('');
+      setNewCatSlug('');
       messageApi.success('分类已创建');
     },
     onError: () => messageApi.error('分类创建失败'),
@@ -137,13 +141,13 @@ export function ArticleEditorPage(): ReactElement {
 
   // Inline tag create from editor
   const createTagMut = useMutation({
-    mutationFn: (name: string) =>
-      createTag({ name, slug: name.toLowerCase().replace(/[\s_]+/g, '-').replace(/[^\w-]/g, '') }),
+    mutationFn: ({ name, slug }: { name: string; slug: string }) => createTag({ name, slug }),
     onSuccess: (tag) => {
       queryClient.invalidateQueries({ queryKey: ['tags'] });
       const current: string[] = form.getFieldValue('tagSlugs') ?? [];
       form.setFieldValue('tagSlugs', [...current, tag.slug]);
       setNewTagName('');
+      setNewTagSlug('');
       messageApi.success('标签已创建');
     },
     onError: () => messageApi.error('标签创建失败'),
@@ -271,6 +275,8 @@ export function ArticleEditorPage(): ReactElement {
           status: 'draft',
           visibility: 'public',
           allowComment: true,
+          isPinned: false,
+          isFeatured: false,
           originType: 'original',
           tagSlugs: [],
         }}
@@ -395,6 +401,22 @@ export function ArticleEditorPage(): ReactElement {
                 name="allowComment"
                 label="允许评论"
                 valuePropName="checked"
+                style={{ marginBottom: 8 }}
+              >
+                <Switch />
+              </Form.Item>
+              <Form.Item
+                name="isPinned"
+                label="置顶"
+                valuePropName="checked"
+                style={{ marginBottom: 8 }}
+              >
+                <Switch />
+              </Form.Item>
+              <Form.Item
+                name="isFeatured"
+                label="精选"
+                valuePropName="checked"
                 style={{ marginBottom: 0 }}
               >
                 <Switch />
@@ -411,24 +433,32 @@ export function ArticleEditorPage(): ReactElement {
                     <>
                       {menu}
                       <Divider style={{ margin: '4px 0' }} />
-                      <Space style={{ padding: '4px 8px' }}>
+                      <div style={{ padding: '4px 8px', display: 'flex', flexDirection: 'column', gap: 4 }}>
                         <Input
                           size="small"
-                          placeholder="新分类名称"
+                          placeholder="分类名称"
                           value={newCatName}
                           onChange={(e) => setNewCatName(e.target.value)}
                           onKeyDown={(e) => e.stopPropagation()}
                         />
+                        <Input
+                          size="small"
+                          placeholder="slug（英文）"
+                          value={newCatSlug}
+                          onChange={(e) => setNewCatSlug(e.target.value)}
+                          onKeyDown={(e) => e.stopPropagation()}
+                        />
                         <Button
-                          type="text"
+                          type="primary"
                           size="small"
                           icon={<PlusOutlined />}
                           loading={createCatMut.isPending}
-                          onClick={() => newCatName.trim() && createCatMut.mutate(newCatName.trim())}
+                          disabled={!newCatName.trim() || !newCatSlug.trim()}
+                          onClick={() => createCatMut.mutate({ name: newCatName.trim(), slug: newCatSlug.trim() })}
                         >
-                          添加
+                          添加分类
                         </Button>
-                      </Space>
+                      </div>
                     </>
                   )}
                 />
@@ -444,24 +474,32 @@ export function ArticleEditorPage(): ReactElement {
                     <>
                       {menu}
                       <Divider style={{ margin: '4px 0' }} />
-                      <Space style={{ padding: '4px 8px' }}>
+                      <div style={{ padding: '4px 8px', display: 'flex', flexDirection: 'column', gap: 4 }}>
                         <Input
                           size="small"
-                          placeholder="新标签名称"
+                          placeholder="标签名称"
                           value={newTagName}
                           onChange={(e) => setNewTagName(e.target.value)}
                           onKeyDown={(e) => e.stopPropagation()}
                         />
+                        <Input
+                          size="small"
+                          placeholder="slug（英文）"
+                          value={newTagSlug}
+                          onChange={(e) => setNewTagSlug(e.target.value)}
+                          onKeyDown={(e) => e.stopPropagation()}
+                        />
                         <Button
-                          type="text"
+                          type="primary"
                           size="small"
                           icon={<PlusOutlined />}
                           loading={createTagMut.isPending}
-                          onClick={() => newTagName.trim() && createTagMut.mutate(newTagName.trim())}
+                          disabled={!newTagName.trim() || !newTagSlug.trim()}
+                          onClick={() => createTagMut.mutate({ name: newTagName.trim(), slug: newTagSlug.trim() })}
                         >
-                          添加
+                          添加标签
                         </Button>
-                      </Space>
+                      </div>
                     </>
                   )}
                 />

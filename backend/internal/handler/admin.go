@@ -26,6 +26,7 @@ type AdminHandler struct {
 	integrationService *service.IntegrationService
 	translationService *service.TranslationService
 	aiAssistService    *service.AIAssistService
+	authService        *service.AuthService
 }
 
 func NewAdminHandler(
@@ -36,6 +37,7 @@ func NewAdminHandler(
 	integrationService *service.IntegrationService,
 	translationService *service.TranslationService,
 	aiAssistService *service.AIAssistService,
+	authService *service.AuthService,
 ) *AdminHandler {
 	return &AdminHandler{
 		articleService:     articleService,
@@ -45,6 +47,7 @@ func NewAdminHandler(
 		integrationService: integrationService,
 		translationService: translationService,
 		aiAssistService:    aiAssistService,
+		authService:        authService,
 	}
 }
 
@@ -63,6 +66,8 @@ func (h *AdminHandler) CreateArticle(c *gin.Context) {
 		Status:        req.Status,
 		Visibility:    req.Visibility,
 		AllowComment:  req.AllowComment,
+		IsPinned:      req.IsPinned,
+		IsFeatured:    req.IsFeatured,
 		OriginType:    req.OriginType,
 		SourceURL:     req.SourceURL,
 		AIAssistLevel: req.AIAssistLevel,
@@ -94,6 +99,8 @@ func (h *AdminHandler) UpdateArticle(c *gin.Context) {
 		Status:        req.Status,
 		Visibility:    req.Visibility,
 		AllowComment:  req.AllowComment,
+		IsPinned:      req.IsPinned,
+		IsFeatured:    req.IsFeatured,
 		OriginType:    req.OriginType,
 		SourceURL:     req.SourceURL,
 		AIAssistLevel: req.AIAssistLevel,
@@ -321,12 +328,33 @@ func (h *AdminHandler) UpdateSiteSettings(c *gin.Context) {
 		return
 	}
 	updated := h.siteService.UpdateSiteSettings(domain.SiteSettings{
-		SiteName:      req.SiteName,
-		AvatarURL:     req.AvatarURL,
-		HeroIntroMD:   req.HeroIntroMD,
-		DefaultLocale: req.DefaultLocale,
+		SiteName:               req.SiteName,
+		AvatarURL:              req.AvatarURL,
+		HeroIntroMD:            req.HeroIntroMD,
+		DefaultLocale:          req.DefaultLocale,
+		CommentEnabled:         req.CommentEnabled,
+		CommentRequireApproval: req.CommentRequireApproval,
+		SiteDescription:        req.SiteDescription,
+		SeoKeywords:            req.SeoKeywords,
+		OgImageURL:             req.OgImageURL,
 	})
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: updated})
+}
+
+func (h *AdminHandler) ChangePassword(c *gin.Context) {
+	var req struct {
+		OldPassword string `json:"oldPassword"`
+		NewPassword string `json:"newPassword"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequest(c, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+	if err := h.authService.ChangePassword(req.OldPassword, req.NewPassword); err != nil {
+		badRequest(c, "VALIDATION_ERROR", err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success"})
 }
 
 func (h *AdminHandler) GetTranslationPolicy(c *gin.Context) {

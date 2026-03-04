@@ -125,6 +125,28 @@ function SettingsTab(): ReactElement {
               ]}
             />
           </Form.Item>
+
+          <Typography.Text strong style={{ display: 'block', marginBottom: 12 }}>SEO / 元信息</Typography.Text>
+
+          <Form.Item name="siteDescription" label="站点描述">
+            <Input.TextArea rows={2} placeholder="简短描述，用于搜索引擎和分享卡片" />
+          </Form.Item>
+          <Form.Item name="seoKeywords" label="SEO 关键词">
+            <Input placeholder="用英文逗号分隔，如: blog, tech, golang" />
+          </Form.Item>
+          <Form.Item name="ogImageUrl" label="默认 OG 图片 URL">
+            <Input placeholder="https://cdn.example.com/og-default.png" />
+          </Form.Item>
+
+          <Typography.Text strong style={{ display: 'block', marginBottom: 12 }}>评论策略</Typography.Text>
+
+          <Form.Item name="commentEnabled" label="允许评论" valuePropName="checked">
+            <Switch />
+          </Form.Item>
+          <Form.Item name="commentRequireApproval" label="评论需审核后公开" valuePropName="checked">
+            <Switch />
+          </Form.Item>
+
           <Button
             type="primary"
             htmlType="submit"

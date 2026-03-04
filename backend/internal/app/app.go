@@ -80,7 +80,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 	return &App{
 		AuthHandler:       handler.NewAuthHandler(authService),
 		PublicHandler:     handler.NewPublicHandler(articleService, commentService, linkService, siteService, timelineService),
-		AdminHandler:      handler.NewAdminHandler(articleService, commentService, linkService, siteService, integrationService, translationService, aiAssistService),
+		AdminHandler:      handler.NewAdminHandler(articleService, commentService, linkService, siteService, integrationService, translationService, aiAssistService, authService),
 		UploadHandler:     handler.NewUploadHandler(nil, integrationService),
 		AuthService:       authService,
 		TranslationWorker: translationWorker,

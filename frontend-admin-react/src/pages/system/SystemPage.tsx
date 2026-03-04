@@ -14,6 +14,7 @@ import {
   ReloadOutlined,
   RobotOutlined,
   SyncOutlined,
+  UserOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
@@ -39,6 +40,9 @@ import {
 } from 'antd';
 import type { ReactElement } from 'react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+
+import { useAuthStore } from '../../store/auth';
 
 import {
   createTranslationJob,
@@ -50,7 +54,7 @@ import {
   updateProvider,
   updateTranslationContent,
 } from '../../api/system';
-import { getTranslationPolicy, updateTranslationPolicy } from '../../api/site';
+import { getTranslationPolicy, updateTranslationPolicy, changePassword } from '../../api/site';
 import type { TranslationPolicy } from '../../api/site';
 import type {
   CreateTranslationJobPayload,
@@ -886,6 +890,68 @@ function TranslationPolicyTab(): ReactElement {
 }
 
 // ─────────────────────────────────────────────
+// Account tab — change password
+// ─────────────────────────────────────────────
+
+function AccountTab(): ReactElement {
+  const [messageApi, ctx] = message.useMessage();
+  const [form] = Form.useForm<{ oldPassword: string; newPassword: string; confirmPassword: string }>();
+  const { clearAuth } = useAuthStore();
+  const navigate = useNavigate();
+
+  const changeMut = useMutation({
+    mutationFn: ({ oldPassword, newPassword }: { oldPassword: string; newPassword: string }) =>
+      changePassword(oldPassword, newPassword),
+    onSuccess: () => {
+      messageApi.success('密码已修改，请重新登录');
+      form.resetFields();
+      setTimeout(() => { clearAuth(); navigate('/login'); }, 1200);
+    },
+    onError: (err: Error) => messageApi.error(err?.message ?? '修改失败'),
+  });
+
+  return (
+    <>
+      {ctx}
+      <Card style={{ maxWidth: 420 }}>
+        <Form
+          form={form}
+          layout="vertical"
+          onFinish={({ oldPassword, newPassword, confirmPassword }) => {
+            if (newPassword !== confirmPassword) {
+              messageApi.error('两次输入的新密码不一致');
+              return;
+            }
+            changeMut.mutate({ oldPassword, newPassword });
+          }}
+        >
+          <Form.Item name="oldPassword" label="旧密码" rules={[{ required: true, message: '请输入旧密码' }]}>
+            <Input.Password placeholder="当前密码" />
+          </Form.Item>
+          <Form.Item
+            name="newPassword"
+            label="新密码"
+            rules={[{ required: true, message: '请输入新密码' }, { min: 6, message: '至少 6 位' }]}
+          >
+            <Input.Password placeholder="至少 6 位" />
+          </Form.Item>
+          <Form.Item
+            name="confirmPassword"
+            label="确认新密码"
+            rules={[{ required: true, message: '请再次输入新密码' }]}
+          >
+            <Input.Password placeholder="再次输入新密码" />
+          </Form.Item>
+          <Button type="primary" htmlType="submit" loading={changeMut.isPending}>
+            修改密码
+          </Button>
+        </Form>
+      </Card>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────
 // Page entry
 // ─────────────────────────────────────────────
 
@@ -916,6 +982,11 @@ export function SystemPage(): ReactElement {
             key: 'policy',
             label: <Space size={6}><GlobalOutlined />翻译策略</Space>,
             children: <TranslationPolicyTab />,
+          },
+          {
+            key: 'account',
+            label: <Space size={6}><UserOutlined />账户设置</Space>,
+            children: <AccountTab />,
           },
         ]}
       />

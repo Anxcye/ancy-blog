@@ -26,6 +26,8 @@ type Article struct {
 	Status        string    `json:"status"`
 	Visibility    string    `json:"visibility"`
 	AllowComment  bool      `json:"allowComment"`
+	IsPinned      bool      `json:"isPinned"`
+	IsFeatured    bool      `json:"isFeatured"`
 	OriginType    string    `json:"originType"`
 	SourceURL     string    `json:"sourceUrl,omitempty"`
 	AIAssistLevel string    `json:"aiAssistLevel"`
@@ -99,10 +101,15 @@ type Tag struct {
 }
 
 type SiteSettings struct {
-	SiteName      string `json:"siteName"`
-	AvatarURL     string `json:"avatarUrl,omitempty"`
-	HeroIntroMD   string `json:"heroIntroMd,omitempty"`
-	DefaultLocale string `json:"defaultLocale"`
+	SiteName               string `json:"siteName"`
+	AvatarURL              string `json:"avatarUrl,omitempty"`
+	HeroIntroMD            string `json:"heroIntroMd,omitempty"`
+	DefaultLocale          string `json:"defaultLocale"`
+	CommentEnabled         bool   `json:"commentEnabled"`
+	CommentRequireApproval bool   `json:"commentRequireApproval"`
+	SiteDescription        string `json:"siteDescription,omitempty"`
+	SeoKeywords            string `json:"seoKeywords,omitempty"`
+	OgImageURL             string `json:"ogImageUrl,omitempty"`
 }
 
 // TranslationPolicy holds the global auto-translation configuration stored in site_settings.

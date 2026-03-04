@@ -18,6 +18,7 @@ export interface ArticleListItem {
   contentKind: ContentKind;
   status: ArticleStatus;
   isPinned: boolean;
+  isFeatured: boolean;
   coverImage?: string;
   publishedAt?: string;
   createdAt: string;
@@ -35,6 +36,7 @@ export interface Article {
   visibility: Visibility;
   allowComment: boolean;
   isPinned: boolean;
+  isFeatured: boolean;
   coverImage?: string;
   originType: OriginType;
   sourceUrl?: string;
@@ -64,6 +66,8 @@ export interface ArticleFormValues {
   status: ArticleStatus;
   visibility?: Visibility;
   allowComment?: boolean;
+  isPinned?: boolean;
+  isFeatured?: boolean;
   coverImage?: string;
   originType?: OriginType;
   sourceUrl?: string;

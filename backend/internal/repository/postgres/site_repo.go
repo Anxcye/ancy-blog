@@ -13,10 +13,16 @@ import (
 
 func (r *Repository) GetSiteSettings() domain.SiteSettings {
 	var s domain.SiteSettings
-	err := r.db.QueryRow(`SELECT site_name, COALESCE(avatar_url,''), COALESCE(hero_intro_md,''), default_locale FROM site_settings ORDER BY created_at ASC LIMIT 1`).
-		Scan(&s.SiteName, &s.AvatarURL, &s.HeroIntroMD, &s.DefaultLocale)
+	err := r.db.QueryRow(`
+SELECT site_name, COALESCE(avatar_url,''), COALESCE(hero_intro_md,''), default_locale,
+       comment_enabled, comment_require_approval,
+       COALESCE(site_description,''), COALESCE(seo_keywords,''), COALESCE(og_image_url,'')
+FROM site_settings ORDER BY created_at ASC LIMIT 1`).
+		Scan(&s.SiteName, &s.AvatarURL, &s.HeroIntroMD, &s.DefaultLocale,
+			&s.CommentEnabled, &s.CommentRequireApproval,
+			&s.SiteDescription, &s.SeoKeywords, &s.OgImageURL)
 	if err != nil {
-		return domain.SiteSettings{SiteName: "Ancy Blog", DefaultLocale: "en"}
+		return domain.SiteSettings{SiteName: "Ancy Blog", DefaultLocale: "en", CommentEnabled: true}
 	}
 	return s
 }
@@ -26,16 +32,23 @@ func (r *Repository) UpdateSiteSettings(settings domain.SiteSettings) domain.Sit
 	err := r.db.QueryRow(`SELECT id::text FROM site_settings ORDER BY created_at ASC LIMIT 1`).Scan(&id)
 	if err != nil {
 		_ = r.db.QueryRow(`
-INSERT INTO site_settings (site_name, avatar_url, hero_intro_md, default_locale)
-VALUES ($1,$2,$3,$4) RETURNING id::text
-`, settings.SiteName, nullableString(settings.AvatarURL), nullableString(settings.HeroIntroMD), settings.DefaultLocale).Scan(&id)
+INSERT INTO site_settings (site_name, avatar_url, hero_intro_md, default_locale,
+    comment_enabled, comment_require_approval, site_description, seo_keywords, og_image_url)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id::text
+`, settings.SiteName, nullableString(settings.AvatarURL), nullableString(settings.HeroIntroMD), settings.DefaultLocale,
+			settings.CommentEnabled, settings.CommentRequireApproval,
+			nullableString(settings.SiteDescription), nullableString(settings.SeoKeywords), nullableString(settings.OgImageURL)).Scan(&id)
 		return settings
 	}
 	_, _ = r.db.Exec(`
 UPDATE site_settings
-SET site_name=$2, avatar_url=$3, hero_intro_md=$4, default_locale=$5, updated_at=NOW()
+SET site_name=$2, avatar_url=$3, hero_intro_md=$4, default_locale=$5,
+    comment_enabled=$6, comment_require_approval=$7,
+    site_description=$8, seo_keywords=$9, og_image_url=$10, updated_at=NOW()
 WHERE id=$1
-`, id, settings.SiteName, nullableString(settings.AvatarURL), nullableString(settings.HeroIntroMD), settings.DefaultLocale)
+`, id, settings.SiteName, nullableString(settings.AvatarURL), nullableString(settings.HeroIntroMD), settings.DefaultLocale,
+		settings.CommentEnabled, settings.CommentRequireApproval,
+		nullableString(settings.SiteDescription), nullableString(settings.SeoKeywords), nullableString(settings.OgImageURL))
 	return settings
 }
 

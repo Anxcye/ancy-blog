@@ -43,6 +43,7 @@ func TestAdminListIntegrations(t *testing.T) {
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
 		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+		service.NewAuthService("admin", "123456", 0, 0),
 	)
 	r := adminRouter(h)
 	r.GET("/integrations", h.ListIntegrations)
@@ -75,6 +76,7 @@ func TestAdminListArticles(t *testing.T) {
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
 		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+		service.NewAuthService("admin", "123456", 0, 0),
 	)
 	r := adminRouter(h)
 	r.GET("/articles", h.ListArticles)
@@ -100,6 +102,7 @@ func TestAdminArticleDetailNotFound(t *testing.T) {
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
 		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+		service.NewAuthService("admin", "123456", 0, 0),
 	)
 	r := adminRouter(h)
 	r.GET("/articles/:id", h.ArticleDetail)
@@ -132,6 +135,7 @@ func TestAdminListMoments(t *testing.T) {
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
 		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+		service.NewAuthService("admin", "123456", 0, 0),
 	)
 	r := adminRouter(h)
 	r.GET("/moments", h.ListMoments)
@@ -158,6 +162,7 @@ func TestAdminUpdateIntegrationProviderNotFound(t *testing.T) {
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
 		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+		service.NewAuthService("admin", "123456", 0, 0),
 	)
 	r := adminRouter(h)
 	r.PUT("/integrations/:providerKey", h.UpdateIntegration)
@@ -200,6 +205,7 @@ func TestAdminCreateTranslationJobSuccess(t *testing.T) {
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
 		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+		service.NewAuthService("admin", "123456", 0, 0),
 	)
 	r := adminRouter(h)
 	r.POST("/translations/jobs", h.CreateTranslationJob)
@@ -226,6 +232,7 @@ func TestAdminTranslationJobDetailNotFound(t *testing.T) {
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
 		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+		service.NewAuthService("admin", "123456", 0, 0),
 	)
 	r := adminRouter(h)
 	r.GET("/translations/jobs/:id", h.TranslationJobDetail)
@@ -255,6 +262,7 @@ func TestAdminRetryTranslationJobSuccess(t *testing.T) {
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
 		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+		service.NewAuthService("admin", "123456", 0, 0),
 	)
 	r := adminRouter(h)
 	r.POST("/translations/jobs/:id/retry", h.RetryTranslationJob)
@@ -283,6 +291,7 @@ func TestAdminRetryTranslationJobNotFound(t *testing.T) {
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
 		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+		service.NewAuthService("admin", "123456", 0, 0),
 	)
 	r := adminRouter(h)
 	r.POST("/translations/jobs/:id/retry", h.RetryTranslationJob)
@@ -314,6 +323,7 @@ func TestAdminListTranslationContents(t *testing.T) {
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
 		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+		service.NewAuthService("admin", "123456", 0, 0),
 	)
 	r := adminRouter(h)
 	r.GET("/translations/contents", h.ListTranslationContents)
@@ -353,6 +363,7 @@ func TestAdminUpsertTranslationContent(t *testing.T) {
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
 		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+		service.NewAuthService("admin", "123456", 0, 0),
 	)
 	r := adminRouter(h)
 	r.PUT("/translations/contents", h.UpsertTranslationContent)
@@ -379,6 +390,7 @@ func TestAdminTranslationContentDetailNotFound(t *testing.T) {
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
 		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+		service.NewAuthService("admin", "123456", 0, 0),
 	)
 	r := adminRouter(h)
 	r.GET("/translations/contents/:sourceType/:sourceId/:locale", h.TranslationContentDetail)
@@ -404,6 +416,7 @@ func TestAdminAISuggestSlugFallback(t *testing.T) {
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
 		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+		service.NewAuthService("admin", "123456", 0, 0),
 	)
 	r := adminRouter(h)
 	r.POST("/ai/slug", h.SuggestSlug)
@@ -442,6 +455,7 @@ func TestAdminAIGenerateSummaryFallback(t *testing.T) {
 		service.NewIntegrationService(core),
 		service.NewTranslationService(core),
 		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+		service.NewAuthService("admin", "123456", 0, 0),
 	)
 	r := adminRouter(h)
 	r.POST("/ai/summary", h.GenerateSummary)

@@ -37,7 +37,7 @@ func TestAIAssistSuggestSlugFallbackAndUnique(t *testing.T) {
 	core := NewContentService(repo, nil)
 	ai := NewAIAssistService(NewArticleService(core), NewIntegrationService(core))
 
-	slug, fallback, err := ai.SuggestSlug(context.Background(), "Hello World", "", "")
+	slug, fallback, _, err := ai.SuggestSlug(context.Background(), "Hello World", "", "")
 	if err != nil {
 		t.Fatalf("suggest slug failed: %v", err)
 	}
@@ -54,7 +54,7 @@ func TestAIAssistGenerateSummaryFallback(t *testing.T) {
 	core := NewContentService(repo, nil)
 	ai := NewAIAssistService(NewArticleService(core), NewIntegrationService(core))
 
-	summary, fallback, err := ai.GenerateSummary(context.Background(), "", "abcdefg", "", "", 4)
+	summary, fallback, _, err := ai.GenerateSummary(context.Background(), "", "abcdefg", "", "", 4)
 	if err != nil {
 		t.Fatalf("generate summary failed: %v", err)
 	}

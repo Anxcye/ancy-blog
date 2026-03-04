@@ -37,10 +37,10 @@ func (r *Repository) CreateArticle(article domain.Article) (domain.Article, erro
 	var createdAt, updatedAt time.Time
 	var publishedAt sql.NullTime
 	err := r.db.QueryRow(`
-INSERT INTO articles (title, slug, content_kind, summary, content, status, visibility, allow_comment, origin_type, source_url, ai_assist_level, cover_image, published_at, category_id)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
+INSERT INTO articles (title, slug, content_kind, summary, content, status, visibility, allow_comment, origin_type, source_url, ai_assist_level, cover_image, published_at, category_id, is_pinned, is_featured)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
 RETURNING id::text, created_at, updated_at, published_at
-`, article.Title, article.Slug, article.ContentKind, article.Summary, article.Content, article.Status, article.Visibility, article.AllowComment, article.OriginType, nullableString(article.SourceURL), article.AIAssistLevel, nullableString(article.CoverImage), nullableTime(article.PublishedAt), nullableString(categoryID)).
+`, article.Title, article.Slug, article.ContentKind, article.Summary, article.Content, article.Status, article.Visibility, article.AllowComment, article.OriginType, nullableString(article.SourceURL), article.AIAssistLevel, nullableString(article.CoverImage), nullableTime(article.PublishedAt), nullableString(categoryID), article.IsPinned, article.IsFeatured).
 		Scan(&id, &createdAt, &updatedAt, &publishedAt)
 	if err != nil {
 		if isUniqueViolation(err) {
@@ -88,12 +88,12 @@ func (r *Repository) UpdateArticle(id string, article domain.Article) (domain.Ar
 UPDATE articles
 SET title=$2, slug=$3, content_kind=$4, summary=$5, content=$6, status=$7, visibility=$8,
     allow_comment=$9, origin_type=$10, source_url=$11, ai_assist_level=$12, cover_image=$13,
-    published_at=$14, category_id=$15, updated_at=NOW()
+    published_at=$14, category_id=$15, is_pinned=$16, is_featured=$17, updated_at=NOW()
 WHERE id=$1 AND deleted_at IS NULL
 RETURNING updated_at, published_at
 `, id, article.Title, article.Slug, article.ContentKind, article.Summary, article.Content, article.Status,
 		article.Visibility, article.AllowComment, article.OriginType, nullableString(article.SourceURL), article.AIAssistLevel,
-		nullableString(article.CoverImage), nullableTime(article.PublishedAt), nullableString(categoryID)).Scan(&updatedAt, &publishedAt)
+		nullableString(article.CoverImage), nullableTime(article.PublishedAt), nullableString(categoryID), article.IsPinned, article.IsFeatured).Scan(&updatedAt, &publishedAt)
 	if err != nil {
 		if isUniqueViolation(err) {
 			return domain.Article{}, apperr.ErrSlugAlreadyExists
@@ -293,14 +293,14 @@ func (r *Repository) GetArticleByID(id string) (domain.Article, bool) {
 	var categorySlug sql.NullString
 	err := r.db.QueryRow(`
 SELECT a.id::text, a.title, a.slug, a.content_kind, COALESCE(a.summary,''), COALESCE(a.content,''), a.status, a.visibility,
-       a.allow_comment, a.origin_type, COALESCE(a.source_url,''), a.ai_assist_level, COALESCE(a.cover_image,''),
+       a.allow_comment, a.is_pinned, a.is_featured, a.origin_type, COALESCE(a.source_url,''), a.ai_assist_level, COALESCE(a.cover_image,''),
        COALESCE(a.published_at, a.created_at), a.created_at, a.updated_at,
        c.slug
 FROM articles a
 LEFT JOIN categories c ON c.id=a.category_id AND c.deleted_at IS NULL
 WHERE a.id=$1 AND a.deleted_at IS NULL
 `, id).Scan(&a.ID, &a.Title, &a.Slug, &a.ContentKind, &a.Summary, &a.Content, &a.Status, &a.Visibility,
-		&a.AllowComment, &a.OriginType, &a.SourceURL, &a.AIAssistLevel, &a.CoverImage, &a.PublishedAt, &a.CreatedAt, &a.UpdatedAt,
+		&a.AllowComment, &a.IsPinned, &a.IsFeatured, &a.OriginType, &a.SourceURL, &a.AIAssistLevel, &a.CoverImage, &a.PublishedAt, &a.CreatedAt, &a.UpdatedAt,
 		&categorySlug)
 	if err != nil {
 		return domain.Article{}, false

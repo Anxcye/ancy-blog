@@ -30,7 +30,7 @@ func NewAIAssistService(articleService *ArticleService, integrationService *Inte
 	}
 }
 
-func (s *AIAssistService) GenerateSummary(ctx context.Context, title, content, providerKey, modelName string, maxLength int) (string, bool, error) {
+func (s *AIAssistService) GenerateSummary(ctx context.Context, title, content, providerKey, modelName string, maxLength int) (string, bool, string, error) {
 	if maxLength <= 0 {
 		maxLength = 180
 	}
@@ -39,27 +39,30 @@ func (s *AIAssistService) GenerateSummary(ctx context.Context, title, content, p
 	}
 
 	provider, ok := s.integrationService.GetIntegrationProviderForRuntime(providerKey)
-	if !ok || !provider.Enabled {
-		return fallbackSummary(title, content, maxLength), true, nil
+	if !ok {
+		return fallbackSummary(title, content, maxLength), true, fmt.Sprintf("provider %q not found", providerKey), nil
+	}
+	if !provider.Enabled {
+		return fallbackSummary(title, content, maxLength), true, fmt.Sprintf("provider %q is disabled", providerKey), nil
 	}
 
 	prompt := fmt.Sprintf("Generate a concise blog summary in <= %d characters. Return plain text only.\n\nTitle: %s\n\nContent:\n%s", maxLength, title, content)
 	result, err := callOpenAICompatible(ctx, s.httpClient, provider.ConfigJSON, modelName, prompt)
 	if err != nil {
-		return fallbackSummary(title, content, maxLength), true, nil
+		return fallbackSummary(title, content, maxLength), true, err.Error(), nil
 	}
 	clean := strings.TrimSpace(result)
 	if clean == "" {
-		return fallbackSummary(title, content, maxLength), true, nil
+		return fallbackSummary(title, content, maxLength), true, "LLM returned empty response", nil
 	}
 	if len([]rune(clean)) > maxLength {
 		runes := []rune(clean)
 		clean = string(runes[:maxLength])
 	}
-	return clean, false, nil
+	return clean, false, "", nil
 }
 
-func (s *AIAssistService) SuggestSlug(ctx context.Context, title, providerKey, modelName string) (string, bool, error) {
+func (s *AIAssistService) SuggestSlug(ctx context.Context, title, providerKey, modelName string) (string, bool, string, error) {
 	if providerKey == "" {
 		providerKey = "openai_compatible"
 	}
@@ -68,20 +71,23 @@ func (s *AIAssistService) SuggestSlug(ctx context.Context, title, providerKey, m
 	fallback := s.ensureUniqueSlug(baseSlug)
 
 	provider, ok := s.integrationService.GetIntegrationProviderForRuntime(providerKey)
-	if !ok || !provider.Enabled {
-		return fallback, true, nil
+	if !ok {
+		return fallback, true, fmt.Sprintf("provider %q not found", providerKey), nil
+	}
+	if !provider.Enabled {
+		return fallback, true, fmt.Sprintf("provider %q is disabled", providerKey), nil
 	}
 
 	prompt := fmt.Sprintf("Generate a short URL slug for this title. Use lowercase letters, numbers, and hyphens only. Return only slug text.\n\nTitle: %s", title)
 	result, err := callOpenAICompatible(ctx, s.httpClient, provider.ConfigJSON, modelName, prompt)
 	if err != nil {
-		return fallback, true, nil
+		return fallback, true, err.Error(), nil
 	}
 	clean := slugify(result)
 	if clean == "" {
-		return fallback, true, nil
+		return fallback, true, "LLM returned empty or invalid slug", nil
 	}
-	return s.ensureUniqueSlug(clean), false, nil
+	return s.ensureUniqueSlug(clean), false, "", nil
 }
 
 func (s *AIAssistService) ensureUniqueSlug(base string) string {

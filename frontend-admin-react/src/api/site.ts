@@ -151,3 +151,8 @@ export async function listSlots(): Promise<ContentSlot[]> {
   const res = await httpClient.get<ApiResponse<ContentSlot[]>>('/admin/site/slots');
   return res.data.data;
 }
+
+// ── Auth ───────────────────────────────────────
+export async function changePassword(oldPassword: string, newPassword: string): Promise<void> {
+  await httpClient.put('/admin/auth/password', { oldPassword, newPassword });
+}

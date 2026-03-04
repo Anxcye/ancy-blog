@@ -114,6 +114,22 @@ func (s *AuthService) ResolveUser(accessToken string) (domain.User, error) {
 	return session.User, nil
 }
 
+func (s *AuthService) ChangePassword(oldPassword, newPassword string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	if oldPassword != s.adminPassword {
+		return errors.New("旧密码不正确")
+	}
+	if len(newPassword) < 6 {
+		return errors.New("新密码长度至少 6 位")
+	}
+	s.adminPassword = newPassword
+	// Invalidate all existing sessions so re-login is required
+	s.accessTokens = make(map[string]authSession)
+	s.refreshTokens = make(map[string]authSession)
+	return nil
+}
+
 func (s *AuthService) issueTokens(user domain.User) (AuthResult, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()

@@ -82,6 +82,9 @@
 - [x] Implemented M2 content module for `frontend-admin-react`: shared API types, articles and moments API modules, ArticlesPage (filters/batch ops/pagination), ArticleEditorPage (create/edit with AI slug+summary assist), MomentsPage (list+drawer CRUD+batch ops), updated router, and expanded sider navigation.
 
 - [x] Implemented categories & tags full CRUD: migration 000007 (`category_id` FK on articles), backend repo write/read helpers (`resolveCategoryID`, `resolveTagIDs`, `syncArticleTags`), admin `POST/DELETE /admin/categories` and `/admin/tags` endpoints, TaxonomyPage management UI under content nav, and inline create in article editor dropdowns for both category and tag.
+- [x] Extended site settings with comment policy (enabled + require approval) and SEO fields (description / keywords / OG image): migration 000008, domain + repo + handler + DTO + frontend SitePage new sections.
+- [x] Added change-admin-password endpoint (`PUT /admin/auth/password`) with session invalidation, and frontend account settings tab in SystemPage.
+- [x] Added article pin/featured flags: migration 000009, domain + repo + handler DTO + editor toggles + list tag indicators.
 
 ## Blocked
 - None.

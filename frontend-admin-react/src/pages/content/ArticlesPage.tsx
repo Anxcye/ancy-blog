@@ -107,13 +107,17 @@ export function ArticlesPage(): ReactElement {
       dataIndex: 'title',
       key: 'title',
       render: (title: string, record: ArticleListItem) => (
-        <Button
-          type="link"
-          style={{ padding: 0, height: 'auto', textAlign: 'left', whiteSpace: 'normal' }}
-          onClick={() => navigate(`/content/articles/${record.id}/edit`)}
-        >
-          {title}
-        </Button>
+        <Space size={4}>
+          {record.isPinned && <Tag color="gold" style={{ marginRight: 0 }}>置顶</Tag>}
+          {record.isFeatured && <Tag color="blue" style={{ marginRight: 0 }}>精选</Tag>}
+          <Button
+            type="link"
+            style={{ padding: 0, height: 'auto', textAlign: 'left', whiteSpace: 'normal' }}
+            onClick={() => navigate(`/content/articles/${record.id}/edit`)}
+          >
+            {title}
+          </Button>
+        </Space>
       ),
     },
     {

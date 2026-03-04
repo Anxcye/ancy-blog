@@ -15,6 +15,8 @@ type ArticleUpsertRequest struct {
 	Status        string    `json:"status"`
 	Visibility    string    `json:"visibility"`
 	AllowComment  bool      `json:"allowComment"`
+	IsPinned      bool      `json:"isPinned"`
+	IsFeatured    bool      `json:"isFeatured"`
 	OriginType    string    `json:"originType"`
 	SourceURL     string    `json:"sourceUrl"`
 	AIAssistLevel string    `json:"aiAssistLevel"`
@@ -50,10 +52,15 @@ type MomentBatchDeleteRequest struct {
 }
 
 type SiteSettingsUpdateRequest struct {
-	SiteName      string `json:"siteName"`
-	AvatarURL     string `json:"avatarUrl"`
-	HeroIntroMD   string `json:"heroIntroMd"`
-	DefaultLocale string `json:"defaultLocale"`
+	SiteName               string `json:"siteName"`
+	AvatarURL              string `json:"avatarUrl"`
+	HeroIntroMD            string `json:"heroIntroMd"`
+	DefaultLocale          string `json:"defaultLocale"`
+	CommentEnabled         bool   `json:"commentEnabled"`
+	CommentRequireApproval bool   `json:"commentRequireApproval"`
+	SiteDescription        string `json:"siteDescription"`
+	SeoKeywords            string `json:"seoKeywords"`
+	OgImageURL             string `json:"ogImageUrl"`
 }
 
 type FooterItemUpsertRequest struct {

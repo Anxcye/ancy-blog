@@ -11,6 +11,11 @@ export interface SiteSettings {
   avatarUrl?: string;
   heroIntroMd?: string;
   defaultLocale: string;
+  commentEnabled: boolean;
+  commentRequireApproval: boolean;
+  siteDescription?: string;
+  seoKeywords?: string;
+  ogImageUrl?: string;
   updatedAt?: string;
 }
 
