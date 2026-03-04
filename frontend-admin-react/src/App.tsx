@@ -17,6 +17,7 @@ import { DashboardPage } from './pages/DashboardPage';
 import { InteractionPage } from './pages/interaction/InteractionPage';
 import { LoginPage } from './pages/LoginPage';
 import { SitePage } from './pages/site/SitePage';
+import { SystemPage } from './pages/system/SystemPage';
 import { useAuthStore } from './store/auth';
 
 function RequireAuth({ children }: { children: ReactElement }): ReactElement {
@@ -59,6 +60,9 @@ const router = createBrowserRouter([
 
       // Site module
       { path: 'site', element: <SitePage /> },
+
+      // System module
+      { path: 'system', element: <SystemPage /> },
     ],
   },
 ]);
