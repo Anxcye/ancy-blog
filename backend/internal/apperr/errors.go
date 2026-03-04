@@ -10,6 +10,7 @@ var (
 	ErrValidation = errors.New("validation error")
 
 	ErrArticleNotFound        = errors.New("article not found")
+	ErrMomentNotFound         = errors.New("moment not found")
 	ErrCommentNotFound        = errors.New("comment not found")
 	ErrLinkNotFound           = errors.New("link not found")
 	ErrFooterItemNotFound     = errors.New("footer item not found")

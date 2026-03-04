@@ -361,3 +361,19 @@
   - Added optional AI provider/model inputs in metadata section.
 - Validation:
   - `npm --prefix frontend-admin run build` passed.
+
+## 2026-03-04 (Admin moments management)
+- Backend added admin moment management APIs:
+  - `GET /api/v1/admin/moments` (status/page filters)
+  - `PUT /api/v1/admin/moments/{id}` (update content/status/publish fields)
+- Repository/service expansion for moments:
+  - `ListMoments` and `UpdateMoment` in content repository contracts.
+  - Implemented in both memory and postgres repositories.
+  - Added typed not-found error `ErrMomentNotFound` and handler mapping `MOMENT_NOT_FOUND`.
+- Frontend admin added moments page:
+  - List + status filter.
+  - Create and edit via modal form.
+  - Content area sub-navigation: `articles` / `moments`.
+- Validation:
+  - backend tests passed for updated packages.
+  - `npm --prefix frontend-admin run build` passed.

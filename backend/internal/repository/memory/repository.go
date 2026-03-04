@@ -302,6 +302,48 @@ func (r *Repository) CreateMoment(moment domain.Moment) (domain.Moment, error) {
 	return moment, nil
 }
 
+func (r *Repository) UpdateMoment(id string, moment domain.Moment) (domain.Moment, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	current, ok := r.moments[id]
+	if !ok {
+		return domain.Moment{}, apperr.ErrMomentNotFound
+	}
+	moment.ID = id
+	moment.CreatedAt = current.CreatedAt
+	moment.UpdatedAt = time.Now().UTC()
+	if moment.Status == "published" {
+		if moment.PublishedAt.IsZero() {
+			if current.PublishedAt.IsZero() {
+				moment.PublishedAt = moment.UpdatedAt
+			} else {
+				moment.PublishedAt = current.PublishedAt
+			}
+		}
+	}
+	r.moments[id] = moment
+	return moment, nil
+}
+
+func (r *Repository) ListMoments(page, pageSize int, status string) ([]domain.Moment, int) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	items := make([]domain.Moment, 0)
+	for _, m := range r.moments {
+		if status != "" && m.Status != status {
+			continue
+		}
+		items = append(items, m)
+	}
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].UpdatedAt.Equal(items[j].UpdatedAt) {
+			return items[i].CreatedAt.After(items[j].CreatedAt)
+		}
+		return items[i].UpdatedAt.After(items[j].UpdatedAt)
+	})
+	return paginateMoments(items, page, pageSize)
+}
+
 func (r *Repository) ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()

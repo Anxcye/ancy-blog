@@ -61,6 +61,12 @@ func (s *ArticleService) SlugExists(slug string) bool { return s.core.SlugExists
 func (s *ArticleService) CreateMoment(moment domain.Moment) (domain.Moment, error) {
 	return s.core.CreateMoment(moment)
 }
+func (s *ArticleService) UpdateMoment(id string, moment domain.Moment) (domain.Moment, error) {
+	return s.core.UpdateMoment(id, moment)
+}
+func (s *ArticleService) ListMoments(page, pageSize int, status string) ([]domain.Moment, int) {
+	return s.core.ListMoments(page, pageSize, status)
+}
 func (s *ArticleService) ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int) {
 	return s.core.ListPublishedMoments(page, pageSize, locale)
 }

@@ -18,6 +18,8 @@ type handlerRepoStub struct {
 	createCommentFunc            func(comment domain.Comment) (domain.Comment, error)
 	listArticlesFunc             func(page, pageSize int, status, contentKind, keyword string) ([]domain.Article, int)
 	getArticleByIDFunc           func(id string) (domain.Article, bool)
+	listMomentsFunc              func(page, pageSize int, status string) ([]domain.Moment, int)
+	updateMomentFunc             func(id string, moment domain.Moment) (domain.Moment, error)
 	getPublishedArticleBySlug    func(slug string) (domain.Article, bool)
 	listPublishedArticlesFunc    func(page, pageSize int, category, tag, contentKind string) ([]domain.Article, int)
 	listPublishedMomentsFunc     func(page, pageSize int, locale string) ([]domain.Moment, int)
@@ -55,6 +57,20 @@ func (s *handlerRepoStub) GetArticleByID(id string) (domain.Article, bool) {
 		return s.getArticleByIDFunc(id)
 	}
 	return domain.Article{}, false
+}
+
+func (s *handlerRepoStub) ListMoments(page, pageSize int, status string) ([]domain.Moment, int) {
+	if s.listMomentsFunc != nil {
+		return s.listMomentsFunc(page, pageSize, status)
+	}
+	return nil, 0
+}
+
+func (s *handlerRepoStub) UpdateMoment(id string, moment domain.Moment) (domain.Moment, error) {
+	if s.updateMomentFunc != nil {
+		return s.updateMomentFunc(id, moment)
+	}
+	return domain.Moment{}, errors.New("not implemented")
 }
 
 func (s *handlerRepoStub) GetPublishedArticleBySlug(slug string) (domain.Article, bool) {

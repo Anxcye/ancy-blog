@@ -6,6 +6,11 @@ Related: articles API module, ArticleEditorView route, dashboard workflow.
 -->
 <template>
   <section class="panel">
+    <nav class="subnav">
+      <RouterLink :to="{ name: 'articles' }">{{ t('articles.tabArticles') }}</RouterLink>
+      <RouterLink :to="{ name: 'moments' }">{{ t('articles.tabMoments') }}</RouterLink>
+    </nav>
+
     <header class="panel-header">
       <div>
         <h1>{{ t('articles.title') }}</h1>
@@ -144,6 +149,26 @@ onMounted(async () => {
   border: 1px solid var(--border);
   border-radius: 12px;
   background: var(--surface);
+}
+
+.subnav {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.subnav a {
+  text-decoration: none;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 6px 10px;
+  color: var(--muted);
+}
+
+.subnav a.router-link-active {
+  border-color: var(--accent);
+  color: var(--accent-hover);
+  background: var(--accent-soft);
 }
 
 .panel-header {

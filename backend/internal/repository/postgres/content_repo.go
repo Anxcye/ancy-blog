@@ -294,6 +294,80 @@ RETURNING id::text, created_at, updated_at, published_at
 	return moment, nil
 }
 
+func (r *Repository) UpdateMoment(id string, moment domain.Moment) (domain.Moment, error) {
+	var createdAt time.Time
+	err := r.db.QueryRow(`SELECT created_at FROM moments WHERE id=$1 AND deleted_at IS NULL`, id).Scan(&createdAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.Moment{}, apperr.ErrMomentNotFound
+		}
+		return domain.Moment{}, err
+	}
+
+	var updatedAt time.Time
+	var publishedAt sql.NullTime
+	err = r.db.QueryRow(`
+UPDATE moments
+SET content=$2, status=$3, allow_comment=$4, published_at=$5, updated_at=NOW()
+WHERE id=$1 AND deleted_at IS NULL
+RETURNING updated_at, published_at
+`, id, moment.Content, moment.Status, moment.AllowComment, nullableTime(moment.PublishedAt)).
+		Scan(&updatedAt, &publishedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return domain.Moment{}, apperr.ErrMomentNotFound
+		}
+		return domain.Moment{}, err
+	}
+
+	moment.ID = id
+	moment.CreatedAt = createdAt
+	moment.UpdatedAt = updatedAt
+	if publishedAt.Valid {
+		moment.PublishedAt = publishedAt.Time
+	}
+	return moment, nil
+}
+
+func (r *Repository) ListMoments(page, pageSize int, status string) ([]domain.Moment, int) {
+	page, pageSize = normalizePagination(page, pageSize)
+	offset := (page - 1) * pageSize
+
+	whereClause := "deleted_at IS NULL"
+	args := make([]any, 0, 3)
+	if status != "" {
+		whereClause += " AND status=$1"
+		args = append(args, status)
+	}
+
+	var total int
+	if err := r.db.QueryRow(`SELECT COUNT(*) FROM moments WHERE `+whereClause, args...).Scan(&total); err != nil {
+		return []domain.Moment{}, 0
+	}
+
+	listQuery := `
+SELECT id::text, content, status, allow_comment, COALESCE(published_at, created_at), created_at, updated_at
+FROM moments
+WHERE ` + whereClause + `
+ORDER BY updated_at DESC, created_at DESC
+LIMIT $` + strconv.Itoa(len(args)+1) + ` OFFSET $` + strconv.Itoa(len(args)+2)
+	listArgs := append(args, pageSize, offset)
+	rows, err := r.db.Query(listQuery, listArgs...)
+	if err != nil {
+		return []domain.Moment{}, total
+	}
+	defer rows.Close()
+
+	items := make([]domain.Moment, 0)
+	for rows.Next() {
+		var m domain.Moment
+		if err := rows.Scan(&m.ID, &m.Content, &m.Status, &m.AllowComment, &m.PublishedAt, &m.CreatedAt, &m.UpdatedAt); err == nil {
+			items = append(items, m)
+		}
+	}
+	return items, total
+}
+
 func (r *Repository) ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int) {
 	page, pageSize = normalizePagination(page, pageSize)
 	offset := (page - 1) * pageSize

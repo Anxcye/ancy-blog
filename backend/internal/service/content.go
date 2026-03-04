@@ -112,6 +112,23 @@ func (s *ContentService) CreateMoment(moment domain.Moment) (domain.Moment, erro
 	return s.repo.CreateMoment(moment)
 }
 
+func (s *ContentService) UpdateMoment(id string, moment domain.Moment) (domain.Moment, error) {
+	if strings.TrimSpace(id) == "" {
+		return domain.Moment{}, fmt.Errorf("%w: moment id is required", apperr.ErrValidation)
+	}
+	if strings.TrimSpace(moment.Content) == "" {
+		return domain.Moment{}, fmt.Errorf("%w: content is required", apperr.ErrValidation)
+	}
+	if moment.Status == "" {
+		moment.Status = "draft"
+	}
+	return s.repo.UpdateMoment(id, moment)
+}
+
+func (s *ContentService) ListMoments(page, pageSize int, status string) ([]domain.Moment, int) {
+	return s.repo.ListMoments(page, pageSize, status)
+}
+
 func (s *ContentService) ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int) {
 	return s.repo.ListPublishedMoments(page, pageSize, locale)
 }

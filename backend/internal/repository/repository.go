@@ -21,6 +21,8 @@ type ContentRepository interface {
 	GetArticleByID(id string) (domain.Article, bool)
 
 	CreateMoment(moment domain.Moment) (domain.Moment, error)
+	UpdateMoment(id string, moment domain.Moment) (domain.Moment, error)
+	ListMoments(page, pageSize int, status string) ([]domain.Moment, int)
 	ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int)
 
 	CreateComment(comment domain.Comment) (domain.Comment, error)

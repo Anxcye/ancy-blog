@@ -113,6 +113,37 @@ func TestAdminArticleDetailNotFound(t *testing.T) {
 	}
 }
 
+func TestAdminListMoments(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	repo := &handlerRepoStub{
+		listMomentsFunc: func(page, pageSize int, status string) ([]domain.Moment, int) {
+			if page != 1 || pageSize != 10 || status != "draft" {
+				t.Fatalf("unexpected query params page=%d pageSize=%d status=%s", page, pageSize, status)
+			}
+			return []domain.Moment{{ID: "m1", Content: "draft", Status: "draft"}}, 1
+		},
+	}
+	core := service.NewContentService(repo, nil)
+	h := NewAdminHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewIntegrationService(core),
+		service.NewTranslationService(core),
+		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+	)
+	r := adminRouter(h)
+	r.GET("/moments", h.ListMoments)
+
+	req := httptest.NewRequest(http.MethodGet, "/moments?status=draft", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", w.Code, w.Body.String())
+	}
+}
+
 func TestAdminUpdateIntegrationProviderNotFound(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	repo := &handlerRepoStub{updateIntegrationProvider: func(string, bool, []byte, []byte) (domain.IntegrationProvider, error) {

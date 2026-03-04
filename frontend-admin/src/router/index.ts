@@ -12,6 +12,7 @@ import SiteView from '@/views/SiteView.vue';
 import InteractionView from '@/views/InteractionView.vue';
 import SystemView from '@/views/SystemView.vue';
 import ArticleEditorView from '@/views/ArticleEditorView.vue';
+import MomentsView from '@/views/MomentsView.vue';
 
 const router = createRouter({
   history: createWebHistory(),
@@ -20,6 +21,7 @@ const router = createRouter({
     { path: '/', redirect: '/dashboard' },
     { path: '/dashboard', name: 'dashboard', component: DashboardView, meta: { requiresAuth: true } },
     { path: '/content/articles', name: 'articles', component: ArticlesView, meta: { requiresAuth: true } },
+    { path: '/content/moments', name: 'moments', component: MomentsView, meta: { requiresAuth: true } },
     { path: '/content/articles/new', name: 'article-new', component: ArticleEditorView, meta: { requiresAuth: true } },
     { path: '/content/articles/:id/edit', name: 'article-edit', component: ArticleEditorView, meta: { requiresAuth: true } },
     { path: '/site', name: 'site', component: SiteView, meta: { requiresAuth: true } },

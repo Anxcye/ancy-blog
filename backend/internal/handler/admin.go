@@ -152,6 +152,38 @@ func (h *AdminHandler) CreateMoment(c *gin.Context) {
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: map[string]string{"id": moment.ID}})
 }
 
+func (h *AdminHandler) ListMoments(c *gin.Context) {
+	page := getIntQuery(c, "page", 1)
+	pageSize := getIntQuery(c, "pageSize", 10)
+	status := c.Query("status")
+	rows, total := h.articleService.ListMoments(page, pageSize, status)
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.Moment]{Total: total, Rows: rows}})
+}
+
+func (h *AdminHandler) UpdateMoment(c *gin.Context) {
+	id := c.Param("id")
+	var req dto.MomentCreateRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequest(c, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+	moment, err := h.articleService.UpdateMoment(id, domain.Moment{
+		Content:      req.Content,
+		Status:       req.Status,
+		AllowComment: req.AllowComment,
+		PublishedAt:  req.PublishedAt,
+	})
+	if err != nil {
+		if errors.Is(err, apperr.ErrMomentNotFound) {
+			response.JSON(c, http.StatusNotFound, response.Envelope{Code: "MOMENT_NOT_FOUND", Message: "moment not found"})
+			return
+		}
+		badRequest(c, "VALIDATION_ERROR", err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: moment})
+}
+
 func (h *AdminHandler) CommentPage(c *gin.Context) {
 	page := getIntQuery(c, "page", 1)
 	pageSize := getIntQuery(c, "pageSize", 10)

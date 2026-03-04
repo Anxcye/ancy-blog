@@ -158,6 +158,22 @@
 - Response: created moment id
 - Error Codes: VALIDATION_ERROR, AUTH_UNAUTHORIZED
 
+- ID: ADM-MOMENT-002
+- Method: GET
+- Path: /api/v1/admin/moments
+- Auth Required: Yes
+- Request: query `page`, `pageSize`, `status`
+- Response: paginated moments (includes non-published records)
+- Error Codes: AUTH_UNAUTHORIZED
+
+- ID: ADM-MOMENT-003
+- Method: PUT
+- Path: /api/v1/admin/moments/{id}
+- Auth Required: Yes
+- Request: moment update payload
+- Response: updated moment object
+- Error Codes: MOMENT_NOT_FOUND, VALIDATION_ERROR
+
 ## Public/Admin - Comments
 - ID: PUB-COMMENT-001
 - Method: GET

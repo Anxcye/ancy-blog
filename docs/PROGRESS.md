@@ -54,6 +54,7 @@
 - [x] Added admin interaction center page with comment moderation and friend-link review operations.
 - [x] Added translation operations center (job create/list/retry + translation content override) under admin system workspace.
 - [x] Added AI assist actions in article editor (summary generation and slug suggestion).
+- [x] Added admin moments management (backend list/update APIs and frontend moments CRUD page baseline).
 
 ## Blocked
 - None.
