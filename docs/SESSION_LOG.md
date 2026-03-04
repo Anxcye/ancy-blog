@@ -325,3 +325,16 @@
 - Validation:
   - `go test` passed for updated backend packages (`handler/service/repository/server`).
   - frontend dependency build check not executed in this sandbox (requires local npm install).
+
+## 2026-03-04 (Admin site/system management pages)
+- Implemented `frontend-admin` site orchestration page with direct backend wiring:
+  - Site settings read/update.
+  - Footer item create + list.
+  - Social link create + list.
+  - Nav item create + list.
+- Implemented `frontend-admin` integration center page:
+  - List integration providers.
+  - Update provider enabled/config/meta.
+  - Trigger provider connectivity test and show result message.
+- Added new API modules/types for site and integrations.
+- Expanded admin i18n dictionaries with site/system/common action labels.

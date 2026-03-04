@@ -50,6 +50,7 @@
 - [x] Updated frontend style baseline with hero/nav/motion/particle constraints and mobile+SEO requirements.
 - [x] Added `frontend-admin` responsive shell baseline (desktop top nav + mobile 5-tab full-feature entry) and fresh teal design tokens.
 - [x] Added admin article management baseline: backend list/detail endpoints and frontend list+editor pages (content/meta/preview modes).
+- [x] Added admin site/system operation pages: site settings/footer/social/nav management and integration-center config/test UI.
 
 ## Blocked
 - None.

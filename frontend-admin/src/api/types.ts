@@ -51,3 +51,54 @@ export interface ArticleUpsertPayload {
   tagSlugs: string[];
   publishedAt?: string;
 }
+
+export interface SiteSettings {
+  siteName: string;
+  avatarUrl: string;
+  heroIntroMd: string;
+  defaultLocale: string;
+}
+
+export interface FooterItem {
+  id: string;
+  label: string;
+  linkType: 'internal' | 'external' | 'none';
+  internalArticleSlug: string;
+  externalUrl: string;
+  rowNum: number;
+  orderNum: number;
+  enabled: boolean;
+}
+
+export interface SocialLink {
+  id: string;
+  platform: string;
+  title: string;
+  url: string;
+  iconKey: string;
+  orderNum: number;
+  enabled: boolean;
+}
+
+export interface NavItem {
+  id: string;
+  name: string;
+  key: string;
+  type: string;
+  targetType: string;
+  targetValue: string;
+  orderNum: number;
+  enabled: boolean;
+}
+
+export interface IntegrationProvider {
+  id: string;
+  providerType: string;
+  providerKey: string;
+  name: string;
+  enabled: boolean;
+  configJson: Record<string, unknown>;
+  metaJson: Record<string, unknown>;
+  createdAt: string;
+  updatedAt: string;
+}
