@@ -36,6 +36,9 @@
   - implemented baseline modules: auth store, axios auth interceptor, protected routing, login page, admin layout, and dashboard placeholder
   - applied global style baseline for clean enterprise admin shell
   - fixed React login response parsing bug: backend login payload has no `user` field, now username is taken from submitted form to avoid false "password incorrect" errors
+- Added dedicated admin rebuild handoff document:
+  - `docs/ADMIN_FRONTEND_IMPLEMENTATION_GUIDE.md`
+  - includes stack decisions, UI library baseline, module migration order, API integration rules, editor strategy, and quality gates for cross-process execution
 - Validation run:
   - `source ~/.zshrc && cd backend && go test ./...` passed
   - `cd frontend-admin && pnpm run build` passed
