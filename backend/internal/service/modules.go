@@ -161,6 +161,12 @@ func (s *SiteService) DeleteSlotItem(slotKey, itemID string) bool {
 func (s *SiteService) ListSlotContent(slotKey string, limit int) ([]domain.SlotContentItem, bool) {
 	return s.core.ListSlotContent(slotKey, limit)
 }
+func (s *SiteService) GetTranslationPolicy() domain.TranslationPolicy {
+	return s.core.GetTranslationPolicy()
+}
+func (s *SiteService) UpdateTranslationPolicy(policy domain.TranslationPolicy) error {
+	return s.core.UpdateTranslationPolicy(policy)
+}
 
 func (s *IntegrationService) ListIntegrationProviders(providerType string) []domain.IntegrationProvider {
 	return s.core.ListIntegrationProviders(providerType)

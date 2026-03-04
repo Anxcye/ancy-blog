@@ -105,6 +105,14 @@ type SiteSettings struct {
 	DefaultLocale string `json:"defaultLocale"`
 }
 
+// TranslationPolicy holds the global auto-translation configuration stored in site_settings.
+type TranslationPolicy struct {
+	Enabled       bool     `json:"enabled"`
+	TargetLocales []string `json:"targetLocales"`
+	ProviderKey   string   `json:"providerKey"`
+	AutoPublish   bool     `json:"autoPublish"`
+}
+
 type FooterItem struct {
 	ID                  string `json:"id"`
 	Label               string `json:"label"`

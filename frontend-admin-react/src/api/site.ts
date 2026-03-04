@@ -123,6 +123,29 @@ export async function deleteNavItem(id: string): Promise<boolean> {
   return res.data.data;
 }
 
+// ── Translation policy ────────────────────────
+export interface TranslationPolicy {
+  enabled: boolean;
+  targetLocales: string[];
+  providerKey: string;
+  autoPublish: boolean;
+}
+
+export async function getTranslationPolicy(): Promise<TranslationPolicy> {
+  const res = await httpClient.get<ApiResponse<TranslationPolicy>>(
+    '/admin/site/translation-policy',
+  );
+  return res.data.data;
+}
+
+export async function updateTranslationPolicy(payload: TranslationPolicy): Promise<TranslationPolicy> {
+  const res = await httpClient.put<ApiResponse<TranslationPolicy>>(
+    '/admin/site/translation-policy',
+    payload,
+  );
+  return res.data.data;
+}
+
 // ── Content slots ─────────────────────────────
 export async function listSlots(): Promise<ContentSlot[]> {
   const res = await httpClient.get<ApiResponse<ContentSlot[]>>('/admin/site/slots');

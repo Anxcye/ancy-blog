@@ -720,3 +720,50 @@
 ```
 - Error Codes: None
 - Notes: Used by local and deployment health probes.
+
+## Translation Policy (Admin)
+
+- ID: ADM-TRANS-POLICY-001
+- Method: GET
+- Path: /api/v1/admin/site/translation-policy
+- Auth Required: Yes
+- Request: None
+- Response:
+```json
+{
+  "code": "OK",
+  "message": "success",
+  "data": {
+    "enabled": true,
+    "targetLocales": ["en-US", "ja-JP"],
+    "providerKey": "openai_compatible",
+    "autoPublish": false
+  }
+}
+```
+- Error Codes: AUTH_REQUIRED
+- Notes: Returns defaults if no policy has been saved yet.
+
+- ID: ADM-TRANS-POLICY-002
+- Method: PUT
+- Path: /api/v1/admin/site/translation-policy
+- Auth Required: Yes
+- Request:
+```json
+{
+  "enabled": true,
+  "targetLocales": ["en-US", "ja-JP"],
+  "providerKey": "openai_compatible",
+  "autoPublish": false
+}
+```
+- Response: Same shape as GET.
+- Error Codes: AUTH_REQUIRED, VALIDATION_ERROR, UPDATE_FAILED
+- Notes:
+  - `targetLocales` must use BCP-47 locale tags (e.g. `en-US`, `ja-JP`, `ko-KR`, `fr-FR`).
+  - `providerKey` must match an existing integration provider key (e.g. `openai_compatible`).
+  - When `enabled=true`, saving a published article (create or update) automatically enqueues
+    translation jobs for each `targetLocale`. Jobs use `autoPublish` from this policy.
+  - For articles with TipTap JSON content, the worker extracts text leaf nodes, translates them
+    in a single LLM batch call, then reconstructs the JSON with translated text.
+  - Policy is stored as JSONB in the `site_settings` table (migration 000006).

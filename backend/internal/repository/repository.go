@@ -46,6 +46,8 @@ type ContentRepository interface {
 
 	GetSiteSettings() domain.SiteSettings
 	UpdateSiteSettings(settings domain.SiteSettings) domain.SiteSettings
+	GetTranslationPolicy() domain.TranslationPolicy
+	UpdateTranslationPolicy(policy domain.TranslationPolicy) error
 
 	CreateFooterItem(item domain.FooterItem) (domain.FooterItem, error)
 	UpdateFooterItem(id string, item domain.FooterItem) (domain.FooterItem, error)

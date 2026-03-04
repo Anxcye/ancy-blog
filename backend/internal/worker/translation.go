@@ -209,53 +209,71 @@ func (w *TranslationWorker) translateWithProvider(ctx context.Context, configJSO
 	if strings.TrimSpace(modelName) == "" {
 		return "", fmt.Errorf("model is empty")
 	}
-	baseURL := strings.TrimRight(cfg.BaseURL, "/")
-	endpoint := baseURL + "/chat/completions"
-
+	endpoint := strings.TrimRight(cfg.BaseURL, "/") + "/chat/completions"
 	systemPrompt := "You are a professional translator. Preserve markdown structure and meaning. Return only translated text."
 	userPrompt := fmt.Sprintf("Translate the following text from %s to %s:\n\n%s", sourceLocale, targetLocale, sourceText)
+	return w.callLLM(ctx, endpoint, cfg.APIKey, modelName, systemPrompt, userPrompt)
+}
 
-	payload := map[string]any{
-		"model": modelName,
-		"messages": []map[string]string{
-			{"role": "system", "content": systemPrompt},
-			{"role": "user", "content": userPrompt},
-		},
-		"temperature": 0.2,
-	}
-	body, _ := json.Marshal(payload)
+// tiptapNode is a minimal representation of a TipTap document node for text extraction.
+type tiptapNode struct {
+	Type    string        `json:"type,omitempty"`
+	Text    string        `json:"text,omitempty"`
+	Content []tiptapNode  `json:"content,omitempty"`
+	Marks   []interface{} `json:"marks,omitempty"`
+	Attrs   interface{}   `json:"attrs,omitempty"`
+}
 
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
-	if err != nil {
-		return "", err
-	}
-	req.Header.Set("Authorization", "Bearer "+cfg.APIKey)
-	req.Header.Set("Content-Type", "application/json")
+// isTiptapJSON returns true if raw looks like a serialized TipTap document.
+func isTiptapJSON(s string) bool {
+	s = strings.TrimSpace(s)
+	return strings.HasPrefix(s, "{") && strings.Contains(s, `"type"`) && strings.Contains(s, `"doc"`)
+}
 
-	resp, err := w.httpClient.Do(req)
-	if err != nil {
-		return "", fmt.Errorf("llm request failed: %w", err)
+// collectTiptapTexts walks a TipTap node tree and collects all leaf text values.
+func collectTiptapTexts(node tiptapNode, out *[]string) {
+	if node.Type == "text" && node.Text != "" {
+		*out = append(*out, node.Text)
 	}
-	defer resp.Body.Close()
-	respBody, _ := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
-	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return "", fmt.Errorf("llm response status %d: %s", resp.StatusCode, strings.TrimSpace(string(respBody)))
+	for _, child := range node.Content {
+		collectTiptapTexts(child, out)
 	}
+}
 
-	var out struct {
-		Choices []struct {
-			Message struct {
-				Content string `json:"content"`
-			} `json:"message"`
-		} `json:"choices"`
+// applyTiptapTranslations walks a TipTap node tree and replaces text leaf values in order.
+func applyTiptapTranslations(node tiptapNode, translated []string, idx *int) tiptapNode {
+	if node.Type == "text" && node.Text != "" {
+		if *idx < len(translated) {
+			node.Text = translated[*idx]
+			*idx++
+		}
+		return node
 	}
-	if err := json.Unmarshal(respBody, &out); err != nil {
-		return "", fmt.Errorf("llm response decode failed: %w", err)
+	for i, child := range node.Content {
+		node.Content[i] = applyTiptapTranslations(child, translated, idx)
 	}
-	if len(out.Choices) == 0 {
-		return "", fmt.Errorf("llm response has no choices")
+	return node
+}
+
+// parseArticleSourceFields extracts title, summary, content from the combined source string
+// returned by GetTranslationSourceText (format: "# title\n\nsummary\n\ncontent").
+func parseArticleSourceFields(sourceText string) (title, summary, content string) {
+	lines := strings.SplitN(sourceText, "\n", 3)
+	if len(lines) >= 1 {
+		title = strings.TrimPrefix(strings.TrimSpace(lines[0]), "# ")
 	}
-	return strings.TrimSpace(out.Choices[0].Message.Content), nil
+	if len(lines) >= 3 {
+		rest := strings.TrimSpace(lines[2])
+		// Find the content section (after summary blank line)
+		parts := strings.SplitN(rest, "\n\n", 2)
+		summary = strings.TrimSpace(parts[0])
+		if len(parts) >= 2 {
+			content = strings.TrimSpace(parts[1])
+		}
+	} else if len(lines) == 2 {
+		summary = strings.TrimSpace(lines[1])
+	}
+	return
 }
 
 func (w *TranslationWorker) translateArticleWithProvider(ctx context.Context, configJSON []byte, modelName, sourceLocale, targetLocale, sourceText string) (string, string, string, error) {
@@ -276,6 +294,15 @@ func (w *TranslationWorker) translateArticleWithProvider(ctx context.Context, co
 	if strings.TrimSpace(modelName) == "" {
 		return "", "", "", fmt.Errorf("model is empty")
 	}
+
+	srcTitle, srcSummary, srcContent := parseArticleSourceFields(sourceText)
+
+	// For TipTap JSON content, extract text nodes, translate them, then reconstruct.
+	if isTiptapJSON(srcContent) {
+		return w.translateArticleTiptap(ctx, cfg.BaseURL, cfg.APIKey, modelName, sourceLocale, targetLocale, srcTitle, srcSummary, srcContent)
+	}
+
+	// Plain text / markdown content path.
 	baseURL := strings.TrimRight(cfg.BaseURL, "/")
 	endpoint := baseURL + "/chat/completions"
 
@@ -287,6 +314,90 @@ Do not add markdown code fences.
 Source:
 %s`, sourceLocale, targetLocale, sourceText)
 
+	translatedRaw, err := w.callLLM(ctx, endpoint, cfg.APIKey, modelName, systemPrompt, userPrompt)
+	if err != nil {
+		return "", "", "", err
+	}
+	start := strings.Index(translatedRaw, "{")
+	end := strings.LastIndex(translatedRaw, "}")
+	if start >= 0 && end > start {
+		translatedRaw = translatedRaw[start : end+1]
+	}
+	var parsed struct {
+		Title   string `json:"title"`
+		Summary string `json:"summary"`
+		Content string `json:"content"`
+	}
+	if err := json.Unmarshal([]byte(translatedRaw), &parsed); err != nil {
+		return "", "", "", fmt.Errorf("article translation json decode failed: %w", err)
+	}
+	return strings.TrimSpace(parsed.Title), strings.TrimSpace(parsed.Summary), strings.TrimSpace(parsed.Content), nil
+}
+
+// translateArticleTiptap translates an article whose content is stored as TipTap JSON.
+// It extracts all text leaf nodes, translates them in one LLM call, then rebuilds the JSON.
+func (w *TranslationWorker) translateArticleTiptap(ctx context.Context, baseURL, apiKey, modelName, sourceLocale, targetLocale, srcTitle, srcSummary, srcContent string) (string, string, string, error) {
+	// Parse the TipTap document.
+	var doc tiptapNode
+	if err := json.Unmarshal([]byte(srcContent), &doc); err != nil {
+		return "", "", "", fmt.Errorf("tiptap content parse failed: %w", err)
+	}
+
+	// Collect all text leaf values.
+	var texts []string
+	collectTiptapTexts(doc, &texts)
+
+	// Build a batch translation payload: title + summary + all text nodes as a JSON array.
+	batchInput := map[string]any{
+		"title":   srcTitle,
+		"summary": srcSummary,
+		"texts":   texts,
+	}
+	batchJSON, _ := json.Marshal(batchInput)
+
+	endpoint := strings.TrimRight(baseURL, "/") + "/chat/completions"
+	systemPrompt := "You are a professional translator. Return STRICT JSON only — no markdown fences."
+	userPrompt := fmt.Sprintf(`Translate the following from %s to %s.
+Input JSON has: title (string), summary (string), texts (array of strings).
+Return JSON with: title (string), summary (string), texts (array of strings, same length, same order).
+Keep any code samples, URLs, and HTML tags untranslated.
+
+Input:
+%s`, sourceLocale, targetLocale, string(batchJSON))
+
+	raw, err := w.callLLM(ctx, endpoint, apiKey, modelName, systemPrompt, userPrompt)
+	if err != nil {
+		return "", "", "", err
+	}
+	start := strings.Index(raw, "{")
+	end := strings.LastIndex(raw, "}")
+	if start >= 0 && end > start {
+		raw = raw[start : end+1]
+	}
+	var result struct {
+		Title   string   `json:"title"`
+		Summary string   `json:"summary"`
+		Texts   []string `json:"texts"`
+	}
+	if err := json.Unmarshal([]byte(raw), &result); err != nil {
+		return "", "", "", fmt.Errorf("tiptap batch translation decode failed: %w", err)
+	}
+	if len(result.Texts) != len(texts) {
+		return "", "", "", fmt.Errorf("tiptap translation text count mismatch: got %d, want %d", len(result.Texts), len(texts))
+	}
+
+	// Rebuild the TipTap JSON with translated text nodes.
+	idx := 0
+	translatedDoc := applyTiptapTranslations(doc, result.Texts, &idx)
+	translatedJSON, err := json.Marshal(translatedDoc)
+	if err != nil {
+		return "", "", "", fmt.Errorf("tiptap json marshal failed: %w", err)
+	}
+	return strings.TrimSpace(result.Title), strings.TrimSpace(result.Summary), string(translatedJSON), nil
+}
+
+// callLLM sends a chat completion request and returns the assistant message content.
+func (w *TranslationWorker) callLLM(ctx context.Context, endpoint, apiKey, modelName, systemPrompt, userPrompt string) (string, error) {
 	payload := map[string]any{
 		"model": modelName,
 		"messages": []map[string]string{
@@ -298,19 +409,19 @@ Source:
 	body, _ := json.Marshal(payload)
 	req, err := http.NewRequestWithContext(ctx, http.MethodPost, endpoint, bytes.NewReader(body))
 	if err != nil {
-		return "", "", "", err
+		return "", err
 	}
-	req.Header.Set("Authorization", "Bearer "+cfg.APIKey)
+	req.Header.Set("Authorization", "Bearer "+apiKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	resp, err := w.httpClient.Do(req)
 	if err != nil {
-		return "", "", "", fmt.Errorf("llm request failed: %w", err)
+		return "", fmt.Errorf("llm request failed: %w", err)
 	}
 	defer resp.Body.Close()
 	respBody, _ := io.ReadAll(io.LimitReader(resp.Body, 1024*1024))
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return "", "", "", fmt.Errorf("llm response status %d: %s", resp.StatusCode, strings.TrimSpace(string(respBody)))
+		return "", fmt.Errorf("llm response status %d: %s", resp.StatusCode, strings.TrimSpace(string(respBody)))
 	}
 	var out struct {
 		Choices []struct {
@@ -320,27 +431,10 @@ Source:
 		} `json:"choices"`
 	}
 	if err := json.Unmarshal(respBody, &out); err != nil {
-		return "", "", "", fmt.Errorf("llm response decode failed: %w", err)
+		return "", fmt.Errorf("llm response decode failed: %w", err)
 	}
 	if len(out.Choices) == 0 {
-		return "", "", "", fmt.Errorf("llm response has no choices")
+		return "", fmt.Errorf("llm response has no choices")
 	}
-	raw := strings.TrimSpace(out.Choices[0].Message.Content)
-	if raw == "" {
-		return "", "", "", fmt.Errorf("empty translation output")
-	}
-	start := strings.Index(raw, "{")
-	end := strings.LastIndex(raw, "}")
-	if start >= 0 && end > start {
-		raw = raw[start : end+1]
-	}
-	var parsed struct {
-		Title   string `json:"title"`
-		Summary string `json:"summary"`
-		Content string `json:"content"`
-	}
-	if err := json.Unmarshal([]byte(raw), &parsed); err != nil {
-		return "", "", "", fmt.Errorf("article translation json decode failed: %w", err)
-	}
-	return strings.TrimSpace(parsed.Title), strings.TrimSpace(parsed.Summary), strings.TrimSpace(parsed.Content), nil
+	return strings.TrimSpace(out.Choices[0].Message.Content), nil
 }

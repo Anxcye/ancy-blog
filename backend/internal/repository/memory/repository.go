@@ -524,6 +524,14 @@ func (r *Repository) UpdateSiteSettings(settings domain.SiteSettings) domain.Sit
 	return r.siteSettings
 }
 
+func (r *Repository) GetTranslationPolicy() domain.TranslationPolicy {
+	return domain.TranslationPolicy{TargetLocales: []string{}}
+}
+
+func (r *Repository) UpdateTranslationPolicy(_ domain.TranslationPolicy) error {
+	return nil
+}
+
 func (r *Repository) CreateFooterItem(item domain.FooterItem) (domain.FooterItem, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()

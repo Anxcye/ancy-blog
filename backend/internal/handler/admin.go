@@ -329,6 +329,24 @@ func (h *AdminHandler) UpdateSiteSettings(c *gin.Context) {
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: updated})
 }
 
+func (h *AdminHandler) GetTranslationPolicy(c *gin.Context) {
+	policy := h.siteService.GetTranslationPolicy()
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: policy})
+}
+
+func (h *AdminHandler) UpdateTranslationPolicy(c *gin.Context) {
+	var policy domain.TranslationPolicy
+	if err := c.ShouldBindJSON(&policy); err != nil {
+		badRequest(c, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+	if err := h.siteService.UpdateTranslationPolicy(policy); err != nil {
+		badRequest(c, "UPDATE_FAILED", err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: policy})
+}
+
 func (h *AdminHandler) CreateFooterItem(c *gin.Context) {
 	var req dto.FooterItemUpsertRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

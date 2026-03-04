@@ -9,6 +9,7 @@ import {
   CheckCircleOutlined,
   CloseCircleOutlined,
   CloudOutlined,
+  GlobalOutlined,
   PlusOutlined,
   ReloadOutlined,
   RobotOutlined,
@@ -18,11 +19,13 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Button,
   Card,
+  Checkbox,
   Col,
   Drawer,
   Form,
   Input,
   InputNumber,
+  Radio,
   Row,
   Select,
   Space,
@@ -35,7 +38,7 @@ import {
   message,
 } from 'antd';
 import type { ReactElement } from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import {
   createTranslationJob,
@@ -47,6 +50,8 @@ import {
   updateProvider,
   updateTranslationContent,
 } from '../../api/system';
+import { getTranslationPolicy, updateTranslationPolicy } from '../../api/site';
+import type { TranslationPolicy } from '../../api/site';
 import type {
   CreateTranslationJobPayload,
   IntegrationProvider,
@@ -790,6 +795,97 @@ function TranslationContentsTab(): ReactElement {
 }
 
 // ─────────────────────────────────────────────
+// Translation policy tab
+// ─────────────────────────────────────────────
+
+const LOCALE_OPTIONS = [
+  { label: 'English (en-US)', value: 'en-US' },
+  { label: '中文 (zh-CN)', value: 'zh-CN' },
+  { label: '日本語 (ja-JP)', value: 'ja-JP' },
+  { label: '한국어 (ko-KR)', value: 'ko-KR' },
+  { label: 'Français (fr-FR)', value: 'fr-FR' },
+];
+
+function TranslationPolicyTab(): ReactElement {
+  const [messageApi, ctx] = message.useMessage();
+  const queryClient = useQueryClient();
+  const [form] = Form.useForm<TranslationPolicy>();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['translation-policy'],
+    queryFn: getTranslationPolicy,
+  });
+
+  const saveMut = useMutation({
+    mutationFn: (vals: TranslationPolicy) => updateTranslationPolicy(vals),
+    onSuccess: () => {
+      messageApi.success('翻译策略已保存');
+      queryClient.invalidateQueries({ queryKey: ['translation-policy'] });
+    },
+    onError: () => messageApi.error('保存失败'),
+  });
+
+  // Sync fetched data into form
+  useEffect(() => {
+    if (data) {
+      form.setFieldsValue(data);
+    }
+  }, [data, form]);
+
+  return (
+    <>
+      {ctx}
+      <Card
+        style={{ maxWidth: 600 }}
+        loading={isLoading}
+        title="自动翻译策略"
+        extra={
+          <Button
+            type="primary"
+            loading={saveMut.isPending}
+            onClick={() => form.validateFields().then((vals) => saveMut.mutate(vals))}
+          >
+            保存
+          </Button>
+        }
+      >
+        <Form form={form} layout="vertical">
+          <Form.Item name="enabled" label="启用自动翻译" valuePropName="checked">
+            <Switch checkedChildren="开" unCheckedChildren="关" />
+          </Form.Item>
+
+          <Form.Item
+            name="targetLocales"
+            label="目标语言"
+            extra="文章发布或内容更新时，将自动提交到以下语言的翻译队列"
+          >
+            <Checkbox.Group options={LOCALE_OPTIONS} />
+          </Form.Item>
+
+          <Form.Item name="providerKey" label="翻译提供商" rules={[{ required: true, message: '请选择提供商' }]}>
+            <Select
+              options={[{ value: 'openai_compatible', label: 'OpenAI Compatible' }]}
+              placeholder="选择集成提供商"
+            />
+          </Form.Item>
+
+          <Form.Item
+            name="autoPublish"
+            label="翻译完成后"
+            extra="选择「自动发布」则无需人工审核，直接对外可见"
+          >
+            <Radio.Group>
+              <Radio value={false}>生成草稿（需人工审核）</Radio>
+              <Radio value={true}>自动发布</Radio>
+            </Radio.Group>
+          </Form.Item>
+        </Form>
+      </Card>
+    </>
+  );
+}
+
+// ─────────────────────────────────────────────
 // Page entry
 // ─────────────────────────────────────────────
 
@@ -815,6 +911,11 @@ export function SystemPage(): ReactElement {
             key: 'contents',
             label: <Space size={6}><RobotOutlined />译文管理</Space>,
             children: <TranslationContentsTab />,
+          },
+          {
+            key: 'policy',
+            label: <Space size={6}><GlobalOutlined />翻译策略</Space>,
+            children: <TranslationPolicyTab />,
           },
         ]}
       />

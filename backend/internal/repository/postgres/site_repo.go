@@ -5,6 +5,8 @@
 package postgres
 
 import (
+	"encoding/json"
+
 	"github.com/anxcye/ancy-blog/backend/internal/apperr"
 	"github.com/anxcye/ancy-blog/backend/internal/domain"
 )
@@ -35,6 +37,40 @@ SET site_name=$2, avatar_url=$3, hero_intro_md=$4, default_locale=$5, updated_at
 WHERE id=$1
 `, id, settings.SiteName, nullableString(settings.AvatarURL), nullableString(settings.HeroIntroMD), settings.DefaultLocale)
 	return settings
+}
+
+func (r *Repository) GetTranslationPolicy() domain.TranslationPolicy {
+	var raw []byte
+	err := r.db.QueryRow(`SELECT translation_policy FROM site_settings ORDER BY created_at ASC LIMIT 1`).Scan(&raw)
+	if err != nil || raw == nil {
+		return domain.TranslationPolicy{TargetLocales: []string{}}
+	}
+	var policy domain.TranslationPolicy
+	if err := json.Unmarshal(raw, &policy); err != nil {
+		return domain.TranslationPolicy{TargetLocales: []string{}}
+	}
+	if policy.TargetLocales == nil {
+		policy.TargetLocales = []string{}
+	}
+	return policy
+}
+
+func (r *Repository) UpdateTranslationPolicy(policy domain.TranslationPolicy) error {
+	raw, err := json.Marshal(policy)
+	if err != nil {
+		return err
+	}
+	var id string
+	err = r.db.QueryRow(`SELECT id::text FROM site_settings ORDER BY created_at ASC LIMIT 1`).Scan(&id)
+	if err != nil {
+		// No row yet — create a default row with just the policy
+		return r.db.QueryRow(`
+INSERT INTO site_settings (site_name, default_locale, translation_policy)
+VALUES ('Ancy Blog','en',$1) RETURNING id::text
+`, raw).Scan(&id)
+	}
+	_, err = r.db.Exec(`UPDATE site_settings SET translation_policy=$2, updated_at=NOW() WHERE id=$1`, id, raw)
+	return err
 }
 
 func (r *Repository) CreateFooterItem(item domain.FooterItem) (domain.FooterItem, error) {

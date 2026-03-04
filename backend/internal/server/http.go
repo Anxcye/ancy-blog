@@ -95,6 +95,8 @@ func NewHTTPServer(cfg *config.Config, logger *slog.Logger) (*HTTPServer, error)
 			admin.PATCH("/links/:id/review", container.AdminHandler.ReviewLink)
 
 			admin.PUT("/site/settings", container.AdminHandler.UpdateSiteSettings)
+			admin.GET("/site/translation-policy", container.AdminHandler.GetTranslationPolicy)
+			admin.PUT("/site/translation-policy", container.AdminHandler.UpdateTranslationPolicy)
 			admin.POST("/site/footer-items", container.AdminHandler.CreateFooterItem)
 			admin.PUT("/site/footer-items/:id", container.AdminHandler.UpdateFooterItem)
 			admin.DELETE("/site/footer-items/:id", container.AdminHandler.DeleteFooterItem)

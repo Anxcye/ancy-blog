@@ -56,7 +56,11 @@ func (s *ContentService) CreateArticle(article domain.Article) (domain.Article, 
 	if article.AIAssistLevel == "" {
 		article.AIAssistLevel = "none"
 	}
-	return s.repo.CreateArticle(article)
+	result, err := s.repo.CreateArticle(article)
+	if err == nil && result.Status == "published" {
+		go s.triggerAutoTranslation(result.ID, s.repo.GetTranslationPolicy())
+	}
+	return result, err
 }
 
 func (s *ContentService) UpdateArticle(id string, article domain.Article) (domain.Article, error) {
@@ -69,7 +73,11 @@ func (s *ContentService) UpdateArticle(id string, article domain.Article) (domai
 	if article.ContentKind == "" {
 		article.ContentKind = "post"
 	}
-	return s.repo.UpdateArticle(id, article)
+	result, err := s.repo.UpdateArticle(id, article)
+	if err == nil && result.Status == "published" {
+		go s.triggerAutoTranslation(result.ID, s.repo.GetTranslationPolicy())
+	}
+	return result, err
 }
 
 func (s *ContentService) ListArticles(page, pageSize int, status, contentKind, keyword string) ([]domain.Article, int) {
@@ -677,6 +685,43 @@ func (s *ContentService) UpsertTranslationContent(sourceType, sourceID, locale, 
 		publishedAt = publishedAt.UTC()
 	}
 	return s.repo.UpsertTranslationContent(sourceType, sourceID, locale, title, summary, content, status, publishedAt, translatedByJobID)
+}
+
+func (s *ContentService) GetTranslationPolicy() domain.TranslationPolicy {
+	return s.repo.GetTranslationPolicy()
+}
+
+func (s *ContentService) UpdateTranslationPolicy(policy domain.TranslationPolicy) error {
+	return s.repo.UpdateTranslationPolicy(policy)
+}
+
+// triggerAutoTranslation enqueues translation jobs for all locales in the policy when an
+// article is published (or re-published after an update). It runs best-effort and never
+// blocks the caller.
+func (s *ContentService) triggerAutoTranslation(articleID string, policy domain.TranslationPolicy) {
+	if !policy.Enabled || len(policy.TargetLocales) == 0 || policy.ProviderKey == "" {
+		return
+	}
+	sourceLocale := s.repo.GetSiteSettings().DefaultLocale
+	if sourceLocale == "" {
+		sourceLocale = "en"
+	}
+	for _, locale := range policy.TargetLocales {
+		if locale == "" || locale == sourceLocale {
+			continue
+		}
+		job := domain.TranslationJob{
+			SourceType:   "article",
+			SourceID:     articleID,
+			SourceLocale: sourceLocale,
+			TargetLocale: locale,
+			ProviderKey:  policy.ProviderKey,
+			Status:       "queued",
+			AutoPublish:  policy.AutoPublish,
+			MaxRetries:   3,
+		}
+		_, _ = s.repo.CreateTranslationJob(job)
+	}
 }
 
 func (s *ContentService) GetIntegrationProviderForRuntime(providerKey string) (domain.IntegrationProvider, bool) {
