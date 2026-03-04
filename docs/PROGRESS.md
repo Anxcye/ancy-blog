@@ -60,6 +60,10 @@
 
 - [x] Added pagination to interaction center lists (comments and link submissions).
 
+- [x] Added slot management end-to-end (slot list/item list APIs + admin UI create/list/delete slot items).
+
+- [x] Added admin article bulk operations (batch status switch + single/batch delete).
+
 ## Blocked
 - None.
 

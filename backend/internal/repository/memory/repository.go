@@ -188,6 +188,40 @@ func (r *Repository) UpdateArticle(id string, article domain.Article) (domain.Ar
 	return article, nil
 }
 
+func (r *Repository) DeleteArticle(id string) bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if _, ok := r.articles[id]; !ok {
+		return false
+	}
+	delete(r.articles, id)
+	return true
+}
+
+func (r *Repository) BatchUpdateArticleStatus(ids []string, status string) int {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if status == "" {
+		return 0
+	}
+	affected := 0
+	now := time.Now().UTC()
+	for _, id := range ids {
+		article, ok := r.articles[id]
+		if !ok {
+			continue
+		}
+		article.Status = status
+		article.UpdatedAt = now
+		if status == "published" && article.PublishedAt.IsZero() {
+			article.PublishedAt = now
+		}
+		r.articles[id] = article
+		affected++
+	}
+	return affected
+}
+
 func (r *Repository) ListArticles(page, pageSize int, status, contentKind, keyword string) ([]domain.Article, int) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()

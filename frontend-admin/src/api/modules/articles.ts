@@ -36,3 +36,17 @@ export async function updateArticle(id: string, payload: ArticleUpsertPayload): 
   const response = await httpClient.put<ApiEnvelope<IDResponse>>(`/admin/articles/${id}`, payload);
   return response.data.data.id;
 }
+
+export async function deleteArticle(id: string): Promise<void> {
+  await httpClient.delete<ApiEnvelope<boolean>>(`/admin/articles/${id}`);
+}
+
+export async function batchUpdateArticleStatus(ids: string[], status: string): Promise<number> {
+  const response = await httpClient.post<ApiEnvelope<{ affected: number }>>('/admin/articles/batch-status', { ids, status });
+  return response.data.data.affected;
+}
+
+export async function batchDeleteArticles(ids: string[]): Promise<number> {
+  const response = await httpClient.post<ApiEnvelope<{ affected: number }>>('/admin/articles/batch-delete', { ids });
+  return response.data.data.affected;
+}

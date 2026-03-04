@@ -76,6 +76,22 @@ func (s *ContentService) ListArticles(page, pageSize int, status, contentKind, k
 	return s.repo.ListArticles(page, pageSize, status, contentKind, keyword)
 }
 
+func (s *ContentService) DeleteArticle(id string) bool {
+	return s.repo.DeleteArticle(id)
+}
+
+func (s *ContentService) BatchUpdateArticleStatus(ids []string, status string) (int, error) {
+	if len(ids) == 0 {
+		return 0, fmt.Errorf("%w: ids are required", apperr.ErrValidation)
+	}
+	switch status {
+	case "draft", "published", "scheduled":
+	default:
+		return 0, fmt.Errorf("%w: invalid status", apperr.ErrValidation)
+	}
+	return s.repo.BatchUpdateArticleStatus(ids, status), nil
+}
+
 func (s *ContentService) ListPublishedArticles(page, pageSize int, category, tag, contentKind string) ([]domain.Article, int) {
 	if contentKind == "" {
 		contentKind = "post"

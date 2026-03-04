@@ -31,6 +31,15 @@ type MomentCreateRequest struct {
 	PublishedAt  time.Time `json:"publishedAt"`
 }
 
+type ArticleBatchStatusRequest struct {
+	IDs    []string `json:"ids"`
+	Status string   `json:"status"`
+}
+
+type ArticleBatchDeleteRequest struct {
+	IDs []string `json:"ids"`
+}
+
 type SiteSettingsUpdateRequest struct {
 	SiteName      string `json:"siteName"`
 	AvatarURL     string `json:"avatarUrl"`

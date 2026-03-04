@@ -133,6 +133,44 @@ func (h *AdminHandler) ArticleDetail(c *gin.Context) {
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: article})
 }
 
+func (h *AdminHandler) DeleteArticle(c *gin.Context) {
+	id := c.Param("id")
+	if !h.articleService.DeleteArticle(id) {
+		response.JSON(c, http.StatusNotFound, response.Envelope{Code: "ARTICLE_NOT_FOUND", Message: "article not found"})
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: true})
+}
+
+func (h *AdminHandler) BatchUpdateArticleStatus(c *gin.Context) {
+	var req dto.ArticleBatchStatusRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequest(c, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+	affected, err := h.articleService.BatchUpdateArticleStatus(req.IDs, req.Status)
+	if err != nil {
+		badRequest(c, "VALIDATION_ERROR", err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: map[string]int{"affected": affected}})
+}
+
+func (h *AdminHandler) BatchDeleteArticle(c *gin.Context) {
+	var req dto.ArticleBatchDeleteRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequest(c, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+	affected := 0
+	for _, id := range req.IDs {
+		if h.articleService.DeleteArticle(id) {
+			affected++
+		}
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: map[string]int{"affected": affected}})
+}
+
 func (h *AdminHandler) CreateMoment(c *gin.Context) {
 	var req dto.MomentCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

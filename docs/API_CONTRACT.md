@@ -141,6 +141,30 @@
 - Response: article detail for editing
 - Error Codes: ARTICLE_NOT_FOUND, AUTH_UNAUTHORIZED
 
+- ID: ADM-ARTICLE-005
+- Method: DELETE
+- Path: /api/v1/admin/articles/{id}
+- Auth Required: Yes
+- Request: None
+- Response: success boolean
+- Error Codes: ARTICLE_NOT_FOUND, AUTH_UNAUTHORIZED
+
+- ID: ADM-ARTICLE-006
+- Method: POST
+- Path: /api/v1/admin/articles/batch-status
+- Auth Required: Yes
+- Request: `{ "ids": ["uuid"], "status": "draft|published|scheduled" }`
+- Response: affected count
+- Error Codes: VALIDATION_ERROR, AUTH_UNAUTHORIZED
+
+- ID: ADM-ARTICLE-007
+- Method: POST
+- Path: /api/v1/admin/articles/batch-delete
+- Auth Required: Yes
+- Request: `{ "ids": ["uuid"] }`
+- Response: affected count
+- Error Codes: VALIDATION_ERROR, AUTH_UNAUTHORIZED
+
 ## Public/Admin - Moments
 - ID: PUB-MOMENT-001
 - Method: GET

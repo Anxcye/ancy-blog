@@ -436,3 +436,17 @@
 - Validation:
   - backend tests passed for updated packages.
   - `npm --prefix frontend-admin run build` passed.
+
+## 2026-03-04 (Article batch operations)
+- Added backend admin article mutation APIs:
+  - `DELETE /api/v1/admin/articles/{id}`
+  - `POST /api/v1/admin/articles/batch-status`
+  - `POST /api/v1/admin/articles/batch-delete`
+- Added repository/service support for article deletion and batch status updates.
+- Enhanced admin article list UI:
+  - row selection + select all.
+  - batch set draft/published.
+  - single delete and batch delete.
+- Validation:
+  - backend tests passed for updated packages.
+  - `npm --prefix frontend-admin run build` passed.

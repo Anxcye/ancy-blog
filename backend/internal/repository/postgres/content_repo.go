@@ -7,6 +7,7 @@ package postgres
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"strconv"
 	"strings"
 	"time"
@@ -159,6 +160,40 @@ LIMIT $` + strconv.Itoa(len(listArgs)-1) + ` OFFSET $` + strconv.Itoa(len(listAr
 		}
 	}
 	return items, total
+}
+
+func (r *Repository) DeleteArticle(id string) bool {
+	res, err := r.db.Exec(`UPDATE articles SET deleted_at=NOW(), updated_at=NOW() WHERE id=$1 AND deleted_at IS NULL`, id)
+	if err != nil {
+		return false
+	}
+	n, _ := res.RowsAffected()
+	return n > 0
+}
+
+func (r *Repository) BatchUpdateArticleStatus(ids []string, status string) int {
+	if len(ids) == 0 || strings.TrimSpace(status) == "" {
+		return 0
+	}
+	placeholders := make([]string, 0, len(ids))
+	args := make([]any, 0, len(ids)+1)
+	args = append(args, status)
+	for i, id := range ids {
+		args = append(args, id)
+		placeholders = append(placeholders, fmt.Sprintf("$%d", i+2))
+	}
+	query := `
+UPDATE articles
+SET status=$1,
+    published_at=CASE WHEN $1='published' AND published_at IS NULL THEN NOW() ELSE published_at END,
+    updated_at=NOW()
+WHERE id IN (` + strings.Join(placeholders, ",") + `) AND deleted_at IS NULL`
+	res, err := r.db.Exec(query, args...)
+	if err != nil {
+		return 0
+	}
+	n, _ := res.RowsAffected()
+	return int(n)
 }
 
 func (r *Repository) ListPublishedArticles(page, pageSize int, category, tag, contentKind string) ([]domain.Article, int) {

@@ -21,6 +21,18 @@ Related: articles API module, ArticleEditorView route, dashboard workflow.
       </RouterLink>
     </header>
 
+    <div class="bulk-actions">
+      <label class="check-all">
+        <input :checked="allChecked" type="checkbox" @change="toggleAll(($event.target as HTMLInputElement).checked)" />
+        <span>{{ t('articles.selected', { count: selectedIds.length }) }}</span>
+      </label>
+      <div class="bulk-buttons">
+        <button :disabled="selectedIds.length === 0 || loading" @click="applyStatus('draft')">{{ t('articles.toDraft') }}</button>
+        <button :disabled="selectedIds.length === 0 || loading" @click="applyStatus('published')">{{ t('articles.toPublished') }}</button>
+        <button :disabled="selectedIds.length === 0 || loading" class="danger" @click="removeSelected">{{ t('common.delete') }}</button>
+      </div>
+    </div>
+
     <form class="filters" @submit.prevent="reload(1)">
       <input
         v-model.trim="filters.keyword"
@@ -47,6 +59,7 @@ Related: articles API module, ArticleEditorView route, dashboard workflow.
       <table>
         <thead>
           <tr>
+            <th></th>
             <th>{{ t('articles.colTitle') }}</th>
             <th>{{ t('articles.colSlug') }}</th>
             <th>{{ t('articles.colStatus') }}</th>
@@ -57,6 +70,9 @@ Related: articles API module, ArticleEditorView route, dashboard workflow.
         </thead>
         <tbody>
           <tr v-for="item in rows" :key="item.id">
+            <td>
+              <input :checked="selectedIds.includes(item.id)" type="checkbox" @change="toggleOne(item.id, ($event.target as HTMLInputElement).checked)" />
+            </td>
             <td>{{ item.title }}</td>
             <td class="mono">{{ item.slug }}</td>
             <td>{{ item.status }}</td>
@@ -66,10 +82,11 @@ Related: articles API module, ArticleEditorView route, dashboard workflow.
               <RouterLink :to="{ name: 'article-edit', params: { id: item.id } }">
                 {{ t('articles.edit') }}
               </RouterLink>
+              <button class="link-btn danger" :disabled="loading" @click="removeOne(item.id)">{{ t('common.delete') }}</button>
             </td>
           </tr>
           <tr v-if="!loading && rows.length === 0">
-            <td colspan="6">{{ t('articles.empty') }}</td>
+            <td colspan="7">{{ t('articles.empty') }}</td>
           </tr>
         </tbody>
       </table>
@@ -90,7 +107,7 @@ Related: articles API module, ArticleEditorView route, dashboard workflow.
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
-import { listArticles } from '@/api/modules/articles';
+import { batchDeleteArticles, batchUpdateArticleStatus, deleteArticle, listArticles } from '@/api/modules/articles';
 import type { Article } from '@/api/types';
 
 const { t } = useI18n();
@@ -98,6 +115,7 @@ const { t } = useI18n();
 const loading = ref(false);
 const errorText = ref('');
 const rows = ref<Article[]>([]);
+const selectedIds = ref<string[]>([]);
 const total = ref(0);
 const page = ref(1);
 const pageSize = 12;
@@ -109,6 +127,7 @@ const filters = reactive({
 });
 
 const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize)));
+const allChecked = computed(() => rows.value.length > 0 && rows.value.every((row) => selectedIds.value.includes(row.id)));
 
 function formatDate(value: string): string {
   if (!value) {
@@ -129,11 +148,72 @@ async function reload(nextPage = page.value): Promise<void> {
       keyword: filters.keyword || undefined,
     });
     rows.value = result.rows;
+    selectedIds.value = [];
     total.value = result.total;
     page.value = nextPage;
   } catch {
     errorText.value = t('common.loadFailed');
   } finally {
+    loading.value = false;
+  }
+}
+
+function toggleOne(id: string, checked: boolean): void {
+  if (checked) {
+    if (!selectedIds.value.includes(id)) {
+      selectedIds.value = [...selectedIds.value, id];
+    }
+    return;
+  }
+  selectedIds.value = selectedIds.value.filter((item) => item !== id);
+}
+
+function toggleAll(checked: boolean): void {
+  if (checked) {
+    selectedIds.value = rows.value.map((item) => item.id);
+    return;
+  }
+  selectedIds.value = [];
+}
+
+async function applyStatus(status: 'draft' | 'published'): Promise<void> {
+  loading.value = true;
+  errorText.value = '';
+  try {
+    await batchUpdateArticleStatus(selectedIds.value, status);
+    await reload(page.value);
+  } catch {
+    errorText.value = t('common.saveFailed');
+    loading.value = false;
+  }
+}
+
+async function removeSelected(): Promise<void> {
+  if (!window.confirm(t('common.confirmDelete'))) {
+    return;
+  }
+  loading.value = true;
+  errorText.value = '';
+  try {
+    await batchDeleteArticles(selectedIds.value);
+    await reload(page.value);
+  } catch {
+    errorText.value = t('common.deleteFailed');
+    loading.value = false;
+  }
+}
+
+async function removeOne(id: string): Promise<void> {
+  if (!window.confirm(t('common.confirmDelete'))) {
+    return;
+  }
+  loading.value = true;
+  errorText.value = '';
+  try {
+    await deleteArticle(id);
+    await reload(page.value);
+  } catch {
+    errorText.value = t('common.deleteFailed');
     loading.value = false;
   }
 }
@@ -179,6 +259,25 @@ onMounted(async () => {
   margin-bottom: 14px;
 }
 
+.bulk-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.check-all {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bulk-buttons {
+  display: flex;
+  gap: 8px;
+}
+
 h1 {
   margin: 0;
 }
@@ -210,6 +309,11 @@ button {
   border-radius: 8px;
   padding: 8px 10px;
   font: inherit;
+}
+
+button.danger {
+  border-color: #e8b9b9;
+  color: #b64040;
 }
 
 button {
@@ -247,6 +351,14 @@ th {
   font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
 }
 
+.link-btn {
+  border: 0;
+  background: transparent;
+  padding: 0;
+  margin-left: 8px;
+  cursor: pointer;
+}
+
 .pager {
   margin-top: 12px;
   display: flex;
@@ -278,6 +390,19 @@ th {
   .create-btn {
     width: 100%;
     text-align: center;
+  }
+
+  .bulk-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bulk-buttons {
+    width: 100%;
+  }
+
+  .bulk-buttons button {
+    flex: 1;
   }
 }
 </style>

@@ -45,6 +45,10 @@ func (s *ArticleService) UpdateArticle(id string, article domain.Article) (domai
 func (s *ArticleService) ListArticles(page, pageSize int, status, contentKind, keyword string) ([]domain.Article, int) {
 	return s.core.ListArticles(page, pageSize, status, contentKind, keyword)
 }
+func (s *ArticleService) DeleteArticle(id string) bool { return s.core.DeleteArticle(id) }
+func (s *ArticleService) BatchUpdateArticleStatus(ids []string, status string) (int, error) {
+	return s.core.BatchUpdateArticleStatus(ids, status)
+}
 func (s *ArticleService) ListPublishedArticles(page, pageSize int, category, tag, contentKind string) ([]domain.Article, int) {
 	return s.core.ListPublishedArticles(page, pageSize, category, tag, contentKind)
 }
