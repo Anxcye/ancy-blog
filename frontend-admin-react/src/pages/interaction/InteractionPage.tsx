@@ -212,7 +212,7 @@ function CommentsTab(): ReactElement {
       <Table
         rowKey="id"
         columns={columns}
-        dataSource={data?.items ?? []}
+        dataSource={data?.rows ?? []}
         loading={isLoading}
         pagination={{
           current: params.page,
@@ -394,7 +394,7 @@ function LinksTab(): ReactElement {
       <Table
         rowKey="id"
         columns={columns}
-        dataSource={data?.items ?? []}
+        dataSource={data?.rows ?? []}
         loading={isLoading}
         pagination={{
           current: params.page,

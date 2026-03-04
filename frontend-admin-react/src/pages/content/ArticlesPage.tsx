@@ -276,7 +276,7 @@ export function ArticlesPage(): ReactElement {
           onChange: (keys) => setSelectedKeys(keys as string[]),
         }}
         columns={columns}
-        dataSource={data?.items ?? []}
+        dataSource={data?.rows ?? []}
         loading={isLoading}
         pagination={{
           current: params.page,

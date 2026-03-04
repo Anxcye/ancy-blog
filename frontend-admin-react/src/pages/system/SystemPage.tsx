@@ -512,7 +512,7 @@ function TranslationJobsTab(): ReactElement {
         rowKey="id"
         size="small"
         columns={columns}
-        dataSource={data?.items ?? []}
+        dataSource={data?.rows ?? []}
         loading={isLoading}
         pagination={{
           current: params.page,
@@ -715,7 +715,7 @@ function TranslationContentsTab(): ReactElement {
         rowKey="id"
         size="small"
         columns={columns}
-        dataSource={data?.items ?? []}
+        dataSource={data?.rows ?? []}
         loading={isLoading}
         pagination={{
           current: params.page,
