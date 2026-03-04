@@ -79,40 +79,40 @@ const PROVIDER_META: Record<string, { icon: ReactElement; label: string }> = {
   openai_compatible: { icon: <RobotOutlined />, label: 'OpenAI Compatible' },
 };
 
-// R2-specific config form fields
+// R2-specific config form fields — field names match backend config keys
 function R2ConfigFields(): ReactElement {
   return (
     <>
-      <Form.Item name="endpoint" label="Endpoint URL" rules={[{ required: true }]}>
-        <Input placeholder="https://xxxx.r2.cloudflarestorage.com" />
+      <Form.Item name="account_id" label="Account ID" rules={[{ required: true }]}>
+        <Input placeholder="your-cloudflare-account-id" />
       </Form.Item>
       <Form.Item name="bucket" label="Bucket 名称" rules={[{ required: true }]}>
         <Input placeholder="my-bucket" />
       </Form.Item>
-      <Form.Item name="accessKeyId" label="Access Key ID" rules={[{ required: true }]}>
+      <Form.Item name="access_key_id" label="Access Key ID" rules={[{ required: true }]}>
         <Input placeholder="your-access-key-id" />
       </Form.Item>
-      <Form.Item name="secretAccessKey" label="Secret Access Key">
+      <Form.Item name="secret_access_key" label="Secret Access Key">
         <Input.Password placeholder="已配置，输入新值以更新" />
       </Form.Item>
-      <Form.Item name="publicUrlBase" label="Public URL Base">
+      <Form.Item name="public_base_url" label="Public Base URL">
         <Input placeholder="https://cdn.example.com" />
       </Form.Item>
     </>
   );
 }
 
-// OpenAI-compatible config form fields
+// OpenAI-compatible config form fields — field names match backend config keys
 function OpenAIConfigFields(): ReactElement {
   return (
     <>
-      <Form.Item name="apiBase" label="API Base URL" rules={[{ required: true }]}>
+      <Form.Item name="base_url" label="API Base URL" rules={[{ required: true }]}>
         <Input placeholder="https://api.openai.com/v1" />
       </Form.Item>
-      <Form.Item name="apiKey" label="API Key">
+      <Form.Item name="api_key" label="API Key">
         <Input.Password placeholder="已配置，输入新值以更新" />
       </Form.Item>
-      <Form.Item name="defaultModel" label="默认模型">
+      <Form.Item name="model" label="默认模型">
         <Input placeholder="gpt-4.1-mini" />
       </Form.Item>
     </>
