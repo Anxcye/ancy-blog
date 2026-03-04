@@ -64,6 +64,8 @@
 
 - [x] Added admin article bulk operations (batch status switch + single/batch delete).
 
+- [x] Added quick jump from article rows to translation center with prefilled source context.
+
 ## Blocked
 - None.
 
