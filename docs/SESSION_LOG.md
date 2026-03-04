@@ -377,3 +377,11 @@
 - Validation:
   - backend tests passed for updated packages.
   - `npm --prefix frontend-admin run build` passed.
+
+## 2026-03-04 (Dashboard metrics and quick actions)
+- Reworked admin dashboard into actionable overview page:
+  - Added metrics cards for articles/moments/pending comments/pending links.
+  - Added quick links to core workflows (new article, moments, interaction review, system center).
+- Added dashboard API aggregator module using existing admin endpoints.
+- Validation:
+  - `npm --prefix frontend-admin run build` passed.

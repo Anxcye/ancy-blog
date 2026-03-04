@@ -55,6 +55,7 @@
 - [x] Added translation operations center (job create/list/retry + translation content override) under admin system workspace.
 - [x] Added AI assist actions in article editor (summary generation and slug suggestion).
 - [x] Added admin moments management (backend list/update APIs and frontend moments CRUD page baseline).
+- [x] Added actionable dashboard metrics and quick entries for content/moderation/system workflows.
 
 ## Blocked
 - None.
