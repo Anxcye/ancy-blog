@@ -134,7 +134,6 @@ Related: integrations API module, translations API module, and backend admin sys
           <h2>{{ t('system.translationContentsTitle') }}</h2>
           <div class="toolbar grid-mini">
             <select v-model="contentFilter.sourceType" @change="() => loadContents(1)">
-              <option value="">all</option>
               <option value="article">article</option>
               <option value="moment">moment</option>
             </select>
@@ -216,7 +215,7 @@ const jobForm = reactive({
 });
 
 const contentFilter = reactive({
-  sourceType: '',
+  sourceType: 'article',
   sourceId: '',
   locale: '',
 });
@@ -356,10 +355,11 @@ async function loadContents(page = 1): Promise<void> {
   loading.value = true;
   errorText.value = '';
   try {
+    const sourceType = contentFilter.sourceType || 'article';
     const result = await listTranslationContents({
       page,
       pageSize: contentPageSize,
-      sourceType: contentFilter.sourceType || undefined,
+      sourceType,
       sourceId: contentFilter.sourceId || undefined,
       locale: contentFilter.locale || undefined,
     });

@@ -414,3 +414,11 @@
 - Filters now reset list to first page to keep pagination behavior predictable.
 - Validation:
   - `npm --prefix frontend-admin run build` passed.
+
+## 2026-03-04 (Fix translation content filter default)
+- Fixed admin translation-content query default in `SystemView`:
+  - set default `sourceType` to `article`.
+  - removed empty `all` option that sent invalid `sourceType`.
+- Prevented initial load from calling `/admin/translations/contents` with empty `sourceType`.
+- Validation:
+  - `npm --prefix frontend-admin run build` passed.
