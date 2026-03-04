@@ -102,19 +102,20 @@ Related: article APIs, route params, translation and publish workflows.
         <h2>{{ form.title || '-' }}</h2>
         <p class="preview-meta">/{{ form.slug || '-' }}</p>
         <p class="preview-summary">{{ form.summary || '-' }}</p>
-        <pre>{{ form.content || '-' }}</pre>
+        <RichTextPreview :content="form.content" />
       </NCard>
     </NCard>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import { NAlert, NButton, NCard, NCheckbox, NDatePicker, NForm, NFormItem, NInput, NSelect } from 'naive-ui';
 
 import RichTextEditor from '@/components/editor/RichTextEditor.vue';
+import RichTextPreview from '@/components/editor/RichTextPreview.vue';
 import { createArticle, getArticle, updateArticle } from '@/api/modules/articles';
 import { generateSummary, suggestSlug } from '@/api/modules/ai';
 import { uploadImage } from '@/api/modules/upload';
@@ -135,6 +136,7 @@ const errorText = ref('');
 const successText = ref('');
 const publishedAtTs = ref<number | null>(null);
 const tagInput = ref('');
+let autosaveTimer: ReturnType<typeof setTimeout> | null = null;
 const aiOptions = reactive({
   providerKey: 'openai_compatible',
   modelName: '',
@@ -182,6 +184,10 @@ const originOptions = [
 ];
 
 const isEdit = computed(() => Boolean(route.params.id));
+const draftStorageKey = computed(() => {
+  const id = String(route.params.id || 'new');
+  return `ancy_admin_editor_draft:${id}`;
+});
 
 watch(tagInput, (value) => {
   form.tagSlugs = value
@@ -193,6 +199,42 @@ watch(tagInput, (value) => {
 watch(publishedAtTs, (value) => {
   form.publishedAt = value ? new Date(value).toISOString() : '';
 });
+
+watch(
+  () => ({
+    title: form.title,
+    slug: form.slug,
+    contentKind: form.contentKind,
+    summary: form.summary,
+    content: form.content,
+    status: form.status,
+    visibility: form.visibility,
+    allowComment: form.allowComment,
+    originType: form.originType,
+    sourceUrl: form.sourceUrl,
+    aiAssistLevel: form.aiAssistLevel,
+    coverImage: form.coverImage,
+    categorySlug: form.categorySlug,
+    tagInput: tagInput.value,
+    publishedAt: form.publishedAt,
+    aiProviderKey: aiOptions.providerKey,
+    aiModelName: aiOptions.modelName,
+  }),
+  () => {
+    if (autosaveTimer) {
+      clearTimeout(autosaveTimer);
+    }
+    autosaveTimer = setTimeout(() => {
+      const payload = {
+        form: { ...form },
+        tagInput: tagInput.value,
+        aiOptions: { ...aiOptions },
+      };
+      localStorage.setItem(draftStorageKey.value, JSON.stringify(payload));
+    }, 500);
+  },
+  { deep: true },
+);
 
 async function loadArticle(): Promise<void> {
   if (!isEdit.value) {
@@ -224,6 +266,35 @@ async function loadArticle(): Promise<void> {
   }
 }
 
+function restoreDraftIfNeeded(): void {
+  if (isEdit.value) {
+    return;
+  }
+  const raw = localStorage.getItem(draftStorageKey.value);
+  if (!raw) {
+    return;
+  }
+  try {
+    const parsed = JSON.parse(raw) as {
+      form?: Partial<ArticleUpsertPayload>;
+      tagInput?: string;
+      aiOptions?: Partial<typeof aiOptions>;
+    };
+    if (parsed.form) {
+      Object.assign(form, parsed.form);
+    }
+    if (typeof parsed.tagInput === 'string') {
+      tagInput.value = parsed.tagInput;
+    }
+    if (parsed.aiOptions) {
+      Object.assign(aiOptions, parsed.aiOptions);
+    }
+    publishedAtTs.value = form.publishedAt ? new Date(form.publishedAt).getTime() : null;
+  } catch {
+    localStorage.removeItem(draftStorageKey.value);
+  }
+}
+
 function toPayload(status: SaveStatus): ArticleUpsertPayload {
   const publishedAt = form.publishedAt && form.publishedAt.trim() !== '' ? form.publishedAt : undefined;
   return {
@@ -250,7 +321,11 @@ async function saveAs(status: SaveStatus): Promise<void> {
       await updateArticle(id, payload);
     } else {
       const id = await createArticle(payload);
+      localStorage.removeItem(draftStorageKey.value);
       await router.replace({ name: 'article-edit', params: { id } });
+    }
+    if (isEdit.value) {
+      localStorage.removeItem(draftStorageKey.value);
     }
     successText.value = t('editor.saveSuccess');
   } catch {
@@ -346,7 +421,15 @@ async function onSuggestSlug(): Promise<void> {
 }
 
 onMounted(async () => {
+  restoreDraftIfNeeded();
   await loadArticle();
+});
+
+onBeforeUnmount(() => {
+  if (autosaveTimer) {
+    clearTimeout(autosaveTimer);
+    autosaveTimer = null;
+  }
 });
 </script>
 
@@ -421,13 +504,6 @@ h1 {
 .preview-summary {
   margin: 6px 0 10px;
   color: var(--n-text-color-3);
-}
-
-pre {
-  white-space: pre-wrap;
-  margin: 0;
-  font: inherit;
-  line-height: 1.7;
 }
 
 @media (max-width: 900px) {

@@ -1,5 +1,15 @@
 # Session Log
 
+## 2026-03-04
+### Summary
+- Improved admin article editor resilience and preview quality:
+  - added `frontend-admin/src/components/editor/RichTextPreview.vue` to render TipTap JSON as styled HTML preview
+  - replaced raw JSON preview block in article editor with rich preview component
+  - added debounced local draft autosave for article editor form state
+  - added draft restore for create flow and auto-clear after successful save
+- Validation run:
+  - `cd frontend-admin && pnpm run build` passed
+
 ## 2026-03-03
 ### Summary
 - Created collaboration baseline documents:
