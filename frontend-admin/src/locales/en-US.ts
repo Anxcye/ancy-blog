@@ -95,7 +95,10 @@ export default {
   },
   interaction: {
     title: 'Interaction Center',
-    empty: 'Comment and link-review APIs are not wired yet.',
+    subtitle: 'Moderate comments and friend-link submissions.',
+    commentsTab: 'Comments',
+    linksTab: 'Links',
+    allStatus: 'All Status',
   },
   system: {
     title: 'System Settings',

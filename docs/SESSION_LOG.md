@@ -338,3 +338,12 @@
   - Trigger provider connectivity test and show result message.
 - Added new API modules/types for site and integrations.
 - Expanded admin i18n dictionaries with site/system/common action labels.
+
+## 2026-03-04 (Admin interaction center)
+- Implemented interaction center page in `frontend-admin`:
+  - Comment moderation list with status filter and approve/reject/pin actions.
+  - Friend-link review list with status filter and approve/reject actions.
+- Added new interaction API module for admin comment/link endpoints.
+- Extended i18n dictionaries for interaction page labels.
+- Validation:
+  - `npm --prefix frontend-admin run build` passed.

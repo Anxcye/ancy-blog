@@ -102,3 +102,36 @@ export interface IntegrationProvider {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface Comment {
+  id: string;
+  articleId: string;
+  content: string;
+  status: 'approved' | 'pending' | 'rejected' | string;
+  isPinned: string;
+  nickname: string;
+  email: string;
+  website: string;
+  avatarUrl: string;
+  source: string;
+  ip: string;
+  userAgent: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface LinkSubmission {
+  id: string;
+  name: string;
+  url: string;
+  avatarUrl: string;
+  description: string;
+  contactEmail: string;
+  reviewStatus: 'pending' | 'approved' | 'rejected' | string;
+  reviewNote: string;
+  relatedArticleId: string;
+  submittedIp: string;
+  submittedUserAgent: string;
+  createdAt: string;
+  updatedAt: string;
+}

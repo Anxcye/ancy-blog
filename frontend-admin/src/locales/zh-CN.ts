@@ -95,7 +95,10 @@ export default {
   },
   interaction: {
     title: '互动管理',
-    empty: '暂未接入评论与友链审核接口。',
+    subtitle: '审核评论与友链提交，维护社区质量。',
+    commentsTab: '评论审核',
+    linksTab: '友链审核',
+    allStatus: '全部状态',
   },
   system: {
     title: '系统设置',
