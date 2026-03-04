@@ -389,6 +389,10 @@ func (s *ContentService) CreateContentSlot(slot domain.ContentSlot) (domain.Cont
 	return created, err
 }
 
+func (s *ContentService) ListContentSlots() []domain.ContentSlot {
+	return s.repo.ListContentSlots()
+}
+
 func (s *ContentService) CreateSlotItem(slotKey string, item domain.SlotItem) (domain.SlotItem, error) {
 	if item.ContentType != "article" && item.ContentType != "moment" {
 		return domain.SlotItem{}, fmt.Errorf("%w: contentType must be article or moment", apperr.ErrValidation)
@@ -403,6 +407,10 @@ func (s *ContentService) CreateSlotItem(slotKey string, item domain.SlotItem) (d
 		s.delCache(fmt.Sprintf(cacheSiteSlotKeyFmt, slotKey))
 	}
 	return created, err
+}
+
+func (s *ContentService) ListSlotItems(slotKey string) ([]domain.SlotItem, bool) {
+	return s.repo.ListSlotItems(slotKey)
 }
 
 func (s *ContentService) DeleteSlotItem(slotKey, itemID string) bool {

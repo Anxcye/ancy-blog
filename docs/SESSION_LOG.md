@@ -422,3 +422,17 @@
 - Prevented initial load from calling `/admin/translations/contents` with empty `sourceType`.
 - Validation:
   - `npm --prefix frontend-admin run build` passed.
+
+## 2026-03-04 (Slot management end-to-end)
+- Added backend admin slot query APIs:
+  - `GET /api/v1/admin/site/slots`
+  - `GET /api/v1/admin/site/slots/{slotKey}/items`
+- Extended repository/service contracts with slot listing capabilities:
+  - `ListContentSlots`, `ListSlotItems` in memory and postgres implementations.
+- Extended site API module and SiteView UI:
+  - create/list slot definitions.
+  - select slot and create/delete slot items.
+  - slot item list display in admin site orchestration page.
+- Validation:
+  - backend tests passed for updated packages.
+  - `npm --prefix frontend-admin run build` passed.

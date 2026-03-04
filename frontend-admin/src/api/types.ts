@@ -103,6 +103,23 @@ export interface IntegrationProvider {
   updatedAt: string;
 }
 
+export interface ContentSlot {
+  id: string;
+  slotKey: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+}
+
+export interface SlotItem {
+  id: string;
+  slotKey: string;
+  contentType: 'article' | 'moment' | string;
+  contentId: string;
+  orderNum: number;
+  enabled: boolean;
+}
+
 export interface Comment {
   id: string;
   articleId: string;

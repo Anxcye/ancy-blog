@@ -117,6 +117,42 @@ Related: site API module and backend site/admin endpoints.
         </li>
       </ul>
     </div>
+
+    <div class="panel">
+      <h2>{{ t('site.slotTitle') }}</h2>
+      <div class="inline-form">
+        <input v-model.trim="slotForm.slotKey" placeholder="home_featured" type="text" />
+        <input v-model.trim="slotForm.name" :placeholder="t('site.slotName')" type="text" />
+        <input v-model.trim="slotForm.description" :placeholder="t('site.slotDescription')" type="text" />
+        <button :disabled="loading" @click="submitSlot">{{ t('common.add') }}</button>
+      </div>
+
+      <div class="slot-tools">
+        <select v-model="selectedSlotKey" @change="onSlotChange">
+          <option v-for="slot in slots" :key="slot.id" :value="slot.slotKey">{{ slot.slotKey }} · {{ slot.name }}</option>
+        </select>
+      </div>
+
+      <div v-if="selectedSlotKey" class="inline-form">
+        <select v-model="slotItemForm.contentType">
+          <option value="article">article</option>
+          <option value="moment">moment</option>
+        </select>
+        <input v-model.trim="slotItemForm.contentId" placeholder="content id (uuid)" type="text" />
+        <input v-model.number="slotItemForm.orderNum" type="number" min="1" />
+        <button :disabled="loading" @click="submitSlotItem">{{ t('common.add') }}</button>
+      </div>
+
+      <ul class="list">
+        <li v-for="item in slotItems" :key="item.id">
+          <span>{{ item.contentType }} · {{ item.contentId }} · #{{ item.orderNum }}</span>
+          <div class="row-actions">
+            <code>{{ item.enabled ? 'enabled' : 'disabled' }}</code>
+            <button :disabled="loading" class="danger" @click="removeSlotItem(item.id)">{{ t('common.delete') }}</button>
+          </div>
+        </li>
+      </ul>
+    </div>
   </section>
 </template>
 
@@ -127,20 +163,25 @@ import { useI18n } from 'vue-i18n';
 import {
   createFooterItem,
   createNavItem,
+  createSlot,
+  createSlotItem,
   createSocialLink,
   deleteFooterItem,
   deleteNavItem,
+  deleteSlotItem,
   deleteSocialLink,
   getSiteSettings,
   listFooterItems,
   listNavItems,
+  listSlotItems,
+  listSlots,
   listSocialLinks,
   updateFooterItem,
   updateNavItem,
   updateSiteSettings,
   updateSocialLink,
 } from '@/api/modules/site';
-import type { FooterItem, NavItem, SiteSettings, SocialLink } from '@/api/types';
+import type { ContentSlot, FooterItem, NavItem, SiteSettings, SlotItem, SocialLink } from '@/api/types';
 
 const { t } = useI18n();
 
@@ -190,6 +231,23 @@ const navForm = reactive<Omit<NavItem, 'id'>>({
 const footerItems = ref<FooterItem[]>([]);
 const socialLinks = ref<SocialLink[]>([]);
 const navItems = ref<NavItem[]>([]);
+const slots = ref<ContentSlot[]>([]);
+const slotItems = ref<SlotItem[]>([]);
+const selectedSlotKey = ref('');
+
+const slotForm = reactive({
+  slotKey: '',
+  name: '',
+  description: '',
+  enabled: true,
+});
+
+const slotItemForm = reactive({
+  contentType: 'article',
+  contentId: '',
+  orderNum: 1,
+  enabled: true,
+});
 
 function setSuccess(message: string): void {
   successText.value = message;
@@ -232,11 +290,12 @@ async function loadAll(): Promise<void> {
   loading.value = true;
   errorText.value = '';
   try {
-    const [settings, footer, socials, navs] = await Promise.all([
+    const [settings, footer, socials, navs, slotRows] = await Promise.all([
       getSiteSettings(),
       listFooterItems(),
       listSocialLinks(),
       listNavItems(),
+      listSlots(),
     ]);
     settingsForm.siteName = settings.siteName;
     settingsForm.avatarUrl = settings.avatarUrl || '';
@@ -245,6 +304,35 @@ async function loadAll(): Promise<void> {
     footerItems.value = footer;
     socialLinks.value = socials;
     navItems.value = navs;
+    slots.value = slotRows;
+    if (!selectedSlotKey.value && slotRows.length > 0) {
+      selectedSlotKey.value = slotRows[0].slotKey;
+    }
+    if (selectedSlotKey.value) {
+      await loadSlotItems(selectedSlotKey.value);
+    } else {
+      slotItems.value = [];
+    }
+  } catch {
+    errorText.value = t('common.loadFailed');
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function loadSlotItems(slotKey: string): Promise<void> {
+  slotItems.value = await listSlotItems(slotKey);
+}
+
+async function onSlotChange(): Promise<void> {
+  if (!selectedSlotKey.value) {
+    slotItems.value = [];
+    return;
+  }
+  loading.value = true;
+  errorText.value = '';
+  try {
+    await loadSlotItems(selectedSlotKey.value);
   } catch {
     errorText.value = t('common.loadFailed');
   } finally {
@@ -427,6 +515,66 @@ async function removeNav(id: string): Promise<void> {
   }
 }
 
+async function submitSlot(): Promise<void> {
+  if (!slotForm.slotKey.trim() || !slotForm.name.trim()) {
+    errorText.value = t('site.slotRequired');
+    return;
+  }
+  loading.value = true;
+  errorText.value = '';
+  successText.value = '';
+  try {
+    await createSlot(slotForm);
+    setSuccess(t('common.saveSuccess'));
+    slotForm.slotKey = '';
+    slotForm.name = '';
+    slotForm.description = '';
+    await loadAll();
+  } catch {
+    errorText.value = t('common.saveFailed');
+    loading.value = false;
+  }
+}
+
+async function submitSlotItem(): Promise<void> {
+  if (!selectedSlotKey.value || !slotItemForm.contentId.trim()) {
+    errorText.value = t('site.slotItemRequired');
+    return;
+  }
+  loading.value = true;
+  errorText.value = '';
+  successText.value = '';
+  try {
+    await createSlotItem(selectedSlotKey.value, slotItemForm);
+    setSuccess(t('common.saveSuccess'));
+    slotItemForm.contentId = '';
+    slotItemForm.orderNum = 1;
+    await loadSlotItems(selectedSlotKey.value);
+  } catch {
+    errorText.value = t('common.saveFailed');
+  } finally {
+    loading.value = false;
+  }
+}
+
+async function removeSlotItem(id: string): Promise<void> {
+  if (!selectedSlotKey.value || !window.confirm(t('common.confirmDelete'))) {
+    return;
+  }
+  loading.value = true;
+  errorText.value = '';
+  successText.value = '';
+  try {
+    await deleteSlotItem(selectedSlotKey.value, id);
+    setSuccess(t('common.deleteSuccess'));
+    await loadSlotItems(selectedSlotKey.value);
+  } catch {
+    errorText.value = t('common.deleteFailed');
+  } finally {
+    loading.value = false;
+  }
+}
+
 onMounted(async () => {
   await loadAll();
 });
@@ -467,6 +615,11 @@ h2 {
   display: grid;
   grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 8px;
+}
+
+.slot-tools {
+  display: flex;
+  justify-content: flex-start;
 }
 
 label {

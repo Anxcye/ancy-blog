@@ -59,7 +59,9 @@ type ContentRepository interface {
 	ListNavItems() []domain.NavItem
 
 	CreateContentSlot(slot domain.ContentSlot) (domain.ContentSlot, error)
+	ListContentSlots() []domain.ContentSlot
 	CreateSlotItem(slotKey string, item domain.SlotItem) (domain.SlotItem, error)
+	ListSlotItems(slotKey string) ([]domain.SlotItem, bool)
 	DeleteSlotItem(slotKey, itemID string) bool
 	ListSlotContent(slotKey string, limit int) ([]domain.SlotContentItem, bool)
 

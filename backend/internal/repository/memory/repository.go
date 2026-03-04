@@ -599,6 +599,17 @@ func (r *Repository) CreateContentSlot(slot domain.ContentSlot) (domain.ContentS
 	return slot, nil
 }
 
+func (r *Repository) ListContentSlots() []domain.ContentSlot {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	items := make([]domain.ContentSlot, 0, len(r.slots))
+	for _, slot := range r.slots {
+		items = append(items, slot)
+	}
+	sort.Slice(items, func(i, j int) bool { return items[i].SlotKey < items[j].SlotKey })
+	return items
+}
+
 func (r *Repository) CreateSlotItem(slotKey string, item domain.SlotItem) (domain.SlotItem, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -612,6 +623,25 @@ func (r *Repository) CreateSlotItem(slotKey string, item domain.SlotItem) (domai
 	}
 	r.slotItems[slotKey][item.ID] = item
 	return item, nil
+}
+
+func (r *Repository) ListSlotItems(slotKey string) ([]domain.SlotItem, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	if _, ok := r.slots[slotKey]; !ok {
+		return nil, false
+	}
+	items := make([]domain.SlotItem, 0)
+	for _, it := range r.slotItems[slotKey] {
+		items = append(items, it)
+	}
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].OrderNum == items[j].OrderNum {
+			return items[i].ID < items[j].ID
+		}
+		return items[i].OrderNum < items[j].OrderNum
+	})
+	return items, true
 }
 
 func (r *Repository) DeleteSlotItem(slotKey, itemID string) bool {

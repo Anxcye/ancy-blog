@@ -444,6 +444,11 @@ func (h *AdminHandler) CreateSlot(c *gin.Context) {
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: map[string]string{"id": slot.ID}})
 }
 
+func (h *AdminHandler) ListSlots(c *gin.Context) {
+	rows := h.siteService.ListContentSlots()
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: rows})
+}
+
 func (h *AdminHandler) CreateSlotItem(c *gin.Context) {
 	slotKey := c.Param("slotKey")
 	var req dto.SlotItemCreateRequest
@@ -466,6 +471,16 @@ func (h *AdminHandler) CreateSlotItem(c *gin.Context) {
 		return
 	}
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: map[string]string{"id": item.ID}})
+}
+
+func (h *AdminHandler) ListSlotItems(c *gin.Context) {
+	slotKey := c.Param("slotKey")
+	rows, ok := h.siteService.ListSlotItems(slotKey)
+	if !ok {
+		response.JSON(c, http.StatusNotFound, response.Envelope{Code: "SLOT_NOT_FOUND", Message: "slot not found"})
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: rows})
 }
 
 func (h *AdminHandler) DeleteSlotItem(c *gin.Context) {

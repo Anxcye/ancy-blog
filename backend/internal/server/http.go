@@ -101,7 +101,9 @@ func NewHTTPServer(cfg *config.Config, logger *slog.Logger) (*HTTPServer, error)
 			admin.PUT("/site/nav-items/:id", container.AdminHandler.UpdateNavItem)
 			admin.DELETE("/site/nav-items/:id", container.AdminHandler.DeleteNavItem)
 
+			admin.GET("/site/slots", container.AdminHandler.ListSlots)
 			admin.POST("/site/slots", container.AdminHandler.CreateSlot)
+			admin.GET("/site/slots/:slotKey/items", container.AdminHandler.ListSlotItems)
 			admin.POST("/site/slots/:slotKey/items", container.AdminHandler.CreateSlotItem)
 			admin.DELETE("/site/slots/:slotKey/items/:id", container.AdminHandler.DeleteSlotItem)
 

@@ -140,8 +140,12 @@ func (s *SiteService) ListNavItems() []domain.NavItem {
 func (s *SiteService) CreateContentSlot(slot domain.ContentSlot) (domain.ContentSlot, error) {
 	return s.core.CreateContentSlot(slot)
 }
+func (s *SiteService) ListContentSlots() []domain.ContentSlot { return s.core.ListContentSlots() }
 func (s *SiteService) CreateSlotItem(slotKey string, item domain.SlotItem) (domain.SlotItem, error) {
 	return s.core.CreateSlotItem(slotKey, item)
+}
+func (s *SiteService) ListSlotItems(slotKey string) ([]domain.SlotItem, bool) {
+	return s.core.ListSlotItems(slotKey)
 }
 func (s *SiteService) DeleteSlotItem(slotKey, itemID string) bool {
 	return s.core.DeleteSlotItem(slotKey, itemID)

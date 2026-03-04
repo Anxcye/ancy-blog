@@ -240,6 +240,26 @@ RETURNING id::text
 	return slot, nil
 }
 
+func (r *Repository) ListContentSlots() []domain.ContentSlot {
+	rows, err := r.db.Query(`
+SELECT id::text, slot_key, name, COALESCE(description,''), enabled
+FROM content_slots
+ORDER BY slot_key ASC
+`)
+	if err != nil {
+		return []domain.ContentSlot{}
+	}
+	defer rows.Close()
+	items := make([]domain.ContentSlot, 0)
+	for rows.Next() {
+		var slot domain.ContentSlot
+		if err := rows.Scan(&slot.ID, &slot.SlotKey, &slot.Name, &slot.Description, &slot.Enabled); err == nil {
+			items = append(items, slot)
+		}
+	}
+	return items
+}
+
 func (r *Repository) CreateSlotItem(slotKey string, item domain.SlotItem) (domain.SlotItem, error) {
 	var id string
 	err := r.db.QueryRow(`
@@ -256,6 +276,31 @@ RETURNING id::text
 	item.ID = id
 	item.SlotKey = slotKey
 	return item, nil
+}
+
+func (r *Repository) ListSlotItems(slotKey string) ([]domain.SlotItem, bool) {
+	var exists bool
+	if err := r.db.QueryRow(`SELECT EXISTS(SELECT 1 FROM content_slots WHERE slot_key=$1)`, slotKey).Scan(&exists); err != nil || !exists {
+		return nil, false
+	}
+	rows, err := r.db.Query(`
+SELECT id::text, slot_key, content_type, content_id::text, order_num, enabled
+FROM content_slot_items
+WHERE slot_key=$1
+ORDER BY order_num ASC, id ASC
+`, slotKey)
+	if err != nil {
+		return []domain.SlotItem{}, true
+	}
+	defer rows.Close()
+	items := make([]domain.SlotItem, 0)
+	for rows.Next() {
+		var item domain.SlotItem
+		if err := rows.Scan(&item.ID, &item.SlotKey, &item.ContentType, &item.ContentID, &item.OrderNum, &item.Enabled); err == nil {
+			items = append(items, item)
+		}
+	}
+	return items, true
 }
 
 func (r *Repository) DeleteSlotItem(slotKey, itemID string) bool {

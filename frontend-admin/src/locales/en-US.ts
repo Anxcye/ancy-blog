@@ -132,6 +132,11 @@ export default {
     socialTitleField: 'Display Title',
     navTitle: 'Navigation Items',
     navName: 'Navigation Name',
+    slotTitle: 'Slot Mounting',
+    slotName: 'Slot Name',
+    slotDescription: 'Slot Description',
+    slotRequired: 'slotKey and name are required.',
+    slotItemRequired: 'Select a slot and provide content id.',
   },
   interaction: {
     title: 'Interaction Center',

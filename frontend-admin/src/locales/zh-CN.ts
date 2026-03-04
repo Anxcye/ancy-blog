@@ -132,6 +132,11 @@ export default {
     socialTitleField: '显示标题',
     navTitle: '导航项目',
     navName: '导航名称',
+    slotTitle: '槽位挂载',
+    slotName: '槽位名称',
+    slotDescription: '槽位描述',
+    slotRequired: 'slotKey 和名称不能为空。',
+    slotItemRequired: '请选择槽位并填写内容ID。',
   },
   interaction: {
     title: '互动管理',

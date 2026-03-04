@@ -435,6 +435,14 @@
 - Notes: Invalidate `site:nav:{locale}` cache on create/update/delete.
 
 - ID: ADM-SITE-011
+- Method: GET
+- Path: /api/v1/admin/site/slots
+- Auth Required: Yes
+- Request: None
+- Response: slot definition list
+- Error Codes: AUTH_UNAUTHORIZED
+
+- ID: ADM-SITE-012
 - Method: POST
 - Path: /api/v1/admin/site/slots
 - Auth Required: Yes
@@ -442,7 +450,15 @@
 - Response: created slot id
 - Error Codes: VALIDATION_ERROR, AUTH_UNAUTHORIZED
 
-- ID: ADM-SITE-012
+- ID: ADM-SITE-013
+- Method: GET
+- Path: /api/v1/admin/site/slots/{slotKey}/items
+- Auth Required: Yes
+- Request: None
+- Response: slot item list
+- Error Codes: SLOT_NOT_FOUND
+
+- ID: ADM-SITE-014
 - Method: POST
 - Path: /api/v1/admin/site/slots/{slotKey}/items
 - Auth Required: Yes
@@ -450,7 +466,7 @@
 - Response: created slot item id
 - Error Codes: SLOT_NOT_FOUND, VALIDATION_ERROR
 
-- ID: ADM-SITE-013
+- ID: ADM-SITE-015
 - Method: DELETE
 - Path: /api/v1/admin/site/slots/{slotKey}/items/{id}
 - Auth Required: Yes

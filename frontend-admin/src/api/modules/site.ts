@@ -3,7 +3,7 @@
 // Module: frontend-admin/api/site, domain gateway layer.
 // Related: SiteView and backend admin/public site handlers.
 import { httpClient } from '@/api/http';
-import type { ApiEnvelope, FooterItem, NavItem, SiteSettings, SocialLink } from '@/api/types';
+import type { ApiEnvelope, ContentSlot, FooterItem, NavItem, SiteSettings, SlotItem, SocialLink } from '@/api/types';
 
 interface IDResponse {
   id: string;
@@ -74,4 +74,38 @@ export async function updateNavItem(id: string, payload: Omit<NavItem, 'id'>): P
 
 export async function deleteNavItem(id: string): Promise<void> {
   await httpClient.delete<ApiEnvelope<boolean>>(`/admin/site/nav-items/${id}`);
+}
+
+export async function listSlots(): Promise<ContentSlot[]> {
+  const response = await httpClient.get<ApiEnvelope<ContentSlot[]>>('/admin/site/slots');
+  return response.data.data;
+}
+
+export async function createSlot(payload: {
+  slotKey: string;
+  name: string;
+  description: string;
+  enabled: boolean;
+}): Promise<string> {
+  const response = await httpClient.post<ApiEnvelope<IDResponse>>('/admin/site/slots', payload);
+  return response.data.data.id;
+}
+
+export async function listSlotItems(slotKey: string): Promise<SlotItem[]> {
+  const response = await httpClient.get<ApiEnvelope<SlotItem[]>>(`/admin/site/slots/${slotKey}/items`);
+  return response.data.data;
+}
+
+export async function createSlotItem(slotKey: string, payload: {
+  contentType: string;
+  contentId: string;
+  orderNum: number;
+  enabled: boolean;
+}): Promise<string> {
+  const response = await httpClient.post<ApiEnvelope<IDResponse>>(`/admin/site/slots/${slotKey}/items`, payload);
+  return response.data.data.id;
+}
+
+export async function deleteSlotItem(slotKey: string, id: string): Promise<void> {
+  await httpClient.delete<ApiEnvelope<boolean>>(`/admin/site/slots/${slotKey}/items/${id}`);
 }
