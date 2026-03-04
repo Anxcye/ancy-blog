@@ -21,6 +21,7 @@
   - added inline-code, divider, undo/redo actions
   - replaced prompt-style link editing with popover input (apply/remove)
   - enhanced editor typography, blockquote/code/image presentation, and mobile behavior
+  - polished toolbar button visual system with pill controls, active gradients, and stronger hover/pressed feedback
 - Validation run:
   - `source ~/.zshrc && cd backend && go test ./...` passed
   - `cd frontend-admin && pnpm run build` passed

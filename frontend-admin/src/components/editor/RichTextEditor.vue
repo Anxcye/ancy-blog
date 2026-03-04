@@ -8,25 +8,25 @@ Related: ArticleEditorView, RichTextPreview, and admin upload API module.
   <div class="editor-root">
     <div class="toolbar-shell">
       <div class="toolbar-group">
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" tertiary :type="isActive('bold') ? 'primary' : 'default'" :disabled="isReadonly" @click="toggleBold">B</NButton></template><span>Bold</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" tertiary :type="isActive('italic') ? 'primary' : 'default'" :disabled="isReadonly" @click="toggleItalic">I</NButton></template><span>Italic</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" tertiary :type="isActive('strike') ? 'primary' : 'default'" :disabled="isReadonly" @click="toggleStrike">S</NButton></template><span>Strike</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" tertiary :type="isActive('code') ? 'primary' : 'default'" :disabled="isReadonly" @click="toggleInlineCode">&lt;/&gt;</NButton></template><span>Inline Code</span></NTooltip>
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('bold') }" :disabled="isReadonly" @click="toggleBold">B</NButton></template><span>Bold</span></NTooltip>
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('italic') }" :disabled="isReadonly" @click="toggleItalic">I</NButton></template><span>Italic</span></NTooltip>
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('strike') }" :disabled="isReadonly" @click="toggleStrike">S</NButton></template><span>Strike</span></NTooltip>
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn code-btn" :class="{ 'is-active': isActive('code') }" :disabled="isReadonly" @click="toggleInlineCode">&lt;/&gt;</NButton></template><span>Inline Code</span></NTooltip>
       </div>
 
       <div class="toolbar-group">
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" tertiary :type="isActive('heading', { level: 2 }) ? 'primary' : 'default'" :disabled="isReadonly" @click="setHeading(2)">H2</NButton></template><span>Heading 2</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" tertiary :type="isActive('heading', { level: 3 }) ? 'primary' : 'default'" :disabled="isReadonly" @click="setHeading(3)">H3</NButton></template><span>Heading 3</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" tertiary :type="isActive('bulletList') ? 'primary' : 'default'" :disabled="isReadonly" @click="toggleBulletList">• List</NButton></template><span>Bullet List</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" tertiary :type="isActive('orderedList') ? 'primary' : 'default'" :disabled="isReadonly" @click="toggleOrderedList">1. List</NButton></template><span>Ordered List</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" tertiary :type="isActive('blockquote') ? 'primary' : 'default'" :disabled="isReadonly" @click="toggleBlockquote">Quote</NButton></template><span>Blockquote</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" tertiary :type="isActive('codeBlock') ? 'primary' : 'default'" :disabled="isReadonly" @click="toggleCodeBlock">Code</NButton></template><span>Code Block</span></NTooltip>
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('heading', { level: 2 }) }" :disabled="isReadonly" @click="setHeading(2)">H2</NButton></template><span>Heading 2</span></NTooltip>
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('heading', { level: 3 }) }" :disabled="isReadonly" @click="setHeading(3)">H3</NButton></template><span>Heading 3</span></NTooltip>
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('bulletList') }" :disabled="isReadonly" @click="toggleBulletList">• List</NButton></template><span>Bullet List</span></NTooltip>
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('orderedList') }" :disabled="isReadonly" @click="toggleOrderedList">1. List</NButton></template><span>Ordered List</span></NTooltip>
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('blockquote') }" :disabled="isReadonly" @click="toggleBlockquote">Quote</NButton></template><span>Blockquote</span></NTooltip>
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('codeBlock') }" :disabled="isReadonly" @click="toggleCodeBlock">Code</NButton></template><span>Code Block</span></NTooltip>
       </div>
 
       <div class="toolbar-group">
         <NPopover trigger="click" :show="linkPopoverVisible" @update:show="onLinkPopoverVisibleChange">
           <template #trigger>
-            <NButton size="small" tertiary :type="isActive('link') ? 'primary' : 'default'" :disabled="isReadonly" @click="prepareLinkInput">Link</NButton>
+            <NButton size="small" quaternary class="tool-btn" :class="{ 'is-active': isActive('link') }" :disabled="isReadonly" @click="prepareLinkInput">Link</NButton>
           </template>
           <div class="link-popover">
             <NInput v-model:value="linkInput" placeholder="https://example.com" size="small" />
@@ -36,14 +36,14 @@ Related: ArticleEditorView, RichTextPreview, and admin upload API module.
             </div>
           </div>
         </NPopover>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" tertiary :loading="uploading" :disabled="isReadonly" @click="pickImage">Image</NButton></template><span>Upload Image</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" tertiary :disabled="isReadonly" @click="insertHorizontalRule">Divider</NButton></template><span>Horizontal Rule</span></NTooltip>
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :loading="uploading" :disabled="isReadonly" @click="pickImage">Image</NButton></template><span>Upload Image</span></NTooltip>
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :disabled="isReadonly" @click="insertHorizontalRule">Divider</NButton></template><span>Horizontal Rule</span></NTooltip>
       </div>
 
       <div class="toolbar-group">
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" tertiary :disabled="isReadonly || !canUndo" @click="undo">Undo</NButton></template><span>Undo</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" tertiary :disabled="isReadonly || !canRedo" @click="redo">Redo</NButton></template><span>Redo</span></NTooltip>
-        <NTooltip trigger="hover"><template #trigger><NButton size="small" tertiary :disabled="isReadonly" @click="clearContent">Clear</NButton></template><span>Clear Content</span></NTooltip>
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :disabled="isReadonly || !canUndo" @click="undo">Undo</NButton></template><span>Undo</span></NTooltip>
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :disabled="isReadonly || !canRedo" @click="redo">Redo</NButton></template><span>Redo</span></NTooltip>
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn clear-btn" :disabled="isReadonly" @click="clearContent">Clear</NButton></template><span>Clear Content</span></NTooltip>
       </div>
     </div>
 
@@ -307,6 +307,43 @@ onBeforeUnmount(() => {
   border-radius: 10px;
   background: var(--n-color);
   border: 1px solid var(--n-border-color);
+}
+
+.tool-btn {
+  min-width: 44px;
+  font-weight: 600;
+  border-radius: 9px;
+  border: 1px solid color-mix(in srgb, var(--n-border-color) 75%, transparent);
+  background: color-mix(in srgb, var(--n-card-color) 92%, var(--n-primary-color) 8%);
+  transition: transform 140ms ease, border-color 140ms ease, background-color 140ms ease, color 140ms ease;
+}
+
+.tool-btn:hover {
+  transform: translateY(-1px);
+  border-color: color-mix(in srgb, var(--n-primary-color) 48%, var(--n-border-color));
+  background: color-mix(in srgb, var(--n-card-color) 85%, var(--n-primary-color) 15%);
+}
+
+.tool-btn:active {
+  transform: translateY(0);
+}
+
+.tool-btn.is-active {
+  color: #fff;
+  border-color: color-mix(in srgb, var(--n-primary-color) 85%, transparent);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--n-primary-color) 78%, #ffffff 22%) 0%,
+    color-mix(in srgb, var(--n-primary-color) 92%, #000000 8%) 100%
+  );
+}
+
+.code-btn {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.clear-btn {
+  min-width: 56px;
 }
 
 .link-popover {
