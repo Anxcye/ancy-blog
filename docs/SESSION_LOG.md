@@ -16,6 +16,11 @@
   - updated API contract for `ADM-MOMENT-004/005/006`
 - Continued admin UI unification work:
   - updated app shell/theme/store/localization wiring and aligned site/interaction/system/moments pages to one design system baseline
+- Upgraded admin rich-text editor interaction quality:
+  - redesigned TipTap toolbar into grouped sticky command bar
+  - added inline-code, divider, undo/redo actions
+  - replaced prompt-style link editing with popover input (apply/remove)
+  - enhanced editor typography, blockquote/code/image presentation, and mobile behavior
 - Validation run:
   - `source ~/.zshrc && cd backend && go test ./...` passed
   - `cd frontend-admin && pnpm run build` passed
