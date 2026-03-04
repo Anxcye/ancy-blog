@@ -9,6 +9,19 @@ import { httpClient } from '../lib/http';
 import type { ApiResponse, PaginatedData } from '../types/api';
 import type { Article, ArticleFormValues, ArticleListItem, ArticleListParams } from '../types/article';
 
+export interface Category { id: string; name: string; slug: string }
+export interface Tag { id: string; name: string; slug: string }
+
+export async function listCategories(): Promise<Category[]> {
+  const res = await httpClient.get<ApiResponse<Category[]>>('/public/categories');
+  return res.data.data ?? [];
+}
+
+export async function listTags(): Promise<Tag[]> {
+  const res = await httpClient.get<ApiResponse<Tag[]>>('/public/tags');
+  return res.data.data ?? [];
+}
+
 export async function listArticles(params: ArticleListParams): Promise<PaginatedData<ArticleListItem>> {
   // Strip empty string filters before sending to avoid backend validation errors
   const clean = Object.fromEntries(

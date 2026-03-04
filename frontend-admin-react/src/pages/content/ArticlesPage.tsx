@@ -12,7 +12,7 @@ import type { ReactElement } from 'react';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
-import { batchDeleteArticles, batchStatusArticles, deleteArticle, listArticles } from '../../api/articles';
+import { batchDeleteArticles, batchStatusArticles, deleteArticle, listArticles, listCategories } from '../../api/articles';
 import type { ArticleListItem, ArticleListParams, ArticleStatus, ContentKind } from '../../types/article';
 
 const STATUS_COLOR: Record<string, string> = {
@@ -53,6 +53,11 @@ export function ArticlesPage(): ReactElement {
     status: '',
     contentKind: '',
     keyword: '',
+  });
+
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: listCategories,
   });
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
 
@@ -225,6 +230,17 @@ export function ArticlesPage(): ReactElement {
             onChange={(v) => patchFilter({ contentKind: (v as ContentKind) || '' })}
           />
         </Col>
+        {categories.length > 0 && (
+          <Col xs={12} sm={7} md={4}>
+            <Select
+              style={{ width: '100%' }}
+              placeholder="分类"
+              allowClear
+              options={categories.map((c) => ({ value: c.slug, label: c.name }))}
+              onChange={(v) => patchFilter({ categorySlug: (v as string) || undefined })}
+            />
+          </Col>
+        )}
       </Row>
 
       {/* Batch action bar — visible only when rows are selected */}

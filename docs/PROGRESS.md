@@ -7,6 +7,12 @@
 ## In Progress
 - [ ] Add API rate limiting for auth/comment/AI/translation-create endpoints.
 - [ ] Add frontend i18n routing and SEO output (`/` default zh, `/en/*` english).
+- [ ] Fix article editor gaps in `frontend-admin-react`:
+  - [ ] Category selector (load from `/public/categories`, bind `categorySlug`)
+  - [ ] Tag multi-select (load from `/public/tags`, bind `tagSlugs`)
+  - [ ] Scheduled publish date-time picker (show when `status === 'scheduled'`)
+  - [ ] Cover image upload button (reuse `/admin/upload/image`, keep URL fallback)
+  - [ ] Category filter on article list page
 
 ## Done
 - [x] Created tracking docs and collaboration guidelines.

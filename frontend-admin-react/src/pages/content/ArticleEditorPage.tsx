@@ -5,12 +5,13 @@
  * Related: articles API module, article types, SimpleEditor, AdminLayout, and ArticlesPage.
  */
 
-import { ArrowLeftOutlined, RobotOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, RobotOutlined, UploadOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Button,
   Card,
   Col,
+  DatePicker,
   Form,
   Input,
   Row,
@@ -18,22 +19,28 @@ import {
   Space,
   Switch,
   Typography,
+  Upload,
   message,
 } from 'antd';
+import type { UploadChangeParam } from 'antd/es/upload';
 
 import { SimpleEditor } from '../../components/tiptap-templates/simple/simple-editor';
 import type { ReactElement } from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
+import dayjs from 'dayjs';
 
 import {
   createArticle,
   generateAiSlug,
   generateAiSummary,
   getArticle,
+  listCategories,
+  listTags,
   updateArticle,
 } from '../../api/articles';
 import { extractTextFromTiptapJson } from '../../lib/tiptap-utils';
+import { useAuthStore } from '../../store/auth';
 import type { ArticleFormValues } from '../../types/article';
 
 // Convert a Chinese/English title to a basic URL slug (local fallback)
@@ -53,14 +60,27 @@ export function ArticleEditorPage(): ReactElement {
   const [messageApi, ctx] = message.useMessage();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const accessToken = useAuthStore((s) => s.accessToken);
   const [slugLoading, setSlugLoading] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
+  const [coverUploading, setCoverUploading] = useState(false);
+  const watchStatus = Form.useWatch('status', form);
 
   // Load existing article data in edit mode
   const { data: article, isLoading: articleLoading } = useQuery({
     queryKey: ['article', id],
     queryFn: () => getArticle(id!),
     enabled: !isNew,
+  });
+
+  // Load categories and tags for selectors
+  const { data: categories = [] } = useQuery({
+    queryKey: ['categories'],
+    queryFn: listCategories,
+  });
+  const { data: tags = [] } = useQuery({
+    queryKey: ['tags'],
+    queryFn: listTags,
   });
 
   useEffect(() => {
@@ -77,6 +97,8 @@ export function ArticleEditorPage(): ReactElement {
         coverImage: article.coverImage,
         originType: article.originType,
         sourceUrl: article.sourceUrl,
+        categorySlug: article.categorySlug,
+        tagSlugs: article.tagSlugs ?? [],
         publishedAt: article.publishedAt,
       });
     }
@@ -109,7 +131,6 @@ export function ArticleEditorPage(): ReactElement {
         messageApi.info('AI 不可用，已使用本地转换');
       }
     } catch {
-      // Fall back to local conversion
       form.setFieldValue('slug', titleToSlug(title));
       messageApi.info('AI 不可用，已使用本地转换');
     } finally {
@@ -137,6 +158,42 @@ export function ArticleEditorPage(): ReactElement {
       setSummaryLoading(false);
     }
   }, [form, messageApi]);
+
+  // Handle cover image upload via the image upload API
+  const handleCoverUploadChange = useCallback(
+    (info: UploadChangeParam) => {
+      if (info.file.status === 'uploading') {
+        setCoverUploading(true);
+        return;
+      }
+      setCoverUploading(false);
+      if (info.file.status === 'done') {
+        const url: string = info.file.response?.data?.url ?? '';
+        if (url) {
+          form.setFieldValue('coverImage', url);
+          messageApi.success('封面上传成功');
+        } else {
+          messageApi.error('上传成功但未获取到 URL');
+        }
+      } else if (info.file.status === 'error') {
+        messageApi.error('封面上传失败');
+      }
+    },
+    [form, messageApi],
+  );
+
+  // Serialize form values before submit: convert dayjs publishedAt to ISO string
+  const handleFinish = useCallback(
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (values: any) => {
+      const payload = { ...values } as ArticleFormValues;
+      if (values.publishedAt && typeof values.publishedAt.toISOString === 'function') {
+        payload.publishedAt = (values.publishedAt as dayjs.Dayjs).toISOString();
+      }
+      saveMut.mutate(payload);
+    },
+    [saveMut],
+  );
 
   return (
     <section>
@@ -176,13 +233,14 @@ export function ArticleEditorPage(): ReactElement {
       <Form
         form={form}
         layout="vertical"
-        onFinish={(values) => saveMut.mutate(values)}
+        onFinish={handleFinish}
         initialValues={{
           contentKind: 'post',
           status: 'draft',
           visibility: 'public',
           allowComment: true,
           originType: 'original',
+          tagSlugs: [],
         }}
         disabled={articleLoading}
       >
@@ -265,6 +323,23 @@ export function ArticleEditorPage(): ReactElement {
                 />
               </Form.Item>
 
+              {/* Scheduled publish time — only shown when status = scheduled */}
+              {watchStatus === 'scheduled' && (
+                <Form.Item
+                  name="publishedAt"
+                  label="定时发布时间"
+                  rules={[{ required: true, message: '请选择发布时间' }]}
+                  style={{ marginBottom: 12 }}
+                >
+                  <DatePicker
+                    showTime
+                    format="YYYY-MM-DD HH:mm"
+                    style={{ width: '100%' }}
+                    disabledDate={(d) => d.isBefore(dayjs(), 'day')}
+                  />
+                </Form.Item>
+              )}
+
               <Form.Item name="contentKind" label="内容类型" style={{ marginBottom: 12 }}>
                 <Select
                   options={[
@@ -294,6 +369,25 @@ export function ArticleEditorPage(): ReactElement {
               </Form.Item>
             </Card>
 
+            <Card size="small" title="分类与标签" style={{ marginBottom: 16 }}>
+              <Form.Item name="categorySlug" label="分类" style={{ marginBottom: 12 }}>
+                <Select
+                  allowClear
+                  placeholder="选择分类（可选）"
+                  options={categories.map((c) => ({ value: c.slug, label: c.name }))}
+                />
+              </Form.Item>
+
+              <Form.Item name="tagSlugs" label="标签" style={{ marginBottom: 0 }}>
+                <Select
+                  mode="multiple"
+                  allowClear
+                  placeholder="选择标签（可多选）"
+                  options={tags.map((t) => ({ value: t.slug, label: t.name }))}
+                />
+              </Form.Item>
+            </Card>
+
             <Card size="small" title="内容来源" style={{ marginBottom: 16 }}>
               <Form.Item name="originType" label="来源类型" style={{ marginBottom: 12 }}>
                 <Select
@@ -311,9 +405,26 @@ export function ArticleEditorPage(): ReactElement {
             </Card>
 
             <Card size="small" title="封面与元数据">
-              <Form.Item name="coverImage" label="封面图 URL" style={{ marginBottom: 0 }}>
+              <Form.Item name="coverImage" label="封面图" style={{ marginBottom: 8 }}>
                 <Input placeholder="https://cdn.example.com/cover.jpg" />
               </Form.Item>
+              <Upload
+                name="file"
+                accept="image/*"
+                showUploadList={false}
+                action="/api/v1/admin/upload/image"
+                headers={{ Authorization: `Bearer ${accessToken}` }}
+                onChange={handleCoverUploadChange}
+              >
+                <Button
+                  icon={<UploadOutlined />}
+                  loading={coverUploading}
+                  size="small"
+                  style={{ marginBottom: 0 }}
+                >
+                  上传封面图
+                </Button>
+              </Upload>
             </Card>
           </Col>
         </Row>

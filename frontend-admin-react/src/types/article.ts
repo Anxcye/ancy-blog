@@ -39,6 +39,8 @@ export interface Article {
   originType: OriginType;
   sourceUrl?: string;
   aiAssistLevel?: string;
+  categorySlug?: string;
+  tagSlugs?: string[];
   publishedAt?: string;
   createdAt: string;
   updatedAt: string;
@@ -50,6 +52,7 @@ export interface ArticleListParams {
   status?: ArticleStatus | '';
   contentKind?: ContentKind | '';
   keyword?: string;
+  categorySlug?: string;
 }
 
 export interface ArticleFormValues {
@@ -64,5 +67,7 @@ export interface ArticleFormValues {
   coverImage?: string;
   originType?: OriginType;
   sourceUrl?: string;
+  categorySlug?: string;
+  tagSlugs?: string[];
   publishedAt?: string;
 }
