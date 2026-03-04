@@ -22,6 +22,10 @@
   - replaced prompt-style link editing with popover input (apply/remove)
   - enhanced editor typography, blockquote/code/image presentation, and mobile behavior
   - polished toolbar button visual system with pill controls, active gradients, and stronger hover/pressed feedback
+  - added custom embed node baseline (`x_post`, `tmdb_card`) with insert actions in editor and render support in preview
+- Updated documentation to align editor model details:
+  - `PRODUCT_RULES` editor section now includes embed block requirements
+  - `DATA_MODEL` article `content` field clarified as rich-text JSON (not markdown)
 - Validation run:
   - `source ~/.zshrc && cd backend && go test ./...` passed
   - `cd frontend-admin && pnpm run build` passed

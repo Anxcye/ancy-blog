@@ -41,6 +41,11 @@ Related: ArticleEditorView, RichTextPreview, and admin upload API module.
       </div>
 
       <div class="toolbar-group">
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :disabled="isReadonly" @click="insertXPostEmbed">X Post</NButton></template><span>Insert X Post Block</span></NTooltip>
+        <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :disabled="isReadonly" @click="insertTmdbCardEmbed">TMDB</NButton></template><span>Insert TMDB Card Block</span></NTooltip>
+      </div>
+
+      <div class="toolbar-group">
         <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :disabled="isReadonly || !canUndo" @click="undo">Undo</NButton></template><span>Undo</span></NTooltip>
         <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn" :disabled="isReadonly || !canRedo" @click="redo">Redo</NButton></template><span>Redo</span></NTooltip>
         <NTooltip trigger="hover"><template #trigger><NButton size="small" quaternary class="tool-btn clear-btn" :disabled="isReadonly" @click="clearContent">Clear</NButton></template><span>Clear Content</span></NTooltip>
@@ -64,6 +69,7 @@ import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import Placeholder from '@tiptap/extension-placeholder';
 import { NButton, NInput, NPopover, NTooltip } from 'naive-ui';
+import { TmdbCardEmbed, XPostEmbed } from '@/components/editor/extensions/embeds';
 
 const props = withDefaults(
   defineProps<{
@@ -130,6 +136,8 @@ const editor = useEditor({
     StarterKit,
     Link.configure({ openOnClick: false }),
     Image,
+    XPostEmbed,
+    TmdbCardEmbed,
     Placeholder.configure({
       placeholder: props.placeholder,
       showOnlyWhenEditable: false,
@@ -239,6 +247,47 @@ function pickImage(): void {
 
 function insertHorizontalRule(): void {
   editor.value?.chain().focus().setHorizontalRule().run();
+}
+
+function insertXPostEmbed(): void {
+  const postID = window.prompt('X post id');
+  if (postID === null) {
+    return;
+  }
+  const author = window.prompt('X author (optional)') || '';
+  editor.value
+    ?.chain()
+    .focus()
+    .insertContent({
+      type: 'xPostEmbed',
+      attrs: {
+        postId: postID.trim(),
+        author: author.trim(),
+      },
+    })
+    .run();
+}
+
+function insertTmdbCardEmbed(): void {
+  const tmdbID = window.prompt('TMDB id');
+  if (tmdbID === null) {
+    return;
+  }
+  const mediaTypeInput = (window.prompt('TMDB type: movie or tv') || 'movie').trim().toLowerCase();
+  const mediaType = mediaTypeInput === 'tv' ? 'tv' : 'movie';
+  const title = window.prompt('Title (optional)') || '';
+  editor.value
+    ?.chain()
+    .focus()
+    .insertContent({
+      type: 'tmdbCardEmbed',
+      attrs: {
+        mediaType,
+        tmdbId: tmdbID.trim(),
+        title: title.trim(),
+      },
+    })
+    .run();
 }
 
 function undo(): void {
@@ -418,6 +467,34 @@ onBeforeUnmount(() => {
   height: auto;
   border-radius: 10px;
   box-shadow: 0 6px 20px color-mix(in srgb, var(--n-primary-color) 18%, transparent);
+}
+
+.editor-shell :deep(.ProseMirror .embed-card) {
+  margin: 0.9em 0;
+  border: 1px solid color-mix(in srgb, var(--n-primary-color) 30%, var(--n-border-color));
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--n-card-color) 90%, var(--n-primary-color) 10%);
+}
+
+.editor-shell :deep(.ProseMirror .embed-card-title) {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--n-text-color-3);
+}
+
+.editor-shell :deep(.ProseMirror .embed-card-main) {
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--n-text-color);
+}
+
+.editor-shell :deep(.ProseMirror .embed-card-sub) {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--n-text-color-2);
 }
 
 .hidden-input {

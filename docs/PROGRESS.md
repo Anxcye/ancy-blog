@@ -73,6 +73,7 @@
 - [x] Added admin moment deletion and batch operations (batch status switch and batch delete) with API contract updates.
 - [x] Unified admin pages (`site/interaction/system/moments`) onto consistent Naive UI layout and theme behavior.
 - [x] Upgraded TipTap editor UX with grouped sticky toolbar, link popover actions, undo/redo, and richer typography styling.
+- [x] Added extensible embed-block baseline in TipTap editor/preview (`x_post`, `tmdb_card`) for future custom content modules.
 
 ## Blocked
 - None.

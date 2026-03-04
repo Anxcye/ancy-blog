@@ -15,6 +15,7 @@ import { generateHTML } from '@tiptap/html';
 import StarterKit from '@tiptap/starter-kit';
 import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
+import { TmdbCardEmbed, XPostEmbed } from '@/components/editor/extensions/embeds';
 
 const props = defineProps<{
   content: string;
@@ -45,7 +46,7 @@ function toDocContent(raw: string): JSONContent {
 
 const html = computed(() => {
   const doc = toDocContent(props.content);
-  return generateHTML(doc, [StarterKit, Link, Image]);
+  return generateHTML(doc, [StarterKit, Link, Image, XPostEmbed, TmdbCardEmbed]);
 });
 </script>
 
@@ -94,5 +95,33 @@ const html = computed(() => {
   max-width: 100%;
   height: auto;
   border-radius: 8px;
+}
+
+.preview-render :deep(.embed-card) {
+  margin: 0.9em 0;
+  border: 1px solid color-mix(in srgb, var(--n-primary-color) 30%, var(--n-border-color));
+  border-radius: 12px;
+  padding: 10px 12px;
+  background: color-mix(in srgb, var(--n-card-color) 90%, var(--n-primary-color) 10%);
+}
+
+.preview-render :deep(.embed-card-title) {
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--n-text-color-3);
+}
+
+.preview-render :deep(.embed-card-main) {
+  margin-top: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--n-text-color);
+}
+
+.preview-render :deep(.embed-card-sub) {
+  margin-top: 4px;
+  font-size: 13px;
+  color: var(--n-text-color-2);
 }
 </style>

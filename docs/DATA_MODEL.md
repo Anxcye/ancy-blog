@@ -19,7 +19,7 @@ Fields:
 - `slug` (required, unique)
 - `content_kind` (`post | page`)
 - `summary`
-- `content` (Markdown source)
+- `content` (rich-text JSON document, includes paragraphs, marks, and custom embed blocks)
 - `status` (`draft | published | archived`)
 - `visibility` (`public | unlisted | private`)
 - `is_pinned` (bool, default false)
