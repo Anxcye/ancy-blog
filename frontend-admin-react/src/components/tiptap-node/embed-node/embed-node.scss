@@ -1,0 +1,88 @@
+/* Embed block node cards rendered inside TipTap editor */
+
+.embed-node-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 1.5px solid var(--tt-border-color, rgba(15, 22, 36, 0.1));
+  background: var(--tt-gray-light-50, #fafafa);
+  margin: 6px 0;
+  cursor: grab;
+  user-select: none;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+
+  &:active {
+    cursor: grabbing;
+  }
+
+  &.is-selected {
+    box-shadow: 0 0 0 2px rgba(31, 143, 138, 0.2);
+    border-color: #1f8f8a;
+  }
+
+  /* X Post card */
+  &.embed-node-x {
+    border-color: rgba(0, 0, 0, 0.1);
+
+    &:hover {
+      border-color: rgba(0, 0, 0, 0.25);
+    }
+
+    &.is-selected {
+      border-color: #000;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.08);
+    }
+  }
+
+  /* TMDB card */
+  &.embed-node-tmdb {
+    border-color: rgba(1, 180, 228, 0.25);
+
+    &:hover {
+      border-color: rgba(1, 180, 228, 0.6);
+    }
+
+    &.is-selected {
+      border-color: #01b4e4;
+      box-shadow: 0 0 0 2px rgba(1, 180, 228, 0.15);
+    }
+  }
+}
+
+.embed-node-icon {
+  font-size: 20px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.embed-node-body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  flex: 1;
+}
+
+.embed-node-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: var(--tt-gray-light-400, #a6a7ab);
+}
+
+.embed-node-primary {
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--tt-gray-light-900, #222325);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.embed-node-secondary {
+  font-size: 12px;
+  color: var(--tt-gray-light-500, #7d7f82);
+}
