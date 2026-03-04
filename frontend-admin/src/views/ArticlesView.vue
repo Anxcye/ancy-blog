@@ -1,136 +1,120 @@
 <!--
 File: ArticlesView.vue
-Purpose: Render admin article list with filters and entry points to editor actions.
+Purpose: Render article management table with filters, batch operations, and editor navigation.
 Module: frontend-admin/views/content, presentation layer.
-Related: articles API module, ArticleEditorView route, dashboard workflow.
+Related: articles API module, translation center routing, dashboard content workflow.
 -->
 <template>
-  <section class="panel">
-    <nav class="subnav">
-      <RouterLink :to="{ name: 'articles' }">{{ t('articles.tabArticles') }}</RouterLink>
-      <RouterLink :to="{ name: 'moments' }">{{ t('articles.tabMoments') }}</RouterLink>
-    </nav>
+  <section class="articles-page">
+    <NCard :bordered="false" class="section-card">
+      <div class="topbar">
+        <NTabs type="segment" :value="'articles'">
+          <NTabPane name="articles" :tab="t('articles.tabArticles')" />
+          <NTabPane name="moments" :tab="t('articles.tabMoments')" @click="router.push({ name: 'moments' })" />
+        </NTabs>
 
-    <header class="panel-header">
-      <div>
-        <h1>{{ t('articles.title') }}</h1>
-        <p>{{ t('articles.subtitle') }}</p>
+        <NButton type="primary" @click="router.push({ name: 'article-new' })">{{ t('articles.create') }}</NButton>
       </div>
-      <RouterLink class="create-btn" :to="{ name: 'article-new' }">
-        {{ t('articles.create') }}
-      </RouterLink>
-    </header>
 
-    <div class="bulk-actions">
-      <label class="check-all">
-        <input :checked="allChecked" type="checkbox" @change="toggleAll(($event.target as HTMLInputElement).checked)" />
-        <span>{{ t('articles.selected', { count: selectedIds.length }) }}</span>
-      </label>
-      <div class="bulk-buttons">
-        <button :disabled="selectedIds.length === 0 || loading" @click="applyStatus('draft')">{{ t('articles.toDraft') }}</button>
-        <button :disabled="selectedIds.length === 0 || loading" @click="applyStatus('published')">{{ t('articles.toPublished') }}</button>
-        <button :disabled="selectedIds.length === 0 || loading" class="danger" @click="removeSelected">{{ t('common.delete') }}</button>
+      <NForm inline :show-label="false" class="filters" @submit.prevent="reload(1)">
+        <NFormItem>
+          <NInput v-model:value="filters.keyword" :placeholder="t('articles.filterKeyword')" clearable />
+        </NFormItem>
+        <NFormItem>
+          <NSelect v-model:value="filters.status" :options="statusOptions" :placeholder="t('articles.filterStatusAll')" clearable style="width: 150px" />
+        </NFormItem>
+        <NFormItem>
+          <NSelect v-model:value="filters.contentKind" :options="kindOptions" :placeholder="t('articles.filterKindAll')" clearable style="width: 150px" />
+        </NFormItem>
+        <NFormItem>
+          <NButton attr-type="submit">{{ t('common.search') }}</NButton>
+        </NFormItem>
+      </NForm>
+
+      <div class="batch-row">
+        <span class="hint">{{ t('articles.selected', { count: selectedRowKeys.length }) }}</span>
+        <NSpace>
+          <NButton :disabled="selectedRowKeys.length === 0 || loading" @click="applyStatus('draft')">{{ t('articles.toDraft') }}</NButton>
+          <NButton :disabled="selectedRowKeys.length === 0 || loading" @click="applyStatus('published')">{{ t('articles.toPublished') }}</NButton>
+          <NButton type="error" tertiary :disabled="selectedRowKeys.length === 0 || loading" @click="removeSelected">{{ t('common.delete') }}</NButton>
+        </NSpace>
       </div>
-    </div>
 
-    <form class="filters" @submit.prevent="reload(1)">
-      <input
-        v-model.trim="filters.keyword"
-        :placeholder="t('articles.filterKeyword')"
-        type="text"
+      <NAlert v-if="errorText" type="error" :show-icon="false">{{ errorText }}</NAlert>
+
+      <NDataTable
+        remote
+        class="table"
+        :loading="loading"
+        :columns="columns"
+        :data="rows"
+        :pagination="false"
+        :row-key="rowKey"
+        :checked-row-keys="selectedRowKeys"
+        @update:checked-row-keys="handleCheckedRows"
       />
-      <select v-model="filters.status">
-        <option value="">{{ t('articles.filterStatusAll') }}</option>
-        <option value="draft">{{ t('articles.statusDraft') }}</option>
-        <option value="published">{{ t('articles.statusPublished') }}</option>
-        <option value="scheduled">{{ t('articles.statusScheduled') }}</option>
-      </select>
-      <select v-model="filters.contentKind">
-        <option value="">{{ t('articles.filterKindAll') }}</option>
-        <option value="post">Post</option>
-        <option value="page">Page</option>
-      </select>
-      <button type="submit">{{ t('common.search') }}</button>
-    </form>
 
-    <p v-if="errorText" class="error">{{ errorText }}</p>
-
-    <div class="table-wrap">
-      <table>
-        <thead>
-          <tr>
-            <th></th>
-            <th>{{ t('articles.colTitle') }}</th>
-            <th>{{ t('articles.colSlug') }}</th>
-            <th>{{ t('articles.colStatus') }}</th>
-            <th>{{ t('articles.colKind') }}</th>
-            <th>{{ t('articles.colUpdatedAt') }}</th>
-            <th>{{ t('articles.colAction') }}</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="item in rows" :key="item.id">
-            <td>
-              <input :checked="selectedIds.includes(item.id)" type="checkbox" @change="toggleOne(item.id, ($event.target as HTMLInputElement).checked)" />
-            </td>
-            <td>{{ item.title }}</td>
-            <td class="mono">{{ item.slug }}</td>
-            <td>{{ item.status }}</td>
-            <td>{{ item.contentKind }}</td>
-            <td>{{ formatDate(item.updatedAt) }}</td>
-            <td>
-              <RouterLink :to="{ name: 'article-edit', params: { id: item.id } }">
-                {{ t('articles.edit') }}
-              </RouterLink>
-              <RouterLink class="link-btn" :to="{ name: 'system', query: { tab: 'translations', sourceType: 'article', sourceId: item.id } }">
-                {{ t('articles.toTranslate') }}
-              </RouterLink>
-              <button class="link-btn danger" :disabled="loading" @click="removeOne(item.id)">{{ t('common.delete') }}</button>
-            </td>
-          </tr>
-          <tr v-if="!loading && rows.length === 0">
-            <td colspan="7">{{ t('articles.empty') }}</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-
-    <footer class="pager">
-      <span>{{ t('articles.total', { total }) }}</span>
-      <div class="pager-actions">
-        <button :disabled="page <= 1 || loading" @click="reload(page - 1)">{{ t('common.prev') }}</button>
-        <span>{{ page }}</span>
-        <button :disabled="page >= totalPages || loading" @click="reload(page + 1)">{{ t('common.next') }}</button>
+      <div class="footer-row">
+        <span class="hint">{{ t('articles.total', { total }) }}</span>
+        <NPagination
+          :page="page"
+          :page-size="pageSize"
+          :item-count="total"
+          :page-slot="7"
+          @update:page="reload"
+        />
       </div>
-    </footer>
+    </NCard>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive, ref } from 'vue';
+import { computed, h, onMounted, reactive, ref } from 'vue';
+import { RouterLink, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
+import type { DataTableColumns } from 'naive-ui';
+import { NAlert, NButton, NCard, NDataTable, NForm, NFormItem, NInput, NPagination, NSelect, NSpace, NTabPane, NTabs, NTag, useDialog, useMessage } from 'naive-ui';
 
 import { batchDeleteArticles, batchUpdateArticleStatus, deleteArticle, listArticles } from '@/api/modules/articles';
 import type { Article } from '@/api/types';
 
 const { t } = useI18n();
+const router = useRouter();
+const dialog = useDialog();
+const message = useMessage();
 
 const loading = ref(false);
 const errorText = ref('');
 const rows = ref<Article[]>([]);
-const selectedIds = ref<string[]>([]);
+const selectedRowKeys = ref<Array<string | number>>([]);
 const total = ref(0);
 const page = ref(1);
 const pageSize = 12;
 
 const filters = reactive({
-  keyword: '',
-  status: '',
-  contentKind: '',
+  keyword: null as string | null,
+  status: null as string | null,
+  contentKind: null as string | null,
 });
 
-const totalPages = computed(() => Math.max(1, Math.ceil(total.value / pageSize)));
-const allChecked = computed(() => rows.value.length > 0 && rows.value.every((row) => selectedIds.value.includes(row.id)));
+const statusOptions = computed(() => [
+  { label: t('articles.statusDraft'), value: 'draft' },
+  { label: t('articles.statusPublished'), value: 'published' },
+  { label: t('articles.statusScheduled'), value: 'scheduled' },
+]);
+
+const kindOptions = [
+  { label: 'Post', value: 'post' },
+  { label: 'Page', value: 'page' },
+];
+
+function rowKey(row: Article): string {
+  return row.id;
+}
+
+function handleCheckedRows(keys: Array<string | number>): void {
+  selectedRowKeys.value = keys;
+}
 
 function formatDate(value: string): string {
   if (!value) {
@@ -138,6 +122,86 @@ function formatDate(value: string): string {
   }
   return new Date(value).toLocaleString();
 }
+
+const columns = computed<DataTableColumns<Article>>(() => [
+  {
+    type: 'selection',
+  },
+  {
+    title: t('articles.colTitle'),
+    key: 'title',
+    ellipsis: {
+      tooltip: true,
+    },
+  },
+  {
+    title: t('articles.colSlug'),
+    key: 'slug',
+    ellipsis: {
+      tooltip: true,
+    },
+  },
+  {
+    title: t('articles.colStatus'),
+    key: 'status',
+    render(row) {
+      const typeMap: Record<string, 'default' | 'success' | 'warning'> = {
+        draft: 'default',
+        published: 'success',
+        scheduled: 'warning',
+      };
+      return h(NTag, { type: typeMap[row.status] || 'default', round: true }, { default: () => row.status });
+    },
+  },
+  {
+    title: t('articles.colKind'),
+    key: 'contentKind',
+  },
+  {
+    title: t('articles.colUpdatedAt'),
+    key: 'updatedAt',
+    render(row) {
+      return formatDate(row.updatedAt);
+    },
+  },
+  {
+    title: t('articles.colAction'),
+    key: 'actions',
+    width: 220,
+    render(row) {
+      return h(NSpace, { wrap: false, size: 8 }, {
+        default: () => [
+          h(
+            RouterLink,
+            { to: { name: 'article-edit', params: { id: row.id } } },
+            {
+              default: () => h(NButton, { size: 'small', tertiary: true }, { default: () => t('articles.edit') }),
+            },
+          ),
+          h(
+            RouterLink,
+            { to: { name: 'system', query: { tab: 'translations', sourceType: 'article', sourceId: row.id } } },
+            {
+              default: () => h(NButton, { size: 'small', tertiary: true }, { default: () => t('articles.toTranslate') }),
+            },
+          ),
+          h(
+            NButton,
+            {
+              size: 'small',
+              tertiary: true,
+              type: 'error',
+              onClick: () => {
+                removeOne(row.id);
+              },
+            },
+            { default: () => t('common.delete') },
+          ),
+        ],
+      });
+    },
+  },
+]);
 
 async function reload(nextPage = page.value): Promise<void> {
   loading.value = true;
@@ -151,9 +215,9 @@ async function reload(nextPage = page.value): Promise<void> {
       keyword: filters.keyword || undefined,
     });
     rows.value = result.rows;
-    selectedIds.value = [];
     total.value = result.total;
     page.value = nextPage;
+    selectedRowKeys.value = [];
   } catch {
     errorText.value = t('common.loadFailed');
   } finally {
@@ -161,29 +225,15 @@ async function reload(nextPage = page.value): Promise<void> {
   }
 }
 
-function toggleOne(id: string, checked: boolean): void {
-  if (checked) {
-    if (!selectedIds.value.includes(id)) {
-      selectedIds.value = [...selectedIds.value, id];
-    }
-    return;
-  }
-  selectedIds.value = selectedIds.value.filter((item) => item !== id);
-}
-
-function toggleAll(checked: boolean): void {
-  if (checked) {
-    selectedIds.value = rows.value.map((item) => item.id);
-    return;
-  }
-  selectedIds.value = [];
-}
-
 async function applyStatus(status: 'draft' | 'published'): Promise<void> {
+  if (selectedRowKeys.value.length === 0) {
+    return;
+  }
   loading.value = true;
   errorText.value = '';
   try {
-    await batchUpdateArticleStatus(selectedIds.value, status);
+    await batchUpdateArticleStatus(selectedRowKeys.value.map((item) => String(item)), status);
+    message.success(t('common.saveSuccess'));
     await reload(page.value);
   } catch {
     errorText.value = t('common.saveFailed');
@@ -191,34 +241,49 @@ async function applyStatus(status: 'draft' | 'published'): Promise<void> {
   }
 }
 
-async function removeSelected(): Promise<void> {
-  if (!window.confirm(t('common.confirmDelete'))) {
+function removeSelected(): void {
+  if (selectedRowKeys.value.length === 0) {
     return;
   }
-  loading.value = true;
-  errorText.value = '';
-  try {
-    await batchDeleteArticles(selectedIds.value);
-    await reload(page.value);
-  } catch {
-    errorText.value = t('common.deleteFailed');
-    loading.value = false;
-  }
+  dialog.warning({
+    title: t('common.delete'),
+    content: t('common.confirmDelete'),
+    positiveText: t('common.delete'),
+    negativeText: t('common.cancel'),
+    onPositiveClick: async () => {
+      loading.value = true;
+      errorText.value = '';
+      try {
+        await batchDeleteArticles(selectedRowKeys.value.map((item) => String(item)));
+        message.success(t('common.deleteSuccess'));
+        await reload(page.value);
+      } catch {
+        errorText.value = t('common.deleteFailed');
+        loading.value = false;
+      }
+    },
+  });
 }
 
-async function removeOne(id: string): Promise<void> {
-  if (!window.confirm(t('common.confirmDelete'))) {
-    return;
-  }
-  loading.value = true;
-  errorText.value = '';
-  try {
-    await deleteArticle(id);
-    await reload(page.value);
-  } catch {
-    errorText.value = t('common.deleteFailed');
-    loading.value = false;
-  }
+function removeOne(id: string): void {
+  dialog.warning({
+    title: t('common.delete'),
+    content: t('common.confirmDelete'),
+    positiveText: t('common.delete'),
+    negativeText: t('common.cancel'),
+    onPositiveClick: async () => {
+      loading.value = true;
+      errorText.value = '';
+      try {
+        await deleteArticle(id);
+        message.success(t('common.deleteSuccess'));
+        await reload(page.value);
+      } catch {
+        errorText.value = t('common.deleteFailed');
+        loading.value = false;
+      }
+    },
+  });
 }
 
 onMounted(async () => {
@@ -227,185 +292,51 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.panel {
-  padding: 20px;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
+.articles-page {
+  display: grid;
 }
 
-.subnav {
+.section-card {
+  border-radius: 14px;
+  box-shadow: 0 6px 24px rgba(15, 31, 36, 0.05);
+}
+
+.topbar {
   display: flex;
-  gap: 8px;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
   margin-bottom: 12px;
 }
 
-.subnav a {
-  text-decoration: none;
-  border: 1px solid var(--border);
-  border-radius: 999px;
-  padding: 6px 10px;
-  color: var(--muted);
-}
-
-.subnav a.router-link-active {
-  border-color: var(--accent);
-  color: var(--accent-hover);
-  background: var(--accent-soft);
-}
-
-.panel-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 14px;
-}
-
-.bulk-actions {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 10px;
-}
-
-.check-all {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.bulk-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-h1 {
-  margin: 0;
-}
-
-p {
-  margin: 4px 0 0;
-  color: var(--muted);
-}
-
-.create-btn {
-  text-decoration: none;
-  background: var(--accent);
-  color: #fff;
-  border-radius: 8px;
-  padding: 8px 12px;
-}
-
 .filters {
-  display: grid;
-  grid-template-columns: 1.2fr 0.8fr 0.8fr auto;
-  gap: 8px;
-  margin-bottom: 14px;
+  margin-bottom: 12px;
 }
 
-input,
-select,
-button {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 10px;
-  font: inherit;
-}
-
-button.danger {
-  border-color: #e8b9b9;
-  color: #b64040;
-}
-
-button {
-  background: var(--surface);
-  cursor: pointer;
-}
-
-.error {
-  color: #b64040;
-  margin-bottom: 10px;
-}
-
-.table-wrap {
-  overflow: auto;
-}
-
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-th,
-td {
-  text-align: left;
-  padding: 10px 8px;
-  border-bottom: 1px solid var(--border);
-}
-
-th {
-  color: var(--muted);
-  font-weight: 600;
-}
-
-.mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-}
-
-.link-btn {
-  border: 0;
-  background: transparent;
-  padding: 0;
-  margin-left: 8px;
-  cursor: pointer;
-}
-
-.pager {
-  margin-top: 12px;
+.batch-row,
+.footer-row {
+  margin: 10px 0 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 10px;
 }
 
-.pager-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+.hint {
+  color: #6e7a84;
+  font-size: 13px;
+}
+
+.table {
+  overflow: hidden;
 }
 
 @media (max-width: 900px) {
-  .panel {
-    padding: 14px;
-  }
-
-  .filters {
-    grid-template-columns: 1fr;
-  }
-
-  .panel-header {
-    align-items: flex-start;
-    flex-direction: column;
-  }
-
-  .create-btn {
-    width: 100%;
-    text-align: center;
-  }
-
-  .bulk-actions {
+  .topbar,
+  .batch-row,
+  .footer-row {
     flex-direction: column;
     align-items: stretch;
-  }
-
-  .bulk-buttons {
-    width: 100%;
-  }
-
-  .bulk-buttons button {
-    flex: 1;
   }
 }
 </style>

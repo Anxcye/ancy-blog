@@ -457,3 +457,28 @@
 - System page now reads route query and auto-prefills translation form/filter context.
 - Validation:
   - `npm --prefix frontend-admin run build` passed.
+
+## 2026-03-04
+### Summary
+- Refactored `frontend-admin` UI from custom raw CSS controls to `Naive UI` component system.
+- Added global provider stack in app root:
+  - `NConfigProvider`
+  - `NMessageProvider`
+  - `NDialogProvider`
+  - `NNotificationProvider`
+  - `NLoadingBarProvider`
+- Added centralized theme overrides in `frontend-admin/src/styles/naive-theme.ts` with light/dark enterprise palette.
+- Enhanced app store with persistent UI preferences:
+  - `themeMode` (`light | dark`)
+  - `locale` (`zh-CN | en-US`)
+- Refactored shell layout (`AppShell.vue`) to enterprise structure:
+  - desktop sider navigation + top action bar
+  - mobile drawer navigation
+  - locale switch, dark-mode switch, and sign-out action
+- Refactored key pages to higher-fidelity admin UX:
+  - `LoginView.vue` with card/form/alert/loading states
+  - `DashboardView.vue` with card statistics and action shortcuts
+  - `ArticlesView.vue` with data-table selection, batch actions, pagination, and confirm dialogs
+- Updated i18n resources with `layout` strings and login success message.
+- Validation run:
+  - `pnpm --dir frontend-admin run build` passed.

@@ -5,7 +5,6 @@
 - [ ] Set up lint/test/build scripts for frontend workspaces.
 
 ## In Progress
-- [ ] Initialize `frontend-admin/` Vue3 scaffold (admin-first delivery).
 - [ ] Add API rate limiting for auth/comment/AI/translation-create endpoints.
 - [ ] Add frontend i18n routing and SEO output (`/` default zh, `/en/*` english).
 
@@ -65,6 +64,7 @@
 - [x] Added admin article bulk operations (batch status switch + single/batch delete).
 
 - [x] Added quick jump from article rows to translation center with prefilled source context.
+- [x] Upgraded admin UI to Naive UI design system with enterprise shell (responsive sider/header/drawer, theme + locale switch, refined login/dashboard/articles pages).
 
 ## Blocked
 - None.

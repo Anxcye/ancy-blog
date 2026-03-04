@@ -3,6 +3,11 @@
 // Module: frontend-admin/i18n, locale resource layer.
 // Related: i18n initializer and UI components using translation keys.
 export default {
+  layout: {
+    subtitle: '统一管理内容、互动与站点配置',
+    logout: '退出登录',
+    menu: '导航菜单',
+  },
   nav: {
     workbench: '工作台',
     content: '内容',
@@ -15,6 +20,7 @@ export default {
     username: '用户名',
     password: '密码',
     submit: '登录',
+    welcome: '欢迎回来。',
     failed: '登录失败，请检查账号或密码。',
   },
   dashboard: {
@@ -86,6 +92,9 @@ export default {
     fieldPublishedAt: '发布时间',
     fieldAllowComment: '允许评论',
     contentRequired: '内容不能为空。',
+    selected: '已选 {count} 项',
+    toDraft: '设为草稿',
+    toPublished: '设为已发布',
   },
   editor: {
     createTitle: '新建文章',

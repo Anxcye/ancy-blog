@@ -3,6 +3,11 @@
 // Module: frontend-admin/i18n, locale resource layer.
 // Related: i18n initializer and UI components using translation keys.
 export default {
+  layout: {
+    subtitle: 'Manage content, interactions, and site configuration in one place.',
+    logout: 'Sign Out',
+    menu: 'Navigation',
+  },
   nav: {
     workbench: 'Workbench',
     content: 'Content',
@@ -15,6 +20,7 @@ export default {
     username: 'Username',
     password: 'Password',
     submit: 'Sign In',
+    welcome: 'Welcome back.',
     failed: 'Login failed. Please check username or password.',
   },
   dashboard: {
@@ -86,6 +92,9 @@ export default {
     fieldPublishedAt: 'Published At',
     fieldAllowComment: 'Allow Comment',
     contentRequired: 'Content is required.',
+    selected: '{count} selected',
+    toDraft: 'Set Draft',
+    toPublished: 'Set Published',
   },
   editor: {
     createTitle: 'Create Article',
