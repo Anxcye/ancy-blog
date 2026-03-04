@@ -35,6 +35,7 @@
   - integrated `react-router-dom`, `zustand`, `axios`, `@tanstack/react-query`, and `antd`
   - implemented baseline modules: auth store, axios auth interceptor, protected routing, login page, admin layout, and dashboard placeholder
   - applied global style baseline for clean enterprise admin shell
+  - fixed React login response parsing bug: backend login payload has no `user` field, now username is taken from submitted form to avoid false "password incorrect" errors
 - Validation run:
   - `source ~/.zshrc && cd backend && go test ./...` passed
   - `cd frontend-admin && pnpm run build` passed

@@ -19,11 +19,6 @@ type LoginResponse = {
     accessToken: string;
     refreshToken: string;
     expiresIn: number;
-    user: {
-      id: string;
-      username: string;
-      displayName: string;
-    };
   };
 };
 
@@ -38,7 +33,7 @@ export function LoginPage(): ReactElement {
     try {
       const response = await httpClient.post<LoginResponse>('/auth/login', values);
       const payload = response.data.data;
-      setAuth(payload.accessToken, payload.user.username);
+      setAuth(payload.accessToken, values.username);
       messageApi.success('登录成功');
       navigate('/');
     } catch {
