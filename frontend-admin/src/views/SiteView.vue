@@ -50,12 +50,19 @@ Related: site API module and backend site/admin endpoints.
         <input v-model.trim="footerForm.externalUrl" placeholder="https://example.com" type="url" />
         <input v-model.number="footerForm.rowNum" type="number" min="1" max="3" />
         <input v-model.number="footerForm.orderNum" type="number" min="1" />
-        <button :disabled="loading" @click="createFooter">{{ t('common.add') }}</button>
+        <button :disabled="loading" @click="submitFooter">
+          {{ editingFooterId ? t('common.update') : t('common.add') }}
+        </button>
+        <button v-if="editingFooterId" :disabled="loading" @click="cancelFooterEdit">{{ t('common.cancel') }}</button>
       </div>
       <ul class="list">
         <li v-for="item in footerItems" :key="item.id">
           <span>{{ item.label }} (row {{ item.rowNum }}, #{{ item.orderNum }})</span>
-          <code>{{ item.linkType }}</code>
+          <div class="row-actions">
+            <code>{{ item.linkType }}</code>
+            <button :disabled="loading" @click="startFooterEdit(item)">{{ t('common.edit') }}</button>
+            <button :disabled="loading" class="danger" @click="removeFooter(item.id)">{{ t('common.delete') }}</button>
+          </div>
         </li>
       </ul>
     </div>
@@ -68,12 +75,19 @@ Related: site API module and backend site/admin endpoints.
         <input v-model.trim="socialForm.url" placeholder="https://github.com/" type="url" />
         <input v-model.trim="socialForm.iconKey" placeholder="github" type="text" />
         <input v-model.number="socialForm.orderNum" type="number" min="1" />
-        <button :disabled="loading" @click="createSocial">{{ t('common.add') }}</button>
+        <button :disabled="loading" @click="submitSocial">
+          {{ editingSocialId ? t('common.update') : t('common.add') }}
+        </button>
+        <button v-if="editingSocialId" :disabled="loading" @click="cancelSocialEdit">{{ t('common.cancel') }}</button>
       </div>
       <ul class="list">
         <li v-for="item in socialLinks" :key="item.id">
           <span>{{ item.title }}</span>
-          <code>{{ item.url }}</code>
+          <div class="row-actions">
+            <code>{{ item.url }}</code>
+            <button :disabled="loading" @click="startSocialEdit(item)">{{ t('common.edit') }}</button>
+            <button :disabled="loading" class="danger" @click="removeSocial(item.id)">{{ t('common.delete') }}</button>
+          </div>
         </li>
       </ul>
     </div>
@@ -87,12 +101,19 @@ Related: site API module and backend site/admin endpoints.
         <input v-model.trim="navForm.targetType" placeholder="route" type="text" />
         <input v-model.trim="navForm.targetValue" placeholder="/archives" type="text" />
         <input v-model.number="navForm.orderNum" type="number" min="1" />
-        <button :disabled="loading" @click="createNav">{{ t('common.add') }}</button>
+        <button :disabled="loading" @click="submitNav">
+          {{ editingNavId ? t('common.update') : t('common.add') }}
+        </button>
+        <button v-if="editingNavId" :disabled="loading" @click="cancelNavEdit">{{ t('common.cancel') }}</button>
       </div>
       <ul class="list">
         <li v-for="item in navItems" :key="item.id">
           <span>{{ item.name }} ({{ item.key }})</span>
-          <code>{{ item.targetType }}: {{ item.targetValue }}</code>
+          <div class="row-actions">
+            <code>{{ item.targetType }}: {{ item.targetValue }}</code>
+            <button :disabled="loading" @click="startNavEdit(item)">{{ t('common.edit') }}</button>
+            <button :disabled="loading" class="danger" @click="removeNav(item.id)">{{ t('common.delete') }}</button>
+          </div>
         </li>
       </ul>
     </div>
@@ -107,11 +128,17 @@ import {
   createFooterItem,
   createNavItem,
   createSocialLink,
+  deleteFooterItem,
+  deleteNavItem,
+  deleteSocialLink,
   getSiteSettings,
   listFooterItems,
   listNavItems,
   listSocialLinks,
+  updateFooterItem,
+  updateNavItem,
   updateSiteSettings,
+  updateSocialLink,
 } from '@/api/modules/site';
 import type { FooterItem, NavItem, SiteSettings, SocialLink } from '@/api/types';
 
@@ -128,6 +155,7 @@ const settingsForm = reactive<SiteSettings>({
   defaultLocale: 'zh-CN',
 });
 
+const editingFooterId = ref('');
 const footerForm = reactive<Omit<FooterItem, 'id'>>({
   label: '',
   linkType: 'none',
@@ -138,6 +166,7 @@ const footerForm = reactive<Omit<FooterItem, 'id'>>({
   enabled: true,
 });
 
+const editingSocialId = ref('');
 const socialForm = reactive<Omit<SocialLink, 'id'>>({
   platform: '',
   title: '',
@@ -147,6 +176,7 @@ const socialForm = reactive<Omit<SocialLink, 'id'>>({
   enabled: true,
 });
 
+const editingNavId = ref('');
 const navForm = reactive<Omit<NavItem, 'id'>>({
   name: '',
   key: '',
@@ -160,6 +190,43 @@ const navForm = reactive<Omit<NavItem, 'id'>>({
 const footerItems = ref<FooterItem[]>([]);
 const socialLinks = ref<SocialLink[]>([]);
 const navItems = ref<NavItem[]>([]);
+
+function setSuccess(message: string): void {
+  successText.value = message;
+  errorText.value = '';
+}
+
+function resetFooterForm(): void {
+  editingFooterId.value = '';
+  footerForm.label = '';
+  footerForm.linkType = 'none';
+  footerForm.internalArticleSlug = '';
+  footerForm.externalUrl = '';
+  footerForm.rowNum = 1;
+  footerForm.orderNum = 1;
+  footerForm.enabled = true;
+}
+
+function resetSocialForm(): void {
+  editingSocialId.value = '';
+  socialForm.platform = '';
+  socialForm.title = '';
+  socialForm.url = '';
+  socialForm.iconKey = '';
+  socialForm.orderNum = 1;
+  socialForm.enabled = true;
+}
+
+function resetNavForm(): void {
+  editingNavId.value = '';
+  navForm.name = '';
+  navForm.key = '';
+  navForm.type = 'menu';
+  navForm.targetType = 'route';
+  navForm.targetValue = '';
+  navForm.orderNum = 1;
+  navForm.enabled = true;
+}
 
 async function loadAll(): Promise<void> {
   loading.value = true;
@@ -175,7 +242,6 @@ async function loadAll(): Promise<void> {
     settingsForm.avatarUrl = settings.avatarUrl || '';
     settingsForm.heroIntroMd = settings.heroIntroMd || '';
     settingsForm.defaultLocale = settings.defaultLocale || 'zh-CN';
-
     footerItems.value = footer;
     socialLinks.value = socials;
     navItems.value = navs;
@@ -192,7 +258,7 @@ async function saveSettings(): Promise<void> {
   successText.value = '';
   try {
     await updateSiteSettings(settingsForm);
-    successText.value = t('common.saveSuccess');
+    setSuccess(t('common.saveSuccess'));
   } catch {
     errorText.value = t('common.saveFailed');
   } finally {
@@ -200,16 +266,33 @@ async function saveSettings(): Promise<void> {
   }
 }
 
-async function createFooter(): Promise<void> {
+function startFooterEdit(item: FooterItem): void {
+  editingFooterId.value = item.id;
+  footerForm.label = item.label;
+  footerForm.linkType = item.linkType;
+  footerForm.internalArticleSlug = item.internalArticleSlug || '';
+  footerForm.externalUrl = item.externalUrl || '';
+  footerForm.rowNum = item.rowNum;
+  footerForm.orderNum = item.orderNum;
+  footerForm.enabled = item.enabled;
+}
+
+function cancelFooterEdit(): void {
+  resetFooterForm();
+}
+
+async function submitFooter(): Promise<void> {
   loading.value = true;
   errorText.value = '';
   successText.value = '';
   try {
-    await createFooterItem(footerForm);
-    successText.value = t('common.saveSuccess');
-    footerForm.label = '';
-    footerForm.internalArticleSlug = '';
-    footerForm.externalUrl = '';
+    if (editingFooterId.value) {
+      await updateFooterItem(editingFooterId.value, footerForm);
+    } else {
+      await createFooterItem(footerForm);
+    }
+    setSuccess(t('common.saveSuccess'));
+    resetFooterForm();
     await loadAll();
   } catch {
     errorText.value = t('common.saveFailed');
@@ -217,17 +300,52 @@ async function createFooter(): Promise<void> {
   }
 }
 
-async function createSocial(): Promise<void> {
+async function removeFooter(id: string): Promise<void> {
+  if (!window.confirm(t('common.confirmDelete'))) {
+    return;
+  }
   loading.value = true;
   errorText.value = '';
   successText.value = '';
   try {
-    await createSocialLink(socialForm);
-    successText.value = t('common.saveSuccess');
-    socialForm.platform = '';
-    socialForm.title = '';
-    socialForm.url = '';
-    socialForm.iconKey = '';
+    await deleteFooterItem(id);
+    setSuccess(t('common.deleteSuccess'));
+    if (editingFooterId.value === id) {
+      resetFooterForm();
+    }
+    await loadAll();
+  } catch {
+    errorText.value = t('common.deleteFailed');
+    loading.value = false;
+  }
+}
+
+function startSocialEdit(item: SocialLink): void {
+  editingSocialId.value = item.id;
+  socialForm.platform = item.platform;
+  socialForm.title = item.title;
+  socialForm.url = item.url;
+  socialForm.iconKey = item.iconKey || '';
+  socialForm.orderNum = item.orderNum;
+  socialForm.enabled = item.enabled;
+}
+
+function cancelSocialEdit(): void {
+  resetSocialForm();
+}
+
+async function submitSocial(): Promise<void> {
+  loading.value = true;
+  errorText.value = '';
+  successText.value = '';
+  try {
+    if (editingSocialId.value) {
+      await updateSocialLink(editingSocialId.value, socialForm);
+    } else {
+      await createSocialLink(socialForm);
+    }
+    setSuccess(t('common.saveSuccess'));
+    resetSocialForm();
     await loadAll();
   } catch {
     errorText.value = t('common.saveFailed');
@@ -235,19 +353,76 @@ async function createSocial(): Promise<void> {
   }
 }
 
-async function createNav(): Promise<void> {
+async function removeSocial(id: string): Promise<void> {
+  if (!window.confirm(t('common.confirmDelete'))) {
+    return;
+  }
   loading.value = true;
   errorText.value = '';
   successText.value = '';
   try {
-    await createNavItem(navForm);
-    successText.value = t('common.saveSuccess');
-    navForm.name = '';
-    navForm.key = '';
-    navForm.targetValue = '';
+    await deleteSocialLink(id);
+    setSuccess(t('common.deleteSuccess'));
+    if (editingSocialId.value === id) {
+      resetSocialForm();
+    }
+    await loadAll();
+  } catch {
+    errorText.value = t('common.deleteFailed');
+    loading.value = false;
+  }
+}
+
+function startNavEdit(item: NavItem): void {
+  editingNavId.value = item.id;
+  navForm.name = item.name;
+  navForm.key = item.key;
+  navForm.type = item.type;
+  navForm.targetType = item.targetType;
+  navForm.targetValue = item.targetValue || '';
+  navForm.orderNum = item.orderNum;
+  navForm.enabled = item.enabled;
+}
+
+function cancelNavEdit(): void {
+  resetNavForm();
+}
+
+async function submitNav(): Promise<void> {
+  loading.value = true;
+  errorText.value = '';
+  successText.value = '';
+  try {
+    if (editingNavId.value) {
+      await updateNavItem(editingNavId.value, navForm);
+    } else {
+      await createNavItem(navForm);
+    }
+    setSuccess(t('common.saveSuccess'));
+    resetNavForm();
     await loadAll();
   } catch {
     errorText.value = t('common.saveFailed');
+    loading.value = false;
+  }
+}
+
+async function removeNav(id: string): Promise<void> {
+  if (!window.confirm(t('common.confirmDelete'))) {
+    return;
+  }
+  loading.value = true;
+  errorText.value = '';
+  successText.value = '';
+  try {
+    await deleteNavItem(id);
+    setSuccess(t('common.deleteSuccess'));
+    if (editingNavId.value === id) {
+      resetNavForm();
+    }
+    await loadAll();
+  } catch {
+    errorText.value = t('common.deleteFailed');
     loading.value = false;
   }
 }
@@ -290,7 +465,7 @@ h2 {
 
 .inline-form {
   display: grid;
-  grid-template-columns: repeat(6, minmax(0, 1fr));
+  grid-template-columns: repeat(8, minmax(0, 1fr));
   gap: 8px;
 }
 
@@ -320,6 +495,11 @@ button.primary {
   border-color: var(--accent);
 }
 
+button.danger {
+  border-color: #e8b9b9;
+  color: #b64040;
+}
+
 .actions {
   display: flex;
   justify-content: flex-end;
@@ -343,6 +523,12 @@ button.primary {
   gap: 8px;
 }
 
+.row-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .error {
   color: #b64040;
   margin: 0;
@@ -357,6 +543,11 @@ button.primary {
   .grid-2,
   .inline-form {
     grid-template-columns: 1fr;
+  }
+
+  .list li {
+    align-items: flex-start;
+    flex-direction: column;
   }
 }
 </style>

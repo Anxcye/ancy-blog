@@ -23,5 +23,15 @@ httpClient.interceptors.request.use((config) => {
 
 httpClient.interceptors.response.use(
   (response) => response,
-  (error) => Promise.reject(error),
+  (error) => {
+    const status = error?.response?.status as number | undefined;
+    if (status === 401) {
+      const appStore = useAppStore();
+      appStore.clearToken();
+      if (window.location.pathname !== '/login') {
+        window.location.href = '/login';
+      }
+    }
+    return Promise.reject(error);
+  },
 );

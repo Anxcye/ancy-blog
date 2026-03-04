@@ -122,20 +122,25 @@ Related: integrations API module, translations API module, and backend admin sys
             </div>
           </li>
         </ul>
+        <footer class="pager">
+          <button :disabled="loading || jobPage <= 1" @click="loadJobs(jobPage - 1)">{{ t('common.prev') }}</button>
+          <span>{{ jobPage }} / {{ jobTotalPages }}</span>
+          <button :disabled="loading || jobPage >= jobTotalPages" @click="loadJobs(jobPage + 1)">{{ t('common.next') }}</button>
+        </footer>
       </article>
 
       <article class="panel">
         <header class="panel-header">
           <h2>{{ t('system.translationContentsTitle') }}</h2>
           <div class="toolbar grid-mini">
-            <select v-model="contentFilter.sourceType" @change="loadContents()">
+            <select v-model="contentFilter.sourceType" @change="() => loadContents(1)">
               <option value="">all</option>
               <option value="article">article</option>
               <option value="moment">moment</option>
             </select>
-            <input v-model.trim="contentFilter.sourceId" placeholder="sourceId" @keyup.enter="loadContents" />
-            <input v-model.trim="contentFilter.locale" placeholder="locale" @keyup.enter="loadContents" />
-            <button :disabled="loading" @click="loadContents">{{ t('common.search') }}</button>
+            <input v-model.trim="contentFilter.sourceId" placeholder="sourceId" @keyup.enter="() => loadContents(1)" />
+            <input v-model.trim="contentFilter.locale" placeholder="locale" @keyup.enter="() => loadContents(1)" />
+            <button :disabled="loading" @click="() => loadContents(1)">{{ t('common.search') }}</button>
           </div>
         </header>
 
@@ -155,13 +160,18 @@ Related: integrations API module, translations API module, and backend admin sys
             </div>
           </li>
         </ul>
+        <footer class="pager">
+          <button :disabled="loading || contentPage <= 1" @click="loadContents(contentPage - 1)">{{ t('common.prev') }}</button>
+          <span>{{ contentPage }} / {{ contentTotalPages }}</span>
+          <button :disabled="loading || contentPage >= contentTotalPages" @click="loadContents(contentPage + 1)">{{ t('common.next') }}</button>
+        </footer>
       </article>
     </template>
   </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { computed, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import { listIntegrations, testIntegration, updateIntegration } from '@/api/modules/integrations';
@@ -189,6 +199,9 @@ const providers = ref<IntegrationViewModel[]>([]);
 
 const jobStatusFilter = ref('');
 const jobs = ref<TranslationJob[]>([]);
+const jobPage = ref(1);
+const jobTotal = ref(0);
+const jobPageSize = 20;
 const jobPublishAtLocal = ref('');
 const jobForm = reactive({
   sourceType: 'article',
@@ -208,6 +221,12 @@ const contentFilter = reactive({
   locale: '',
 });
 const contents = ref<TranslationContent[]>([]);
+const contentPage = ref(1);
+const contentTotal = ref(0);
+const contentPageSize = 20;
+
+const jobTotalPages = computed(() => Math.max(1, Math.ceil(jobTotal.value / jobPageSize)));
+const contentTotalPages = computed(() => Math.max(1, Math.ceil(contentTotal.value / contentPageSize)));
 
 function formatDate(value: string): string {
   if (!value) {
@@ -271,16 +290,18 @@ async function testProvider(providerKey: string): Promise<void> {
   }
 }
 
-async function loadJobs(): Promise<void> {
+async function loadJobs(page = 1): Promise<void> {
   loading.value = true;
   errorText.value = '';
   try {
     const result = await listTranslationJobs({
-      page: 1,
-      pageSize: 50,
+      page,
+      pageSize: jobPageSize,
       status: jobStatusFilter.value || undefined,
     });
     jobs.value = result.rows;
+    jobTotal.value = result.total;
+    jobPage.value = page;
   } catch {
     errorText.value = t('common.loadFailed');
   } finally {
@@ -310,7 +331,7 @@ async function createJob(): Promise<void> {
       publishAt: jobForm.publishAt || undefined,
     });
     successText.value = `${t('system.translationJobCreated')} ${id}`;
-    await loadJobs();
+    await loadJobs(1);
   } catch {
     errorText.value = t('common.saveFailed');
     loading.value = false;
@@ -324,25 +345,27 @@ async function retryJob(id: string): Promise<void> {
   try {
     await retryTranslationJob(id);
     successText.value = t('system.retrySuccess');
-    await loadJobs();
+    await loadJobs(jobPage.value);
   } catch {
     errorText.value = t('system.retryFailed');
     loading.value = false;
   }
 }
 
-async function loadContents(): Promise<void> {
+async function loadContents(page = 1): Promise<void> {
   loading.value = true;
   errorText.value = '';
   try {
     const result = await listTranslationContents({
-      page: 1,
-      pageSize: 50,
+      page,
+      pageSize: contentPageSize,
       sourceType: contentFilter.sourceType || undefined,
       sourceId: contentFilter.sourceId || undefined,
       locale: contentFilter.locale || undefined,
     });
     contents.value = result.rows;
+    contentTotal.value = result.total;
+    contentPage.value = page;
   } catch {
     errorText.value = t('common.loadFailed');
   } finally {
@@ -367,6 +390,7 @@ async function saveContent(row: TranslationContent): Promise<void> {
       translatedByJobId: row.translatedByJobId || undefined,
     });
     successText.value = t('common.saveSuccess');
+    await loadContents(contentPage.value);
   } catch {
     errorText.value = t('common.saveFailed');
   } finally {
@@ -378,7 +402,7 @@ onMounted(async () => {
   loading.value = true;
   errorText.value = '';
   try {
-    await Promise.all([loadProviders(), loadJobs(), loadContents()]);
+    await Promise.all([loadProviders(), loadJobs(1), loadContents(1)]);
   } catch {
     errorText.value = t('common.loadFailed');
   } finally {
@@ -486,6 +510,13 @@ button {
   gap: 8px;
 }
 
+.pager {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 8px;
+}
+
 .toolbar {
   display: flex;
   gap: 8px;
@@ -565,12 +596,14 @@ button {
   }
 
   .item-actions,
-  .actions {
+  .actions,
+  .pager {
     width: 100%;
   }
 
   .item-actions button,
-  .actions button {
+  .actions button,
+  .pager button {
     flex: 1;
   }
 }

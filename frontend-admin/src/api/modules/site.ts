@@ -32,6 +32,14 @@ export async function createFooterItem(payload: Omit<FooterItem, 'id'>): Promise
   return response.data.data.id;
 }
 
+export async function updateFooterItem(id: string, payload: Omit<FooterItem, 'id'>): Promise<void> {
+  await httpClient.put<ApiEnvelope<FooterItem>>(`/admin/site/footer-items/${id}`, payload);
+}
+
+export async function deleteFooterItem(id: string): Promise<void> {
+  await httpClient.delete<ApiEnvelope<boolean>>(`/admin/site/footer-items/${id}`);
+}
+
 export async function listSocialLinks(): Promise<SocialLink[]> {
   const response = await httpClient.get<ApiEnvelope<SocialLink[]>>('/public/site/social-links');
   return response.data.data;
@@ -42,6 +50,14 @@ export async function createSocialLink(payload: Omit<SocialLink, 'id'>): Promise
   return response.data.data.id;
 }
 
+export async function updateSocialLink(id: string, payload: Omit<SocialLink, 'id'>): Promise<void> {
+  await httpClient.put<ApiEnvelope<SocialLink>>(`/admin/site/social-links/${id}`, payload);
+}
+
+export async function deleteSocialLink(id: string): Promise<void> {
+  await httpClient.delete<ApiEnvelope<boolean>>(`/admin/site/social-links/${id}`);
+}
+
 export async function listNavItems(): Promise<NavItem[]> {
   const response = await httpClient.get<ApiEnvelope<NavItem[]>>('/public/site/nav');
   return response.data.data;
@@ -50,4 +66,12 @@ export async function listNavItems(): Promise<NavItem[]> {
 export async function createNavItem(payload: Omit<NavItem, 'id'>): Promise<string> {
   const response = await httpClient.post<ApiEnvelope<IDResponse>>('/admin/site/nav-items', payload);
   return response.data.data.id;
+}
+
+export async function updateNavItem(id: string, payload: Omit<NavItem, 'id'>): Promise<void> {
+  await httpClient.put<ApiEnvelope<NavItem>>(`/admin/site/nav-items/${id}`, payload);
+}
+
+export async function deleteNavItem(id: string): Promise<void> {
+  await httpClient.delete<ApiEnvelope<boolean>>(`/admin/site/nav-items/${id}`);
 }

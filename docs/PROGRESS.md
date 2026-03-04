@@ -56,6 +56,7 @@
 - [x] Added AI assist actions in article editor (summary generation and slug suggestion).
 - [x] Added admin moments management (backend list/update APIs and frontend moments CRUD page baseline).
 - [x] Added actionable dashboard metrics and quick entries for content/moderation/system workflows.
+- [x] Completed admin site CRUD loop (footer/social/nav create+edit+delete) and added global 401 redirect handling plus translation-center pagination.
 
 ## Blocked
 - None.

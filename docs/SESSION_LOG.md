@@ -393,3 +393,16 @@
   - resolves `Authorization: Bearer undefined` issue that caused `401 Unauthorized` on admin endpoints after login.
 - Validation:
   - `npm --prefix frontend-admin run build` passed.
+
+## 2026-03-04 (Admin site CRUD completion + auth guard + translation pagination)
+- Completed site orchestration CRUD loop in admin UI:
+  - Added update/delete API calls for footer/social/nav.
+  - Site page now supports create/edit/delete flows for footer, social links, and nav items.
+- Added global frontend 401 handling in shared HTTP client:
+  - On unauthorized responses, clear token and redirect to `/login`.
+- Improved translation center scalability in system page:
+  - Added pagination controls for translation job list and translation content list.
+  - Added page state + total count synchronization.
+- Added missing common locale keys for edit/update/delete and delete-confirm prompts.
+- Validation:
+  - `npm --prefix frontend-admin run build` passed.
