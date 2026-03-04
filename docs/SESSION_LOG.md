@@ -385,3 +385,11 @@
 - Added dashboard API aggregator module using existing admin endpoints.
 - Validation:
   - `npm --prefix frontend-admin run build` passed.
+
+## 2026-03-04 (Frontend auth token parsing fix)
+- Fixed admin login response parsing in `frontend-admin`:
+  - switched from non-existent `data.token` to `data.accessToken`.
+- Impact:
+  - resolves `Authorization: Bearer undefined` issue that caused `401 Unauthorized` on admin endpoints after login.
+- Validation:
+  - `npm --prefix frontend-admin run build` passed.

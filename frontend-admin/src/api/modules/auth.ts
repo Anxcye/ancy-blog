@@ -6,11 +6,13 @@ import { httpClient } from '@/api/http';
 
 interface LoginResponse {
   data: {
-    token: string;
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
   };
 }
 
 export async function login(username: string, password: string): Promise<string> {
   const response = await httpClient.post<LoginResponse>('/auth/login', { username, password });
-  return response.data.data.token;
+  return response.data.data.accessToken;
 }
