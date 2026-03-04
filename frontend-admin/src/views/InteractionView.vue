@@ -1,90 +1,94 @@
 <!--
 File: InteractionView.vue
-Purpose: Manage comment moderation and friend-link review tasks in one workspace.
+Purpose: Manage comment moderation and friend-link review tasks with unified Naive UI components.
 Module: frontend-admin/views/interaction, presentation layer.
 Related: interactions API module and backend admin moderation endpoints.
 -->
 <template>
   <section class="interaction-page">
-    <h1>{{ t('interaction.title') }}</h1>
-    <p class="subtitle">{{ t('interaction.subtitle') }}</p>
+    <NCard :bordered="false" class="section-card">
+      <div class="topbar">
+        <div class="tab-switch">
+          <NButton :type="tab === 'comments' ? 'primary' : 'default'" secondary @click="switchTab('comments')">{{ t('interaction.commentsTab') }}</NButton>
+          <NButton :type="tab === 'links' ? 'primary' : 'default'" secondary @click="switchTab('links')">{{ t('interaction.linksTab') }}</NButton>
+        </div>
 
-    <div class="mode-tabs">
-      <button :class="{ active: tab === 'comments' }" @click="switchTab('comments')">{{ t('interaction.commentsTab') }}</button>
-      <button :class="{ active: tab === 'links' }" @click="switchTab('links')">{{ t('interaction.linksTab') }}</button>
-    </div>
+        <NSelect
+          v-if="tab === 'comments'"
+          v-model:value="commentStatus"
+          :options="commentStatusOptions"
+          :placeholder="t('interaction.allStatus')"
+          clearable
+          style="width: 180px"
+          @update:value="() => loadComments(1)"
+        />
 
-    <p v-if="errorText" class="error">{{ errorText }}</p>
-    <p v-if="successText" class="success">{{ successText }}</p>
-
-    <section v-if="tab === 'comments'" class="panel">
-      <div class="toolbar">
-        <select v-model="commentStatus" @change="() => loadComments(1)">
-          <option value="">{{ t('interaction.allStatus') }}</option>
-          <option value="approved">approved</option>
-          <option value="pending">pending</option>
-          <option value="rejected">rejected</option>
-        </select>
+        <NSelect
+          v-else
+          v-model:value="linkStatus"
+          :options="linkStatusOptions"
+          :placeholder="t('interaction.allStatus')"
+          clearable
+          style="width: 180px"
+          @update:value="() => loadLinks(1)"
+        />
       </div>
 
-      <ul class="list">
-        <li v-for="item in comments" :key="item.id" class="item">
-          <div>
-            <p class="item-title">{{ item.nickname }} · {{ item.status }}</p>
-            <p class="item-content">{{ item.content }}</p>
-            <p class="item-meta">{{ item.ip }} · {{ formatDate(item.createdAt) }}</p>
-          </div>
-          <div class="item-actions">
-            <button @click="setCommentStatus(item.id, 'approved', item.isPinned)">approve</button>
-            <button @click="setCommentStatus(item.id, 'rejected', item.isPinned)">reject</button>
-            <button @click="setCommentStatus(item.id, item.status, item.isPinned === '1' ? '0' : '1')">
-              {{ item.isPinned === '1' ? 'unpin' : 'pin' }}
-            </button>
-          </div>
-        </li>
-      </ul>
-      <footer class="pager">
-        <button :disabled="loading || commentPage <= 1" @click="loadComments(commentPage - 1)">{{ t('common.prev') }}</button>
-        <span>{{ commentPage }} / {{ commentTotalPages }}</span>
-        <button :disabled="loading || commentPage >= commentTotalPages" @click="loadComments(commentPage + 1)">{{ t('common.next') }}</button>
-      </footer>
-    </section>
+      <NAlert v-if="errorText" type="error" :show-icon="false">{{ errorText }}</NAlert>
+      <NAlert v-if="successText" type="success" :show-icon="false">{{ successText }}</NAlert>
 
-    <section v-else class="panel">
-      <div class="toolbar">
-        <select v-model="linkStatus" @change="() => loadLinks(1)">
-          <option value="">{{ t('interaction.allStatus') }}</option>
-          <option value="pending">pending</option>
-          <option value="approved">approved</option>
-          <option value="rejected">rejected</option>
-        </select>
+      <NDataTable
+        v-if="tab === 'comments'"
+        remote
+        :loading="loading"
+        :columns="commentColumns"
+        :data="comments"
+        :pagination="false"
+        :scroll-x="980"
+        :row-key="rowKey"
+      />
+
+      <NDataTable
+        v-else
+        remote
+        :loading="loading"
+        :columns="linkColumns"
+        :data="links"
+        :pagination="false"
+        :scroll-x="900"
+        :row-key="rowKey"
+      />
+
+      <div class="footer-row">
+        <span class="hint">{{ t('articles.total', { total: tab === 'comments' ? commentTotal : linkTotal }) }}</span>
+        <NPagination
+          v-if="tab === 'comments'"
+          :page="commentPage"
+          :page-size="commentPageSize"
+          :item-count="commentTotal"
+          :page-slot="isMobile ? 3 : 7"
+          :simple="isMobile"
+          @update:page="loadComments"
+        />
+        <NPagination
+          v-else
+          :page="linkPage"
+          :page-size="linkPageSize"
+          :item-count="linkTotal"
+          :page-slot="isMobile ? 3 : 7"
+          :simple="isMobile"
+          @update:page="loadLinks"
+        />
       </div>
-
-      <ul class="list">
-        <li v-for="item in links" :key="item.id" class="item">
-          <div>
-            <p class="item-title">{{ item.name }} · {{ item.reviewStatus }}</p>
-            <p class="item-content"><a :href="item.url" target="_blank" rel="noreferrer">{{ item.url }}</a></p>
-            <p class="item-meta">{{ item.contactEmail || '-' }} · {{ item.submittedIp }}</p>
-          </div>
-          <div class="item-actions">
-            <button @click="setLinkStatus(item.id, 'approved')">approve</button>
-            <button @click="setLinkStatus(item.id, 'rejected')">reject</button>
-          </div>
-        </li>
-      </ul>
-      <footer class="pager">
-        <button :disabled="loading || linkPage <= 1" @click="loadLinks(linkPage - 1)">{{ t('common.prev') }}</button>
-        <span>{{ linkPage }} / {{ linkTotalPages }}</span>
-        <button :disabled="loading || linkPage >= linkTotalPages" @click="loadLinks(linkPage + 1)">{{ t('common.next') }}</button>
-      </footer>
-    </section>
+    </NCard>
   </section>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, ref } from 'vue';
+import { computed, h, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import type { DataTableColumns } from 'naive-ui';
+import { NAlert, NButton, NCard, NDataTable, NPagination, NSelect, NSpace } from 'naive-ui';
 
 import { listComments, listLinkSubmissions, reviewLink, updateComment } from '@/api/modules/interactions';
 import type { Comment, LinkSubmission } from '@/api/types';
@@ -97,21 +101,39 @@ const tab = ref<InteractionTab>('comments');
 const loading = ref(false);
 const errorText = ref('');
 const successText = ref('');
+const isMobile = ref(false);
 
-const commentStatus = ref('');
+const commentStatus = ref<string | null>(null);
 const comments = ref<Comment[]>([]);
 const commentPage = ref(1);
 const commentTotal = ref(0);
 const commentPageSize = 20;
 
-const linkStatus = ref('');
+const linkStatus = ref<string | null>(null);
 const links = ref<LinkSubmission[]>([]);
 const linkPage = ref(1);
 const linkTotal = ref(0);
 const linkPageSize = 20;
 
-const commentTotalPages = computed(() => Math.max(1, Math.ceil(commentTotal.value / commentPageSize)));
-const linkTotalPages = computed(() => Math.max(1, Math.ceil(linkTotal.value / linkPageSize)));
+const commentStatusOptions = [
+  { label: 'approved', value: 'approved' },
+  { label: 'pending', value: 'pending' },
+  { label: 'rejected', value: 'rejected' },
+];
+
+const linkStatusOptions = [
+  { label: 'pending', value: 'pending' },
+  { label: 'approved', value: 'approved' },
+  { label: 'rejected', value: 'rejected' },
+];
+
+function rowKey(row: Comment | LinkSubmission): string {
+  return row.id;
+}
+
+function syncViewport(): void {
+  isMobile.value = window.innerWidth <= 900;
+}
 
 function formatDate(value: string): string {
   if (!value) {
@@ -119,6 +141,129 @@ function formatDate(value: string): string {
   }
   return new Date(value).toLocaleString();
 }
+
+const commentColumns = computed<DataTableColumns<Comment>>(() => [
+  {
+    title: '用户',
+    key: 'nickname',
+    width: 150,
+  },
+  {
+    title: '状态',
+    key: 'status',
+    width: 110,
+  },
+  {
+    title: '内容',
+    key: 'content',
+    ellipsis: {
+      tooltip: true,
+    },
+  },
+  {
+    title: '来源',
+    key: 'meta',
+    width: 220,
+    render(row) {
+      return `${row.ip} · ${formatDate(row.createdAt)}`;
+    },
+  },
+  {
+    title: '操作',
+    key: 'actions',
+    width: 240,
+    render(row) {
+      return h(NSpace, { wrap: false, size: 8 }, {
+        default: () => [
+          h(
+            NButton,
+            {
+              size: 'small',
+              tertiary: true,
+              onClick: () => setCommentStatus(row.id, 'approved', row.isPinned),
+            },
+            { default: () => 'approve' },
+          ),
+          h(
+            NButton,
+            {
+              size: 'small',
+              tertiary: true,
+              onClick: () => setCommentStatus(row.id, 'rejected', row.isPinned),
+            },
+            { default: () => 'reject' },
+          ),
+          h(
+            NButton,
+            {
+              size: 'small',
+              tertiary: true,
+              onClick: () => setCommentStatus(row.id, row.status, row.isPinned === '1' ? '0' : '1'),
+            },
+            { default: () => (row.isPinned === '1' ? 'unpin' : 'pin') },
+          ),
+        ],
+      });
+    },
+  },
+]);
+
+const linkColumns = computed<DataTableColumns<LinkSubmission>>(() => [
+  {
+    title: '名称',
+    key: 'name',
+    width: 180,
+  },
+  {
+    title: '状态',
+    key: 'reviewStatus',
+    width: 110,
+  },
+  {
+    title: '地址',
+    key: 'url',
+    ellipsis: {
+      tooltip: true,
+    },
+  },
+  {
+    title: '来源',
+    key: 'meta',
+    width: 220,
+    render(row) {
+      return `${row.contactEmail || '-'} · ${row.submittedIp}`;
+    },
+  },
+  {
+    title: '操作',
+    key: 'actions',
+    width: 160,
+    render(row) {
+      return h(NSpace, { wrap: false, size: 8 }, {
+        default: () => [
+          h(
+            NButton,
+            {
+              size: 'small',
+              tertiary: true,
+              onClick: () => setLinkStatus(row.id, 'approved'),
+            },
+            { default: () => 'approve' },
+          ),
+          h(
+            NButton,
+            {
+              size: 'small',
+              tertiary: true,
+              onClick: () => setLinkStatus(row.id, 'rejected'),
+            },
+            { default: () => 'reject' },
+          ),
+        ],
+      });
+    },
+  },
+]);
 
 async function switchTab(nextTab: InteractionTab): Promise<void> {
   tab.value = nextTab;
@@ -188,151 +333,61 @@ async function setLinkStatus(id: string, reviewStatus: string): Promise<void> {
 }
 
 onMounted(async () => {
+  syncViewport();
+  window.addEventListener('resize', syncViewport);
   await loadComments(1);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener('resize', syncViewport);
 });
 </script>
 
 <style scoped>
 .interaction-page {
   display: grid;
-  gap: 12px;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-h1 {
-  margin: 0;
+.section-card {
+  border-radius: 14px;
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--n-text-color) 8%, transparent);
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-.subtitle {
-  margin: -4px 0 0;
-  color: var(--muted);
-}
-
-.mode-tabs {
-  display: inline-flex;
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  overflow: hidden;
-}
-
-.mode-tabs button {
-  border: 0;
-  border-right: 1px solid var(--border);
-  padding: 8px 12px;
-  background: var(--surface);
-  cursor: pointer;
-}
-
-.mode-tabs button:last-child {
-  border-right: 0;
-}
-
-.mode-tabs button.active {
-  background: var(--accent-soft);
-  color: var(--accent-hover);
-  font-weight: 600;
-}
-
-.panel {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-  padding: 14px;
-  display: grid;
-  gap: 10px;
-}
-
-.toolbar {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.pager {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-  gap: 8px;
-}
-
-select,
-button {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 10px;
-  font: inherit;
-  background: var(--surface);
-}
-
-button {
-  cursor: pointer;
-}
-
-.list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 8px;
-}
-
-.item {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 10px;
+.topbar {
   display: flex;
   justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.tab-switch {
+  display: flex;
+  gap: 8px;
+}
+
+.footer-row {
+  margin-top: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
   gap: 10px;
 }
 
-.item-title,
-.item-content,
-.item-meta {
-  margin: 0;
-}
-
-.item-title {
-  font-weight: 600;
-}
-
-.item-content {
-  margin-top: 6px;
-  color: var(--text);
-  white-space: pre-wrap;
-}
-
-.item-meta {
-  margin-top: 6px;
-  color: var(--muted);
+.hint {
+  color: var(--n-text-color-3);
   font-size: 13px;
 }
 
-.item-actions {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-}
-
-.error {
-  color: #b64040;
-  margin: 0;
-}
-
-.success {
-  color: var(--accent-hover);
-  margin: 0;
-}
-
 @media (max-width: 900px) {
-  .item {
+  .topbar,
+  .footer-row {
     flex-direction: column;
-  }
-
-  .item-actions {
-    width: 100%;
-  }
-
-  .item-actions button,
-  .pager button {
-    flex: 1;
+    align-items: stretch;
   }
 }
 </style>

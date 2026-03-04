@@ -40,6 +40,15 @@ type ArticleBatchDeleteRequest struct {
 	IDs []string `json:"ids"`
 }
 
+type MomentBatchStatusRequest struct {
+	IDs    []string `json:"ids"`
+	Status string   `json:"status"`
+}
+
+type MomentBatchDeleteRequest struct {
+	IDs []string `json:"ids"`
+}
+
 type SiteSettingsUpdateRequest struct {
 	SiteName      string `json:"siteName"`
 	AvatarURL     string `json:"avatarUrl"`

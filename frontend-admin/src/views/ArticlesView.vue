@@ -8,10 +8,10 @@ Related: articles API module, translation center routing, dashboard content work
   <section class="articles-page">
     <NCard :bordered="false" class="section-card">
       <div class="topbar">
-        <NTabs type="segment" :value="'articles'">
-          <NTabPane name="articles" :tab="t('articles.tabArticles')" />
-          <NTabPane name="moments" :tab="t('articles.tabMoments')" @click="router.push({ name: 'moments' })" />
-        </NTabs>
+        <div class="content-switch">
+          <NButton type="primary" secondary>{{ t('articles.tabArticles') }}</NButton>
+          <NButton secondary @click="router.push({ name: 'moments' })">{{ t('articles.tabMoments') }}</NButton>
+        </div>
 
         <NButton type="primary" @click="router.push({ name: 'article-new' })">{{ t('articles.create') }}</NButton>
       </div>
@@ -73,7 +73,7 @@ import { computed, h, onMounted, reactive, ref } from 'vue';
 import { RouterLink, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
 import type { DataTableColumns } from 'naive-ui';
-import { NAlert, NButton, NCard, NDataTable, NForm, NFormItem, NInput, NPagination, NSelect, NSpace, NTabPane, NTabs, NTag, useDialog, useMessage } from 'naive-ui';
+import { NAlert, NButton, NCard, NDataTable, NForm, NFormItem, NInput, NPagination, NSelect, NSpace, NTag, useDialog, useMessage } from 'naive-ui';
 
 import { batchDeleteArticles, batchUpdateArticleStatus, deleteArticle, listArticles } from '@/api/modules/articles';
 import type { Article } from '@/api/types';
@@ -90,7 +90,6 @@ const selectedRowKeys = ref<Array<string | number>>([]);
 const total = ref(0);
 const page = ref(1);
 const pageSize = 12;
-
 const filters = reactive({
   keyword: null as string | null,
   status: null as string | null,
@@ -309,6 +308,11 @@ onMounted(async () => {
   margin-bottom: 12px;
 }
 
+.content-switch {
+  display: flex;
+  gap: 8px;
+}
+
 .filters {
   margin-bottom: 12px;
 }
@@ -323,7 +327,7 @@ onMounted(async () => {
 }
 
 .hint {
-  color: #6e7a84;
+  color: var(--n-text-color-3);
   font-size: 13px;
 }
 

@@ -1,22 +1,17 @@
 // File: i18n/index.ts
-// Purpose: Register admin UI localization resources and initialize locale preference.
+// Purpose: Register admin UI localization resources with fixed Chinese locale.
 // Module: frontend-admin/i18n, presentation localization layer.
-// Related: locale dictionaries, app store locale state, UI components using translation keys.
+// Related: locale dictionaries and UI components using translation keys.
 import { createI18n } from 'vue-i18n';
 
 import zhCN from '@/locales/zh-CN';
-import enUS from '@/locales/en-US';
-
-const storedLocale = localStorage.getItem('ancy_admin_locale');
-const defaultLocale = storedLocale === 'en-US' ? 'en-US' : 'zh-CN';
 
 const i18n = createI18n({
   legacy: false,
-  locale: defaultLocale,
-  fallbackLocale: 'en-US',
+  locale: 'zh-CN',
+  fallbackLocale: 'zh-CN',
   messages: {
     'zh-CN': zhCN,
-    'en-US': enUS,
   },
 });
 

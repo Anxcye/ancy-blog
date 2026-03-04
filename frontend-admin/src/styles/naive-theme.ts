@@ -43,10 +43,40 @@ export const darkThemeOverrides: GlobalThemeOverrides = {
     primaryColorHover: '#6fd2c9',
     primaryColorPressed: '#49b6ac',
     primaryColorSuppl: '#5ac8be',
+    bodyColor: '#1e252c',
+    cardColor: '#262f37',
+    modalColor: '#262f37',
+    popoverColor: '#262f37',
+    tableColor: '#262f37',
+    inputColor: '#313b45',
+    borderColor: '#3a4551',
+    textColorBase: '#e6edf3',
     borderRadius: '12px',
     borderRadiusSmall: '10px',
   },
   Card: {
     borderRadius: '14px',
+  },
+  Layout: {
+    color: '#1e252c',
+    siderColor: '#242d36',
+    headerColor: '#242d36',
+  },
+  Input: {
+    color: '#313b45',
+  },
+  Select: {
+    peers: {
+      InternalSelection: {
+        color: '#313b45',
+      },
+    },
+  },
+  Menu: {
+    itemTextColor: '#a5b2bf',
+    itemTextColorActive: '#7bd4cd',
+    itemTextColorActiveHover: '#7bd4cd',
+    itemColorActive: 'rgba(122, 212, 205, 0.14)',
+    itemColorActiveHover: 'rgba(122, 212, 205, 0.14)',
   },
 };

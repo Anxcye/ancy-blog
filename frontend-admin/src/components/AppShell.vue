@@ -1,8 +1,8 @@
 <!--
 File: AppShell.vue
-Purpose: Provide enterprise-grade admin chrome with sidebar navigation and responsive mobile drawer.
+Purpose: Provide enterprise-grade admin chrome with desktop sider and mobile bottom navigation.
 Module: frontend-admin/components, shell/layout layer.
-Related: router routes, app store preferences, i18n labels, authentication state.
+Related: router routes, app store theme preference, authentication state.
 -->
 <template>
   <div v-if="isLoginPage" class="login-layout">
@@ -25,7 +25,7 @@ Related: router routes, app store preferences, i18n labels, authentication state
         <span class="brand-mark">A</span>
         <div v-if="!collapsed" class="brand-text">
           <strong>Ancy Admin</strong>
-          <small>Control Panel</small>
+          <small>后台管理系统</small>
         </div>
       </div>
       <NMenu :collapsed="collapsed" :collapsed-width="72" :collapsed-icon-size="20" :options="menuOptions" :value="activeKey" @update:value="handleMenuSelect" />
@@ -34,11 +34,6 @@ Related: router routes, app store preferences, i18n labels, authentication state
     <NLayout>
       <NLayoutHeader bordered class="header">
         <div class="header-left">
-          <NButton v-if="isMobile" quaternary circle @click="drawerOpen = true">
-            <template #icon>
-              <NIcon><MenuOutline /></NIcon>
-            </template>
-          </NButton>
           <div>
             <h1>{{ pageTitle }}</h1>
             <p>{{ t('layout.subtitle') }}</p>
@@ -46,13 +41,6 @@ Related: router routes, app store preferences, i18n labels, authentication state
         </div>
 
         <NSpace align="center" :size="12">
-          <NSelect
-            size="small"
-            style="width: 110px"
-            :value="appStore.locale"
-            :options="localeOptions"
-            @update:value="handleLocaleChange"
-          />
           <NSwitch :value="appStore.themeMode === 'dark'" @update:value="handleThemeChange">
             <template #checked-icon>
               <NIcon><MoonOutline /></NIcon>
@@ -70,13 +58,21 @@ Related: router routes, app store preferences, i18n labels, authentication state
           <slot />
         </div>
       </NLayoutContent>
-    </NLayout>
 
-    <NDrawer v-model:show="drawerOpen" placement="left" :width="260">
-      <NDrawerContent :title="t('layout.menu')" closable>
-        <NMenu :options="menuOptions" :value="activeKey" @update:value="handleMenuSelect" />
-      </NDrawerContent>
-    </NDrawer>
+      <nav v-if="isMobile" class="mobile-tabbar">
+        <NButton
+          v-for="item in mobileTabs"
+          :key="item.key"
+          text
+          size="small"
+          class="tab-item"
+          :class="{ active: activeKey === item.key }"
+          @click="handleMenuSelect(item.key)"
+        >
+          <span>{{ item.label }}</span>
+        </NButton>
+      </nav>
+    </NLayout>
   </NLayout>
 </template>
 
@@ -84,9 +80,9 @@ Related: router routes, app store preferences, i18n labels, authentication state
 import { computed, h, onBeforeUnmount, onMounted, ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { useI18n } from 'vue-i18n';
-import { BookOutline, ChatbubblesOutline, CogOutline, HomeOutline, LogOutOutline, MoonOutline, MenuOutline, NewspaperOutline, SunnyOutline } from '@vicons/ionicons5';
-import type { MenuOption, SelectOption } from 'naive-ui';
-import { NButton, NDrawer, NDrawerContent, NIcon, NLayout, NLayoutContent, NLayoutHeader, NLayoutSider, NMenu, NSelect, NSpace, NSwitch } from 'naive-ui';
+import { BookOutline, ChatbubblesOutline, CogOutline, HomeOutline, MoonOutline, NewspaperOutline, SunnyOutline } from '@vicons/ionicons5';
+import type { MenuOption } from 'naive-ui';
+import { NButton, NIcon, NLayout, NLayoutContent, NLayoutHeader, NLayoutSider, NMenu, NSpace, NSwitch } from 'naive-ui';
 
 import { useAppStore } from '@/stores/app';
 
@@ -96,7 +92,6 @@ const { t } = useI18n();
 const appStore = useAppStore();
 
 const collapsed = ref(false);
-const drawerOpen = ref(false);
 const isMobile = ref(false);
 
 function renderIcon(icon: typeof HomeOutline) {
@@ -105,15 +100,7 @@ function renderIcon(icon: typeof HomeOutline) {
 
 const menuOptions = computed<MenuOption[]>(() => [
   { label: t('nav.workbench'), key: 'dashboard', icon: renderIcon(HomeOutline) },
-  {
-    label: t('nav.content'),
-    key: 'content-group',
-    icon: renderIcon(NewspaperOutline),
-    children: [
-      { label: t('articles.tabArticles'), key: 'articles', icon: renderIcon(BookOutline) },
-      { label: t('articles.tabMoments'), key: 'moments', icon: renderIcon(ChatbubblesOutline) },
-    ],
-  },
+  { label: t('nav.content'), key: 'content', icon: renderIcon(NewspaperOutline) },
   { label: t('nav.site'), key: 'site', icon: renderIcon(BookOutline) },
   { label: t('nav.interaction'), key: 'interaction', icon: renderIcon(ChatbubblesOutline) },
   { label: t('nav.system'), key: 'system', icon: renderIcon(CogOutline) },
@@ -121,10 +108,10 @@ const menuOptions = computed<MenuOption[]>(() => [
 
 const routeNameToKey: Record<string, string> = {
   dashboard: 'dashboard',
-  articles: 'articles',
-  'article-new': 'articles',
-  'article-edit': 'articles',
-  moments: 'moments',
+  articles: 'content',
+  'article-new': 'content',
+  'article-edit': 'content',
+  moments: 'content',
   site: 'site',
   interaction: 'interaction',
   system: 'system',
@@ -145,9 +132,12 @@ const activeKey = computed(() => routeNameToKey[String(route.name || '')] || 'da
 const pageTitle = computed(() => routeTitleMap.value[String(route.name || '')] || 'Ancy Admin');
 const isLoginPage = computed(() => route.name === 'login');
 
-const localeOptions = computed<SelectOption[]>(() => [
-  { label: '中文', value: 'zh-CN' },
-  { label: 'English', value: 'en-US' },
+const mobileTabs = computed(() => [
+  { key: 'dashboard', label: t('nav.workbench') },
+  { key: 'content', label: t('nav.content') },
+  { key: 'site', label: t('nav.site') },
+  { key: 'interaction', label: t('nav.interaction') },
+  { key: 'system', label: t('nav.system') },
 ]);
 
 function syncViewport(): void {
@@ -157,6 +147,7 @@ function syncViewport(): void {
 function handleMenuSelect(key: string): void {
   const targetMap: Record<string, string> = {
     dashboard: '/dashboard',
+    content: '/content/articles',
     articles: '/content/articles',
     moments: '/content/moments',
     site: '/site',
@@ -165,7 +156,6 @@ function handleMenuSelect(key: string): void {
   };
   const target = targetMap[key];
   if (target) {
-    drawerOpen.value = false;
     router.push(target);
   }
 }
@@ -174,13 +164,8 @@ function handleThemeChange(enabled: boolean): void {
   appStore.setThemeMode(enabled ? 'dark' : 'light');
 }
 
-function handleLocaleChange(value: string): void {
-  appStore.setLocale(value === 'en-US' ? 'en-US' : 'zh-CN');
-}
-
 function logout(): void {
   appStore.clearToken();
-  drawerOpen.value = false;
   router.push({ name: 'login' });
 }
 
@@ -204,10 +189,7 @@ onBeforeUnmount(() => {
   display: grid;
   place-items: center;
   padding: 20px;
-  background:
-    radial-gradient(circle at 14% 18%, rgba(38, 166, 154, 0.12), transparent 34%),
-    radial-gradient(circle at 86% 82%, rgba(38, 166, 154, 0.08), transparent 42%),
-    #f4f7f6;
+  background-color: var(--n-body-color);
 }
 
 .brand {
@@ -225,7 +207,7 @@ onBeforeUnmount(() => {
   width: 36px;
   height: 36px;
   border-radius: 12px;
-  background: linear-gradient(135deg, #26a69a, #3ec7bb);
+  background: linear-gradient(135deg, var(--n-primary-color), var(--n-primary-color-hover));
   color: #fff;
   display: grid;
   place-items: center;
@@ -242,8 +224,9 @@ onBeforeUnmount(() => {
   font-size: 14px;
 }
 
-.brand-text small {
-  color: #7a8791;
+.brand-text small,
+.header-left p {
+  color: var(--n-text-color-3);
   font-size: 12px;
 }
 
@@ -271,17 +254,62 @@ onBeforeUnmount(() => {
 
 .header-left p {
   margin: 3px 0 0;
-  font-size: 12px;
-  color: #7b8791;
 }
 
 .content-area {
   padding: 18px;
+  overflow-x: hidden;
 }
 
 .content-inner {
   width: min(1260px, 100%);
   margin: 0 auto;
+  padding-bottom: 84px;
+}
+
+.mobile-tabbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0;
+  padding: 6px 6px calc(6px + env(safe-area-inset-bottom));
+  background: var(--n-card-color);
+  border-top: 1px solid var(--n-border-color);
+  box-shadow: 0 -8px 24px color-mix(in srgb, var(--n-text-color) 12%, transparent);
+  isolation: isolate;
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
+}
+
+.mobile-tabbar::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--n-card-color);
+  opacity: 1;
+}
+
+.tab-item {
+  display: grid;
+  gap: 0;
+  place-items: center;
+  color: var(--n-text-color-2);
+  padding: 8px 2px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 650;
+  height: 52px;
+}
+
+.tab-item.active {
+  color: var(--n-primary-color);
+  background: color-mix(in srgb, var(--n-primary-color) 20%, transparent);
+  font-weight: 750;
 }
 
 @media (max-width: 992px) {

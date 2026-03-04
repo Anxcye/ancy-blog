@@ -1,164 +1,168 @@
 <!--
 File: SiteView.vue
-Purpose: Manage site settings, footer items, social links, and navigation entries.
+Purpose: Manage site settings, footer items, social links, nav entries, and content slots with unified Naive UI components.
 Module: frontend-admin/views/site, presentation layer.
 Related: site API module and backend site/admin endpoints.
 -->
 <template>
   <section class="site-page">
-    <h1>{{ t('site.title') }}</h1>
-    <p class="subtitle">{{ t('site.subtitle') }}</p>
+    <NCard :bordered="false" class="section-card">
+      <NAlert v-if="errorText" type="error" :show-icon="false">{{ errorText }}</NAlert>
+      <NAlert v-if="successText" type="success" :show-icon="false">{{ successText }}</NAlert>
 
-    <p v-if="errorText" class="error">{{ errorText }}</p>
-    <p v-if="successText" class="success">{{ successText }}</p>
-
-    <div class="panel">
-      <h2>{{ t('site.settingsTitle') }}</h2>
-      <div class="grid-2">
-        <label>
-          <span>{{ t('site.siteName') }}</span>
-          <input v-model.trim="settingsForm.siteName" type="text" />
-        </label>
-        <label>
-          <span>{{ t('site.defaultLocale') }}</span>
-          <input v-model.trim="settingsForm.defaultLocale" type="text" placeholder="zh-CN" />
-        </label>
-        <label>
-          <span>{{ t('site.avatarUrl') }}</span>
-          <input v-model.trim="settingsForm.avatarUrl" type="url" />
-        </label>
-        <label>
-          <span>{{ t('site.heroIntroMd') }}</span>
-          <textarea v-model="settingsForm.heroIntroMd" rows="4" />
-        </label>
-      </div>
-      <div class="actions">
-        <button class="primary" :disabled="loading" @click="saveSettings">{{ t('common.save') }}</button>
-      </div>
-    </div>
-
-    <div class="panel">
-      <h2>{{ t('site.footerTitle') }}</h2>
-      <div class="inline-form">
-        <input v-model.trim="footerForm.label" :placeholder="t('site.footerLabel')" type="text" />
-        <select v-model="footerForm.linkType">
-          <option value="none">none</option>
-          <option value="internal">internal</option>
-          <option value="external">external</option>
-        </select>
-        <input v-model.trim="footerForm.internalArticleSlug" placeholder="about-me" type="text" />
-        <input v-model.trim="footerForm.externalUrl" placeholder="https://example.com" type="url" />
-        <input v-model.number="footerForm.rowNum" type="number" min="1" max="3" />
-        <input v-model.number="footerForm.orderNum" type="number" min="1" />
-        <button :disabled="loading" @click="submitFooter">
-          {{ editingFooterId ? t('common.update') : t('common.add') }}
-        </button>
-        <button v-if="editingFooterId" :disabled="loading" @click="cancelFooterEdit">{{ t('common.cancel') }}</button>
-      </div>
-      <ul class="list">
-        <li v-for="item in footerItems" :key="item.id">
-          <span>{{ item.label }} (row {{ item.rowNum }}, #{{ item.orderNum }})</span>
-          <div class="row-actions">
-            <code>{{ item.linkType }}</code>
-            <button :disabled="loading" @click="startFooterEdit(item)">{{ t('common.edit') }}</button>
-            <button :disabled="loading" class="danger" @click="removeFooter(item.id)">{{ t('common.delete') }}</button>
+      <NCard size="small" :bordered="true">
+        <template #header>{{ t('site.settingsTitle') }}</template>
+        <NForm label-placement="top">
+          <div class="grid-2">
+            <NFormItem :label="t('site.siteName')">
+              <NInput v-model:value="settingsForm.siteName" />
+            </NFormItem>
+            <NFormItem :label="t('site.defaultLocale')">
+              <NInput v-model:value="settingsForm.defaultLocale" placeholder="zh-CN" />
+            </NFormItem>
+            <NFormItem :label="t('site.avatarUrl')">
+              <NInput v-model:value="settingsForm.avatarUrl" />
+            </NFormItem>
+            <NFormItem :label="t('site.heroIntroMd')">
+              <NInput v-model:value="settingsForm.heroIntroMd" type="textarea" :autosize="{ minRows: 4, maxRows: 10 }" />
+            </NFormItem>
           </div>
-        </li>
-      </ul>
-    </div>
+        </NForm>
+        <NButton type="primary" :loading="loading" @click="saveSettings">{{ t('common.save') }}</NButton>
+      </NCard>
 
-    <div class="panel">
-      <h2>{{ t('site.socialTitle') }}</h2>
-      <div class="inline-form">
-        <input v-model.trim="socialForm.platform" placeholder="github" type="text" />
-        <input v-model.trim="socialForm.title" :placeholder="t('site.socialTitleField')" type="text" />
-        <input v-model.trim="socialForm.url" placeholder="https://github.com/" type="url" />
-        <input v-model.trim="socialForm.iconKey" placeholder="github" type="text" />
-        <input v-model.number="socialForm.orderNum" type="number" min="1" />
-        <button :disabled="loading" @click="submitSocial">
-          {{ editingSocialId ? t('common.update') : t('common.add') }}
-        </button>
-        <button v-if="editingSocialId" :disabled="loading" @click="cancelSocialEdit">{{ t('common.cancel') }}</button>
-      </div>
-      <ul class="list">
-        <li v-for="item in socialLinks" :key="item.id">
-          <span>{{ item.title }}</span>
-          <div class="row-actions">
-            <code>{{ item.url }}</code>
-            <button :disabled="loading" @click="startSocialEdit(item)">{{ t('common.edit') }}</button>
-            <button :disabled="loading" class="danger" @click="removeSocial(item.id)">{{ t('common.delete') }}</button>
+      <NCard size="small" :bordered="true">
+        <template #header>{{ t('site.footerTitle') }}</template>
+        <NForm label-placement="top">
+          <div class="grid-3">
+            <NFormItem :label="t('site.footerLabel')">
+              <NInput v-model:value="footerForm.label" />
+            </NFormItem>
+            <NFormItem label="linkType">
+              <NSelect v-model:value="footerForm.linkType" :options="footerLinkTypeOptions" />
+            </NFormItem>
+            <NFormItem label="internalSlug">
+              <NInput v-model:value="footerForm.internalArticleSlug" />
+            </NFormItem>
+            <NFormItem label="externalUrl">
+              <NInput v-model:value="footerForm.externalUrl" />
+            </NFormItem>
+            <NFormItem label="rowNum">
+              <NInputNumber v-model:value="footerForm.rowNum" :min="1" :max="3" style="width: 100%" />
+            </NFormItem>
+            <NFormItem label="orderNum">
+              <NInputNumber v-model:value="footerForm.orderNum" :min="1" style="width: 100%" />
+            </NFormItem>
           </div>
-        </li>
-      </ul>
-    </div>
+        </NForm>
+        <NSpace>
+          <NButton :loading="loading" @click="submitFooter">{{ editingFooterId ? t('common.update') : t('common.add') }}</NButton>
+          <NButton v-if="editingFooterId" :loading="loading" tertiary @click="cancelFooterEdit">{{ t('common.cancel') }}</NButton>
+        </NSpace>
 
-    <div class="panel">
-      <h2>{{ t('site.navTitle') }}</h2>
-      <div class="inline-form">
-        <input v-model.trim="navForm.name" :placeholder="t('site.navName')" type="text" />
-        <input v-model.trim="navForm.key" placeholder="articles" type="text" />
-        <input v-model.trim="navForm.type" placeholder="menu" type="text" />
-        <input v-model.trim="navForm.targetType" placeholder="route" type="text" />
-        <input v-model.trim="navForm.targetValue" placeholder="/archives" type="text" />
-        <input v-model.number="navForm.orderNum" type="number" min="1" />
-        <button :disabled="loading" @click="submitNav">
-          {{ editingNavId ? t('common.update') : t('common.add') }}
-        </button>
-        <button v-if="editingNavId" :disabled="loading" @click="cancelNavEdit">{{ t('common.cancel') }}</button>
-      </div>
-      <ul class="list">
-        <li v-for="item in navItems" :key="item.id">
-          <span>{{ item.name }} ({{ item.key }})</span>
-          <div class="row-actions">
-            <code>{{ item.targetType }}: {{ item.targetValue }}</code>
-            <button :disabled="loading" @click="startNavEdit(item)">{{ t('common.edit') }}</button>
-            <button :disabled="loading" class="danger" @click="removeNav(item.id)">{{ t('common.delete') }}</button>
+        <NDataTable remote :loading="loading" :columns="footerColumns" :data="footerItems" :pagination="false" :row-key="rowKey" class="table-block" />
+      </NCard>
+
+      <NCard size="small" :bordered="true">
+        <template #header>{{ t('site.socialTitle') }}</template>
+        <NForm label-placement="top">
+          <div class="grid-3">
+            <NFormItem label="platform">
+              <NInput v-model:value="socialForm.platform" />
+            </NFormItem>
+            <NFormItem :label="t('site.socialTitleField')">
+              <NInput v-model:value="socialForm.title" />
+            </NFormItem>
+            <NFormItem label="url">
+              <NInput v-model:value="socialForm.url" />
+            </NFormItem>
+            <NFormItem label="iconKey">
+              <NInput v-model:value="socialForm.iconKey" />
+            </NFormItem>
+            <NFormItem label="orderNum">
+              <NInputNumber v-model:value="socialForm.orderNum" :min="1" style="width: 100%" />
+            </NFormItem>
           </div>
-        </li>
-      </ul>
-    </div>
+        </NForm>
+        <NSpace>
+          <NButton :loading="loading" @click="submitSocial">{{ editingSocialId ? t('common.update') : t('common.add') }}</NButton>
+          <NButton v-if="editingSocialId" :loading="loading" tertiary @click="cancelSocialEdit">{{ t('common.cancel') }}</NButton>
+        </NSpace>
 
-    <div class="panel">
-      <h2>{{ t('site.slotTitle') }}</h2>
-      <div class="inline-form">
-        <input v-model.trim="slotForm.slotKey" placeholder="home_featured" type="text" />
-        <input v-model.trim="slotForm.name" :placeholder="t('site.slotName')" type="text" />
-        <input v-model.trim="slotForm.description" :placeholder="t('site.slotDescription')" type="text" />
-        <button :disabled="loading" @click="submitSlot">{{ t('common.add') }}</button>
-      </div>
+        <NDataTable remote :loading="loading" :columns="socialColumns" :data="socialLinks" :pagination="false" :row-key="rowKey" class="table-block" />
+      </NCard>
 
-      <div class="slot-tools">
-        <select v-model="selectedSlotKey" @change="onSlotChange">
-          <option v-for="slot in slots" :key="slot.id" :value="slot.slotKey">{{ slot.slotKey }} · {{ slot.name }}</option>
-        </select>
-      </div>
-
-      <div v-if="selectedSlotKey" class="inline-form">
-        <select v-model="slotItemForm.contentType">
-          <option value="article">article</option>
-          <option value="moment">moment</option>
-        </select>
-        <input v-model.trim="slotItemForm.contentId" placeholder="content id (uuid)" type="text" />
-        <input v-model.number="slotItemForm.orderNum" type="number" min="1" />
-        <button :disabled="loading" @click="submitSlotItem">{{ t('common.add') }}</button>
-      </div>
-
-      <ul class="list">
-        <li v-for="item in slotItems" :key="item.id">
-          <span>{{ item.contentType }} · {{ item.contentId }} · #{{ item.orderNum }}</span>
-          <div class="row-actions">
-            <code>{{ item.enabled ? 'enabled' : 'disabled' }}</code>
-            <button :disabled="loading" class="danger" @click="removeSlotItem(item.id)">{{ t('common.delete') }}</button>
+      <NCard size="small" :bordered="true">
+        <template #header>{{ t('site.navTitle') }}</template>
+        <NForm label-placement="top">
+          <div class="grid-3">
+            <NFormItem :label="t('site.navName')">
+              <NInput v-model:value="navForm.name" />
+            </NFormItem>
+            <NFormItem label="key">
+              <NInput v-model:value="navForm.key" />
+            </NFormItem>
+            <NFormItem label="type">
+              <NInput v-model:value="navForm.type" />
+            </NFormItem>
+            <NFormItem label="targetType">
+              <NInput v-model:value="navForm.targetType" />
+            </NFormItem>
+            <NFormItem label="targetValue">
+              <NInput v-model:value="navForm.targetValue" />
+            </NFormItem>
+            <NFormItem label="orderNum">
+              <NInputNumber v-model:value="navForm.orderNum" :min="1" style="width: 100%" />
+            </NFormItem>
           </div>
-        </li>
-      </ul>
-    </div>
+        </NForm>
+        <NSpace>
+          <NButton :loading="loading" @click="submitNav">{{ editingNavId ? t('common.update') : t('common.add') }}</NButton>
+          <NButton v-if="editingNavId" :loading="loading" tertiary @click="cancelNavEdit">{{ t('common.cancel') }}</NButton>
+        </NSpace>
+
+        <NDataTable remote :loading="loading" :columns="navColumns" :data="navItems" :pagination="false" :row-key="rowKey" class="table-block" />
+      </NCard>
+
+      <NCard size="small" :bordered="true">
+        <template #header>{{ t('site.slotTitle') }}</template>
+        <NForm label-placement="top">
+          <div class="grid-3">
+            <NFormItem label="slotKey">
+              <NInput v-model:value="slotForm.slotKey" />
+            </NFormItem>
+            <NFormItem :label="t('site.slotName')">
+              <NInput v-model:value="slotForm.name" />
+            </NFormItem>
+            <NFormItem :label="t('site.slotDescription')">
+              <NInput v-model:value="slotForm.description" />
+            </NFormItem>
+          </div>
+        </NForm>
+        <NButton :loading="loading" @click="submitSlot">{{ t('common.add') }}</NButton>
+
+        <NSpace class="slot-tools" vertical>
+          <NSelect v-model:value="selectedSlotKey" :options="slotOptions" style="max-width: 360px" @update:value="onSlotChange" />
+
+          <div v-if="selectedSlotKey" class="slot-inline">
+            <NSelect v-model:value="slotItemForm.contentType" :options="sourceTypeOptions" style="width: 140px" />
+            <NInput v-model:value="slotItemForm.contentId" placeholder="content id (uuid)" />
+            <NInputNumber v-model:value="slotItemForm.orderNum" :min="1" style="width: 140px" />
+            <NButton :loading="loading" @click="submitSlotItem">{{ t('common.add') }}</NButton>
+          </div>
+        </NSpace>
+
+        <NDataTable remote :loading="loading" :columns="slotItemColumns" :data="slotItems" :pagination="false" :row-key="rowKey" class="table-block" />
+      </NCard>
+    </NCard>
   </section>
 </template>
 
 <script setup lang="ts">
-import { onMounted, reactive, ref } from 'vue';
+import { computed, h, onMounted, reactive, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
+import type { DataTableColumns } from 'naive-ui';
+import { NAlert, NButton, NCard, NDataTable, NForm, NFormItem, NInput, NInputNumber, NSelect, NSpace } from 'naive-ui';
 
 import {
   createFooterItem,
@@ -249,6 +253,26 @@ const slotItemForm = reactive({
   enabled: true,
 });
 
+const footerLinkTypeOptions = [
+  { label: 'none', value: 'none' },
+  { label: 'internal', value: 'internal' },
+  { label: 'external', value: 'external' },
+];
+
+const sourceTypeOptions = [
+  { label: 'article', value: 'article' },
+  { label: 'moment', value: 'moment' },
+];
+
+const slotOptions = computed(() => slots.value.map((slot) => ({
+  label: `${slot.slotKey} · ${slot.name}`,
+  value: slot.slotKey,
+})));
+
+function rowKey(row: { id: string }): string {
+  return row.id;
+}
+
 function setSuccess(message: string): void {
   successText.value = message;
   errorText.value = '';
@@ -285,6 +309,100 @@ function resetNavForm(): void {
   navForm.orderNum = 1;
   navForm.enabled = true;
 }
+
+const footerColumns = computed<DataTableColumns<FooterItem>>(() => [
+  { title: t('site.footerLabel'), key: 'label' },
+  { title: 'linkType', key: 'linkType', width: 120 },
+  {
+    title: 'row/order',
+    key: 'order',
+    width: 120,
+    render(row) {
+      return `${row.rowNum}/${row.orderNum}`;
+    },
+  },
+  {
+    title: t('articles.colAction'),
+    key: 'actions',
+    width: 170,
+    render(row) {
+      return h(NSpace, { wrap: false, size: 8 }, {
+        default: () => [
+          h(NButton, { size: 'small', tertiary: true, onClick: () => startFooterEdit(row) }, { default: () => t('common.edit') }),
+          h(NButton, { size: 'small', tertiary: true, type: 'error', onClick: () => removeFooter(row.id) }, { default: () => t('common.delete') }),
+        ],
+      });
+    },
+  },
+]);
+
+const socialColumns = computed<DataTableColumns<SocialLink>>(() => [
+  { title: 'platform', key: 'platform', width: 120 },
+  { title: t('site.socialTitleField'), key: 'title', width: 150 },
+  { title: 'url', key: 'url' },
+  {
+    title: t('articles.colAction'),
+    key: 'actions',
+    width: 170,
+    render(row) {
+      return h(NSpace, { wrap: false, size: 8 }, {
+        default: () => [
+          h(NButton, { size: 'small', tertiary: true, onClick: () => startSocialEdit(row) }, { default: () => t('common.edit') }),
+          h(NButton, { size: 'small', tertiary: true, type: 'error', onClick: () => removeSocial(row.id) }, { default: () => t('common.delete') }),
+        ],
+      });
+    },
+  },
+]);
+
+const navColumns = computed<DataTableColumns<NavItem>>(() => [
+  { title: t('site.navName'), key: 'name', width: 150 },
+  { title: 'key', key: 'key', width: 120 },
+  {
+    title: 'target',
+    key: 'target',
+    render(row) {
+      return `${row.targetType}:${row.targetValue}`;
+    },
+  },
+  {
+    title: t('articles.colAction'),
+    key: 'actions',
+    width: 170,
+    render(row) {
+      return h(NSpace, { wrap: false, size: 8 }, {
+        default: () => [
+          h(NButton, { size: 'small', tertiary: true, onClick: () => startNavEdit(row) }, { default: () => t('common.edit') }),
+          h(NButton, { size: 'small', tertiary: true, type: 'error', onClick: () => removeNav(row.id) }, { default: () => t('common.delete') }),
+        ],
+      });
+    },
+  },
+]);
+
+const slotItemColumns = computed<DataTableColumns<SlotItem>>(() => [
+  {
+    title: 'content',
+    key: 'content',
+    render(row) {
+      return `${row.contentType} · ${row.contentId}`;
+    },
+  },
+  { title: 'order', key: 'orderNum', width: 100 },
+  {
+    title: t('articles.colAction'),
+    key: 'actions',
+    width: 110,
+    render(row) {
+      return h(NButton, {
+        size: 'small',
+        tertiary: true,
+        type: 'error',
+        onClick: () => removeSlotItem(row.id),
+      }, { default: () => t('common.delete') });
+    },
+  },
+]);
 
 async function loadAll(): Promise<void> {
   loading.value = true;
@@ -389,9 +507,6 @@ async function submitFooter(): Promise<void> {
 }
 
 async function removeFooter(id: string): Promise<void> {
-  if (!window.confirm(t('common.confirmDelete'))) {
-    return;
-  }
   loading.value = true;
   errorText.value = '';
   successText.value = '';
@@ -442,9 +557,6 @@ async function submitSocial(): Promise<void> {
 }
 
 async function removeSocial(id: string): Promise<void> {
-  if (!window.confirm(t('common.confirmDelete'))) {
-    return;
-  }
   loading.value = true;
   errorText.value = '';
   successText.value = '';
@@ -496,9 +608,6 @@ async function submitNav(): Promise<void> {
 }
 
 async function removeNav(id: string): Promise<void> {
-  if (!window.confirm(t('common.confirmDelete'))) {
-    return;
-  }
   loading.value = true;
   errorText.value = '';
   successText.value = '';
@@ -558,7 +667,7 @@ async function submitSlotItem(): Promise<void> {
 }
 
 async function removeSlotItem(id: string): Promise<void> {
-  if (!selectedSlotKey.value || !window.confirm(t('common.confirmDelete'))) {
+  if (!selectedSlotKey.value) {
     return;
   }
   loading.value = true;
@@ -583,26 +692,13 @@ onMounted(async () => {
 <style scoped>
 .site-page {
   display: grid;
-  gap: 12px;
 }
 
-h1,
-h2 {
-  margin: 0;
-}
-
-.subtitle {
-  margin: -4px 0 0;
-  color: var(--muted);
-}
-
-.panel {
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  background: var(--surface);
-  padding: 14px;
+.section-card {
+  border-radius: 14px;
+  box-shadow: 0 6px 24px color-mix(in srgb, var(--n-text-color) 8%, transparent);
   display: grid;
-  gap: 10px;
+  gap: 12px;
 }
 
 .grid-2 {
@@ -611,96 +707,32 @@ h2 {
   gap: 10px;
 }
 
-.inline-form {
+.grid-3 {
   display: grid;
-  grid-template-columns: repeat(8, minmax(0, 1fr));
-  gap: 8px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.table-block {
+  margin-top: 10px;
 }
 
 .slot-tools {
-  display: flex;
-  justify-content: flex-start;
+  margin-top: 10px;
 }
 
-label {
+.slot-inline {
   display: grid;
-  gap: 6px;
-}
-
-input,
-textarea,
-select,
-button {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 10px;
-  font: inherit;
-}
-
-button {
-  cursor: pointer;
-  background: var(--surface);
-}
-
-button.primary {
-  background: var(--accent);
-  color: #fff;
-  border-color: var(--accent);
-}
-
-button.danger {
-  border-color: #e8b9b9;
-  color: #b64040;
-}
-
-.actions {
-  display: flex;
-  justify-content: flex-end;
-}
-
-.list {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 8px;
-}
-
-.list li {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 8px 10px;
-  display: flex;
+  grid-template-columns: 140px 1fr 140px auto;
+  gap: 10px;
   align-items: center;
-  justify-content: space-between;
-  gap: 8px;
-}
-
-.row-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.error {
-  color: #b64040;
-  margin: 0;
-}
-
-.success {
-  color: var(--accent-hover);
-  margin: 0;
 }
 
 @media (max-width: 900px) {
   .grid-2,
-  .inline-form {
+  .grid-3,
+  .slot-inline {
     grid-template-columns: 1fr;
-  }
-
-  .list li {
-    align-items: flex-start;
-    flex-direction: column;
   }
 }
 </style>

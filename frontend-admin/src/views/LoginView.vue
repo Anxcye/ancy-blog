@@ -81,7 +81,7 @@ async function onSubmit(): Promise<void> {
 
 .login-card {
   border-radius: 20px;
-  box-shadow: 0 22px 48px rgba(17, 23, 31, 0.09);
+  box-shadow: 0 18px 42px color-mix(in srgb, var(--n-text-color) 10%, transparent);
 }
 
 .login-header {
@@ -95,6 +95,6 @@ async function onSubmit(): Promise<void> {
 
 .login-header p {
   margin: 8px 0 0;
-  color: #6c7780;
+  color: var(--n-text-color-3);
 }
 </style>

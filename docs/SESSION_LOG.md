@@ -10,7 +10,14 @@
 - Improved system integration usability:
   - after provider save, system page now automatically triggers provider test and returns immediate initialization status
   - aligned test result labels with i18n keys (`OK`/`FAIL`) for consistent feedback copy
+- Completed pending backend/admin integration batch:
+  - added admin moment APIs for delete, batch status update, and batch delete
+  - wired new moment operations through handler/service/repository and route registration
+  - updated API contract for `ADM-MOMENT-004/005/006`
+- Continued admin UI unification work:
+  - updated app shell/theme/store/localization wiring and aligned site/interaction/system/moments pages to one design system baseline
 - Validation run:
+  - `source ~/.zshrc && cd backend && go test ./...` passed
   - `cd frontend-admin && pnpm run build` passed
 
 ## 2026-03-03

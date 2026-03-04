@@ -70,6 +70,8 @@
 - [x] Enabled runtime-refresh R2 upload configuration (no backend restart needed after integration save) and protected masked secrets from accidental overwrite.
 - [x] Improved article editor usability with rich preview rendering and local auto-draft restore/clear workflow.
 - [x] Added post-save automatic provider test in integration center for immediate initialization feedback.
+- [x] Added admin moment deletion and batch operations (batch status switch and batch delete) with API contract updates.
+- [x] Unified admin pages (`site/interaction/system/moments`) onto consistent Naive UI layout and theme behavior.
 
 ## Blocked
 - None.

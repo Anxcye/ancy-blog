@@ -24,6 +24,8 @@ type ContentRepository interface {
 
 	CreateMoment(moment domain.Moment) (domain.Moment, error)
 	UpdateMoment(id string, moment domain.Moment) (domain.Moment, error)
+	DeleteMoment(id string) bool
+	BatchUpdateMomentStatus(ids []string, status string) int
 	ListMoments(page, pageSize int, status string) ([]domain.Moment, int)
 	ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int)
 

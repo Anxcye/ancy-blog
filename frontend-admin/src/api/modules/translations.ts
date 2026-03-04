@@ -50,6 +50,11 @@ export async function listTranslationContents(params: {
   return response.data.data;
 }
 
+export async function getTranslationContent(sourceType: string, sourceId: string, locale: string): Promise<TranslationContent> {
+  const response = await httpClient.get<ApiEnvelope<TranslationContent>>(`/admin/translations/contents/${sourceType}/${sourceId}/${locale}`);
+  return response.data.data;
+}
+
 export async function upsertTranslationContent(payload: {
   sourceType: string;
   sourceId: string;

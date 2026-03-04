@@ -359,6 +359,40 @@ func (r *Repository) UpdateMoment(id string, moment domain.Moment) (domain.Momen
 	return moment, nil
 }
 
+func (r *Repository) DeleteMoment(id string) bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if _, ok := r.moments[id]; !ok {
+		return false
+	}
+	delete(r.moments, id)
+	return true
+}
+
+func (r *Repository) BatchUpdateMomentStatus(ids []string, status string) int {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	if status == "" {
+		return 0
+	}
+	affected := 0
+	now := time.Now().UTC()
+	for _, id := range ids {
+		moment, ok := r.moments[id]
+		if !ok {
+			continue
+		}
+		moment.Status = status
+		moment.UpdatedAt = now
+		if status == "published" && moment.PublishedAt.IsZero() {
+			moment.PublishedAt = now
+		}
+		r.moments[id] = moment
+		affected++
+	}
+	return affected
+}
+
 func (r *Repository) ListMoments(page, pageSize int, status string) ([]domain.Moment, int) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()

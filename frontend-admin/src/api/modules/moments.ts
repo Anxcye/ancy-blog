@@ -43,3 +43,17 @@ export async function createMoment(payload: MomentPayload): Promise<string> {
 export async function updateMoment(id: string, payload: MomentPayload): Promise<void> {
   await httpClient.put<ApiEnvelope<Moment>>(`/admin/moments/${id}`, payload);
 }
+
+export async function deleteMoment(id: string): Promise<void> {
+  await httpClient.delete<ApiEnvelope<boolean>>(`/admin/moments/${id}`);
+}
+
+export async function batchUpdateMomentStatus(ids: string[], status: string): Promise<number> {
+  const response = await httpClient.post<ApiEnvelope<{ affected: number }>>('/admin/moments/batch-status', { ids, status });
+  return response.data.data.affected;
+}
+
+export async function batchDeleteMoments(ids: string[]): Promise<number> {
+  const response = await httpClient.post<ApiEnvelope<{ affected: number }>>('/admin/moments/batch-delete', { ids });
+  return response.data.data.affected;
+}

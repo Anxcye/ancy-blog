@@ -198,6 +198,30 @@
 - Response: updated moment object
 - Error Codes: MOMENT_NOT_FOUND, VALIDATION_ERROR
 
+- ID: ADM-MOMENT-004
+- Method: DELETE
+- Path: /api/v1/admin/moments/{id}
+- Auth Required: Yes
+- Request: None
+- Response: success boolean
+- Error Codes: MOMENT_NOT_FOUND, AUTH_UNAUTHORIZED
+
+- ID: ADM-MOMENT-005
+- Method: POST
+- Path: /api/v1/admin/moments/batch-status
+- Auth Required: Yes
+- Request: `{ "ids": ["uuid"], "status": "draft|published|scheduled" }`
+- Response: affected count
+- Error Codes: VALIDATION_ERROR, AUTH_UNAUTHORIZED
+
+- ID: ADM-MOMENT-006
+- Method: POST
+- Path: /api/v1/admin/moments/batch-delete
+- Auth Required: Yes
+- Request: `{ "ids": ["uuid"] }`
+- Response: affected count
+- Error Codes: VALIDATION_ERROR, AUTH_UNAUTHORIZED
+
 ## Public/Admin - Comments
 - ID: PUB-COMMENT-001
 - Method: GET

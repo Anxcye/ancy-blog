@@ -71,6 +71,10 @@ func (s *ArticleService) UpdateMoment(id string, moment domain.Moment) (domain.M
 func (s *ArticleService) ListMoments(page, pageSize int, status string) ([]domain.Moment, int) {
 	return s.core.ListMoments(page, pageSize, status)
 }
+func (s *ArticleService) DeleteMoment(id string) bool { return s.core.DeleteMoment(id) }
+func (s *ArticleService) BatchUpdateMomentStatus(ids []string, status string) (int, error) {
+	return s.core.BatchUpdateMomentStatus(ids, status)
+}
 func (s *ArticleService) ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int) {
 	return s.core.ListPublishedMoments(page, pageSize, locale)
 }
