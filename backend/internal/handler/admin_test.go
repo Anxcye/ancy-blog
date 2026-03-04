@@ -56,6 +56,63 @@ func TestAdminListIntegrations(t *testing.T) {
 	}
 }
 
+func TestAdminListArticles(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	repo := &handlerRepoStub{
+		listArticlesFunc: func(page, pageSize int, status, contentKind, keyword string) ([]domain.Article, int) {
+			if page != 1 || pageSize != 10 || status != "draft" || contentKind != "post" || keyword != "go" {
+				t.Fatalf("unexpected query params page=%d pageSize=%d status=%s contentKind=%s keyword=%s", page, pageSize, status, contentKind, keyword)
+			}
+			return []domain.Article{{ID: "a1", Title: "Go Draft", Slug: "go-draft", Status: "draft", ContentKind: "post"}}, 1
+		},
+	}
+	core := service.NewContentService(repo, nil)
+	h := NewAdminHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewIntegrationService(core),
+		service.NewTranslationService(core),
+		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+	)
+	r := adminRouter(h)
+	r.GET("/articles", h.ListArticles)
+
+	req := httptest.NewRequest(http.MethodGet, "/articles?status=draft&contentKind=post&keyword=go", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", w.Code, w.Body.String())
+	}
+}
+
+func TestAdminArticleDetailNotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	repo := &handlerRepoStub{}
+	core := service.NewContentService(repo, nil)
+	h := NewAdminHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewIntegrationService(core),
+		service.NewTranslationService(core),
+		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+	)
+	r := adminRouter(h)
+	r.GET("/articles/:id", h.ArticleDetail)
+
+	req := httptest.NewRequest(http.MethodGet, "/articles/missing", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d body=%s", w.Code, w.Body.String())
+	}
+}
+
 func TestAdminUpdateIntegrationProviderNotFound(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	repo := &handlerRepoStub{updateIntegrationProvider: func(string, bool, []byte, []byte) (domain.IntegrationProvider, error) {

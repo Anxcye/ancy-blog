@@ -48,7 +48,8 @@ All inline code comments must be in English.
 3. API standard: versioned routes (`/api/v1`), unified response envelope, stable error codes.
 4. Layering: `handler -> service -> repository`, with clear dependency direction.
 5. Database change management: versioned SQL migrations via `golang-migrate` (`backend/migrations` + `cmd/migrate`).
-6. Quality gates: run lint/test/build before merge; keep code production-ready by default.
+6. Frontend baseline: `Vue3 + TypeScript + Vite + Pinia + Vue Router + vue-i18n` for both admin/blog apps.
+7. Quality gates: run lint/test/build before merge; keep code production-ready by default.
 
 ## Definition of Done
 A task is done only if:

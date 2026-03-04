@@ -13,6 +13,7 @@ import (
 type ContentRepository interface {
 	CreateArticle(article domain.Article) (domain.Article, error)
 	UpdateArticle(id string, article domain.Article) (domain.Article, error)
+	ListArticles(page, pageSize int, status, contentKind, keyword string) ([]domain.Article, int)
 	ListPublishedArticles(page, pageSize int, category, tag, contentKind string) ([]domain.Article, int)
 	GetPublishedArticleBySlug(slug string) (domain.Article, bool)
 	GetPublishedArticleBySlugWithLocale(slug, locale string) (domain.Article, bool)

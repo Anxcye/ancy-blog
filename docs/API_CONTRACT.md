@@ -125,6 +125,22 @@
 - Error Codes: ARTICLE_NOT_FOUND, VALIDATION_ERROR
 - Notes: Content mounting is handled by slot APIs under `/api/v1/admin/site/slots/*`.
 
+- ID: ADM-ARTICLE-003
+- Method: GET
+- Path: /api/v1/admin/articles
+- Auth Required: Yes
+- Request: query `page`, `pageSize`, `status`, `contentKind`, `keyword`
+- Response: paginated article list (includes `draft/published/scheduled` records)
+- Error Codes: AUTH_UNAUTHORIZED
+
+- ID: ADM-ARTICLE-004
+- Method: GET
+- Path: /api/v1/admin/articles/{id}
+- Auth Required: Yes
+- Request: None
+- Response: article detail for editing
+- Error Codes: ARTICLE_NOT_FOUND, AUTH_UNAUTHORIZED
+
 ## Public/Admin - Moments
 - ID: PUB-MOMENT-001
 - Method: GET

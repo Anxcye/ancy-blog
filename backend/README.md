@@ -53,6 +53,7 @@ go test -tags=integration ./internal/server -run TestAPISmokeFlow -count=1
 - `APP_ENV` (default: `dev`)
 - `HTTP_HOST` (default: `0.0.0.0`)
 - `HTTP_PORT` (default: `8080`)
+- `CORS_ALLOWED_ORIGINS` (default: `http://localhost:5174,http://127.0.0.1:5174,http://localhost:5173,http://127.0.0.1:5173`)
 - `AUTH_ADMIN_USERNAME` (default: `admin`)
 - `AUTH_ADMIN_PASSWORD` (default: `123456`)
 - `AUTH_ACCESS_TOKEN_TTL_SECONDS` (default: `3600`)

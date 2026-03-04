@@ -1,0 +1,32 @@
+/* File: tokens.css
+   Purpose: Declare global design tokens and baseline styles for admin UI.
+   Module: frontend-admin/styles, design system layer.
+   Related: AppShell layout, component theming, responsive behavior. */
+:root {
+  --bg: #f7faf9;
+  --surface: #ffffff;
+  --text: #1a1a1a;
+  --muted: #667085;
+  --accent: #2aa889;
+  --accent-hover: #23967a;
+  --accent-soft: #e8f7f3;
+  --border: #e6eeeb;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#app {
+  margin: 0;
+  min-height: 100%;
+  color: var(--text);
+  background: var(--bg);
+  font-family: 'Noto Sans SC', 'PingFang SC', 'Helvetica Neue', sans-serif;
+}
+
+a {
+  color: inherit;
+}

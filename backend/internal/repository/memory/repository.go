@@ -188,6 +188,35 @@ func (r *Repository) UpdateArticle(id string, article domain.Article) (domain.Ar
 	return article, nil
 }
 
+func (r *Repository) ListArticles(page, pageSize int, status, contentKind, keyword string) ([]domain.Article, int) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	items := make([]domain.Article, 0)
+	keyword = strings.TrimSpace(strings.ToLower(keyword))
+	for _, a := range r.articles {
+		if status != "" && a.Status != status {
+			continue
+		}
+		if contentKind != "" && a.ContentKind != contentKind {
+			continue
+		}
+		if keyword != "" {
+			searchText := strings.ToLower(a.Title + " " + a.Slug)
+			if !strings.Contains(searchText, keyword) {
+				continue
+			}
+		}
+		items = append(items, a)
+	}
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].UpdatedAt.Equal(items[j].UpdatedAt) {
+			return items[i].CreatedAt.After(items[j].CreatedAt)
+		}
+		return items[i].UpdatedAt.After(items[j].UpdatedAt)
+	})
+	return paginateArticles(items, page, pageSize)
+}
+
 func (r *Repository) ListPublishedArticles(page, pageSize int, category, tag, contentKind string) ([]domain.Article, int) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()

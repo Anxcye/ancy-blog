@@ -72,11 +72,19 @@ func (s *ContentService) UpdateArticle(id string, article domain.Article) (domai
 	return s.repo.UpdateArticle(id, article)
 }
 
+func (s *ContentService) ListArticles(page, pageSize int, status, contentKind, keyword string) ([]domain.Article, int) {
+	return s.repo.ListArticles(page, pageSize, status, contentKind, keyword)
+}
+
 func (s *ContentService) ListPublishedArticles(page, pageSize int, category, tag, contentKind string) ([]domain.Article, int) {
 	if contentKind == "" {
 		contentKind = "post"
 	}
 	return s.repo.ListPublishedArticles(page, pageSize, category, tag, contentKind)
+}
+
+func (s *ContentService) GetArticleByID(id string) (domain.Article, bool) {
+	return s.repo.GetArticleByID(id)
 }
 
 func (s *ContentService) GetPublishedArticleBySlug(slug string) (domain.Article, bool) {

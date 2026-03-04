@@ -42,8 +42,14 @@ func (s *ArticleService) CreateArticle(article domain.Article) (domain.Article, 
 func (s *ArticleService) UpdateArticle(id string, article domain.Article) (domain.Article, error) {
 	return s.core.UpdateArticle(id, article)
 }
+func (s *ArticleService) ListArticles(page, pageSize int, status, contentKind, keyword string) ([]domain.Article, int) {
+	return s.core.ListArticles(page, pageSize, status, contentKind, keyword)
+}
 func (s *ArticleService) ListPublishedArticles(page, pageSize int, category, tag, contentKind string) ([]domain.Article, int) {
 	return s.core.ListPublishedArticles(page, pageSize, category, tag, contentKind)
+}
+func (s *ArticleService) GetArticleByID(id string) (domain.Article, bool) {
+	return s.core.GetArticleByID(id)
 }
 func (s *ArticleService) GetPublishedArticleBySlug(slug string) (domain.Article, bool) {
 	return s.core.GetPublishedArticleBySlug(slug)

@@ -113,6 +113,26 @@ func (h *AdminHandler) UpdateArticle(c *gin.Context) {
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: map[string]string{"id": article.ID}})
 }
 
+func (h *AdminHandler) ListArticles(c *gin.Context) {
+	page := getIntQuery(c, "page", 1)
+	pageSize := getIntQuery(c, "pageSize", 10)
+	status := c.Query("status")
+	contentKind := c.Query("contentKind")
+	keyword := c.Query("keyword")
+	rows, total := h.articleService.ListArticles(page, pageSize, status, contentKind, keyword)
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.Article]{Total: total, Rows: rows}})
+}
+
+func (h *AdminHandler) ArticleDetail(c *gin.Context) {
+	id := c.Param("id")
+	article, ok := h.articleService.GetArticleByID(id)
+	if !ok {
+		response.JSON(c, http.StatusNotFound, response.Envelope{Code: "ARTICLE_NOT_FOUND", Message: "article not found"})
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: article})
+}
+
 func (h *AdminHandler) CreateMoment(c *gin.Context) {
 	var req dto.MomentCreateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {

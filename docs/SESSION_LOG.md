@@ -283,3 +283,45 @@
 1. Add locale-aware read support for moments and timeline APIs.
 2. Expose admin APIs for querying and manually overriding localized content records.
 3. Add translation worker retry/backoff policy and a retry endpoint for failed jobs.
+
+## 2026-03-04 (Admin-first frontend start)
+- Decision update:
+  - Frontend execution order switched to `frontend-admin` first, then `frontend-blog`.
+  - Purpose: unblock content workflows (JSON rich-text, translation control, publish scheduling) before public rendering.
+- Updated `docs/FRONTEND_STYLE_GUIDE.md`:
+  - Added finalized home hero definition (`100vh`, split intro/avatar, floating down-arrow).
+  - Added header structure (left avatar, centered nav, right theme toggle).
+  - Added sparse particle cadence and accent-gradient placement constraints.
+  - Added explicit mobile + SEO + i18n URL constraints (`/` for zh, `/en/*` for en).
+- Updated `docs/PROGRESS.md`:
+  - Marked `frontend-admin` as in progress and captured style baseline refresh.
+- Next execution target:
+  - Initialize `frontend-admin` with Vue3 + TS + Router + Pinia + i18n + API client baseline.
+
+## 2026-03-04 (Admin responsive shell + fresh theme)
+- Implemented admin mobile-full-feature shell baseline in `frontend-admin`:
+  - Added five primary navigation entries across desktop header nav and mobile bottom tab bar:
+    - Workbench, Content, Site, Interaction, System.
+  - Added route placeholders and views for `site`, `interaction`, `system` modules.
+  - Kept layout mobile-first with fixed app chrome and reserved bottom spacing for tab bar.
+- Updated admin color tokens to fresh teal system:
+  - accent `#2AA889`, hover `#23967A`, soft `#E8F7F3`.
+  - text/background/border tuned for clear and calm management experience.
+- Updated style governance doc:
+  - Added explicit admin visual tokens.
+  - Added mandatory mobile full-feature rule (no desktop-only core flows).
+
+## 2026-03-04 (Admin article list + editor baseline)
+- Backend additions for admin article management:
+  - Added `GET /api/v1/admin/articles` with filters: `page`, `pageSize`, `status`, `contentKind`, `keyword`.
+  - Added `GET /api/v1/admin/articles/{id}` for editor detail loading.
+  - Added repository/service support method `ListArticles` (memory + postgres implementations).
+- Frontend admin additions:
+  - Implemented article API module and shared API typing.
+  - Replaced article placeholder page with list view (filter + paging + edit entry).
+  - Added article editor page with `content / meta / preview` modes and save actions (`draft` / `publish`).
+  - Added editor routes: `/content/articles/new` and `/content/articles/:id/edit`.
+  - Added `.env.example` for `VITE_API_BASE_URL`.
+- Validation:
+  - `go test` passed for updated backend packages (`handler/service/repository/server`).
+  - frontend dependency build check not executed in this sandbox (requires local npm install).

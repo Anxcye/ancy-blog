@@ -1,11 +1,11 @@
 # Progress Board
 
 ## Todo
-- [ ] Initialize `frontend-admin/` Vue3 scaffold.
 - [ ] Initialize `frontend-blog/` Vue3 scaffold.
-- [ ] Set up lint/test/build scripts.
+- [ ] Set up lint/test/build scripts for frontend workspaces.
 
 ## In Progress
+- [ ] Initialize `frontend-admin/` Vue3 scaffold (admin-first delivery).
 - [ ] Add API rate limiting for auth/comment/AI/translation-create endpoints.
 - [ ] Add frontend i18n routing and SEO output (`/` default zh, `/en/*` english).
 
@@ -47,6 +47,9 @@
 - [x] Added admin translation-content management APIs for browse/detail/manual override (`/api/v1/admin/translations/contents*`).
 - [x] Added translation worker retry/backoff and manual retry endpoint for failed jobs (`/api/v1/admin/translations/jobs/{id}/retry`).
 - [x] Added i18n publish-control schema and runtime: translation `autoPublish/publishAt`, article translation `title/summary/content`, and locale read visibility based on translation publish state.
+- [x] Updated frontend style baseline with hero/nav/motion/particle constraints and mobile+SEO requirements.
+- [x] Added `frontend-admin` responsive shell baseline (desktop top nav + mobile 5-tab full-feature entry) and fresh teal design tokens.
+- [x] Added admin article management baseline: backend list/detail endpoints and frontend list+editor pages (content/meta/preview modes).
 
 ## Blocked
 - None.

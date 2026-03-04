@@ -17,6 +17,7 @@ Thumbs.db
 .env
 .env.*
 !.env.example
+!**/.env.example
 
 # Logs
 *.log
@@ -42,4 +43,3 @@ yarn-error.log*
 # Build outputs
 build/
 out/
-

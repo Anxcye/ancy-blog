@@ -18,6 +18,7 @@ type Config struct {
 	DB          DBConfig
 	Redis       RedisConfig
 	Translation TranslationConfig
+	CORS        CORSConfig
 }
 
 type AppConfig struct {
@@ -28,6 +29,10 @@ type AppConfig struct {
 type HTTPConfig struct {
 	Host string
 	Port int
+}
+
+type CORSConfig struct {
+	AllowedOrigins []string
 }
 
 type AuthConfig struct {
@@ -123,6 +128,9 @@ func Load() (*Config, error) {
 			Host: getEnv("HTTP_HOST", "0.0.0.0"),
 			Port: port,
 		},
+		CORS: CORSConfig{
+			AllowedOrigins: parseCSV(getEnv("CORS_ALLOWED_ORIGINS", "http://localhost:5174,http://127.0.0.1:5174,http://localhost:5173,http://127.0.0.1:5173")),
+		},
 		Auth: AuthConfig{
 			AdminUsername:          getEnv("AUTH_ADMIN_USERNAME", "admin"),
 			AdminPassword:          getEnv("AUTH_ADMIN_PASSWORD", "123456"),
@@ -180,4 +188,20 @@ func parseBool(raw string) bool {
 	default:
 		return false
 	}
+}
+
+func parseCSV(raw string) []string {
+	if strings.TrimSpace(raw) == "" {
+		return nil
+	}
+	items := strings.Split(raw, ",")
+	out := make([]string, 0, len(items))
+	for _, item := range items {
+		value := strings.TrimSpace(item)
+		if value == "" {
+			continue
+		}
+		out = append(out, value)
+	}
+	return out
 }

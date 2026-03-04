@@ -7,6 +7,7 @@ package postgres
 import (
 	"database/sql"
 	"errors"
+	"strconv"
 	"strings"
 	"time"
 
@@ -105,6 +106,59 @@ RETURNING updated_at, published_at
 		article.PublishedAt = publishedAt.Time
 	}
 	return article, nil
+}
+
+func (r *Repository) ListArticles(page, pageSize int, status, contentKind, keyword string) ([]domain.Article, int) {
+	page, pageSize = normalizePagination(page, pageSize)
+	offset := (page - 1) * pageSize
+
+	conditions := []string{"deleted_at IS NULL"}
+	args := make([]any, 0, 5)
+	if status != "" {
+		args = append(args, status)
+		conditions = append(conditions, "status = $"+strconv.Itoa(len(args)))
+	}
+	if contentKind != "" {
+		args = append(args, contentKind)
+		conditions = append(conditions, "content_kind = $"+strconv.Itoa(len(args)))
+	}
+	if strings.TrimSpace(keyword) != "" {
+		args = append(args, "%"+strings.TrimSpace(keyword)+"%")
+		conditions = append(conditions, "(title ILIKE $"+strconv.Itoa(len(args))+" OR slug ILIKE $"+strconv.Itoa(len(args))+")")
+	}
+
+	whereClause := strings.Join(conditions, " AND ")
+
+	var total int
+	countQuery := "SELECT COUNT(*) FROM articles WHERE " + whereClause
+	if err := r.db.QueryRow(countQuery, args...).Scan(&total); err != nil {
+		return []domain.Article{}, 0
+	}
+
+	listArgs := append(args, pageSize, offset)
+	query := `
+SELECT id::text, title, slug, content_kind, COALESCE(summary,''), COALESCE(content,''), status, visibility,
+       allow_comment, origin_type, COALESCE(source_url,''), ai_assist_level, COALESCE(cover_image,''),
+       COALESCE(published_at, created_at), created_at, updated_at
+FROM articles
+WHERE ` + whereClause + `
+ORDER BY updated_at DESC, created_at DESC
+LIMIT $` + strconv.Itoa(len(listArgs)-1) + ` OFFSET $` + strconv.Itoa(len(listArgs))
+	rows, err := r.db.Query(query, listArgs...)
+	if err != nil {
+		return []domain.Article{}, total
+	}
+	defer rows.Close()
+
+	items := make([]domain.Article, 0)
+	for rows.Next() {
+		var a domain.Article
+		if err := rows.Scan(&a.ID, &a.Title, &a.Slug, &a.ContentKind, &a.Summary, &a.Content, &a.Status, &a.Visibility,
+			&a.AllowComment, &a.OriginType, &a.SourceURL, &a.AIAssistLevel, &a.CoverImage, &a.PublishedAt, &a.CreatedAt, &a.UpdatedAt); err == nil {
+			items = append(items, a)
+		}
+	}
+	return items, total
 }
 
 func (r *Repository) ListPublishedArticles(page, pageSize int, category, tag, contentKind string) ([]domain.Article, int) {

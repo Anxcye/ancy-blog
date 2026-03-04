@@ -16,6 +16,8 @@ type handlerRepoStub struct {
 	repository.ContentRepository
 
 	createCommentFunc            func(comment domain.Comment) (domain.Comment, error)
+	listArticlesFunc             func(page, pageSize int, status, contentKind, keyword string) ([]domain.Article, int)
+	getArticleByIDFunc           func(id string) (domain.Article, bool)
 	getPublishedArticleBySlug    func(slug string) (domain.Article, bool)
 	listPublishedArticlesFunc    func(page, pageSize int, category, tag, contentKind string) ([]domain.Article, int)
 	listPublishedMomentsFunc     func(page, pageSize int, locale string) ([]domain.Moment, int)
@@ -39,6 +41,20 @@ func (s *handlerRepoStub) CreateComment(comment domain.Comment) (domain.Comment,
 		return s.createCommentFunc(comment)
 	}
 	return domain.Comment{}, errors.New("not implemented")
+}
+
+func (s *handlerRepoStub) ListArticles(page, pageSize int, status, contentKind, keyword string) ([]domain.Article, int) {
+	if s.listArticlesFunc != nil {
+		return s.listArticlesFunc(page, pageSize, status, contentKind, keyword)
+	}
+	return nil, 0
+}
+
+func (s *handlerRepoStub) GetArticleByID(id string) (domain.Article, bool) {
+	if s.getArticleByIDFunc != nil {
+		return s.getArticleByIDFunc(id)
+	}
+	return domain.Article{}, false
 }
 
 func (s *handlerRepoStub) GetPublishedArticleBySlug(slug string) (domain.Article, bool) {

@@ -43,6 +43,20 @@ func TestListPublishedArticlesFiltering(t *testing.T) {
 	}
 }
 
+func TestListArticlesIncludesDraftAndKeywordFilter(t *testing.T) {
+	repo := NewRepository()
+	_, _ = repo.CreateArticle(domain.Article{Title: "Draft Note", Slug: "draft-note", ContentKind: "post", Status: "draft"})
+	_, _ = repo.CreateArticle(domain.Article{Title: "Published Note", Slug: "pub-note", ContentKind: "post", Status: "published"})
+
+	rows, total := repo.ListArticles(1, 20, "draft", "post", "draft")
+	if total == 0 || len(rows) == 0 {
+		t.Fatalf("expected draft rows, total=%d len=%d", total, len(rows))
+	}
+	if rows[0].Status != "draft" {
+		t.Fatalf("expected draft status, got %s", rows[0].Status)
+	}
+}
+
 func TestCreateSlotItemRequiresSlot(t *testing.T) {
 	repo := NewRepository()
 	if _, err := repo.CreateSlotItem("not_exists", domain.SlotItem{ContentType: "article", ContentID: "a1"}); err == nil {
