@@ -249,8 +249,30 @@ func (s *ContentService) ListCategories() []domain.Category {
 	return s.repo.ListCategories()
 }
 
+func (s *ContentService) CreateCategory(category domain.Category) (domain.Category, error) {
+	if strings.TrimSpace(category.Name) == "" || strings.TrimSpace(category.Slug) == "" {
+		return domain.Category{}, fmt.Errorf("%w: name and slug are required", apperr.ErrValidation)
+	}
+	return s.repo.CreateCategory(category)
+}
+
+func (s *ContentService) DeleteCategory(id string) bool {
+	return s.repo.DeleteCategory(id)
+}
+
 func (s *ContentService) ListTags() []domain.Tag {
 	return s.repo.ListTags()
+}
+
+func (s *ContentService) CreateTag(tag domain.Tag) (domain.Tag, error) {
+	if strings.TrimSpace(tag.Name) == "" || strings.TrimSpace(tag.Slug) == "" {
+		return domain.Tag{}, fmt.Errorf("%w: name and slug are required", apperr.ErrValidation)
+	}
+	return s.repo.CreateTag(tag)
+}
+
+func (s *ContentService) DeleteTag(id string) bool {
+	return s.repo.DeleteTag(id)
 }
 
 func (s *ContentService) GetSiteSettings() domain.SiteSettings {

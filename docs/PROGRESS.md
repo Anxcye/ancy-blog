@@ -7,12 +7,6 @@
 ## In Progress
 - [ ] Add API rate limiting for auth/comment/AI/translation-create endpoints.
 - [ ] Add frontend i18n routing and SEO output (`/` default zh, `/en/*` english).
-- [ ] Fix article editor gaps in `frontend-admin-react`:
-  - [ ] Category selector (load from `/public/categories`, bind `categorySlug`)
-  - [ ] Tag multi-select (load from `/public/tags`, bind `tagSlugs`)
-  - [ ] Scheduled publish date-time picker (show when `status === 'scheduled'`)
-  - [ ] Cover image upload button (reuse `/admin/upload/image`, keep URL fallback)
-  - [ ] Category filter on article list page
 
 ## Done
 - [x] Created tracking docs and collaboration guidelines.
@@ -84,7 +78,10 @@
 - [x] Integrated TipTap simple-editor template into React admin ArticleEditorPage (full toolbar, image upload, form-controlled value/onChange binding).
 - [x] Initialized `frontend-admin-react` rewrite baseline (`React + TypeScript + Ant Design + React Router + Zustand + React Query + Axios`) with login/auth-guard/layout/dashboard skeleton.
 
+- [x] Fixed article editor gaps in `frontend-admin-react`: category selector, tag multi-select, conditional scheduled-publish DatePicker, cover image upload, category filter on list page.
 - [x] Implemented M2 content module for `frontend-admin-react`: shared API types, articles and moments API modules, ArticlesPage (filters/batch ops/pagination), ArticleEditorPage (create/edit with AI slug+summary assist), MomentsPage (list+drawer CRUD+batch ops), updated router, and expanded sider navigation.
+
+- [x] Implemented categories & tags full CRUD: migration 000007 (`category_id` FK on articles), backend repo write/read helpers (`resolveCategoryID`, `resolveTagIDs`, `syncArticleTags`), admin `POST/DELETE /admin/categories` and `/admin/tags` endpoints, TaxonomyPage management UI under content nav, and inline create in article editor dropdowns for both category and tag.
 
 ## Blocked
 - None.

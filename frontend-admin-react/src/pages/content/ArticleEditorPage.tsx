@@ -5,13 +5,14 @@
  * Related: articles API module, article types, SimpleEditor, AdminLayout, and ArticlesPage.
  */
 
-import { ArrowLeftOutlined, RobotOutlined, UploadOutlined } from '@ant-design/icons';
+import { ArrowLeftOutlined, PlusOutlined, RobotOutlined, UploadOutlined } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Button,
   Card,
   Col,
   DatePicker,
+  Divider,
   Form,
   Input,
   Row,
@@ -32,6 +33,8 @@ import dayjs from 'dayjs';
 
 import {
   createArticle,
+  createCategory,
+  createTag,
   generateAiSlug,
   generateAiSummary,
   getArticle,
@@ -64,6 +67,8 @@ export function ArticleEditorPage(): ReactElement {
   const [slugLoading, setSlugLoading] = useState(false);
   const [summaryLoading, setSummaryLoading] = useState(false);
   const [coverUploading, setCoverUploading] = useState(false);
+  const [newCatName, setNewCatName] = useState('');
+  const [newTagName, setNewTagName] = useState('');
   const watchStatus = Form.useWatch('status', form);
 
   // Load existing article data in edit mode
@@ -115,6 +120,33 @@ export function ArticleEditorPage(): ReactElement {
       }
     },
     onError: () => messageApi.error('保存失败，请重试'),
+  });
+
+  // Inline category create from editor
+  const createCatMut = useMutation({
+    mutationFn: (name: string) =>
+      createCategory({ name, slug: name.toLowerCase().replace(/[\s_]+/g, '-').replace(/[^\w-]/g, '') }),
+    onSuccess: (cat) => {
+      queryClient.invalidateQueries({ queryKey: ['categories'] });
+      form.setFieldValue('categorySlug', cat.slug);
+      setNewCatName('');
+      messageApi.success('分类已创建');
+    },
+    onError: () => messageApi.error('分类创建失败'),
+  });
+
+  // Inline tag create from editor
+  const createTagMut = useMutation({
+    mutationFn: (name: string) =>
+      createTag({ name, slug: name.toLowerCase().replace(/[\s_]+/g, '-').replace(/[^\w-]/g, '') }),
+    onSuccess: (tag) => {
+      queryClient.invalidateQueries({ queryKey: ['tags'] });
+      const current: string[] = form.getFieldValue('tagSlugs') ?? [];
+      form.setFieldValue('tagSlugs', [...current, tag.slug]);
+      setNewTagName('');
+      messageApi.success('标签已创建');
+    },
+    onError: () => messageApi.error('标签创建失败'),
   });
 
   const handleGenSlug = useCallback(async () => {
@@ -375,6 +407,30 @@ export function ArticleEditorPage(): ReactElement {
                   allowClear
                   placeholder="选择分类（可选）"
                   options={categories.map((c) => ({ value: c.slug, label: c.name }))}
+                  dropdownRender={(menu) => (
+                    <>
+                      {menu}
+                      <Divider style={{ margin: '4px 0' }} />
+                      <Space style={{ padding: '4px 8px' }}>
+                        <Input
+                          size="small"
+                          placeholder="新分类名称"
+                          value={newCatName}
+                          onChange={(e) => setNewCatName(e.target.value)}
+                          onKeyDown={(e) => e.stopPropagation()}
+                        />
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<PlusOutlined />}
+                          loading={createCatMut.isPending}
+                          onClick={() => newCatName.trim() && createCatMut.mutate(newCatName.trim())}
+                        >
+                          添加
+                        </Button>
+                      </Space>
+                    </>
+                  )}
                 />
               </Form.Item>
 
@@ -384,6 +440,30 @@ export function ArticleEditorPage(): ReactElement {
                   allowClear
                   placeholder="选择标签（可多选）"
                   options={tags.map((t) => ({ value: t.slug, label: t.name }))}
+                  dropdownRender={(menu) => (
+                    <>
+                      {menu}
+                      <Divider style={{ margin: '4px 0' }} />
+                      <Space style={{ padding: '4px 8px' }}>
+                        <Input
+                          size="small"
+                          placeholder="新标签名称"
+                          value={newTagName}
+                          onChange={(e) => setNewTagName(e.target.value)}
+                          onKeyDown={(e) => e.stopPropagation()}
+                        />
+                        <Button
+                          type="text"
+                          size="small"
+                          icon={<PlusOutlined />}
+                          loading={createTagMut.isPending}
+                          onClick={() => newTagName.trim() && createTagMut.mutate(newTagName.trim())}
+                        >
+                          添加
+                        </Button>
+                      </Space>
+                    </>
+                  )}
                 />
               </Form.Item>
             </Card>

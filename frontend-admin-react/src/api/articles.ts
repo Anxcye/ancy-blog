@@ -17,9 +17,27 @@ export async function listCategories(): Promise<Category[]> {
   return res.data.data ?? [];
 }
 
+export async function createCategory(payload: { name: string; slug: string }): Promise<Category> {
+  const res = await httpClient.post<ApiResponse<Category>>('/admin/categories', payload);
+  return res.data.data;
+}
+
+export async function deleteCategory(id: string): Promise<void> {
+  await httpClient.delete(`/admin/categories/${id}`);
+}
+
 export async function listTags(): Promise<Tag[]> {
   const res = await httpClient.get<ApiResponse<Tag[]>>('/public/tags');
   return res.data.data ?? [];
+}
+
+export async function createTag(payload: { name: string; slug: string }): Promise<Tag> {
+  const res = await httpClient.post<ApiResponse<Tag>>('/admin/tags', payload);
+  return res.data.data;
+}
+
+export async function deleteTag(id: string): Promise<void> {
+  await httpClient.delete(`/admin/tags/${id}`);
 }
 
 export async function listArticles(params: ArticleListParams): Promise<PaginatedData<ArticleListItem>> {

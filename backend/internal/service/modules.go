@@ -79,7 +79,15 @@ func (s *ArticleService) ListPublishedMoments(page, pageSize int, locale string)
 	return s.core.ListPublishedMoments(page, pageSize, locale)
 }
 func (s *ArticleService) ListCategories() []domain.Category { return s.core.ListCategories() }
-func (s *ArticleService) ListTags() []domain.Tag            { return s.core.ListTags() }
+func (s *ArticleService) CreateCategory(category domain.Category) (domain.Category, error) {
+	return s.core.CreateCategory(category)
+}
+func (s *ArticleService) DeleteCategory(id string) bool { return s.core.DeleteCategory(id) }
+func (s *ArticleService) ListTags() []domain.Tag        { return s.core.ListTags() }
+func (s *ArticleService) CreateTag(tag domain.Tag) (domain.Tag, error) {
+	return s.core.CreateTag(tag)
+}
+func (s *ArticleService) DeleteTag(id string) bool { return s.core.DeleteTag(id) }
 
 func (s *CommentService) CreateComment(comment domain.Comment) (domain.Comment, error) {
 	return s.core.CreateComment(comment)

@@ -14,6 +14,7 @@ import {
   MenuFoldOutlined,
   MenuUnfoldOutlined,
   MessageOutlined,
+  TagsOutlined,
   ThunderboltOutlined, // still used in desktop submenu item
 } from '@ant-design/icons';
 import { Button, Layout, Menu, Space, Typography } from 'antd';
@@ -29,6 +30,7 @@ const { Header, Sider, Content } = Layout;
 function resolveKey(pathname: string): string {
   if (pathname.startsWith('/content/articles')) return 'articles';
   if (pathname.startsWith('/content/moments')) return 'moments';
+  if (pathname.startsWith('/content/taxonomy')) return 'taxonomy';
   if (pathname.startsWith('/interaction')) return 'interaction';
   if (pathname.startsWith('/site')) return 'site';
   if (pathname.startsWith('/system')) return 'system';
@@ -96,6 +98,12 @@ export function AdminLayout(): ReactElement {
           icon: <ThunderboltOutlined />,
           label: '瞬间',
           onClick: () => navigate('/content/moments'),
+        },
+        {
+          key: 'taxonomy',
+          icon: <TagsOutlined />,
+          label: '分类与标签',
+          onClick: () => navigate('/content/taxonomy'),
         },
       ],
     },

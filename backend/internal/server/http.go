@@ -126,6 +126,11 @@ func NewHTTPServer(cfg *config.Config, logger *slog.Logger) (*HTTPServer, error)
 			admin.GET("/translations/contents", container.AdminHandler.ListTranslationContents)
 			admin.GET("/translations/contents/:sourceType/:sourceId/:locale", container.AdminHandler.TranslationContentDetail)
 			admin.PUT("/translations/contents", container.AdminHandler.UpsertTranslationContent)
+			admin.POST("/categories", container.AdminHandler.CreateCategory)
+			admin.DELETE("/categories/:id", container.AdminHandler.DeleteCategory)
+			admin.POST("/tags", container.AdminHandler.CreateTag)
+			admin.DELETE("/tags/:id", container.AdminHandler.DeleteTag)
+
 			admin.POST("/ai/summary", container.AdminHandler.GenerateSummary)
 			admin.POST("/ai/slug", container.AdminHandler.SuggestSlug)
 

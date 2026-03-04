@@ -32,14 +32,15 @@ func (r *Repository) CreateArticle(article domain.Article) (domain.Article, erro
 	if article.AIAssistLevel == "" {
 		article.AIAssistLevel = "none"
 	}
+	categoryID := r.resolveCategoryID(article.CategorySlug)
 	var id string
 	var createdAt, updatedAt time.Time
 	var publishedAt sql.NullTime
 	err := r.db.QueryRow(`
-INSERT INTO articles (title, slug, content_kind, summary, content, status, visibility, allow_comment, origin_type, source_url, ai_assist_level, cover_image, published_at)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13)
+INSERT INTO articles (title, slug, content_kind, summary, content, status, visibility, allow_comment, origin_type, source_url, ai_assist_level, cover_image, published_at, category_id)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14)
 RETURNING id::text, created_at, updated_at, published_at
-`, article.Title, article.Slug, article.ContentKind, article.Summary, article.Content, article.Status, article.Visibility, article.AllowComment, article.OriginType, nullableString(article.SourceURL), article.AIAssistLevel, nullableString(article.CoverImage), nullableTime(article.PublishedAt)).
+`, article.Title, article.Slug, article.ContentKind, article.Summary, article.Content, article.Status, article.Visibility, article.AllowComment, article.OriginType, nullableString(article.SourceURL), article.AIAssistLevel, nullableString(article.CoverImage), nullableTime(article.PublishedAt), nullableString(categoryID)).
 		Scan(&id, &createdAt, &updatedAt, &publishedAt)
 	if err != nil {
 		if isUniqueViolation(err) {
@@ -53,6 +54,7 @@ RETURNING id::text, created_at, updated_at, published_at
 	if publishedAt.Valid {
 		article.PublishedAt = publishedAt.Time
 	}
+	r.syncArticleTags(id, r.resolveTagIDs(article.TagSlugs))
 	return article, nil
 }
 
@@ -79,18 +81,19 @@ func (r *Repository) UpdateArticle(id string, article domain.Article) (domain.Ar
 		article.AIAssistLevel = "none"
 	}
 
+	categoryID := r.resolveCategoryID(article.CategorySlug)
 	var updatedAt time.Time
 	var publishedAt sql.NullTime
 	err = r.db.QueryRow(`
 UPDATE articles
 SET title=$2, slug=$3, content_kind=$4, summary=$5, content=$6, status=$7, visibility=$8,
     allow_comment=$9, origin_type=$10, source_url=$11, ai_assist_level=$12, cover_image=$13,
-    published_at=$14, updated_at=NOW()
+    published_at=$14, category_id=$15, updated_at=NOW()
 WHERE id=$1 AND deleted_at IS NULL
 RETURNING updated_at, published_at
 `, id, article.Title, article.Slug, article.ContentKind, article.Summary, article.Content, article.Status,
 		article.Visibility, article.AllowComment, article.OriginType, nullableString(article.SourceURL), article.AIAssistLevel,
-		nullableString(article.CoverImage), nullableTime(article.PublishedAt)).Scan(&updatedAt, &publishedAt)
+		nullableString(article.CoverImage), nullableTime(article.PublishedAt), nullableString(categoryID)).Scan(&updatedAt, &publishedAt)
 	if err != nil {
 		if isUniqueViolation(err) {
 			return domain.Article{}, apperr.ErrSlugAlreadyExists
@@ -106,6 +109,7 @@ RETURNING updated_at, published_at
 	if publishedAt.Valid {
 		article.PublishedAt = publishedAt.Time
 	}
+	r.syncArticleTags(id, r.resolveTagIDs(article.TagSlugs))
 	return article, nil
 }
 
@@ -286,17 +290,25 @@ WHERE a.slug=$1 AND a.status='published' AND a.deleted_at IS NULL
 
 func (r *Repository) GetArticleByID(id string) (domain.Article, bool) {
 	var a domain.Article
+	var categorySlug sql.NullString
 	err := r.db.QueryRow(`
-SELECT id::text, title, slug, content_kind, COALESCE(summary,''), COALESCE(content,''), status, visibility,
-       allow_comment, origin_type, COALESCE(source_url,''), ai_assist_level, COALESCE(cover_image,''),
-       COALESCE(published_at, created_at), created_at, updated_at
-FROM articles
-WHERE id=$1 AND deleted_at IS NULL
+SELECT a.id::text, a.title, a.slug, a.content_kind, COALESCE(a.summary,''), COALESCE(a.content,''), a.status, a.visibility,
+       a.allow_comment, a.origin_type, COALESCE(a.source_url,''), a.ai_assist_level, COALESCE(a.cover_image,''),
+       COALESCE(a.published_at, a.created_at), a.created_at, a.updated_at,
+       c.slug
+FROM articles a
+LEFT JOIN categories c ON c.id=a.category_id AND c.deleted_at IS NULL
+WHERE a.id=$1 AND a.deleted_at IS NULL
 `, id).Scan(&a.ID, &a.Title, &a.Slug, &a.ContentKind, &a.Summary, &a.Content, &a.Status, &a.Visibility,
-		&a.AllowComment, &a.OriginType, &a.SourceURL, &a.AIAssistLevel, &a.CoverImage, &a.PublishedAt, &a.CreatedAt, &a.UpdatedAt)
+		&a.AllowComment, &a.OriginType, &a.SourceURL, &a.AIAssistLevel, &a.CoverImage, &a.PublishedAt, &a.CreatedAt, &a.UpdatedAt,
+		&categorySlug)
 	if err != nil {
 		return domain.Article{}, false
 	}
+	if categorySlug.Valid {
+		a.CategorySlug = categorySlug.String
+	}
+	a.TagSlugs = r.articleTagSlugs(id)
 	return a, true
 }
 
@@ -487,6 +499,31 @@ func (r *Repository) ListCategories() []domain.Category {
 	return items
 }
 
+func (r *Repository) CreateCategory(category domain.Category) (domain.Category, error) {
+	var id string
+	err := r.db.QueryRow(
+		`INSERT INTO categories (name, slug) VALUES ($1, $2) RETURNING id::text`,
+		category.Name, category.Slug,
+	).Scan(&id)
+	if err != nil {
+		if isUniqueViolation(err) {
+			return domain.Category{}, apperr.ErrValidation
+		}
+		return domain.Category{}, err
+	}
+	category.ID = id
+	return category, nil
+}
+
+func (r *Repository) DeleteCategory(id string) bool {
+	res, err := r.db.Exec(`UPDATE categories SET deleted_at=NOW(), updated_at=NOW() WHERE id=$1 AND deleted_at IS NULL`, id)
+	if err != nil {
+		return false
+	}
+	n, _ := res.RowsAffected()
+	return n > 0
+}
+
 func (r *Repository) ListTags() []domain.Tag {
 	rows, err := r.db.Query(`SELECT id::text, name, slug FROM tags WHERE deleted_at IS NULL ORDER BY name ASC`)
 	if err != nil {
@@ -501,4 +538,85 @@ func (r *Repository) ListTags() []domain.Tag {
 		}
 	}
 	return items
+}
+
+func (r *Repository) CreateTag(tag domain.Tag) (domain.Tag, error) {
+	var id string
+	err := r.db.QueryRow(
+		`INSERT INTO tags (name, slug) VALUES ($1, $2) RETURNING id::text`,
+		tag.Name, tag.Slug,
+	).Scan(&id)
+	if err != nil {
+		if isUniqueViolation(err) {
+			return domain.Tag{}, apperr.ErrValidation
+		}
+		return domain.Tag{}, err
+	}
+	tag.ID = id
+	return tag, nil
+}
+
+func (r *Repository) DeleteTag(id string) bool {
+	res, err := r.db.Exec(`UPDATE tags SET deleted_at=NOW(), updated_at=NOW() WHERE id=$1 AND deleted_at IS NULL`, id)
+	if err != nil {
+		return false
+	}
+	n, _ := res.RowsAffected()
+	return n > 0
+}
+
+// resolveCategoryID returns the UUID for a category slug, or empty string if slug is blank.
+func (r *Repository) resolveCategoryID(slug string) string {
+	if strings.TrimSpace(slug) == "" {
+		return ""
+	}
+	var id string
+	if err := r.db.QueryRow(`SELECT id::text FROM categories WHERE slug=$1 AND deleted_at IS NULL`, slug).Scan(&id); err != nil {
+		return ""
+	}
+	return id
+}
+
+// resolveTagIDs converts a list of tag slugs to UUIDs, silently skipping unknown slugs.
+func (r *Repository) resolveTagIDs(slugs []string) []string {
+	ids := make([]string, 0, len(slugs))
+	for _, s := range slugs {
+		if strings.TrimSpace(s) == "" {
+			continue
+		}
+		var id string
+		if err := r.db.QueryRow(`SELECT id::text FROM tags WHERE slug=$1 AND deleted_at IS NULL`, s).Scan(&id); err == nil {
+			ids = append(ids, id)
+		}
+	}
+	return ids
+}
+
+// syncArticleTags replaces article_tags rows for the given article.
+func (r *Repository) syncArticleTags(articleID string, tagIDs []string) {
+	_, _ = r.db.Exec(`DELETE FROM article_tags WHERE article_id=$1`, articleID)
+	for _, tid := range tagIDs {
+		_, _ = r.db.Exec(`INSERT INTO article_tags (article_id, tag_id) VALUES ($1,$2) ON CONFLICT DO NOTHING`, articleID, tid)
+	}
+}
+
+// articleTagSlugs returns the tag slugs associated with an article.
+func (r *Repository) articleTagSlugs(articleID string) []string {
+	rows, err := r.db.Query(`
+SELECT t.slug FROM tags t
+JOIN article_tags at ON at.tag_id=t.id
+WHERE at.article_id=$1 AND t.deleted_at IS NULL
+ORDER BY t.name ASC`, articleID)
+	if err != nil {
+		return []string{}
+	}
+	defer rows.Close()
+	slugs := make([]string, 0)
+	for rows.Next() {
+		var s string
+		if rows.Scan(&s) == nil {
+			slugs = append(slugs, s)
+		}
+	}
+	return slugs
 }

@@ -762,25 +762,77 @@ type aiSummaryRequest struct {
 	MaxLength   int    `json:"maxLength"`
 }
 
+func (h *AdminHandler) CreateCategory(c *gin.Context) {
+	var req struct {
+		Name string `json:"name"`
+		Slug string `json:"slug"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequest(c, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+	cat, err := h.articleService.CreateCategory(domain.Category{Name: req.Name, Slug: req.Slug})
+	if err != nil {
+		badRequest(c, "VALIDATION_ERROR", err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: cat})
+}
+
+func (h *AdminHandler) DeleteCategory(c *gin.Context) {
+	id := c.Param("id")
+	if !h.articleService.DeleteCategory(id) {
+		response.JSON(c, http.StatusNotFound, response.Envelope{Code: "NOT_FOUND", Message: "category not found"})
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success"})
+}
+
+func (h *AdminHandler) CreateTag(c *gin.Context) {
+	var req struct {
+		Name string `json:"name"`
+		Slug string `json:"slug"`
+	}
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequest(c, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+	tag, err := h.articleService.CreateTag(domain.Tag{Name: req.Name, Slug: req.Slug})
+	if err != nil {
+		badRequest(c, "VALIDATION_ERROR", err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: tag})
+}
+
+func (h *AdminHandler) DeleteTag(c *gin.Context) {
+	id := c.Param("id")
+	if !h.articleService.DeleteTag(id) {
+		response.JSON(c, http.StatusNotFound, response.Envelope{Code: "NOT_FOUND", Message: "tag not found"})
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success"})
+}
+
 func (h *AdminHandler) GenerateSummary(c *gin.Context) {
 	var req aiSummaryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		badRequest(c, "VALIDATION_ERROR", "invalid request body")
 		return
 	}
-	summary, fallbackUsed, err := h.aiAssistService.GenerateSummary(c.Request.Context(), req.Title, req.Content, req.ProviderKey, req.ModelName, req.MaxLength)
+	summary, fallbackUsed, fallbackReason, err := h.aiAssistService.GenerateSummary(c.Request.Context(), req.Title, req.Content, req.ProviderKey, req.ModelName, req.MaxLength)
 	if err != nil {
 		response.JSON(c, http.StatusInternalServerError, response.Envelope{Code: "INTERNAL_ERROR", Message: "failed to generate summary"})
 		return
 	}
-	response.JSON(c, http.StatusOK, response.Envelope{
-		Code:    "OK",
-		Message: "success",
-		Data: map[string]any{
-			"summary":      summary,
-			"fallbackUsed": fallbackUsed,
-		},
-	})
+	data := map[string]any{
+		"summary":      summary,
+		"fallbackUsed": fallbackUsed,
+	}
+	if fallbackReason != "" {
+		data["fallbackReason"] = fallbackReason
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: data})
 }
 
 type aiSlugRequest struct {
@@ -795,17 +847,17 @@ func (h *AdminHandler) SuggestSlug(c *gin.Context) {
 		badRequest(c, "VALIDATION_ERROR", "invalid request body")
 		return
 	}
-	slug, fallbackUsed, err := h.aiAssistService.SuggestSlug(c.Request.Context(), req.Title, req.ProviderKey, req.ModelName)
+	slug, fallbackUsed, fallbackReason, err := h.aiAssistService.SuggestSlug(c.Request.Context(), req.Title, req.ProviderKey, req.ModelName)
 	if err != nil {
 		response.JSON(c, http.StatusInternalServerError, response.Envelope{Code: "INTERNAL_ERROR", Message: "failed to suggest slug"})
 		return
 	}
-	response.JSON(c, http.StatusOK, response.Envelope{
-		Code:    "OK",
-		Message: "success",
-		Data: map[string]any{
-			"slug":         slug,
-			"fallbackUsed": fallbackUsed,
-		},
-	})
+	data := map[string]any{
+		"slug":         slug,
+		"fallbackUsed": fallbackUsed,
+	}
+	if fallbackReason != "" {
+		data["fallbackReason"] = fallbackReason
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: data})
 }

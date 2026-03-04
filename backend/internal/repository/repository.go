@@ -42,7 +42,11 @@ type ContentRepository interface {
 	ReviewLink(id, reviewStatus, reviewNote, relatedArticleID string) (domain.Link, error)
 
 	ListCategories() []domain.Category
+	CreateCategory(category domain.Category) (domain.Category, error)
+	DeleteCategory(id string) bool
 	ListTags() []domain.Tag
+	CreateTag(tag domain.Tag) (domain.Tag, error)
+	DeleteTag(id string) bool
 
 	GetSiteSettings() domain.SiteSettings
 	UpdateSiteSettings(settings domain.SiteSettings) domain.SiteSettings

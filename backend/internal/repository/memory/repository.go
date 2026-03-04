@@ -532,6 +532,46 @@ func (r *Repository) UpdateTranslationPolicy(_ domain.TranslationPolicy) error {
 	return nil
 }
 
+func (r *Repository) CreateCategory(category domain.Category) (domain.Category, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	category.ID = uuid.NewString()
+	r.categories = append(r.categories, category)
+	return category, nil
+}
+
+func (r *Repository) DeleteCategory(id string) bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for i, c := range r.categories {
+		if c.ID == id {
+			r.categories = append(r.categories[:i], r.categories[i+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
+func (r *Repository) CreateTag(tag domain.Tag) (domain.Tag, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	tag.ID = uuid.NewString()
+	r.tags = append(r.tags, tag)
+	return tag, nil
+}
+
+func (r *Repository) DeleteTag(id string) bool {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+	for i, t := range r.tags {
+		if t.ID == id {
+			r.tags = append(r.tags[:i], r.tags[i+1:]...)
+			return true
+		}
+	}
+	return false
+}
+
 func (r *Repository) CreateFooterItem(item domain.FooterItem) (domain.FooterItem, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()

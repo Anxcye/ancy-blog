@@ -13,6 +13,7 @@ import { ContentLayout } from './layouts/ContentLayout';
 import { ArticleEditorPage } from './pages/content/ArticleEditorPage';
 import { ArticlesPage } from './pages/content/ArticlesPage';
 import { MomentsPage } from './pages/content/MomentsPage';
+import { TaxonomyPage } from './pages/content/TaxonomyPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { InteractionPage } from './pages/interaction/InteractionPage';
 import { LoginPage } from './pages/LoginPage';
@@ -52,6 +53,7 @@ const router = createBrowserRouter([
           { path: 'articles/new', element: <ArticleEditorPage /> },
           { path: 'articles/:id/edit', element: <ArticleEditorPage /> },
           { path: 'moments', element: <MomentsPage /> },
+          { path: 'taxonomy', element: <TaxonomyPage /> },
         ],
       },
 
