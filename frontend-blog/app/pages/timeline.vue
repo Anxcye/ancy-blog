@@ -84,7 +84,10 @@ const page = ref(1)
 const { data: items, pending } = await useAsyncData(
   'timeline-list',
   () => listTimeline({ page: page.value, pageSize: PAGE_SIZE }),
-  { watch: [page] }
+  {
+    watch: [page],
+    getCachedData: () => undefined,
+  }
 )
 
 const totalPages = computed(() =>

@@ -105,8 +105,14 @@ const activeTag = ref((route.query.tag as string) || '')
 
 // ── Load taxonomy ─────────────────────────────────────────────────
 const [{ data: categories }, { data: tags }] = await Promise.all([
-  useAsyncData('categories', getCategories, { default: () => [] }),
-  useAsyncData('tags', getTags, { default: () => [] }),
+  useAsyncData('article-page-categories', getCategories, {
+    default: () => [],
+    getCachedData: () => undefined,  // always re-fetch on client nav
+  }),
+  useAsyncData('article-page-tags', getTags, {
+    default: () => [],
+    getCachedData: () => undefined,
+  }),
 ])
 
 // ── Load articles (reactive to filters) ───────────────────────────
@@ -118,7 +124,10 @@ const { data: articles, pending, refresh } = await useAsyncData(
     category: activeCategory.value || undefined,
     tag: activeTag.value || undefined,
   }),
-  { watch: [page, activeCategory, activeTag] }
+  {
+    watch: [page, activeCategory, activeTag],
+    getCachedData: () => undefined,  // always re-fetch; prevents stale SSR payload on CSR nav
+  }
 )
 
 const totalPages = computed(() =>

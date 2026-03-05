@@ -59,7 +59,10 @@ const page = ref(1)
 const { data: moments, pending } = await useAsyncData(
   'moments-list',
   () => listMoments({ page: page.value, pageSize: PAGE_SIZE }),
-  { watch: [page] }
+  {
+    watch: [page],
+    getCachedData: () => undefined,
+  }
 )
 
 const totalPages = computed(() =>
