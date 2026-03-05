@@ -7,6 +7,7 @@
         "links": "Links"
     },
     "home": {
+        "heroSubtitle": "Code & Thoughts",
         "recentArticles": "Recent Articles",
         "viewAll": "View All",
         "readMore": "Read More",

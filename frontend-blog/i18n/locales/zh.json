@@ -7,6 +7,7 @@
         "links": "链接"
     },
     "home": {
+        "heroSubtitle": "写代码，也写想法",
         "recentArticles": "近期文章",
         "viewAll": "查看全部",
         "readMore": "阅读全文",

@@ -7,65 +7,44 @@
 
     <!-- ═══ Hero ════════════════════════════════════════════════════ -->
     <section class="hero">
-      <div class="hero-inner container container--wide">
-
-        <!-- Left: intro + socials -->
-        <div class="hero-left" :class="{ visible: heroVisible }">
-          <!-- Word-by-word spring animation -->
-          <div class="hero-intro">
-            <template v-for="(token, i) in introTokens" :key="i">
-              <br v-if="token.isBr" />
-              <span
-                v-else
-                class="word-spring"
-                :style="{ animationDelay: heroVisible ? token.delay : '9999s' }"
-                v-html="token.html"
-              />
-              <span v-if="!token.isBr && i < introTokens.length - 1 && !introTokens[i+1]?.isBr" class="word-space"> </span>
-            </template>
-          </div>
-
-          <div v-if="socialLinks.length" class="hero-socials">
-            <a
-              v-for="link in socialLinks"
-              :key="link.id"
-              :href="link.url"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="social-link"
-              :aria-label="link.title"
-            >
-              <span class="social-icon">
-                <img v-if="link.iconKey" :src="link.iconKey" :alt="link.title" class="social-img" />
-                <svg v-else-if="link.platform === 'github'" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
-                </svg>
-                <svg v-else-if="link.platform === 'mail'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
-                </svg>
-                <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
-                  <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
-                </svg>
-              </span>
-            </a>
-          </div>
-        </div>
-
-        <!-- Right: avatar -->
-        <div class="hero-right" :class="{ visible: heroVisible }">
-          <div class="hero-avatar-wrap">
-            <div class="hero-avatar-ring" />
+      <div class="hero-inner container">
+        <!-- Main title with embedded avatar -->
+        <h1 class="hero-title" :class="{ visible: heroVisible }">
+          <span class="title-line">
+            <span class="title-text">Hi, I'm</span>
             <img
               v-if="siteSettings?.avatarUrl"
               :src="siteSettings.avatarUrl"
               :alt="siteSettings?.siteName"
-              class="hero-avatar"
-              width="180"
-              height="180"
+              class="title-avatar"
             />
-            <div v-else class="hero-avatar-placeholder">A</div>
-          </div>
+            <span class="title-name">{{ siteSettings?.siteName || 'Ancy' }}</span>
+          </span>
+          <span class="title-line title-gradient">
+            {{ siteSettings?.heroIntroMd || t('home.heroSubtitle') }}
+          </span>
+        </h1>
+
+        <!-- Floating social links -->
+        <div v-if="socialLinks.length" class="hero-socials" :class="{ visible: heroVisible }">
+          <a
+            v-for="link in socialLinks"
+            :key="link.id"
+            :href="link.url"
+            target="_blank"
+            class="social-icon"
+            :title="link.title"
+          >
+            <svg v-if="link.platform === 'github'" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
+            </svg>
+            <svg v-else-if="link.platform === 'mail'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/>
+            </svg>
+            <svg v-else viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/>
+            </svg>
+          </a>
         </div>
       </div>
 
@@ -132,31 +111,6 @@ const [{ data: siteSettings }, { data: socialLinks }, { data: articles, pending 
   useAsyncData('home-articles', () => listArticles({ pageSize: 6 })),
 ])
 
-// ── Word-by-word spring tokens ───────────────────────────────────────
-type IntroToken = { isBr: true } | { isBr: false; html: string; delay: string }
-
-const introTokens = computed<IntroToken[]>(() => {
-  const raw = siteSettings.value?.heroIntroMd || `Hi, I'm **Ancy** 👋\nI write code and thoughts.`
-  const withStrong = raw.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-  const lines = withStrong.split('\n')
-  const tokens: IntroToken[] = []
-  let wordIdx = 0
-  for (let li = 0; li < lines.length; li++) {
-    if (li > 0) tokens.push({ isBr: true })
-    // split on spaces but keep emoji sequences intact
-    const words = lines[li].split(' ').filter(w => w.length > 0)
-    for (const word of words) {
-      tokens.push({
-        isBr: false,
-        html: word,
-        delay: `${wordIdx * 65}ms`,
-      })
-      wordIdx++
-    }
-  }
-  return tokens
-})
-
 // ── Hero entrance ──────────────────────────────────────────────────────
 const heroVisible = ref(false)
 onMounted(() => {
@@ -178,124 +132,116 @@ useSeoMeta({
 .hero {
   min-height: 100vh;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
+  padding: 120px 0 80px;
   position: relative;
-  padding-top: var(--header-h);
 }
 
 .hero-inner {
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 60px;
-  align-items: center;
-  width: 100%;
+  text-align: center;
+  position: relative;
 }
 
-/* ── Left ── */
-.hero-left {
-  opacity: 0;
-  transform: translateY(24px);
-  transition: opacity 0.7s var(--ease-smooth), transform 0.7s var(--ease-spring);
-}
-.hero-left.visible { opacity: 1; transform: none; }
-
-.hero-intro {
-  font-size: clamp(1.5rem, 3.5vw, 2.1rem);
-  font-weight: 400;
-  line-height: 1.5;
-  color: var(--text);
-  margin-bottom: 28px;
-  font-family: 'Songti SC', 'SimSun', 'Noto Serif SC', Georgia, serif;
-  letter-spacing: 0.01em;
-}
-
-.hero-intro :deep(strong) {
+/* ── Title ── */
+.hero-title {
+  font-size: clamp(3rem, 8vw, 5rem);
   font-weight: 800;
-  color: var(--accent-text);
+  line-height: 1.1;
+  margin: 0;
+  opacity: 0;
+  transform: translateY(40px);
+  transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
 }
 
+.hero-title.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.title-line {
+  display: block;
+  margin-bottom: 1em;
+}
+
+.title-text {
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.title-avatar {
+  display: inline-block;
+  width: 0.9em;
+  height: 0.9em;
+  border-radius: 50%;
+  object-fit: cover;
+  vertical-align: -0.15em;
+  margin: 0 0.15em;
+  border: 3px solid var(--accent);
+  box-shadow: 0 4px 20px rgba(var(--accent-rgb, 31,143,138), 0.3);
+}
+
+.title-name {
+  color: var(--text);
+}
+
+.title-gradient {
+  background: linear-gradient(135deg, var(--accent), var(--accent-text));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Floating socials ── */
 .hero-socials {
   display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-}
-
-.social-link {
-  display: flex;
-  align-items: center;
+  gap: 16px;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  border: 1px solid var(--border);
-  border-radius: 50%;
-  color: var(--text-muted);
-  background: var(--surface);
-  transition: border-color var(--dur-base), color var(--dur-base),
-              background var(--dur-base), transform var(--dur-base) var(--ease-spring),
-              box-shadow var(--dur-base);
-}
-
-.social-link:hover {
-  border-color: var(--accent);
-  color: var(--accent-text);
-  background: var(--accent-soft);
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-}
-
-.social-img {
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.social-icon { display: flex; align-items: center; justify-content: center; }
-.social-icon svg { width: 18px; height: 18px; }
-
-/* ── Right ── */
-.hero-right {
+  margin-top: 120px;
   opacity: 0;
-  transform: translateX(24px) scale(0.95);
-  transition: opacity 0.7s 0.1s var(--ease-smooth), transform 0.7s 0.1s var(--ease-spring);
-}
-.hero-right.visible { opacity: 1; transform: none; }
-
-.hero-avatar-wrap {
-  position: relative;
-  width: 180px;
-  height: 180px;
+  transform: translateY(20px);
+  transition: opacity 0.6s var(--ease-out) 0.3s, transform 0.6s var(--ease-out) 0.3s;
 }
 
-.hero-avatar-ring {
-  position: absolute;
-  inset: -6px;
-  border-radius: 50%;
-  border: 2px dashed var(--accent);
-  opacity: 0.35;
-  animation: spin 20s linear infinite;
+.hero-socials.visible {
+  opacity: 1;
+  transform: translateY(0);
 }
 
-@keyframes spin { to { transform: rotate(360deg); } }
-
-.hero-avatar, .hero-avatar-placeholder {
-  width: 180px;
-  height: 180px;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid var(--surface);
-  box-shadow: var(--shadow-lg);
-}
-
-.hero-avatar-placeholder {
-  background: var(--accent-soft);
+.social-icon {
+  width: 44px;
+  height: 44px;
   display: grid;
   place-items: center;
-  font-size: 64px;
-  font-weight: 800;
+  color: var(--text-muted);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 50%;
+  transition: all 0.3s var(--ease-out);
+}
+
+.social-icon:hover {
   color: var(--accent-text);
+  background: var(--accent-soft);
+  border-color: var(--accent);
+  transform: translateY(-4px);
+}
+
+.social-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 640px) {
+  .hero {
+    min-height: 100vh;
+    padding: 80px 0 60px;
+  }
+
+  .title-avatar {
+    width: 0.8em;
+    height: 0.8em;
+  }
 }
 
 /* ── Down arrow ── */
@@ -318,7 +264,7 @@ useSeoMeta({
   50%       { transform: translateX(-50%) translateY(6px); }
 }
 
-/* ═══ Recent articles ════════════════════════════════════════════ */
+/* ═══ Recent articles ═════════════════════════════════════════════ */
 .recent-section { padding: 64px 0 80px; }
 
 .section-header {
