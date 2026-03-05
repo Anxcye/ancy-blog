@@ -1,0 +1,50 @@
+{
+    "nav": {
+        "home": "Home",
+        "articles": "Articles",
+        "moments": "Moments",
+        "timeline": "Timeline",
+        "links": "Links"
+    },
+    "home": {
+        "recentArticles": "Recent Articles",
+        "viewAll": "View All",
+        "readMore": "Read More",
+        "noArticles": "No articles yet"
+    },
+    "article": {
+        "publishedAt": "Published",
+        "updatedAt": "Updated",
+        "minuteRead": "{n} min read",
+        "category": "Category",
+        "tags": "Tags",
+        "comments": "Comments",
+        "commentsCount": "{n} comments",
+        "noComments": "No comments yet, be the first!",
+        "leaveComment": "Leave a comment",
+        "aiDisclosure": "AI Disclosure",
+        "toc": "Contents"
+    },
+    "comment": {
+        "nickname": "Name",
+        "email": "Email (optional)",
+        "website": "Website (optional)",
+        "content": "Share your thoughts...",
+        "submit": "Submit",
+        "submitting": "Submitting...",
+        "success": "Comment submitted, pending review",
+        "pending": "Pending"
+    },
+    "moments": {
+        "title": "Moments",
+        "empty": "No moments yet"
+    },
+    "timeline": {
+        "title": "Timeline",
+        "empty": "Nothing yet"
+    },
+    "meta": {
+        "darkMode": "Switch to dark mode",
+        "lightMode": "Switch to light mode"
+    }
+}

@@ -1,0 +1,50 @@
+{
+    "nav": {
+        "home": "首页",
+        "articles": "文章",
+        "moments": "瞬间",
+        "timeline": "时间轴",
+        "links": "链接"
+    },
+    "home": {
+        "recentArticles": "近期文章",
+        "viewAll": "查看全部",
+        "readMore": "阅读全文",
+        "noArticles": "暂无文章"
+    },
+    "article": {
+        "publishedAt": "发布于",
+        "updatedAt": "更新于",
+        "minuteRead": "{n} 分钟",
+        "category": "分类",
+        "tags": "标签",
+        "comments": "评论",
+        "commentsCount": "{n} 条评论",
+        "noComments": "还没有评论，来说第一句吧",
+        "leaveComment": "发表评论",
+        "aiDisclosure": "AI 辅助说明",
+        "toc": "目录"
+    },
+    "comment": {
+        "nickname": "昵称",
+        "email": "邮箱（可选）",
+        "website": "网站（可选）",
+        "content": "写下你的想法...",
+        "submit": "提交",
+        "submitting": "提交中...",
+        "success": "评论已提交，等待审核",
+        "pending": "待审核"
+    },
+    "moments": {
+        "title": "瞬间",
+        "empty": "暂无瞬间记录"
+    },
+    "timeline": {
+        "title": "时间轴",
+        "empty": "暂无内容"
+    },
+    "meta": {
+        "darkMode": "切换深色模式",
+        "lightMode": "切换浅色模式"
+    }
+}
