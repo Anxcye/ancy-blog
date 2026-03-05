@@ -283,11 +283,11 @@ onBeforeUnmount(() => {
 
 .tiptap .tmdb-info {
   position: relative;
-  padding: 20px 24px 20px 160px;
+  padding: 14px 20px 14px 150px;
   min-height: 120px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 6px;
   z-index: 2;
 }
 
