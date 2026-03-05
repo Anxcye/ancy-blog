@@ -61,10 +61,14 @@ export function EmbedNodeView({ node, selected }: NodeViewProps) {
     }
     const selectedClass = selected ? " is-selected" : ""
     const posterUrl = posterPath ? `https://image.tmdb.org/t/p/w200${posterPath}` : ''
+    const tmdbUrl = `https://www.themoviedb.org/${mediaType}/${tmdbId}`
 
     return (
       <NodeViewWrapper>
-        <div
+        <a
+          href={tmdbUrl}
+          target="_blank"
+          rel="noopener noreferrer"
           className={`embed-node-card embed-node-tmdb${selectedClass}`}
           data-drag-handle=""
           contentEditable={false}
@@ -77,7 +81,7 @@ export function EmbedNodeView({ node, selected }: NodeViewProps) {
             </div>
             {overview && <div className="tmdb-overview">{overview}</div>}
           </div>
-        </div>
+        </a>
       </NodeViewWrapper>
     )
   }
