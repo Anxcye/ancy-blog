@@ -44,7 +44,9 @@
       </header>
 
       <!-- ── Article body ── -->
-      <article v-if="article" class="article-body" v-html="renderedContent" />
+      <article v-if="article" class="article-body">
+        <TiptapRenderer :content="article.content" />
+      </article>
 
       <!-- ── Comments ── -->
       <section v-if="article?.allowComment && siteSettings?.commentEnabled" class="comments-section">
@@ -150,63 +152,6 @@ const [{ data: siteSettings }, { data: comments }, { data: commentTotal }] = awa
   useAsyncData(`comments-${article.value.id}`, () => listComments(article.value!.id, { pageSize: 50 }), { getCachedData: () => undefined }),
   useAsyncData(`comment-total-${article.value.id}`, () => getCommentTotal(article.value!.id), { getCachedData: () => undefined }),
 ])
-
-// ── TipTap JSON → HTML renderer ─────────────────────────────────
-const renderedContent = computed(() => {
-  if (!article.value?.content) return ''
-  try {
-    const doc = JSON.parse(article.value.content)
-    return renderTipTapDoc(doc)
-  } catch {
-    return `<p>${article.value.content}</p>`
-  }
-})
-
-function renderTipTapDoc(doc: Record<string, unknown>): string {
-  if (!doc?.content) return ''
-  return (doc.content as Record<string, unknown>[]).map(renderNode).join('')
-}
-
-function renderNode(node: Record<string, unknown>): string {
-  const attrs = (node.attrs || {}) as Record<string, string>
-  const children = (node.content as Record<string, unknown>[] || []).map(renderNode).join('')
-  const text = (node.text as string) || ''
-
-  switch (node.type) {
-    case 'paragraph': return `<p>${children || '&nbsp;'}</p>`
-    case 'heading': return `<h${attrs.level}>${children}</h${attrs.level}>`
-    case 'text': return applyMarks(text, (node.marks as Record<string, unknown>[] || []))
-    case 'hardBreak': return '<br/>'
-    case 'bulletList': return `<ul>${children}</ul>`
-    case 'orderedList': return `<ol>${children}</ol>`
-    case 'listItem': return `<li>${children}</li>`
-    case 'blockquote': return `<blockquote>${children}</blockquote>`
-    case 'codeBlock': return `<pre><code>${escHtml(text)}</code></pre>`
-    case 'code': return `<code>${escHtml(text)}</code>`
-    case 'horizontalRule': return '<hr/>'
-    case 'image': return `<img src="${attrs.src}" alt="${attrs.alt || ''}" />`
-    default: return children || text
-  }
-}
-
-function applyMarks(text: string, marks: Record<string, unknown>[]): string {
-  return marks.reduce((acc: string, mark: Record<string, unknown>) => {
-    const attrs = (mark.attrs || {}) as Record<string, string>
-    switch (mark.type) {
-      case 'bold': return `<strong>${acc}</strong>`
-      case 'italic': return `<em>${acc}</em>`
-      case 'underline': return `<u>${acc}</u>`
-      case 'strike': return `<s>${acc}</s>`
-      case 'code': return `<code>${acc}</code>`
-      case 'link': return `<a href="${attrs.href}" target="${attrs.target || '_blank'}" rel="noopener noreferrer">${acc}</a>`
-      default: return acc
-    }
-  }, escHtml(text))
-}
-
-function escHtml(str: string): string {
-  return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-}
 
 // ── Helpers ─────────────────────────────────────────────────────
 function formatDate(iso?: string): string {
@@ -335,79 +280,7 @@ useArticleSeo(article.value, siteSettings.value || null)
 .article-body {
   font-family: 'Noto Serif SC', serif;
   font-size: 1.05rem;
-  line-height: 1.85;
-  color: var(--text);
   margin-bottom: 64px;
-}
-
-.article-body :deep(h1),
-.article-body :deep(h2),
-.article-body :deep(h3),
-.article-body :deep(h4) {
-  font-family: 'Inter', sans-serif;
-  margin: 1.8em 0 0.7em;
-  line-height: 1.3;
-  font-weight: 700;
-  scroll-margin-top: calc(var(--header-h) + 16px);
-}
-
-.article-body :deep(p) { margin-bottom: 1.3em; }
-.article-body :deep(a) { color: var(--accent-text); text-decoration: underline; text-underline-offset: 3px; }
-.article-body :deep(strong) { font-weight: 700; }
-.article-body :deep(em) { font-style: italic; }
-
-.article-body :deep(blockquote) {
-  border-left: 3px solid var(--accent);
-  margin: 1.5em 0;
-  padding: 0.5em 0 0.5em 20px;
-  color: var(--text-muted);
-  font-style: italic;
-}
-
-.article-body :deep(pre) {
-  background: var(--bg-secondary);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 16px 20px;
-  overflow-x: auto;
-  margin: 1.5em 0;
-  font-family: 'JetBrains Mono', 'Fira Code', monospace;
-  font-size: 0.875rem;
-  line-height: 1.6;
-}
-
-.article-body :deep(code) {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.88em;
-  background: var(--bg-secondary);
-  padding: 2px 6px;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--border);
-}
-
-.article-body :deep(pre code) {
-  background: none;
-  border: none;
-  padding: 0;
-}
-
-.article-body :deep(ul), .article-body :deep(ol) {
-  padding-left: 1.5em;
-  margin: 1em 0;
-}
-
-.article-body :deep(li) { margin-bottom: 0.4em; }
-
-.article-body :deep(hr) {
-  border: none;
-  border-top: 1px solid var(--border);
-  margin: 2.5em 0;
-}
-
-.article-body :deep(img) {
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-sm);
-  margin: 1.5em auto;
 }
 
 /* ── Comments ── */

@@ -108,7 +108,7 @@ const MainToolbarContent = ({
         <MarkButton type="code" />
         <MarkButton type="underline" />
         {!isMobile ? (
-          <ColorHighlightPopover />
+          <ColorHighlightPopover useColorValue={true} />
         ) : (
           <ColorHighlightPopoverButton onClick={onHighlighterClick} />
         )}
@@ -170,7 +170,7 @@ const MobileToolbarContent = ({
     <ToolbarSeparator />
 
     {type === "highlighter" ? (
-      <ColorHighlightPopoverContent />
+      <ColorHighlightPopoverContent useColorValue={true} />
     ) : (
       <LinkContent />
     )}

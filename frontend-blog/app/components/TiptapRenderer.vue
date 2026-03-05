@@ -1,0 +1,281 @@
+<!-- File: components/TiptapRenderer.vue
+     Purpose: Render TipTap JSON content using read-only editor.
+     Module: frontend-blog/components
+-->
+<template>
+  <ClientOnly>
+    <EditorContent v-if="editor" :editor="editor" />
+  </ClientOnly>
+</template>
+
+<script setup lang="ts">
+import { useEditor, EditorContent } from '@tiptap/vue-3'
+import StarterKit from '@tiptap/starter-kit'
+import Link from '@tiptap/extension-link'
+import Image from '@tiptap/extension-image'
+import TextAlign from '@tiptap/extension-text-align'
+import { TextStyle } from '@tiptap/extension-text-style'
+import { Color } from '@tiptap/extension-color'
+import Highlight from '@tiptap/extension-highlight'
+import TaskList from '@tiptap/extension-task-list'
+import TaskItem from '@tiptap/extension-task-item'
+import Underline from '@tiptap/extension-underline'
+import Subscript from '@tiptap/extension-subscript'
+import Superscript from '@tiptap/extension-superscript'
+import Typography from '@tiptap/extension-typography'
+import { XPostEmbed } from './tiptap-extensions/x-post-embed'
+import { TmdbCardEmbed } from './tiptap-extensions/tmdb-card-embed'
+
+const props = defineProps<{ content: string }>()
+
+const editor = useEditor({
+  editable: false,
+  content: props.content ? JSON.parse(props.content) : null,
+  extensions: [
+    StarterKit,
+    Link.configure({ openOnClick: false }),
+    Image,
+    TextAlign.configure({ types: ['heading', 'paragraph'] }),
+    TextStyle,
+    Color,
+    Highlight.configure({ multicolor: true }),
+    TaskList,
+    TaskItem.configure({ nested: true }),
+    Underline,
+    Subscript,
+    Superscript,
+    Typography,
+    XPostEmbed,
+    TmdbCardEmbed,
+  ],
+})
+
+// Load Twitter widgets script
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    const w = window as any
+    if (!w.twttr) {
+      const script = document.createElement('script')
+      script.src = 'https://platform.twitter.com/widgets.js'
+      script.async = true
+      script.onload = () => {
+        if (w.twttr?.widgets) {
+          w.twttr.widgets.load()
+        }
+      }
+      document.body.appendChild(script)
+    } else if (w.twttr?.widgets) {
+      setTimeout(() => w.twttr.widgets.load(), 100)
+    }
+  }
+})
+
+watch(() => props.content, (newContent) => {
+  if (editor.value && newContent) {
+    editor.value.commands.setContent(JSON.parse(newContent))
+  }
+})
+
+onBeforeUnmount(() => {
+  editor.value?.destroy()
+})
+</script>
+
+<style>
+/* Import TipTap base styles */
+.tiptap {
+  outline: none;
+}
+
+.tiptap p {
+  margin: 1em 0;
+}
+
+.tiptap h1,
+.tiptap h2,
+.tiptap h3,
+.tiptap h4 {
+  font-weight: 600;
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+}
+
+.tiptap h1 { font-size: 1.875rem; }
+.tiptap h2 { font-size: 1.5rem; }
+.tiptap h3 { font-size: 1.25rem; }
+.tiptap h4 { font-size: 1.1rem; }
+
+.tiptap ul,
+.tiptap ol {
+  margin: 1.5em 0;
+  padding-left: 1.5em;
+}
+
+.tiptap ul {
+  list-style: disc;
+}
+
+.tiptap ol {
+  list-style: decimal;
+}
+
+.tiptap li {
+  margin: 0.5em 0;
+}
+
+.tiptap ul[data-type="taskList"] {
+  list-style: none;
+  padding-left: 0;
+}
+
+.tiptap ul[data-type="taskList"] li {
+  display: flex;
+  align-items: flex-start;
+}
+
+.tiptap ul[data-type="taskList"] li label {
+  margin-right: 0.5em;
+  margin-top: 0.2em;
+}
+
+.tiptap ul[data-type="taskList"] li[data-checked="true"] > div {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.tiptap blockquote {
+  margin: 1.5em 0;
+  padding-left: 1.2em;
+  border-left: 3px solid var(--accent);
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.tiptap pre {
+  margin: 1.5em 0;
+  padding: 1em;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  overflow-x: auto;
+}
+
+.tiptap code {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.9em;
+  padding: 0.2em 0.4em;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+}
+
+.tiptap pre code {
+  padding: 0;
+  background: none;
+}
+
+.tiptap img {
+  max-width: 100%;
+  height: auto;
+  border-radius: var(--radius-md);
+  margin: 1.5em 0;
+}
+
+.tiptap a {
+  color: var(--accent-text);
+  text-decoration: underline;
+}
+
+.tiptap hr {
+  margin: 2em 0;
+  border: none;
+  border-top: 1px solid var(--border);
+}
+
+.tiptap strong {
+  font-weight: 600;
+}
+
+.tiptap mark {
+  padding: 0.1em 0.2em;
+  border-radius: 3px;
+  /* Background color comes from inline style attribute */
+}
+
+.tiptap u {
+  text-decoration: underline;
+}
+
+.tiptap s {
+  text-decoration: line-through;
+}
+
+.tiptap sub {
+  vertical-align: sub;
+  font-size: 0.75em;
+}
+
+.tiptap sup {
+  vertical-align: super;
+  font-size: 0.75em;
+}
+
+/* X Post Embed */
+.tiptap .x-post-embed {
+  margin: 2em 0;
+}
+
+/* TMDB Card Embed */
+.tiptap .tmdb-card-embed {
+  margin: 2em 0;
+  padding: 1.5em;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  transition: all 0.2s;
+}
+
+.tiptap .tmdb-card-embed:hover {
+  border-color: var(--accent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.tiptap .tmdb-card-content {
+  display: flex;
+  align-items: center;
+  gap: 1em;
+}
+
+.tiptap .tmdb-icon {
+  font-size: 2em;
+}
+
+.tiptap .tmdb-info {
+  flex: 1;
+}
+
+.tiptap .tmdb-title {
+  font-weight: 600;
+  font-size: 1.1em;
+  margin-bottom: 0.25em;
+}
+
+.tiptap .tmdb-meta {
+  font-size: 0.9em;
+  color: var(--text-muted);
+}
+
+.tiptap .tmdb-link-btn {
+  padding: 0.5em 1em;
+  background: var(--accent);
+  color: white;
+  border-radius: var(--radius-md);
+  text-decoration: none;
+  font-size: 0.9em;
+  white-space: nowrap;
+  transition: opacity 0.2s;
+}
+
+.tiptap .tmdb-link-btn:hover {
+  opacity: 0.9;
+}
+</style>
