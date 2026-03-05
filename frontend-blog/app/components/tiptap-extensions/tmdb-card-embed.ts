@@ -37,37 +37,26 @@ export const TmdbCardEmbed = Node.create({
     const releaseDate = node.attrs.releaseDate || ''
     const voteAverage = node.attrs.voteAverage || 0
     const url = `https://www.themoviedb.org/${mediaType}/${tmdbId}`
-    const posterUrl = posterPath ? `https://image.tmdb.org/t/p/w500${posterPath}` : ''
+    const posterUrl = posterPath ? `https://image.tmdb.org/t/p/w342${posterPath}` : ''
 
     return [
-      'div',
+      'a',
       {
         'data-embed-type': 'tmdb_card',
         'data-tmdb-id': tmdbId,
         'data-media-type': mediaType,
         class: 'tmdb-card-embed',
+        href: url,
+        target: '_blank',
+        rel: 'noopener noreferrer',
       },
+      ...(posterUrl ? [['img', { src: posterUrl, alt: title, class: 'tmdb-poster' }]] : []),
       [
         'div',
-        { class: 'tmdb-card-content' },
-        ...(posterUrl ? [['img', { src: posterUrl, alt: title, class: 'tmdb-poster' }]] : []),
-        [
-          'div',
-          { class: 'tmdb-info' },
-          ['div', { class: 'tmdb-title' }, title],
-          ['div', { class: 'tmdb-meta' }, `${mediaType === 'movie' ? 'Movie' : 'TV'} • ${releaseDate.slice(0, 4)} • ⭐ ${voteAverage.toFixed(1)}`],
-          ...(overview ? [['div', { class: 'tmdb-overview' }, overview]] : []),
-          [
-            'a',
-            {
-              href: url,
-              target: '_blank',
-              rel: 'noopener noreferrer',
-              class: 'tmdb-link-btn',
-            },
-            'View on TMDB →',
-          ],
-        ],
+        { class: 'tmdb-info' },
+        ['div', { class: 'tmdb-title' }, title],
+        ['div', { class: 'tmdb-meta' }, `${mediaType === 'movie' ? '电影' : '剧集'} · ${releaseDate.slice(0, 4)} · ⭐ ${voteAverage.toFixed(1)}`],
+        ...(overview ? [['div', { class: 'tmdb-overview' }, overview]] : []),
       ],
     ]
   },

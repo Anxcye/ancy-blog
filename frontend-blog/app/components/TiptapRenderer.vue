@@ -250,43 +250,51 @@ onBeforeUnmount(() => {
 
 /* TMDB Card Embed */
 .tiptap .tmdb-card-embed {
+  display: block;
+  position: relative;
   margin: 2em 0;
-  background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  min-height: 200px;
+  background: var(--surface);
+  text-decoration: none;
   transition: all 0.2s;
 }
 
 .tiptap .tmdb-card-embed:hover {
   border-color: var(--accent);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.tiptap .tmdb-card-content {
-  display: flex;
-  gap: 1.5em;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
 }
 
 .tiptap .tmdb-poster {
-  width: 150px;
-  height: 225px;
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 133px;
+  height: 100%;
   object-fit: cover;
-  flex-shrink: 0;
+  z-index: 1;
+  mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.8) 85%, rgba(0,0,0,0) 100%);
+  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.8) 85%, rgba(0,0,0,0) 100%);
 }
 
 .tiptap .tmdb-info {
-  flex: 1;
-  padding: 1.5em 1.5em 1.5em 0;
+  position: relative;
+  padding: 20px 24px 20px 160px;
+  min-height: 200px;
   display: flex;
   flex-direction: column;
-  gap: 0.75em;
+  gap: 10px;
+  z-index: 2;
 }
 
 .tiptap .tmdb-title {
   font-weight: 600;
   font-size: 1.25em;
   line-height: 1.3;
+  color: var(--text);
 }
 
 .tiptap .tmdb-meta {
@@ -305,36 +313,22 @@ onBeforeUnmount(() => {
   overflow: hidden;
 }
 
-.tiptap .tmdb-link-btn {
-  align-self: flex-start;
-  margin-top: auto;
-  padding: 0.5em 1em;
-  background: var(--accent);
-  color: white;
-  border-radius: var(--radius-md);
-  text-decoration: none;
-  font-size: 0.9em;
-  font-weight: 500;
-  transition: opacity 0.2s;
-}
-
-.tiptap .tmdb-link-btn:hover {
-  opacity: 0.9;
-}
-
 @media (max-width: 640px) {
-  .tiptap .tmdb-card-content {
-    flex-direction: column;
+  .tiptap .tmdb-card-embed {
+    min-height: auto;
   }
 
   .tiptap .tmdb-poster {
+    position: relative;
     width: 100%;
-    height: auto;
-    max-height: 300px;
+    height: 240px;
+    mask-image: none;
+    -webkit-mask-image: none;
   }
 
   .tiptap .tmdb-info {
-    padding: 1.5em;
+    padding: 16px;
+    min-height: auto;
   }
 }
 </style>
