@@ -138,8 +138,7 @@ const slug = computed(() => route.params.slug as string)
 // ── Fetch article ───────────────────────────────────────────────
 const { data: article, error } = await useAsyncData(
   `article-${slug.value}`,
-  () => getArticle(slug.value),
-  { getCachedData: () => undefined }
+  () => getArticle(slug.value)
 )
 
 if (error.value || !article.value) {
@@ -148,9 +147,9 @@ if (error.value || !article.value) {
 
 // ── Fetch site settings, comments, total ────────────────────────
 const [{ data: siteSettings }, { data: comments }, { data: commentTotal }] = await Promise.all([
-  useAsyncData('article-site-settings', getSiteSettings, { getCachedData: () => undefined }),
-  useAsyncData(`comments-${article.value.id}`, () => listComments(article.value!.id, { pageSize: 50 }), { getCachedData: () => undefined }),
-  useAsyncData(`comment-total-${article.value.id}`, () => getCommentTotal(article.value!.id), { getCachedData: () => undefined }),
+  useAsyncData('article-site-settings', getSiteSettings),
+  useAsyncData(`comments-${article.value.id}`, () => listComments(article.value!.id, { pageSize: 50 })),
+  useAsyncData(`comment-total-${article.value.id}`, () => getCommentTotal(article.value!.id)),
 ])
 
 // ── Helpers ─────────────────────────────────────────────────────
