@@ -1,6 +1,38 @@
 ## 2026-03-05
 ### Summary
 - Implemented hierarchical navigation with dynamic category dropdown:
+  - Added `parentId` field to NavItem type in admin and blog frontend
+  - Admin nav form now supports parent selector for creating child nav items
+  - Blog frontend auto-injects category list when nav `key='articles'` with no children
+  - Enhanced dropdown styling: compact, frosted glass, 14px font, full-width hover
+- Redesigned mobile navigation:
+  - Layout: left menu button, center avatar, right lang+theme buttons
+  - Mobile drawer: hierarchical nav with spring animation, pill-style children buttons
+  - Removed old flat mobile nav, replaced with structured primary/secondary layout
+- Implemented footer with social links:
+  - 3-row layout with left-aligned footer links, right social links column
+  - Accent color background with themed border
+  - Footer items support internal/external/plain text link types
+  - Added footer API integration to site store
+- Optimized font system:
+  - Prioritize system fonts (PingFang SC, Microsoft YaHei) for fast loading
+  - Google Fonts as fallback for better typography when available
+  - Global UI: system sans-serif → Inter fallback
+  - Article content: Songti SC/SimSun → Noto Serif SC fallback
+  - Set preload:false and display:swap for progressive enhancement
+  - Enabled inline SSR styles to prevent FOUC
+- Redesigned homepage hero (large title style):
+  - Super large gradient title (clamp 3-5rem) with embedded avatar decoration
+  - Subtitle from backend `heroIntroMd` field (editable in admin site settings)
+  - Floating social icons with hover lift effects
+  - 100vh full-screen with animated down arrow
+  - Simplified from complex word-by-word animation to clean fade-in
+  - Mobile responsive with same full-height layout
+
+---
+## 2026-03-05
+### Summary
+- Implemented hierarchical navigation with dynamic category dropdown:
   - Updated `frontend-admin/src/api/types.ts`: added `parentId` and `children` fields to `NavItem`
   - Enhanced `frontend-admin/src/views/SiteView.vue`: added parent nav selector in nav form, computed `parentNavOptions` to show top-level navs only
   - Updated `frontend-blog/app/layouts/default.vue`: fetch categories on SSR, enhanced `mapNav()` to auto-inject category list as children when `targetType=category` with no predefined children

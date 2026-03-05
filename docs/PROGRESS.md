@@ -14,6 +14,7 @@
 - [ ] Blog: particle background (sparse petal/dot animation, accent-tinted).
 
 ## Done
+- [x] Redesigned homepage hero with large title style: embedded avatar decoration, gradient subtitle from backend heroIntroMd, floating social icons, 100vh full-screen layout.
 - [x] Implemented hierarchical navigation with dynamic category dropdown: admin can configure parent-child nav items via `parentId` field, blog frontend auto-injects category list when `targetType=category` with no predefined children.
 - [x] Initialized `frontend-blog/` with Nuxt 4 (minimal template, color-mode, i18n zh/en, Google Fonts).
 - [x] Design system CSS (light/dark tokens, grain texture, spring easing, accent color injection per load).
