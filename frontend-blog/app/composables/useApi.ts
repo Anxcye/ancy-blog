@@ -208,5 +208,9 @@ export function useApi() {
         /** Fetch social links */
         getSocialLinks: () =>
             apiFetch<Array<{ id: string; platform: string; title: string; url: string; iconKey?: string }>>('/public/site/social-links'),
+
+        /** Fetch approved friends links */
+        getApprovedLinks: () =>
+            apiFetch<Array<{ id: string; name: string; url: string; avatarUrl?: string; description?: string }>>('/public/links'),
     }
 }
