@@ -267,18 +267,19 @@ onBeforeUnmount(() => {
 
 .tiptap .tmdb-card-content {
   display: flex;
-  align-items: flex-start;
+  align-items: stretch;
   position: relative;
 }
 
 .tiptap .tmdb-poster {
   width: 80px;
-  height: 120px;
+  height: auto;
   object-fit: cover;
   flex-shrink: 0;
   display: block;
-  mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.8) 85%, rgba(0,0,0,0) 100%);
-  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.8) 85%, rgba(0,0,0,0) 100%);
+  border-radius: 0;
+  mask-image: linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.8) 85%, rgba(0,0,0,0) 100%);
+  -webkit-mask-image: linear-gradient(to left, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.8) 85%, rgba(0,0,0,0) 100%);
 }
 
 .tiptap .tmdb-info {
