@@ -271,8 +271,8 @@ onBeforeUnmount(() => {
   position: absolute;
   left: 0;
   top: 0;
-  width: 133px;
-  height: 100%;
+  width: 80px;
+  height: 120px;
   object-fit: cover;
   border-radius: var(--radius-lg) 0 0 var(--radius-lg);
   display: block;
@@ -283,7 +283,7 @@ onBeforeUnmount(() => {
 
 .tiptap .tmdb-info {
   position: relative;
-  padding: 14px 20px 14px 150px;
+  padding: 14px 20px 14px 100px;
   min-height: 120px;
   display: flex;
   flex-direction: column;
