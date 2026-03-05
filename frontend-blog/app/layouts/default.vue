@@ -12,9 +12,9 @@
         <NuxtLink :to="localePath('/')" class="header-brand" :aria-label="t('nav.home')">
           <div class="header-avatar">
             <img
-              v-if="siteStore.settings?.avatarUrl"
-              :src="siteStore.settings.avatarUrl"
-              :alt="siteStore.settings.siteName"
+              v-if="siteSettings?.avatarUrl"
+              :src="siteSettings.avatarUrl"
+              :alt="siteSettings.siteName"
               width="28" height="28"
             />
             <span v-else class="header-avatar-fallback">A</span>
@@ -23,17 +23,10 @@
 
         <!-- Center: Nav -->
         <nav class="header-nav" aria-label="主导航">
-          <template v-if="siteStore.navigation.length">
-            <NuxtLink v-for="item in siteStore.navigation" :key="item.id" :to="localePath(item.targetValue || '/')" class="nav-link">
-              {{ item.name }}
-            </NuxtLink>
-          </template>
-          <template v-else>
-            <NuxtLink :to="localePath('/')" class="nav-link">{{ t('nav.home') }}</NuxtLink>
-            <NuxtLink :to="localePath('/articles')" class="nav-link">{{ t('nav.articles') }}</NuxtLink>
-            <NuxtLink :to="localePath('/moments')" class="nav-link">{{ t('nav.moments') }}</NuxtLink>
-            <NuxtLink :to="localePath('/timeline')" class="nav-link">{{ t('nav.timeline') }}</NuxtLink>
-          </template>
+          <NuxtLink :to="localePath('/')" class="nav-link">{{ t('nav.home') }}</NuxtLink>
+          <NuxtLink :to="localePath('/articles')" class="nav-link">{{ t('nav.articles') }}</NuxtLink>
+          <NuxtLink :to="localePath('/moments')" class="nav-link">{{ t('nav.moments') }}</NuxtLink>
+          <NuxtLink :to="localePath('/timeline')" class="nav-link">{{ t('nav.timeline') }}</NuxtLink>
         </nav>
 
         <!-- Right: Theme + Lang -->
@@ -72,17 +65,10 @@
       <!-- Mobile drawer -->
       <Transition name="mobile-nav">
         <div v-if="mobileOpen" class="mobile-nav" @click="mobileOpen = false">
-          <template v-if="siteStore.navigation.length">
-            <NuxtLink v-for="item in siteStore.navigation" :key="item.id" :to="localePath(item.targetValue || '/')" class="mobile-nav-link">
-              {{ item.name }}
-            </NuxtLink>
-          </template>
-          <template v-else>
-            <NuxtLink :to="localePath('/')" class="mobile-nav-link">{{ t('nav.home') }}</NuxtLink>
-            <NuxtLink :to="localePath('/articles')" class="mobile-nav-link">{{ t('nav.articles') }}</NuxtLink>
-            <NuxtLink :to="localePath('/moments')" class="mobile-nav-link">{{ t('nav.moments') }}</NuxtLink>
-            <NuxtLink :to="localePath('/timeline')" class="mobile-nav-link">{{ t('nav.timeline') }}</NuxtLink>
-          </template>
+          <NuxtLink :to="localePath('/')" class="mobile-nav-link">{{ t('nav.home') }}</NuxtLink>
+          <NuxtLink :to="localePath('/articles')" class="mobile-nav-link">{{ t('nav.articles') }}</NuxtLink>
+          <NuxtLink :to="localePath('/moments')" class="mobile-nav-link">{{ t('nav.moments') }}</NuxtLink>
+          <NuxtLink :to="localePath('/timeline')" class="mobile-nav-link">{{ t('nav.timeline') }}</NuxtLink>
         </div>
       </Transition>
     </header>
@@ -97,7 +83,7 @@
       <div class="container">
         <p class="footer-copy">
           © {{ new Date().getFullYear() }}
-          <span class="footer-accent">{{ siteStore.settings?.siteName || 'Ancy Blog' }}</span>
+          <span class="footer-accent">{{ siteSettings?.siteName || 'Ancy Blog' }}</span>
           · Built with Nuxt
         </p>
       </div>
@@ -106,15 +92,16 @@
 </template>
 
 <script setup lang="ts">
-import { useSiteStore } from '~/stores/site'
-
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const colorMode = useColorMode()
-const siteStore = useSiteStore()
+const { getSiteSettings } = useApi()
 
-// ── Global Site Data (Navigation, Footer, Socials, Config) ─────
-await useAsyncData('global-site-data', () => siteStore.fetchAll())
+// ── Site settings ──────────────────────────────────────────────
+const { data: siteSettings } = await useAsyncData('site-settings', getSiteSettings, {
+  server: true,
+  lazy: false,
+})
 
 // ── Theme ──────────────────────────────────────────────────────
 const isDark = computed(() => colorMode.value === 'dark')

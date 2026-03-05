@@ -1,9 +1,9 @@
 {
     "nav": {
-        "home": "Asylum",
-        "articles": "Essays",
-        "moments": "Whispers",
-        "timeline": "Traces",
+        "home": "Home",
+        "articles": "Articles",
+        "moments": "Moments",
+        "timeline": "Timeline",
         "links": "Links"
     },
     "home": {

@@ -14,9 +14,9 @@
           <!-- eslint-disable-next-line vue/no-v-html -->
           <div class="hero-intro" v-html="introHtml" />
 
-          <div v-if="siteStore.socialLinks.length" class="hero-socials">
+          <div v-if="socialLinks.length" class="hero-socials">
             <a
-              v-for="link in siteStore.socialLinks"
+              v-for="link in socialLinks"
               :key="link.id"
               :href="link.url"
               target="_blank"
@@ -25,7 +25,8 @@
               :aria-label="link.title"
             >
               <span class="social-icon">
-                <svg v-if="link.platform === 'github'" viewBox="0 0 24 24" fill="currentColor">
+                <img v-if="link.iconKey" :src="link.iconKey" :alt="link.title" class="social-img" />
+                <svg v-else-if="link.platform === 'github'" viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017C22 6.484 17.522 2 12 2z"/>
                 </svg>
                 <svg v-else-if="link.platform === 'mail'" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -36,7 +37,6 @@
                   <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/>
                 </svg>
               </span>
-              <span class="social-label">{{ link.title }}</span>
             </a>
           </div>
         </div>
@@ -46,9 +46,9 @@
           <div class="hero-avatar-wrap">
             <div class="hero-avatar-ring" />
             <img
-              v-if="siteStore.settings?.avatarUrl"
-              :src="siteStore.settings.avatarUrl"
-              :alt="siteStore.settings?.siteName"
+              v-if="siteSettings?.avatarUrl"
+              :src="siteSettings.avatarUrl"
+              :alt="siteSettings?.siteName"
               class="hero-avatar"
               width="180"
               height="180"
@@ -110,20 +110,20 @@
 </template>
 
 <script setup lang="ts">
-import { useSiteStore } from '~/stores/site'
-
 const { t } = useI18n()
 const localePath = useLocalePath()
-const { listArticles } = useApi()
-const siteStore = useSiteStore()
+const { listArticles, getSiteSettings, getSocialLinks } = useApi()
 
 // ── Fetch data ───────────────────────────────────────────────────
-await siteStore.fetchAll()
-const { data: articles, pending } = await useAsyncData('home-articles', () => listArticles({ pageSize: 6 }))
+const [{ data: siteSettings }, { data: socialLinks, }, { data: articles, pending }] = await Promise.all([
+  useAsyncData('site-settings', getSiteSettings),
+  useAsyncData('social-links', getSocialLinks, { default: () => [] }),
+  useAsyncData('home-articles', () => listArticles({ pageSize: 6 })),
+])
 
 // ── Intro HTML — convert simple markdown line breaks ────────────
 const introHtml = computed(() => {
-  const raw = siteStore.settings?.heroIntroMd || `Hi, I'm **Ancy** 👋\nI write code and thoughts.`
+  const raw = siteSettings.value?.heroIntroMd || `Hi, I'm **Ancy** 👋\nI write code and thoughts.`
   return raw
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\n/g, '<br/>')
@@ -138,10 +138,10 @@ onMounted(() => {
 
 // ── SEO ─────────────────────────────────────────────────────────
 useSeoMeta({
-  title: siteStore.settings?.siteName || 'Ancy Blog',
-  description: siteStore.settings?.siteDescription || '',
-  ogTitle: siteStore.settings?.siteName,
-  ogDescription: siteStore.settings?.siteDescription,
+  title: siteSettings.value?.siteName || 'Ancy Blog',
+  description: siteSettings.value?.siteDescription || '',
+  ogTitle: siteSettings.value?.siteName,
+  ogDescription: siteSettings.value?.siteDescription,
 })
 </script>
 
@@ -197,12 +197,11 @@ useSeoMeta({
 .social-link {
   display: flex;
   align-items: center;
-  gap: 6px;
-  padding: 8px 14px;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
   border: 1px solid var(--border);
-  border-radius: var(--radius-xl);
-  font-size: 13px;
-  font-weight: 500;
+  border-radius: 50%;
   color: var(--text-muted);
   background: var(--surface);
   transition: border-color var(--dur-base), color var(--dur-base),
@@ -218,8 +217,15 @@ useSeoMeta({
   box-shadow: var(--shadow-sm);
 }
 
-.social-icon { display: flex; align-items: center; }
-.social-icon svg { width: 16px; height: 16px; }
+.social-img {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.social-icon { display: flex; align-items: center; justify-content: center; }
+.social-icon svg { width: 18px; height: 18px; }
 
 /* ── Right ── */
 .hero-right {

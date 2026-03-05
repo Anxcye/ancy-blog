@@ -298,6 +298,17 @@ function SocialLinksTab(): ReactElement {
 
   const columns = [
     {
+      title: '图标 URL',
+      dataIndex: 'iconKey',
+      key: 'iconKey',
+      render: (key: string | undefined) =>
+        key ? (
+          <Avatar src={key} size="small" />
+        ) : (
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>默认 / 无</Typography.Text>
+        ),
+    },
+    {
       title: '平台',
       dataIndex: 'platform',
       key: 'platform',
@@ -410,6 +421,13 @@ function SocialLinksTab(): ReactElement {
             rules={[{ required: true, message: '请填写 URL' }]}
           >
             <Input placeholder="https://github.com/username" />
+          </Form.Item>
+          <Form.Item
+            name="iconKey"
+            label="图标 URL (可选)"
+            tooltip="如果是自定义平台或想覆盖默认图标，请填写图片地址"
+          >
+            <Input placeholder="https://example.com/icon.png" />
           </Form.Item>
           <Row gutter={12}>
             <Col span={12}>

@@ -203,6 +203,6 @@ export function useApi() {
 
         /** Fetch social links */
         getSocialLinks: () =>
-            apiFetch<Array<{ id: string; platform: string; title: string; url: string }>>('/public/site/social-links'),
+            apiFetch<Array<{ id: string; platform: string; title: string; url: string; iconKey?: string }>>('/public/site/social-links'),
     }
 }
