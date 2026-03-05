@@ -275,6 +275,7 @@ onBeforeUnmount(() => {
   width: 133px;
   height: 100%;
   object-fit: cover;
+  border-radius: var(--radius-lg) 0 0 var(--radius-lg);
   z-index: 1;
   mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.8) 85%, rgba(0,0,0,0) 100%);
   -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.8) 85%, rgba(0,0,0,0) 100%);
