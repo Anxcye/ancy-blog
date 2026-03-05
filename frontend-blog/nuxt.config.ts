@@ -70,6 +70,11 @@ export default defineNuxtConfig({
   // ── CSS ──────────────────────────────────────────────────────────
   css: ['~/assets/css/main.css'],
 
+  // ── Optimization ─────────────────────────────────────────────────
+  experimental: {
+    inlineSSRStyles: true,
+  },
+
   // ── App head ─────────────────────────────────────────────────────
   app: {
     head: {
