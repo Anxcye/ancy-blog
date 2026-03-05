@@ -12,7 +12,9 @@ export default defineNuxtConfig({
 
   // ── Modules ─────────────────────────────────────────────────────
   modules: [
-    '@nuxtjs/color-mode',
+    '@nuxt/ui',
+    '@pinia/nuxt',
+    '@vueuse/nuxt',
     '@nuxtjs/i18n',
     '@nuxtjs/google-fonts',
   ],

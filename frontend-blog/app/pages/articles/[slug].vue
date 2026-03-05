@@ -117,9 +117,6 @@
             <button type="submit" class="submit-btn" :disabled="submitting">
               {{ submitting ? t('comment.submitting') : t('comment.submit') }}
             </button>
-            <p v-if="submitResult" class="submit-result" :class="submitResult.type">
-              {{ submitResult.message }}
-            </p>
           </div>
         </form>
       </section>
@@ -226,14 +223,14 @@ const AI_LEVEL_LABEL: Record<string, string> = {
 function aiAssistLabel(level: string): string { return AI_LEVEL_LABEL[level] || level }
 
 // ── Comment form ─────────────────────────────────────────────────
+const toast = useToast()
 const commentForm = reactive({ nickname: '', email: '', website: '', content: '' })
 const submitting = ref(false)
-const submitResult = ref<{ type: 'success' | 'error'; message: string } | null>(null)
 
-async function submitComment() {
-  if (!article.value) return
+const doSubmitComment = async () => {
+  if (!article.value || !commentForm.content.trim()) return
   submitting.value = true
-  submitResult.value = null
+  
   try {
     await createComment({
       articleId: article.value.id,
@@ -242,23 +239,20 @@ async function submitComment() {
       email: commentForm.email || undefined,
       website: commentForm.website || undefined,
     })
-    submitResult.value = { type: 'success', message: t('comment.success') }
+    toast.add({ title: t('comment.success'), color: 'green', icon: 'i-heroicons-check-circle' })
     commentForm.content = ''
   } catch {
-    submitResult.value = { type: 'error', message: '提交失败，请稍后重试' }
+    toast.add({ title: '提交失败，请稍后重试', color: 'red', icon: 'i-heroicons-x-circle' })
   } finally {
     submitting.value = false
   }
 }
 
-// ── SEO ─────────────────────────────────────────────────────────
-useSeoMeta({
-  title: article.value.title,
-  description: article.value.summary,
-  ogTitle: article.value.title,
-  ogDescription: article.value.summary,
-  ogImage: article.value.coverImage,
-})
+// Enterprise Debounce: prevents spamming the submit button
+const submitComment = useDebounceFn(doSubmitComment, 500)
+
+// ── SEO & JSON-LD ───────────────────────────────────────────────
+useArticleSeo(article.value, siteSettings.value || null)
 </script>
 
 <style scoped>

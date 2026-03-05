@@ -3,9 +3,12 @@
      Module: frontend-blog/app, root layer.
      Related: nuxt.config.ts (colorMode), assets/css/main.css (accent classes). -->
 <template>
-  <NuxtLayout>
-    <NuxtPage />
-  </NuxtLayout>
+  <div>
+    <NuxtLayout>
+      <NuxtPage />
+    </NuxtLayout>
+    <UNotifications />
+  </div>
 </template>
 
 <script setup lang="ts">

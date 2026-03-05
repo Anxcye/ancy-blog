@@ -94,6 +94,8 @@ export interface SiteSettings {
     commentEnabled: boolean
     commentRequireApproval: boolean
     siteDescription?: string
+    seoKeywords?: string
+    ogImageUrl?: string
 }
 
 // ── Timeline ───────────────────────────────────────────────────────
@@ -113,18 +115,42 @@ export function useApi() {
     const { locale } = useI18n()
 
     /**
-     * Core fetch wrapper — prepends base URL, injects locale header.
-     */
+   * Core fetch wrapper — prepends base URL, injects locale header.
+   * Also intercepts system/business errors and triggers Nuxt error boundaries automatically.
+   */
     async function apiFetch<T>(path: string, opts?: Parameters<typeof $fetch>[1]): Promise<T> {
-        const res = await $fetch<ApiResponse<T>>(path, {
-            baseURL: config.public.apiBase,
-            headers: {
-                'Accept-Language': locale.value === 'en' ? 'en-US' : 'zh-CN',
-                ...(opts?.headers as Record<string, string> ?? {}),
-            },
-            ...opts,
-        })
-        return res.data
+        try {
+            const res = await $fetch<ApiResponse<T>>(path, {
+                baseURL: config.public.apiBase,
+                headers: {
+                    'Accept-Language': locale.value === 'en' ? 'en-US' : 'zh-CN',
+                    ...(opts?.headers as Record<string, string> ?? {}),
+                },
+                onResponseError({ response }) {
+                    // HTTP 级别异常（500/404 等硬件隔离的系统异常）
+                    throw createError({
+                        statusCode: response.status,
+                        message: response._data?.message || `Network error (${response.status})`,
+                        fatal: true, // Fatal triggers full SSR boundary crash so `error.vue` handles it
+                    })
+                },
+                ...opts,
+            })
+
+            // App 业务级异常（后端自己组装的 code / message）
+            if (!res || !['SUCCESS', '0', 'ok', ''].includes((res.code || '').toLowerCase())) {
+                throw createError({
+                    statusCode: 400,
+                    message: res?.message || 'Server returned invalid state',
+                    fatal: true,
+                })
+            }
+
+            return res.data
+        } catch (err: any) {
+            // Re-throw the structured nuxt error to boundary 
+            throw err
+        }
     }
 
     // ── Public APIs ────────────────────────────────────────────────
