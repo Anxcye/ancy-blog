@@ -201,7 +201,6 @@ onBeforeUnmount(() => {
   max-width: 100%;
   height: auto;
   border-radius: var(--radius-md);
-  margin: 1.5em 0;
 }
 
 .tiptap a {
@@ -256,7 +255,7 @@ onBeforeUnmount(() => {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  min-height: 200px;
+  min-height: 160px;
   background: var(--surface);
   text-decoration: none;
   transition: all 0.2s;
@@ -285,7 +284,7 @@ onBeforeUnmount(() => {
 .tiptap .tmdb-info {
   position: relative;
   padding: 20px 24px 20px 160px;
-  min-height: 200px;
+  min-height: 160px;
   display: flex;
   flex-direction: column;
   gap: 10px;
