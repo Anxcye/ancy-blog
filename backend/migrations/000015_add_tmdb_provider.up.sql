@@ -1,8 +1,8 @@
 -- Add TMDB integration provider
-INSERT INTO integration_providers (provider_key, provider_type, display_name, description, enabled, config, created_at, updated_at)
+INSERT INTO integration_providers (provider_key, provider_type, name, description, enabled, config_json, created_at, updated_at)
 VALUES (
     'tmdb',
-    'tmdb',
+    'llm',
     'TMDB',
     'The Movie Database API for fetching movie and TV show metadata',
     false,

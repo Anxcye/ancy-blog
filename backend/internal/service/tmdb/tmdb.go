@@ -46,8 +46,15 @@ func (s *Service) GetMovie(id string) (*MovieDetail, error) {
 	if s.apiKey == "" {
 		return nil, fmt.Errorf("TMDB API key not configured")
 	}
-	url := fmt.Sprintf("https://api.themoviedb.org/3/movie/%s?api_key=%s", id, s.apiKey)
-	resp, err := s.httpClient.Get(url)
+	url := fmt.Sprintf("https://api.themoviedb.org/3/movie/%s", id)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+s.apiKey)
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := s.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
@@ -68,8 +75,15 @@ func (s *Service) GetTV(id string) (*TVDetail, error) {
 	if s.apiKey == "" {
 		return nil, fmt.Errorf("TMDB API key not configured")
 	}
-	url := fmt.Sprintf("https://api.themoviedb.org/3/tv/%s?api_key=%s", id, s.apiKey)
-	resp, err := s.httpClient.Get(url)
+	url := fmt.Sprintf("https://api.themoviedb.org/3/tv/%s", id)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("Authorization", "Bearer "+s.apiKey)
+	req.Header.Set("Accept", "application/json")
+
+	resp, err := s.httpClient.Do(req)
 	if err != nil {
 		return nil, err
 	}
