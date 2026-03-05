@@ -1,14 +1,32 @@
 # Progress Board
 
 ## Todo
-- [ ] Initialize `frontend-blog/` Vue3 scaffold.
+- [ ] Blog: 404 / error pages for frontend-blog.
+- [ ] Blog: 友情链接页面 (links page).
+- [ ] Blog: 关于我页面 (article content_kind=page renderer).
+- [ ] Blog: 评论回复功能 (threaded replies).
+- [ ] Blog: Open Graph & structured data (JSON-LD) for articles.
 - [ ] Set up lint/test/build scripts for frontend workspaces.
 
 ## In Progress
 - [ ] Add API rate limiting for auth/comment/AI/translation-create endpoints.
 - [ ] Add frontend i18n routing and SEO output (`/` default zh, `/en/*` english).
+- [ ] Blog: particle background (sparse petal/dot animation, accent-tinted).
+- [ ] Blog: TipTap embed block rendering (x_post, tmdb_card).
 
 ## Done
+- [x] Initialized `frontend-blog/` with Nuxt 4 (minimal template, color-mode, i18n zh/en, Google Fonts).
+- [x] Design system CSS (light/dark tokens, grain texture, spring easing, accent color injection per load).
+- [x] Site shell layout: frosted-glass header, avatar brand, centered nav, dark/light toggle, mobile drawer, footer.
+- [x] Homepage: 100vh hero (intro text + spinning avatar ring + social links), article card grid with skeleton loading.
+- [x] Article list page: category/tag filter pills, URL-synced filters, reactive pagination.
+- [x] Article detail page: TipTap JSON→HTML inline renderer, comment section, comment submission form.
+- [x] Moments page: vertical timeline feed with gradient rail and dot markers.
+- [x] Timeline page: mixed article+moment feed with icon-dot markers and type badges.
+- [x] `useApi` composable: typed API client for all public endpoints with locale header injection.
+- [x] i18n: zh (default `/`) and en (`/en/*`), cookie-based detection.
+- [x] `pnpm run build` passes cleanly (zero errors).
+- [x] git commit: `feat(blog): initialize Nuxt 4 frontend-blog scaffold`.
 - [x] Created tracking docs and collaboration guidelines.
 - [x] Established file header and English comment rules.
 - [x] Initialized `backend/` Go service scaffold (`cmd`, `internal`, `healthz`, config, logger).
