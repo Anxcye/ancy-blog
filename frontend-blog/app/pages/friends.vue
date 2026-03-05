@@ -11,9 +11,7 @@
       </div>
 
       <!-- Optional Article Intro -->
-      <div v-if="article" class="friends-intro prose" :class="{ dark: isDark }">
-        <div class="prose-content" v-html="renderedContent"></div>
-      </div>
+      <TiptapRenderer v-if="article?.content" :content="article.content" class="friends-intro" />
 
       <!-- Skeleton Loading -->
       <div v-if="pending" class="links-grid">
@@ -56,26 +54,12 @@
 </template>
 
 <script setup lang="ts">
-import { generateHTML } from '@tiptap/html'
-import Document from '@tiptap/extension-document'
-import Paragraph from '@tiptap/extension-paragraph'
-import Text from '@tiptap/extension-text'
-import Heading from '@tiptap/extension-heading'
-import Blockquote from '@tiptap/extension-blockquote'
-import PrecodeBlock from '~/components/tiptap/PrecodeBlock'
-import CustomLink from '~/components/tiptap/CustomLink'
-import CustomImage from '~/components/tiptap/CustomImage'
-
 const { getApprovedLinks, getArticle } = useApi()
-const colorMode = useColorMode()
-const isDark = computed(() => colorMode.value === 'dark')
 
-// Fetch approved links
 const { data: links, pending } = await useAsyncData('friends-links', getApprovedLinks, {
   getCachedData: () => undefined
 })
 
-// Optionally load 'friends' article for intro text if it exists
 const { data: article } = await useAsyncData('friends-intro', async () => {
   try {
     return await getArticle('friends')
@@ -84,20 +68,6 @@ const { data: article } = await useAsyncData('friends-intro', async () => {
     throw err
   }
 }, { getCachedData: () => undefined })
-
-const renderedContent = computed(() => {
-  if (!article.value?.content) return ''
-  try {
-    const doc = JSON.parse(article.value.content)
-    return generateHTML(doc, [
-      Document, Paragraph, Text,
-      Heading.configure({ levels: [1, 2, 3, 4, 5, 6] }),
-      Blockquote, PrecodeBlock, CustomLink, CustomImage
-    ])
-  } catch {
-    return `<p>${article.value.content}</p>`
-  }
-})
 
 useSeoMeta({ title: '友人帐 - 友情链接' })
 </script>

@@ -463,7 +463,6 @@ watch(() => route.path, () => { mobileOpen.value = false })
   font-size: 14px;
   color: var(--text-subtle);
   border-bottom: 1px dashed var(--border);
-}
   transition: color var(--dur-fast);
 }
 
