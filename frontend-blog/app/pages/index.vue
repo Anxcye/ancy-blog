@@ -207,7 +207,7 @@ useSeoMeta({
   line-height: 1.5;
   color: var(--text);
   margin-bottom: 28px;
-  font-family: 'Noto Serif SC', serif;
+  font-family: 'Songti SC', 'SimSun', 'Noto Serif SC', Georgia, serif;
   letter-spacing: 0.01em;
 }
 

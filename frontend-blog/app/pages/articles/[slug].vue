@@ -231,7 +231,7 @@ useArticleSeo(article.value, siteSettings.value || null)
 }
 
 .article-title {
-  font-family: 'Noto Serif SC', serif;
+  font-family: 'Songti SC', 'SimSun', 'Noto Serif SC', Georgia, serif;
   font-size: clamp(1.6rem, 4vw, 2.2rem);
   font-weight: 800;
   line-height: 1.25;
@@ -277,7 +277,7 @@ useArticleSeo(article.value, siteSettings.value || null)
 
 /* ── Article body (rich text) ── */
 .article-body {
-  font-family: 'Noto Serif SC', serif;
+  font-family: 'Songti SC', 'SimSun', 'Noto Serif SC', Georgia, serif;
   font-size: 1.05rem;
   margin-bottom: 64px;
 }

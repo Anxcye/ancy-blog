@@ -43,14 +43,14 @@ export default defineNuxtConfig({
     },
   },
 
-  // ── Google Fonts ─────────────────────────────────────────────────
+  // ── Google Fonts (fallback for better typography) ────────────────
   googleFonts: {
     families: {
-      'Noto+Serif+SC': [400, 500, 700],
       'Inter': [400, 500, 600],
+      'Noto+Serif+SC': [400, 500, 700],
     },
     display: 'swap',
-    preload: true,
+    preload: false,
   },
 
   // ── Runtime config ───────────────────────────────────────────────
