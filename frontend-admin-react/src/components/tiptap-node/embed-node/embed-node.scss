@@ -46,12 +46,13 @@
     position: relative;
     overflow: hidden;
     border-radius: 12px;
-    min-height: 140px;
+    min-height: 160px;
     text-decoration: none;
     display: block;
 
     &:hover {
       border-color: rgba(1, 180, 228, 0.4);
+      text-decoration: none;
     }
 
     &.is-selected {
@@ -65,28 +66,19 @@
   position: absolute;
   left: 0;
   top: 0;
-  width: 140px;
+  width: 107px;
   height: 100%;
   object-fit: cover;
   border-radius: 12px 0 0 12px;
   z-index: 1;
-
-  &::after {
-    content: '';
-    position: absolute;
-    right: 0;
-    top: 0;
-    width: 40px;
-    height: 100%;
-    background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
-    pointer-events: none;
-  }
+  mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
+  -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 60%, rgba(0,0,0,0) 100%);
 }
 
 .tmdb-info {
   position: relative;
-  padding: 16px 20px 16px 160px;
-  min-height: 140px;
+  padding: 16px 20px 16px 130px;
+  min-height: 160px;
   display: flex;
   flex-direction: column;
   gap: 8px;
