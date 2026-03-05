@@ -77,7 +77,7 @@ export function EmbedNodeView({ node, selected }: NodeViewProps) {
           <div className="tmdb-info">
             <div className="tmdb-title">{title || "(no title)"}</div>
             <div className="tmdb-meta">
-              {mediaType === 'movie' ? '电影' : '剧集'} · {releaseDate?.slice(0, 4)} · ⭐ {voteAverage?.toFixed(1)}
+              {mediaType === 'movie' ? '电影' : '剧集'} · {releaseDate?.slice(0, 4)} · {voteAverage?.toFixed(1)} 分
             </div>
             {overview && <div className="tmdb-overview">{overview}</div>}
           </div>
