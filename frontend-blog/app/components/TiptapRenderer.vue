@@ -255,7 +255,7 @@ onBeforeUnmount(() => {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   overflow: hidden;
-  min-height: 160px;
+  min-height: 120px;
   background: var(--surface);
   text-decoration: none;
   transition: all 0.2s;
@@ -284,7 +284,7 @@ onBeforeUnmount(() => {
 .tiptap .tmdb-info {
   position: relative;
   padding: 20px 24px 20px 160px;
-  min-height: 160px;
+  min-height: 120px;
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -293,43 +293,24 @@ onBeforeUnmount(() => {
 
 .tiptap .tmdb-title {
   font-weight: 600;
-  font-size: 1.25em;
+  font-size: 1.1em;
   line-height: 1.3;
   color: var(--text);
 }
 
 .tiptap .tmdb-meta {
-  font-size: 0.9em;
+  font-size: 0.85em;
   color: var(--text-muted);
 }
 
 .tiptap .tmdb-overview {
-  font-size: 0.95em;
-  line-height: 1.6;
+  font-size: 0.85em;
+  line-height: 1.5;
   color: var(--text-subtle);
   display: -webkit-box;
   -webkit-line-clamp: 3;
   line-clamp: 3;
   -webkit-box-orient: vertical;
   overflow: hidden;
-}
-
-@media (max-width: 640px) {
-  .tiptap .tmdb-card-embed {
-    min-height: auto;
-  }
-
-  .tiptap .tmdb-poster {
-    position: relative;
-    width: 100%;
-    height: 240px;
-    mask-image: none;
-    -webkit-mask-image: none;
-  }
-
-  .tiptap .tmdb-info {
-    padding: 16px;
-    min-height: auto;
-  }
 }
 </style>
