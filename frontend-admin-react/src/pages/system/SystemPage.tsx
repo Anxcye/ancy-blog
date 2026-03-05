@@ -86,6 +86,7 @@ const MASKED = '***';
 const PROVIDER_META: Record<string, { icon: ReactElement; label: string }> = {
   cloudflare_r2: { icon: <CloudOutlined />, label: 'Cloudflare R2' },
   openai_compatible: { icon: <RobotOutlined />, label: 'OpenAI Compatible' },
+  tmdb: { icon: <GlobalOutlined />, label: 'TMDB' },
 };
 
 // R2-specific config form fields — field names match backend config keys
@@ -125,6 +126,15 @@ function OpenAIConfigFields(): ReactElement {
         <Input placeholder="gpt-4.1-mini" />
       </Form.Item>
     </>
+  );
+}
+
+// TMDB config form fields
+function TMDBConfigFields(): ReactElement {
+  return (
+    <Form.Item name="api_key" label="API Key" rules={[{ required: true }]}>
+      <Input.Password placeholder="输入 TMDB API Key" />
+    </Form.Item>
   );
 }
 
@@ -319,6 +329,7 @@ function IntegrationsTab(): ReactElement {
         <Form form={form} layout="vertical">
           {editingProvider?.providerKey === 'cloudflare_r2' && <R2ConfigFields />}
           {editingProvider?.providerKey === 'openai_compatible' && <OpenAIConfigFields />}
+          {editingProvider?.providerKey === 'tmdb' && <TMDBConfigFields />}
           <Form.Item
             name="enabled"
             label="启用此集成"
