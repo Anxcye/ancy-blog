@@ -60,14 +60,11 @@ export default defineNuxtConfig({
     },
   },
 
-  // ── Dev server proxy (avoid CORS in dev) ─────────────────────────
-  nitro: {
-    devProxy: {
-      '/api': {
-        target: process.env.NUXT_PUBLIC_API_BASE?.replace('/api/v1', '') || 'http://localhost:8080',
-        changeOrigin: true,
-      },
-    },
+  // ── API Proxy (solves CORS by routing through Nuxt) ──────────────
+  routeRules: {
+    '/api/**': {
+      proxy: (process.env.NUXT_PUBLIC_API_BASE?.replace('/api/v1', '') || 'http://localhost:8080') + '/api/**'
+    }
   },
 
   // ── CSS ──────────────────────────────────────────────────────────

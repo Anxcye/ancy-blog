@@ -119,9 +119,13 @@ export function useApi() {
    * Also intercepts system/business errors and triggers Nuxt error boundaries automatically.
    */
     async function apiFetch<T>(path: string, opts?: Parameters<typeof $fetch>[1]): Promise<T> {
+        // SSR requires absolute path to connect to backend directly;
+        // CSR points to current origin (`/api/v1`) to leverage Nuxt proxy and avoid CORS
+        const baseURL = import.meta.client ? '/api/v1' : config.public.apiBase
+
         try {
             const res = await $fetch<ApiResponse<T>>(path, {
-                baseURL: config.public.apiBase,
+                baseURL,
                 headers: {
                     'Accept-Language': locale.value === 'en' ? 'en-US' : 'zh-CN',
                     ...(opts?.headers as Record<string, string> ?? {}),
