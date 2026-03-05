@@ -277,6 +277,7 @@ onBeforeUnmount(() => {
   object-fit: cover;
   flex-shrink: 0;
   display: block;
+  vertical-align: top;
   mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.8) 85%, rgba(0,0,0,0) 100%);
   -webkit-mask-image: linear-gradient(to right, rgba(0,0,0,1) 0%, rgba(0,0,0,1) 70%, rgba(0,0,0,0.8) 85%, rgba(0,0,0,0) 100%);
 }
