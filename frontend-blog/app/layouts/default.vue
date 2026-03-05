@@ -143,9 +143,14 @@ function resolveTarget(n: any) {
 }
 
 function mapNav(n: any): any {
+  // Try to use i18n translation based on the nav key if it exists under 'nav.', otherwise fallback to the database name
+  const i18nKey = `nav.${n.key}`
+  const hasTranslation = t(i18nKey) !== i18nKey
+  const label = hasTranslation ? t(i18nKey) : n.name
+
   return {
     key: n.id || n.key,
-    label: n.name,
+    label,
     to: resolveTarget(n),
     isExternal: n.targetType === 'external',
     children: n.children?.length ? n.children.map(mapNav) : undefined
@@ -157,6 +162,7 @@ const defaultNavItems = computed(() => [
   { key: 'articles', to: '/articles', label: t('nav.articles'), isExternal: false },
   { key: 'moments',  to: '/moments',  label: t('nav.moments'), isExternal: false },
   { key: 'timeline', to: '/timeline', label: t('nav.timeline'), isExternal: false },
+  { key: 'links',    to: '/friends',  label: t('nav.links'), isExternal: false },
 ])
 
 const navItems = computed(() => {
