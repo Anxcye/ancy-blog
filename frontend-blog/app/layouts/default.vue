@@ -23,10 +23,13 @@
 
         <!-- Center: Nav -->
         <nav class="header-nav" aria-label="主导航">
-          <NuxtLink :to="localePath('/')" class="nav-link">{{ t('nav.home') }}</NuxtLink>
-          <NuxtLink :to="localePath('/articles')" class="nav-link">{{ t('nav.articles') }}</NuxtLink>
-          <NuxtLink :to="localePath('/moments')" class="nav-link">{{ t('nav.moments') }}</NuxtLink>
-          <NuxtLink :to="localePath('/timeline')" class="nav-link">{{ t('nav.timeline') }}</NuxtLink>
+          <NuxtLink
+            v-for="(item, i) in navItems"
+            :key="item.key"
+            :to="localePath(item.to)"
+            class="nav-link"
+            :style="{ '--nav-i': i }"
+          >{{ item.label }}</NuxtLink>
         </nav>
 
         <!-- Right: Theme + Lang -->
@@ -65,10 +68,13 @@
       <!-- Mobile drawer -->
       <Transition name="mobile-nav">
         <div v-if="mobileOpen" class="mobile-nav" @click="mobileOpen = false">
-          <NuxtLink :to="localePath('/')" class="mobile-nav-link">{{ t('nav.home') }}</NuxtLink>
-          <NuxtLink :to="localePath('/articles')" class="mobile-nav-link">{{ t('nav.articles') }}</NuxtLink>
-          <NuxtLink :to="localePath('/moments')" class="mobile-nav-link">{{ t('nav.moments') }}</NuxtLink>
-          <NuxtLink :to="localePath('/timeline')" class="mobile-nav-link">{{ t('nav.timeline') }}</NuxtLink>
+          <NuxtLink
+            v-for="(item, i) in navItems"
+            :key="item.key"
+            :to="localePath(item.to)"
+            class="mobile-nav-link"
+            :style="{ animationDelay: `${i * 50}ms` }"
+          >{{ item.label }}</NuxtLink>
         </div>
       </Transition>
     </header>
@@ -92,15 +98,32 @@
 </template>
 
 <script setup lang="ts">
+import { useSiteStore } from '~/stores/site'
+
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const colorMode = useColorMode()
 const { getSiteSettings } = useApi()
+const siteStore = useSiteStore()
 
-// ── Site settings ──────────────────────────────────────────────
+// ── Site settings (avatar / site name for header) ─────────────────
 const { data: siteSettings } = await useAsyncData('site-settings', getSiteSettings, {
   server: true,
   lazy: false,
+})
+
+// ── Nav items ────────────────────────────────────────────────────
+const defaultNavItems = computed(() => [
+  { key: 'home',     to: '/',         label: t('nav.home') },
+  { key: 'articles', to: '/articles', label: t('nav.articles') },
+  { key: 'moments',  to: '/moments',  label: t('nav.moments') },
+  { key: 'timeline', to: '/timeline', label: t('nav.timeline') },
+])
+const navItems = computed(() => {
+  if (siteStore.navigation.length) {
+    return siteStore.navigation.map(n => ({ key: n.id, to: n.targetValue || '/', label: n.name }))
+  }
+  return defaultNavItems.value
 })
 
 // ── Theme ──────────────────────────────────────────────────────
@@ -211,6 +234,12 @@ watch(() => route.path, () => { mobileOpen.value = false })
   gap: 2px;
 }
 
+@keyframes nav-spring {
+  0%   { opacity: 0; transform: translateY(-10px) scale(0.9); }
+  60%  { opacity: 1; transform: translateY(2px) scale(1.02); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .nav-link {
   padding: 6px 12px;
   border-radius: var(--radius-sm);
@@ -219,6 +248,9 @@ watch(() => route.path, () => { mobileOpen.value = false })
   color: var(--text-muted);
   transition: color var(--dur-fast), background var(--dur-fast);
   position: relative;
+  opacity: 0;
+  animation: nav-spring 0.5s var(--ease-spring) forwards;
+  animation-delay: calc(var(--nav-i, 0) * 70ms + 100ms);
 }
 
 .nav-link:hover {

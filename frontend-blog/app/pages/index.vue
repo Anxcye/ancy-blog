@@ -11,8 +11,19 @@
 
         <!-- Left: intro + socials -->
         <div class="hero-left" :class="{ visible: heroVisible }">
-          <!-- eslint-disable-next-line vue/no-v-html -->
-          <div class="hero-intro" v-html="introHtml" />
+          <!-- Word-by-word spring animation -->
+          <div class="hero-intro">
+            <template v-for="(token, i) in introTokens" :key="i">
+              <br v-if="token.isBr" />
+              <span
+                v-else
+                class="word-spring"
+                :style="{ animationDelay: heroVisible ? token.delay : '9999s' }"
+                v-html="token.html"
+              />
+              <span v-if="!token.isBr && i < introTokens.length - 1 && !introTokens[i+1]?.isBr" class="word-space"> </span>
+            </template>
+          </div>
 
           <div v-if="socialLinks.length" class="hero-socials">
             <a
@@ -115,28 +126,45 @@ const localePath = useLocalePath()
 const { listArticles, getSiteSettings, getSocialLinks } = useApi()
 
 // ── Fetch data ───────────────────────────────────────────────────
-const [{ data: siteSettings }, { data: socialLinks, }, { data: articles, pending }] = await Promise.all([
+const [{ data: siteSettings }, { data: socialLinks }, { data: articles, pending }] = await Promise.all([
   useAsyncData('site-settings', getSiteSettings),
   useAsyncData('social-links', getSocialLinks, { default: () => [] }),
   useAsyncData('home-articles', () => listArticles({ pageSize: 6 })),
 ])
 
-// ── Intro HTML — convert simple markdown line breaks ────────────
-const introHtml = computed(() => {
+// ── Word-by-word spring tokens ───────────────────────────────────────
+type IntroToken = { isBr: true } | { isBr: false; html: string; delay: string }
+
+const introTokens = computed<IntroToken[]>(() => {
   const raw = siteSettings.value?.heroIntroMd || `Hi, I'm **Ancy** 👋\nI write code and thoughts.`
-  return raw
-    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-    .replace(/\n/g, '<br/>')
+  const withStrong = raw.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+  const lines = withStrong.split('\n')
+  const tokens: IntroToken[] = []
+  let wordIdx = 0
+  for (let li = 0; li < lines.length; li++) {
+    if (li > 0) tokens.push({ isBr: true })
+    // split on spaces but keep emoji sequences intact
+    const words = lines[li].split(' ').filter(w => w.length > 0)
+    for (const word of words) {
+      tokens.push({
+        isBr: false,
+        html: word,
+        delay: `${wordIdx * 65}ms`,
+      })
+      wordIdx++
+    }
+  }
+  return tokens
 })
 
-// ── Hero entrance animation ──────────────────────────────────────
+// ── Hero entrance ──────────────────────────────────────────────────────
 const heroVisible = ref(false)
 onMounted(() => {
   const id = requestAnimationFrame(() => { heroVisible.value = true })
   onUnmounted(() => cancelAnimationFrame(id))
 })
 
-// ── SEO ─────────────────────────────────────────────────────────
+// ── SEO ────────────────────────────────────────────────────────────
 useSeoMeta({
   title: siteSettings.value?.siteName || 'Ancy Blog',
   description: siteSettings.value?.siteDescription || '',
