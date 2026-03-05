@@ -50,13 +50,17 @@ export const TmdbCardEmbed = Node.create({
         target: '_blank',
         rel: 'noopener noreferrer',
       },
-      ...(posterUrl ? [['img', { src: posterUrl, alt: title, class: 'tmdb-poster' }]] : []),
       [
         'div',
-        { class: 'tmdb-info' },
-        ['div', { class: 'tmdb-title' }, title],
-        ['div', { class: 'tmdb-meta' }, `${mediaType === 'movie' ? '电影' : '剧集'} · ${releaseDate.slice(0, 4)} · ${voteAverage.toFixed(1)} 分`],
-        ...(overview ? [['div', { class: 'tmdb-overview' }, overview]] : []),
+        { class: 'tmdb-card-content' },
+        ...(posterUrl ? [['img', { src: posterUrl, alt: title, class: 'tmdb-poster' }]] : []),
+        [
+          'div',
+          { class: 'tmdb-info' },
+          ['div', { class: 'tmdb-title' }, title],
+          ['div', { class: 'tmdb-meta' }, `${mediaType === 'movie' ? '电影' : '剧集'} · ${releaseDate.slice(0, 4)} · ${voteAverage.toFixed(1)} 分`],
+          ...(overview ? [['div', { class: 'tmdb-overview' }, overview]] : []),
+        ],
       ],
     ]
   },
