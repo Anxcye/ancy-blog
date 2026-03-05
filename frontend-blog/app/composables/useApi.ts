@@ -81,6 +81,14 @@ export interface CommentCreatePayload {
     website?: string
 }
 
+export interface LinkSubmissionPayload {
+    name: string
+    url: string
+    avatarUrl?: string
+    description?: string
+    contactEmail?: string
+}
+
 // ── Category / Tag ─────────────────────────────────────────────────
 export interface Category { id: string; name: string; slug: string }
 export interface Tag { id: string; name: string; slug: string }
@@ -216,5 +224,9 @@ export function useApi() {
         /** Fetch approved friends links */
         getApprovedLinks: () =>
             apiFetch<Array<{ id: string; name: string; url: string; avatarUrl?: string; description?: string }>>('/public/links'),
+
+        /** Submit a friend link */
+        submitLink: (payload: LinkSubmissionPayload) =>
+            apiFetch<{ id: string }>('/public/links/submissions', { method: 'POST', body: payload }),
     }
 }

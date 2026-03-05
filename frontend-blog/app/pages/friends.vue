@@ -49,12 +49,30 @@
       <div v-else class="empty-state">
         目前还没有记录任何宇宙信号...
       </div>
+
+      <!-- Submission Form -->
+      <div class="submit-section">
+        <h2 class="submit-title">申请友链</h2>
+        <form @submit.prevent="handleSubmit" class="submit-form">
+          <div class="form-row">
+            <input v-model="form.name" type="text" placeholder="站点名称 *" required class="form-input" />
+            <input v-model="form.url" type="url" placeholder="站点链接 *" required class="form-input" />
+          </div>
+          <input v-model="form.avatarUrl" type="url" placeholder="头像链接" class="form-input" />
+          <textarea v-model="form.description" placeholder="站点简介" rows="3" class="form-textarea"></textarea>
+          <input v-model="form.contactEmail" type="email" placeholder="联系邮箱" class="form-input" />
+          <button type="submit" :disabled="submitting" class="submit-btn">
+            {{ submitting ? '提交中...' : '提交申请' }}
+          </button>
+          <p v-if="submitMessage" class="submit-message" :class="{ success: submitSuccess }">{{ submitMessage }}</p>
+        </form>
+      </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-const { getApprovedLinks, getArticle } = useApi()
+const { getApprovedLinks, getArticle, submitLink } = useApi()
 
 const { data: links, pending } = await useAsyncData('friends-links', getApprovedLinks, {
   getCachedData: () => undefined
@@ -68,6 +86,27 @@ const { data: article } = await useAsyncData('friends-intro', async () => {
     throw err
   }
 }, { getCachedData: () => undefined })
+
+const form = ref({ name: '', url: '', avatarUrl: '', description: '', contactEmail: '' })
+const submitting = ref(false)
+const submitMessage = ref('')
+const submitSuccess = ref(false)
+
+async function handleSubmit() {
+  submitting.value = true
+  submitMessage.value = ''
+  try {
+    await submitLink(form.value)
+    submitSuccess.value = true
+    submitMessage.value = '提交成功！等待审核通过后即可显示。'
+    form.value = { name: '', url: '', avatarUrl: '', description: '', contactEmail: '' }
+  } catch (err: any) {
+    submitSuccess.value = false
+    submitMessage.value = err.message || '提交失败，请稍后重试。'
+  } finally {
+    submitting.value = false
+  }
+}
 
 useSeoMeta({ title: '友人帐 - 友情链接' })
 </script>
@@ -228,5 +267,102 @@ useSeoMeta({ title: '友人帐 - 友情链接' })
   0% { opacity: 0; transform: translateY(20px) scale(0.8); }
   60% { opacity: 1; transform: translateY(-4px) scale(1.05); }
   100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Submission Form */
+.submit-section {
+  margin-top: 80px;
+  padding: 40px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.submit-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  margin: 0 0 24px;
+  text-align: center;
+}
+
+.submit-form {
+  max-width: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-input, .form-textarea {
+  width: 100%;
+  padding: 12px 16px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  color: var(--text);
+  font-size: 14px;
+  transition: border-color var(--dur-fast);
+}
+
+.form-input:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--accent);
+}
+
+.form-textarea {
+  resize: vertical;
+  font-family: inherit;
+}
+
+.submit-btn {
+  padding: 12px 24px;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all var(--dur-fast);
+}
+
+.submit-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+  transform: translateY(-2px);
+}
+
+.submit-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.submit-message {
+  text-align: center;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  background: var(--surface-hover);
+  color: var(--text-muted);
+}
+
+.submit-message.success {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+@media (max-width: 640px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  .submit-section {
+    padding: 24px;
+  }
 }
 </style>
