@@ -267,7 +267,7 @@ onBeforeUnmount(() => {
 
 .tiptap .tmdb-card-content {
   display: flex;
-  align-items: stretch;
+  align-items: flex-start;
   position: relative;
 }
 
