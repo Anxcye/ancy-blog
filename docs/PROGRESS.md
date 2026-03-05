@@ -110,3 +110,5 @@
 ## Notes
 - Keep each task small enough to complete in one session when possible.
 - Move items across sections instead of duplicating them.
+
+- [x] Implemented TipTap content rendering for blog frontend: installed `@tiptap/html` + `@tiptap/core` + `@tiptap/starter-kit`, created custom rendering extensions for `xPostEmbed` and `tmdbCardEmbed` nodes, updated `TiptapRenderer.vue` to use official `generateHTML` with StarterKit + custom extensions, supports all standard nodes (headings/lists/blockquote/code/links/images) and custom embed blocks.

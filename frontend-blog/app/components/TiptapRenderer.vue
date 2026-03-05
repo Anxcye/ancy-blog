@@ -130,17 +130,41 @@ onBeforeUnmount(() => {
 
 .tiptap ul[data-type="taskList"] li {
   display: flex;
-  align-items: flex-start;
+  gap: 0.5em;
+  margin: 0.5em 0;
 }
 
 .tiptap ul[data-type="taskList"] li label {
-  margin-right: 0.5em;
-  margin-top: 0.2em;
+  display: flex;
+  flex-shrink: 0;
+  padding-top: 0.1em;
 }
 
-.tiptap ul[data-type="taskList"] li[data-checked="true"] > div {
+.tiptap ul[data-type="taskList"] li label input[type="checkbox"] {
+  width: 1em;
+  height: 1em;
+  margin: 0;
+  cursor: pointer;
+  accent-color: var(--accent);
+}
+
+.tiptap ul[data-type="taskList"] li label span {
+  display: none;
+}
+
+.tiptap ul[data-type="taskList"] li > div {
+  flex: 1;
+}
+
+.tiptap ul[data-type="taskList"] li > div p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.tiptap ul[data-type="taskList"] li[data-checked="true"] > div p {
   text-decoration: line-through;
   opacity: 0.6;
+  color: var(--text-muted);
 }
 
 .tiptap blockquote {
