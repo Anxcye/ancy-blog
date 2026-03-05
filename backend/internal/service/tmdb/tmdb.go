@@ -46,7 +46,7 @@ func (s *Service) GetMovie(id string) (*MovieDetail, error) {
 	if s.apiKey == "" {
 		return nil, fmt.Errorf("TMDB API key not configured")
 	}
-	url := fmt.Sprintf("https://api.themoviedb.org/3/movie/%s", id)
+	url := fmt.Sprintf("https://api.themoviedb.org/3/movie/%s?language=zh-CN", id)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
@@ -75,7 +75,7 @@ func (s *Service) GetTV(id string) (*TVDetail, error) {
 	if s.apiKey == "" {
 		return nil, fmt.Errorf("TMDB API key not configured")
 	}
-	url := fmt.Sprintf("https://api.themoviedb.org/3/tv/%s", id)
+	url := fmt.Sprintf("https://api.themoviedb.org/3/tv/%s?language=zh-CN", id)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
