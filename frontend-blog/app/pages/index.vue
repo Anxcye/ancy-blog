@@ -14,9 +14,9 @@
           <!-- eslint-disable-next-line vue/no-v-html -->
           <div class="hero-intro" v-html="introHtml" />
 
-          <div v-if="socialLinks.length" class="hero-socials">
+          <div v-if="siteStore.socialLinks.length" class="hero-socials">
             <a
-              v-for="link in socialLinks"
+              v-for="link in siteStore.socialLinks"
               :key="link.id"
               :href="link.url"
               target="_blank"
@@ -46,9 +46,9 @@
           <div class="hero-avatar-wrap">
             <div class="hero-avatar-ring" />
             <img
-              v-if="siteSettings?.avatarUrl"
-              :src="siteSettings.avatarUrl"
-              :alt="siteSettings?.siteName"
+              v-if="siteStore.settings?.avatarUrl"
+              :src="siteStore.settings.avatarUrl"
+              :alt="siteStore.settings?.siteName"
               class="hero-avatar"
               width="180"
               height="180"
@@ -110,20 +110,20 @@
 </template>
 
 <script setup lang="ts">
+import { useSiteStore } from '~/stores/site'
+
 const { t } = useI18n()
 const localePath = useLocalePath()
-const { listArticles, getSiteSettings, getSocialLinks } = useApi()
+const { listArticles } = useApi()
+const siteStore = useSiteStore()
 
 // ── Fetch data ───────────────────────────────────────────────────
-const [{ data: siteSettings }, { data: socialLinks, }, { data: articles, pending }] = await Promise.all([
-  useAsyncData('site-settings', getSiteSettings),
-  useAsyncData('social-links', getSocialLinks, { default: () => [] }),
-  useAsyncData('home-articles', () => listArticles({ pageSize: 6 })),
-])
+await siteStore.fetchAll()
+const { data: articles, pending } = await useAsyncData('home-articles', () => listArticles({ pageSize: 6 }))
 
 // ── Intro HTML — convert simple markdown line breaks ────────────
 const introHtml = computed(() => {
-  const raw = siteSettings.value?.heroIntroMd || `Hi, I'm **Ancy** 👋\nI write code and thoughts.`
+  const raw = siteStore.settings?.heroIntroMd || `Hi, I'm **Ancy** 👋\nI write code and thoughts.`
   return raw
     .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
     .replace(/\n/g, '<br/>')
@@ -138,10 +138,10 @@ onMounted(() => {
 
 // ── SEO ─────────────────────────────────────────────────────────
 useSeoMeta({
-  title: siteSettings.value?.siteName || 'Ancy Blog',
-  description: siteSettings.value?.siteDescription || '',
-  ogTitle: siteSettings.value?.siteName,
-  ogDescription: siteSettings.value?.siteDescription,
+  title: siteStore.settings?.siteName || 'Ancy Blog',
+  description: siteStore.settings?.siteDescription || '',
+  ogTitle: siteStore.settings?.siteName,
+  ogDescription: siteStore.settings?.siteDescription,
 })
 </script>
 
