@@ -47,12 +47,12 @@
     overflow: hidden;
     border-radius: 12px;
     min-height: 160px;
-    text-decoration: none;
+    text-decoration: none !important;
     display: block;
 
     &:hover {
       border-color: rgba(1, 180, 228, 0.4);
-      text-decoration: none;
+      text-decoration: none !important;
     }
 
     &.is-selected {
