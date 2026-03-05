@@ -462,8 +462,21 @@
 - Path: /api/v1/admin/site/nav-items
 - Auth Required: Yes
 - Request: nav item create payload
+```json
+{
+  "parentId": "uuid (optional, for child nav items)",
+  "name": "string",
+  "key": "string",
+  "type": "menu | dropdown | link",
+  "targetType": "route | category | slot | external | article",
+  "targetValue": "string (optional)",
+  "orderNum": 1,
+  "enabled": true
+}
+```
 - Response: created nav item id
 - Error Codes: VALIDATION_ERROR, AUTH_UNAUTHORIZED
+- Notes: Set `parentId` to create child nav items. Frontend auto-injects category list when `targetType=category` with no children.
 
 - ID: ADM-SITE-009
 - Method: PUT

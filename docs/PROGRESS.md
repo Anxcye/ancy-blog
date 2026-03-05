@@ -14,6 +14,7 @@
 - [ ] Blog: particle background (sparse petal/dot animation, accent-tinted).
 
 ## Done
+- [x] Implemented hierarchical navigation with dynamic category dropdown: admin can configure parent-child nav items via `parentId` field, blog frontend auto-injects category list when `targetType=category` with no predefined children.
 - [x] Initialized `frontend-blog/` with Nuxt 4 (minimal template, color-mode, i18n zh/en, Google Fonts).
 - [x] Design system CSS (light/dark tokens, grain texture, spring easing, accent color injection per load).
 - [x] Site shell layout: frosted-glass header, avatar brand, centered nav, dark/light toggle, mobile drawer, footer.

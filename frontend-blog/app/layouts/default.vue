@@ -123,7 +123,7 @@ import { useSiteStore } from '~/stores/site'
 const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const colorMode = useColorMode()
-const { getSiteSettings } = useApi()
+const { getSiteSettings, getCategories } = useApi()
 const siteStore = useSiteStore()
 
 // ── Site settings (avatar / site name for header) ─────────────────
@@ -131,6 +131,15 @@ const { data: siteSettings } = await useAsyncData('site-settings', getSiteSettin
   server: true,
   lazy: false,
 })
+
+// ── Categories for dynamic dropdown ────────────────────────────────
+const { data: categories } = await useAsyncData('categories', getCategories, {
+  server: true,
+  lazy: false,
+})
+
+// ── Load site navigation ───────────────────────────────────────────
+await siteStore.fetchAll()
 
 // ── Nav items ────────────────────────────────────────────────────
 function resolveTarget(n: any) {
@@ -148,12 +157,34 @@ function mapNav(n: any): any {
   const hasTranslation = t(i18nKey) !== i18nKey
   const label = hasTranslation ? t(i18nKey) : n.name
 
+  let children = n.children?.length ? n.children.map(mapNav) : undefined
+
+  // Auto-inject categories: if key is 'articles' and no children, show category dropdown
+  if (n.key === 'articles' && !children && categories.value?.length) {
+    children = categories.value.map((cat: any) => ({
+      key: `cat-${cat.slug}`,
+      label: cat.name,
+      to: `/articles?category=${cat.slug}`,
+      isExternal: false,
+    }))
+  }
+
+  // Or if targetType is 'category' with no targetValue and no children, inject all categories
+  if (n.targetType === 'category' && !n.targetValue && !children && categories.value?.length) {
+    children = categories.value.map((cat: any) => ({
+      key: `cat-${cat.slug}`,
+      label: cat.name,
+      to: `/articles?category=${cat.slug}`,
+      isExternal: false,
+    }))
+  }
+
   return {
     key: n.id || n.key,
     label,
     to: resolveTarget(n),
     isExternal: n.targetType === 'external',
-    children: n.children?.length ? n.children.map(mapNav) : undefined
+    children
   }
 }
 
@@ -327,42 +358,58 @@ watch(() => route.path, () => { mobileOpen.value = false })
   position: absolute;
   top: 100%;
   left: 50%;
-  transform: translateX(-50%) translateY(8px);
-  min-width: 140px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  box-shadow: var(--shadow-md);
-  padding: 6px;
+  transform: translateX(-50%) translateY(4px);
+  min-width: 120px;
+  background: rgba(var(--bg-rgb, 249,249,247), 0.75);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(var(--border-rgb, 0,0,0), 0.08);
+  border-radius: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
+  padding: 0;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 0;
   opacity: 0;
   visibility: hidden;
-  transition: all var(--dur-fast) var(--ease-out);
+  pointer-events: none;
+  transition: opacity 0.2s var(--ease-out), transform 0.2s var(--ease-out), visibility 0.2s;
   z-index: 10;
+  overflow: hidden;
+}
+
+.dark .nav-dropdown {
+  background: rgba(15,17,23, 0.85);
+  border-color: rgba(255,255,255,0.08);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4), 0 1px 4px rgba(0,0,0,0.2);
 }
 
 .nav-item-wrap:hover .nav-dropdown {
   opacity: 1;
   visibility: visible;
+  pointer-events: auto;
   transform: translateX(-50%) translateY(0);
 }
 
 .dropdown-link {
   display: block;
-  padding: 8px 12px;
-  border-radius: var(--radius-sm);
-  font-size: 13px;
-  color: var(--text-subtle);
-  transition: all var(--dur-fast);
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: background 0.15s var(--ease-out), color 0.15s var(--ease-out);
   white-space: nowrap;
   text-align: center;
   text-decoration: none;
 }
 
-.dropdown-link:hover, .dropdown-link.router-link-active {
-  background: var(--surface-hover);
+.dropdown-link:hover {
+  background: var(--accent-soft);
+  color: var(--accent-text);
+}
+
+.dropdown-link.router-link-active:hover {
+  background: var(--accent-soft);
   color: var(--accent-text);
 }
 

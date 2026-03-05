@@ -82,6 +82,7 @@ export interface SocialLink {
 
 export interface NavItem {
   id: string;
+  parentId?: string;
   name: string;
   key: string;
   type: string;
@@ -89,6 +90,7 @@ export interface NavItem {
   targetValue: string;
   orderNum: number;
   enabled: boolean;
+  children?: NavItem[];
 }
 
 export interface IntegrationProvider {

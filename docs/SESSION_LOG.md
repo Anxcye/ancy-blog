@@ -1,3 +1,14 @@
+## 2026-03-05
+### Summary
+- Implemented hierarchical navigation with dynamic category dropdown:
+  - Updated `frontend-admin/src/api/types.ts`: added `parentId` and `children` fields to `NavItem`
+  - Enhanced `frontend-admin/src/views/SiteView.vue`: added parent nav selector in nav form, computed `parentNavOptions` to show top-level navs only
+  - Updated `frontend-blog/app/layouts/default.vue`: fetch categories on SSR, enhanced `mapNav()` to auto-inject category list as children when `targetType=category` with no predefined children
+  - Updated `docs/API_CONTRACT.md`: documented `parentId` field in nav item create/update payload
+- Admin can now configure parent-child nav structure (e.g., "首页" with article children, "文章" with category children)
+- Blog frontend auto-generates category dropdown when nav item has `targetType=category`
+
+---
 ## 2026-03-04 (session 3)
 ### Summary
 - Fixed mobile bottom nav: replaced 文章+瞬间 two tabs with single 内容 tab, added 系统 back; created `ContentLayout` with mobile-only 文章↔瞬间 segmented switcher

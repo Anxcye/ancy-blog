@@ -96,6 +96,9 @@ Related: site API module and backend site/admin endpoints.
         <template #header>{{ t('site.navTitle') }}</template>
         <NForm label-placement="top">
           <div class="grid-3">
+            <NFormItem label="parentId (optional)">
+              <NSelect v-model:value="navForm.parentId" :options="parentNavOptions" clearable />
+            </NFormItem>
             <NFormItem :label="t('site.navName')">
               <NInput v-model:value="navForm.name" />
             </NFormItem>
@@ -223,6 +226,7 @@ const socialForm = reactive<Omit<SocialLink, 'id'>>({
 
 const editingNavId = ref('');
 const navForm = reactive<Omit<NavItem, 'id'>>({
+  parentId: '',
   name: '',
   key: '',
   type: 'menu',
@@ -269,6 +273,11 @@ const slotOptions = computed(() => slots.value.map((slot) => ({
   value: slot.slotKey,
 })));
 
+const parentNavOptions = computed(() => {
+  const topLevel = navItems.value.filter(n => !n.parentId);
+  return topLevel.map(n => ({ label: n.name, value: n.id }));
+});
+
 function rowKey(row: { id: string }): string {
   return row.id;
 }
@@ -301,6 +310,7 @@ function resetSocialForm(): void {
 
 function resetNavForm(): void {
   editingNavId.value = '';
+  navForm.parentId = '';
   navForm.name = '';
   navForm.key = '';
   navForm.type = 'menu';
@@ -575,6 +585,7 @@ async function removeSocial(id: string): Promise<void> {
 
 function startNavEdit(item: NavItem): void {
   editingNavId.value = item.id;
+  navForm.parentId = item.parentId || '';
   navForm.name = item.name;
   navForm.key = item.key;
   navForm.type = item.type;
