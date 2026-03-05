@@ -27,6 +27,7 @@ type AdminHandler struct {
 	translationService *service.TranslationService
 	aiAssistService    *service.AIAssistService
 	authService        *service.AuthService
+	tmdbService        *service.TMDBService
 }
 
 func NewAdminHandler(
@@ -38,6 +39,7 @@ func NewAdminHandler(
 	translationService *service.TranslationService,
 	aiAssistService *service.AIAssistService,
 	authService *service.AuthService,
+	tmdbService *service.TMDBService,
 ) *AdminHandler {
 	return &AdminHandler{
 		articleService:     articleService,
@@ -48,6 +50,7 @@ func NewAdminHandler(
 		translationService: translationService,
 		aiAssistService:    aiAssistService,
 		authService:        authService,
+		tmdbService:        tmdbService,
 	}
 }
 
@@ -889,5 +892,24 @@ func (h *AdminHandler) SuggestSlug(c *gin.Context) {
 	if fallbackReason != "" {
 		data["fallbackReason"] = fallbackReason
 	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: data})
+}
+
+// GetTMDBMetadata fetches movie/TV metadata from TMDB API
+func (h *AdminHandler) GetTMDBMetadata(c *gin.Context) {
+	mediaType := c.Param("type")
+	id := c.Param("id")
+
+	if mediaType != "movie" && mediaType != "tv" {
+		badRequest(c, "INVALID_TYPE", "type must be movie or tv")
+		return
+	}
+
+	data, err := h.tmdbService.GetMetadata(mediaType, id)
+	if err != nil {
+		badRequest(c, "TMDB_ERROR", err.Error())
+		return
+	}
+
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: data})
 }

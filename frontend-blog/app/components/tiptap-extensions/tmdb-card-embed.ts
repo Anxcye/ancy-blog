@@ -17,6 +17,10 @@ export const TmdbCardEmbed = Node.create({
       tmdbId: { default: '' },
       mediaType: { default: 'movie' },
       title: { default: '' },
+      overview: { default: '' },
+      posterPath: { default: '' },
+      releaseDate: { default: '' },
+      voteAverage: { default: 0 },
     }
   },
 
@@ -28,7 +32,12 @@ export const TmdbCardEmbed = Node.create({
     const tmdbId = node.attrs.tmdbId || ''
     const mediaType = node.attrs.mediaType || 'movie'
     const title = node.attrs.title || `TMDB ${mediaType} #${tmdbId}`
+    const overview = node.attrs.overview || ''
+    const posterPath = node.attrs.posterPath || ''
+    const releaseDate = node.attrs.releaseDate || ''
+    const voteAverage = node.attrs.voteAverage || 0
     const url = `https://www.themoviedb.org/${mediaType}/${tmdbId}`
+    const posterUrl = posterPath ? `https://image.tmdb.org/t/p/w500${posterPath}` : ''
 
     return [
       'div',
@@ -41,22 +50,23 @@ export const TmdbCardEmbed = Node.create({
       [
         'div',
         { class: 'tmdb-card-content' },
-        ['div', { class: 'tmdb-icon' }, '🎬'],
+        ...(posterUrl ? [['img', { src: posterUrl, alt: title, class: 'tmdb-poster' }]] : []),
         [
           'div',
           { class: 'tmdb-info' },
           ['div', { class: 'tmdb-title' }, title],
-          ['div', { class: 'tmdb-meta' }, `${mediaType === 'movie' ? 'Movie' : 'TV Show'} • TMDB`],
-        ],
-        [
-          'a',
-          {
-            href: url,
-            target: '_blank',
-            rel: 'noopener noreferrer',
-            class: 'tmdb-link-btn',
-          },
-          'View on TMDB →',
+          ['div', { class: 'tmdb-meta' }, `${mediaType === 'movie' ? 'Movie' : 'TV'} • ${releaseDate.slice(0, 4)} • ⭐ ${voteAverage.toFixed(1)}`],
+          ...(overview ? [['div', { class: 'tmdb-overview' }, overview]] : []),
+          [
+            'a',
+            {
+              href: url,
+              target: '_blank',
+              rel: 'noopener noreferrer',
+              class: 'tmdb-link-btn',
+            },
+            'View on TMDB →',
+          ],
         ],
       ],
     ]

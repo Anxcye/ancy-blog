@@ -6,11 +6,12 @@
  */
 
 import { useState } from "react"
-import { Form, Input, Modal, Segmented, Select } from "antd"
+import { Form, Input, Modal, Segmented, Select, message } from "antd"
 import { useCurrentEditor } from "@tiptap/react"
 
 import { Button } from "@/components/tiptap-ui-primitive/button"
 import type { TmdbMediaType } from "@/components/tiptap-node/embed-node/tmdb-card-node-extension"
+import { httpClient } from "@/lib/http"
 
 type EmbedType = "x_post" | "tmdb_card"
 
@@ -29,6 +30,7 @@ export function EmbedDropdownMenu() {
   const [open, setOpen] = useState(false)
   const [embedType, setEmbedType] = useState<EmbedType>("x_post")
   const [form] = Form.useForm<EmbedFormValues>()
+  const [loading, setLoading] = useState(false)
 
   const handleOpen = () => {
     setOpen(true)
@@ -42,6 +44,8 @@ export function EmbedDropdownMenu() {
   const handleInsert = async () => {
     try {
       const values = await form.validateFields()
+      setLoading(true)
+
       if (embedType === "x_post") {
         editor?.commands.insertContent({
           type: "xPostEmbed",
@@ -51,20 +55,32 @@ export function EmbedDropdownMenu() {
           },
         })
       } else {
+        // Fetch TMDB metadata from backend
+        const { data } = await httpClient.get(`/admin/integrations/tmdb/${values.mediaType}/${values.tmdbId.trim()}`)
+        const metadata = data.data
+
         editor?.commands.insertContent({
           type: "tmdbCardEmbed",
           attrs: {
-            tmdbId: values.tmdbId.trim(),
+            tmdbId: metadata.id.toString(),
             mediaType: values.mediaType ?? "movie",
-            title: (values.title ?? "").trim(),
+            title: metadata.title,
+            overview: metadata.overview,
+            posterPath: metadata.posterPath,
+            releaseDate: metadata.releaseDate,
+            voteAverage: metadata.voteAverage,
           },
         })
       }
       setOpen(false)
       form.resetFields()
       editor?.commands.focus()
-    } catch {
-      // validation failed — keep modal open
+    } catch (error: any) {
+      if (error?.response?.data?.message) {
+        message.error(error.response.data.message)
+      }
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -94,6 +110,7 @@ export function EmbedDropdownMenu() {
         onCancel={handleCancel}
         okText="Insert"
         cancelText="Cancel"
+        confirmLoading={loading}
         width={460}
         destroyOnClose
         // Prevent editor from losing focus handling

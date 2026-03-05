@@ -135,6 +135,8 @@ func NewHTTPServer(cfg *config.Config, logger *slog.Logger) (*HTTPServer, error)
 			admin.POST("/ai/summary", container.AdminHandler.GenerateSummary)
 			admin.POST("/ai/slug", container.AdminHandler.SuggestSlug)
 
+			admin.GET("/integrations/tmdb/:type/:id", container.AdminHandler.GetTMDBMetadata)
+
 			admin.POST("/upload/image", container.UploadHandler.UploadImage)
 		}
 	}

@@ -36,6 +36,26 @@ export const TmdbCardEmbed = Node.create({
         parseHTML: (el) => el.getAttribute("data-title") ?? "",
         renderHTML: (attrs) => ({ "data-title": attrs.title }),
       },
+      overview: {
+        default: "",
+        parseHTML: (el) => el.getAttribute("data-overview") ?? "",
+        renderHTML: (attrs) => ({ "data-overview": attrs.overview }),
+      },
+      posterPath: {
+        default: "",
+        parseHTML: (el) => el.getAttribute("data-poster-path") ?? "",
+        renderHTML: (attrs) => ({ "data-poster-path": attrs.posterPath }),
+      },
+      releaseDate: {
+        default: "",
+        parseHTML: (el) => el.getAttribute("data-release-date") ?? "",
+        renderHTML: (attrs) => ({ "data-release-date": attrs.releaseDate }),
+      },
+      voteAverage: {
+        default: 0,
+        parseHTML: (el) => parseFloat(el.getAttribute("data-vote-average") ?? "0"),
+        renderHTML: (attrs) => ({ "data-vote-average": attrs.voteAverage }),
+      },
     }
   },
 

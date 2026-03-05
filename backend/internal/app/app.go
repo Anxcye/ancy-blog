@@ -68,6 +68,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 	translationService := service.NewTranslationService(contentService)
 	timelineService := service.NewTimelineService(contentService)
 	aiAssistService := service.NewAIAssistService(articleService, integrationService)
+	tmdbService := service.NewTMDBService(integrationService)
 	var translationWorker *worker.TranslationWorker
 	if cfg.Translation.WorkerEnabled {
 		translationWorker = worker.NewTranslationWorker(
@@ -83,7 +84,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 	return &App{
 		AuthHandler:       handler.NewAuthHandler(authService),
 		PublicHandler:     handler.NewPublicHandler(articleService, commentService, linkService, siteService, timelineService),
-		AdminHandler:      handler.NewAdminHandler(articleService, commentService, linkService, siteService, integrationService, translationService, aiAssistService, authService),
+		AdminHandler:      handler.NewAdminHandler(articleService, commentService, linkService, siteService, integrationService, translationService, aiAssistService, authService, tmdbService),
 		UploadHandler:     handler.NewUploadHandler(nil, integrationService),
 		AuthService:       authService,
 		TranslationWorker: translationWorker,

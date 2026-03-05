@@ -12,7 +12,6 @@
 - [ ] Add API rate limiting for auth/comment/AI/translation-create endpoints.
 - [ ] Add frontend i18n routing and SEO output (`/` default zh, `/en/*` english).
 - [ ] Blog: particle background (sparse petal/dot animation, accent-tinted).
-- [ ] Blog: TipTap embed block rendering (x_post, tmdb_card).
 
 ## Done
 - [x] Initialized `frontend-blog/` with Nuxt 4 (minimal template, color-mode, i18n zh/en, Google Fonts).
@@ -103,6 +102,7 @@
 - [x] Extended site settings with comment policy (enabled + require approval) and SEO fields (description / keywords / OG image): migration 000008, domain + repo + handler + DTO + frontend SitePage new sections.
 - [x] Added change-admin-password endpoint (`PUT /admin/auth/password`) with session invalidation, and frontend account settings tab in SystemPage.
 - [x] Fixed 6 known issues: ListArticles now includes is_pinned/is_featured (also sorts pinned first); comment policy is enforced in CreateComment (global disable + require approval); admin password persisted as bcrypt hash in DB via CredentialStore interface (migration 000010); ArticleEditorPage publishedAt correctly restored as dayjs object on edit load; unsaved-change guard with useBlocker + beforeunload in editor; API_CONTRACT.md updated with categories/tags/change-password/site-settings/article-flags endpoints.
+- [x] Implemented TMDB card rich rendering: backend TMDB API integration (service/tmdb package + TMDBService + admin endpoint `/admin/integrations/tmdb/:type/:id`), migration 000015 adds tmdb provider to integration_providers, admin fetch-on-insert with full metadata (poster/rating/overview/releaseDate), blog renders poster + rating + overview in responsive card layout with hover effects.
 
 ## Blocked
 - None.
