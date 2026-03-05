@@ -23,13 +23,23 @@
 
         <!-- Center: Nav -->
         <nav class="header-nav" aria-label="主导航">
-          <NuxtLink
+          <div
             v-for="(item, i) in navItems"
             :key="item.key"
-            :to="localePath(item.to)"
-            class="nav-link"
+            class="nav-item-wrap"
             :style="{ '--nav-i': i }"
-          >{{ item.label }}</NuxtLink>
+          >
+            <a v-if="item.isExternal" :href="item.to" target="_blank" class="nav-link">{{ item.label }}</a>
+            <NuxtLink v-else :to="localePath(item.to)" class="nav-link">{{ item.label }}</NuxtLink>
+
+            <!-- Dropdown -->
+            <div v-if="item.children && item.children.length" class="nav-dropdown">
+              <template v-for="child in item.children" :key="child.key">
+                <a v-if="child.isExternal" :href="child.to" target="_blank" class="dropdown-link">{{ child.label }}</a>
+                <NuxtLink v-else :to="localePath(child.to)" class="dropdown-link">{{ child.label }}</NuxtLink>
+              </template>
+            </div>
+          </div>
         </nav>
 
         <!-- Right: Theme + Lang -->
@@ -68,13 +78,23 @@
       <!-- Mobile drawer -->
       <Transition name="mobile-nav">
         <div v-if="mobileOpen" class="mobile-nav" @click="mobileOpen = false">
-          <NuxtLink
-            v-for="(item, i) in navItems"
-            :key="item.key"
-            :to="localePath(item.to)"
-            class="mobile-nav-link"
-            :style="{ animationDelay: `${i * 50}ms` }"
-          >{{ item.label }}</NuxtLink>
+          <template v-for="(item, i) in flatMobileNav" :key="item.key">
+            <a
+              v-if="item.isExternal"
+              :href="item.to"
+              target="_blank"
+              class="mobile-nav-link"
+              :class="{ 'mobile-nav-child': item.isChild }"
+              :style="{ animationDelay: `${i * 30}ms` }"
+            >{{ item.label }}</a>
+            <NuxtLink
+              v-else
+              :to="localePath(item.to)"
+              class="mobile-nav-link"
+              :class="{ 'mobile-nav-child': item.isChild }"
+              :style="{ animationDelay: `${i * 30}ms` }"
+            >{{ item.label }}</NuxtLink>
+          </template>
         </div>
       </Transition>
     </header>
@@ -113,17 +133,49 @@ const { data: siteSettings } = await useAsyncData('site-settings', getSiteSettin
 })
 
 // ── Nav items ────────────────────────────────────────────────────
+function resolveTarget(n: any) {
+  switch (n.targetType) {
+    case 'external': return n.targetValue || '#';
+    case 'article': return `/articles/${n.targetValue}`;
+    case 'category': return `/articles/category/${n.targetValue}`;
+    case 'route': default: return n.targetValue || '/';
+  }
+}
+
+function mapNav(n: any): any {
+  return {
+    key: n.id || n.key,
+    label: n.name,
+    to: resolveTarget(n),
+    isExternal: n.targetType === 'external',
+    children: n.children?.length ? n.children.map(mapNav) : undefined
+  }
+}
+
 const defaultNavItems = computed(() => [
-  { key: 'home',     to: '/',         label: t('nav.home') },
-  { key: 'articles', to: '/articles', label: t('nav.articles') },
-  { key: 'moments',  to: '/moments',  label: t('nav.moments') },
-  { key: 'timeline', to: '/timeline', label: t('nav.timeline') },
+  { key: 'home',     to: '/',         label: t('nav.home'), isExternal: false },
+  { key: 'articles', to: '/articles', label: t('nav.articles'), isExternal: false },
+  { key: 'moments',  to: '/moments',  label: t('nav.moments'), isExternal: false },
+  { key: 'timeline', to: '/timeline', label: t('nav.timeline'), isExternal: false },
 ])
+
 const navItems = computed(() => {
-  if (siteStore.navigation.length) {
-    return siteStore.navigation.map(n => ({ key: n.id, to: n.targetValue || '/', label: n.name }))
+  if (siteStore.navigation?.length) {
+    return siteStore.navigation.map(mapNav)
   }
   return defaultNavItems.value
+})
+
+const flatMobileNav = computed(() => {
+  const result: any[] = []
+  function traverse(items: any[], isChild = false) {
+    for (const item of items) {
+      result.push({ ...item, isChild })
+      if (item.children) traverse(item.children, true)
+    }
+  }
+  traverse(navItems.value)
+  return result
 })
 
 // ── Theme ──────────────────────────────────────────────────────
@@ -240,7 +292,13 @@ watch(() => route.path, () => { mobileOpen.value = false })
   100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
+.nav-item-wrap {
+  position: relative;
+  display: inline-block;
+}
+
 .nav-link {
+  display: block;
   padding: 6px 12px;
   border-radius: var(--radius-sm);
   font-size: 14px;
@@ -253,9 +311,53 @@ watch(() => route.path, () => { mobileOpen.value = false })
   animation-delay: calc(var(--nav-i, 0) * 70ms + 100ms);
 }
 
-.nav-link:hover {
+.nav-link:hover, .nav-link.router-link-active {
   color: var(--text);
   background: var(--surface-hover);
+}
+
+/* Nav dropdown styling */
+.nav-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(8px);
+  min-width: 140px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0;
+  visibility: hidden;
+  transition: all var(--dur-fast) var(--ease-out);
+  z-index: 10;
+}
+
+.nav-item-wrap:hover .nav-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) translateY(0);
+}
+
+.dropdown-link {
+  display: block;
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--text-subtle);
+  transition: all var(--dur-fast);
+  white-space: nowrap;
+  text-align: center;
+  text-decoration: none;
+}
+
+.dropdown-link:hover, .dropdown-link.router-link-active {
+  background: var(--surface-hover);
+  color: var(--accent-text);
 }
 
 .nav-link.router-link-active {
@@ -341,11 +443,21 @@ watch(() => route.path, () => { mobileOpen.value = false })
 }
 
 .mobile-nav-link {
+  display: block;
   padding: 12px 8px;
   font-size: 15px;
   font-weight: 500;
   color: var(--text-muted);
   border-bottom: 1px solid var(--border);
+  text-decoration: none;
+}
+
+.mobile-nav-child {
+  padding-left: 24px;
+  font-size: 14px;
+  color: var(--text-subtle);
+  border-bottom: 1px dashed var(--border);
+}
   transition: color var(--dur-fast);
 }
 

@@ -234,10 +234,10 @@ ORDER BY order_num ASC
 func (r *Repository) CreateNavItem(item domain.NavItem) (domain.NavItem, error) {
 	var id string
 	err := r.db.QueryRow(`
-INSERT INTO nav_items (name, key, type, target_type, target_value, order_num, enabled)
-VALUES ($1,$2,$3,$4,$5,$6,$7)
+INSERT INTO nav_items (name, key, type, target_type, target_value, order_num, enabled, parent_id)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
 RETURNING id::text
-`, item.Name, item.Key, item.Type, item.TargetType, nullableString(item.TargetValue), item.OrderNum, item.Enabled).Scan(&id)
+`, item.Name, item.Key, item.Type, item.TargetType, nullableString(item.TargetValue), item.OrderNum, item.Enabled, nullableString(item.ParentID)).Scan(&id)
 	if err != nil {
 		if isUniqueViolation(err) {
 			return domain.NavItem{}, apperr.ErrValidation
@@ -251,9 +251,9 @@ RETURNING id::text
 func (r *Repository) UpdateNavItem(id string, item domain.NavItem) (domain.NavItem, error) {
 	res, err := r.db.Exec(`
 UPDATE nav_items
-SET name=$2, key=$3, type=$4, target_type=$5, target_value=$6, order_num=$7, enabled=$8, updated_at=NOW()
+SET name=$2, key=$3, type=$4, target_type=$5, target_value=$6, order_num=$7, enabled=$8, parent_id=$9, updated_at=NOW()
 WHERE id=$1 AND deleted_at IS NULL
-`, id, item.Name, item.Key, item.Type, item.TargetType, nullableString(item.TargetValue), item.OrderNum, item.Enabled)
+`, id, item.Name, item.Key, item.Type, item.TargetType, nullableString(item.TargetValue), item.OrderNum, item.Enabled, nullableString(item.ParentID))
 	if err != nil {
 		return domain.NavItem{}, err
 	}
@@ -276,7 +276,7 @@ func (r *Repository) DeleteNavItem(id string) bool {
 
 func (r *Repository) ListNavItems() []domain.NavItem {
 	rows, err := r.db.Query(`
-SELECT id::text, name, key, type, target_type, COALESCE(target_value,''), order_num, enabled
+SELECT id::text, COALESCE(parent_id::text,''), name, key, type, target_type, COALESCE(target_value,''), order_num, enabled
 FROM nav_items
 WHERE enabled=TRUE AND deleted_at IS NULL
 ORDER BY order_num ASC
@@ -285,14 +285,35 @@ ORDER BY order_num ASC
 		return []domain.NavItem{}
 	}
 	defer rows.Close()
-	items := make([]domain.NavItem, 0)
+	// flat scan first
+	flat := make([]domain.NavItem, 0)
 	for rows.Next() {
 		var n domain.NavItem
-		if err := rows.Scan(&n.ID, &n.Name, &n.Key, &n.Type, &n.TargetType, &n.TargetValue, &n.OrderNum, &n.Enabled); err == nil {
-			items = append(items, n)
+		if err := rows.Scan(&n.ID, &n.ParentID, &n.Name, &n.Key, &n.Type, &n.TargetType, &n.TargetValue, &n.OrderNum, &n.Enabled); err == nil {
+			flat = append(flat, n)
 		}
 	}
-	return items
+	// build tree
+	byID := make(map[string]*domain.NavItem, len(flat))
+	for i := range flat {
+		byID[flat[i].ID] = &flat[i]
+	}
+	result := make([]domain.NavItem, 0)
+	for i := range flat {
+		item := &flat[i]
+		if item.ParentID == "" {
+			result = append(result, *item)
+		} else if parent, ok := byID[item.ParentID]; ok {
+			parent.Children = append(parent.Children, *item)
+		}
+	}
+	// flush updated parents into result
+	for i, r2 := range result {
+		if p, ok := byID[r2.ID]; ok {
+			result[i] = *p
+		}
+	}
+	return result
 }
 
 func (r *Repository) CreateContentSlot(slot domain.ContentSlot) (domain.ContentSlot, error) {

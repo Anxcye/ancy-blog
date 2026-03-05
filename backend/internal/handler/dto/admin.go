@@ -83,6 +83,7 @@ type SocialLinkUpsertRequest struct {
 }
 
 type NavItemUpsertRequest struct {
+	ParentID    string `json:"parentId"`
 	Name        string `json:"name"`
 	Key         string `json:"key"`
 	Type        string `json:"type"`

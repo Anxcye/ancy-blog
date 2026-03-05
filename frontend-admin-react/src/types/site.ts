@@ -73,10 +73,11 @@ export interface FooterItemFormValues {
 
 // ── Nav items ──────────────────────────────────
 export type NavItemType = 'menu' | 'dropdown' | 'link';
-export type NavTargetType = 'route' | 'category' | 'slot' | 'external';
+export type NavTargetType = 'route' | 'category' | 'article' | 'external';
 
 export interface NavItem {
   id: string;
+  parentId?: string;
   name: string;
   key: string;
   type: NavItemType;
@@ -84,11 +85,13 @@ export interface NavItem {
   targetValue?: string;
   orderNum: number;
   enabled: boolean;
-  createdAt: string;
-  updatedAt: string;
+  children?: NavItem[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface NavItemFormValues {
+  parentId?: string;
   name: string;
   key: string;
   type: NavItemType;

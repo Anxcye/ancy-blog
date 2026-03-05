@@ -1,0 +1,1 @@
+ALTER TABLE nav_items DROP COLUMN IF EXISTS parent_id;

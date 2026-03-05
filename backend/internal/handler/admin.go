@@ -496,6 +496,7 @@ func (h *AdminHandler) CreateNavItem(c *gin.Context) {
 		return
 	}
 	item, err := h.siteService.CreateNavItem(domain.NavItem{
+		ParentID:    req.ParentID,
 		Name:        req.Name,
 		Key:         req.Key,
 		Type:        req.Type,
@@ -519,6 +520,7 @@ func (h *AdminHandler) UpdateNavItem(c *gin.Context) {
 		return
 	}
 	item, err := h.siteService.UpdateNavItem(id, domain.NavItem{
+		ParentID:    req.ParentID,
 		Name:        req.Name,
 		Key:         req.Key,
 		Type:        req.Type,

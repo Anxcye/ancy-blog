@@ -142,14 +142,16 @@ type SocialLink struct {
 }
 
 type NavItem struct {
-	ID          string `json:"id"`
-	Name        string `json:"name"`
-	Key         string `json:"key"`
-	Type        string `json:"type"`
-	TargetType  string `json:"targetType"`
-	TargetValue string `json:"targetValue,omitempty"`
-	OrderNum    int    `json:"orderNum"`
-	Enabled     bool   `json:"enabled"`
+	ID          string    `json:"id"`
+	ParentID    string    `json:"parentId,omitempty"`
+	Name        string    `json:"name"`
+	Key         string    `json:"key"`
+	Type        string    `json:"type"`
+	TargetType  string    `json:"targetType"`
+	TargetValue string    `json:"targetValue,omitempty"`
+	OrderNum    int       `json:"orderNum"`
+	Enabled     bool      `json:"enabled"`
+	Children    []NavItem `json:"children,omitempty"`
 }
 
 type ContentSlot struct {

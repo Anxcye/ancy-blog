@@ -662,7 +662,7 @@ function NavItemsTab(): ReactElement {
   function openCreate(): void {
     setEditing(null);
     form.resetFields();
-    form.setFieldsValue({ type: 'link', targetType: 'route', orderNum: 0, enabled: true });
+    form.setFieldsValue({ type: 'link', targetType: 'route', orderNum: 0, enabled: true, parentId: undefined });
     setDrawerOpen(true);
   }
 
@@ -673,7 +673,7 @@ function NavItemsTab(): ReactElement {
   }
 
   const TYPE_LABEL: Record<string, string> = { menu: '菜单', dropdown: '下拉', link: '链接' };
-  const TARGET_LABEL: Record<string, string> = { route: '路由', category: '分类', slot: '槽位', external: '外链' };
+  const TARGET_LABEL: Record<string, string> = { route: '路由', category: '分类', article: '文章', external: '外链' };
 
   const columns = [
     { title: '名称', dataIndex: 'name', key: 'name' },
@@ -742,6 +742,13 @@ function NavItemsTab(): ReactElement {
           <Form.Item name="key" label="唯一 Key" rules={[{ required: true }]}>
             <Input placeholder="blog" />
           </Form.Item>
+          <Form.Item name="parentId" label="父级导航">
+            <Select
+              allowClear
+              placeholder="顶级导航请留空"
+              options={(data ?? [])?.map((item) => ({ value: item.id, label: item.name }))}
+            />
+          </Form.Item>
           <Row gutter={12}>
             <Col span={12}>
               <Form.Item name="type" label="菜单类型">
@@ -754,7 +761,7 @@ function NavItemsTab(): ReactElement {
                   options={[
                     { value: 'route', label: '路由' },
                     { value: 'category', label: '分类' },
-                    { value: 'slot', label: '槽位' },
+                    { value: 'article', label: '文章' },
                     { value: 'external', label: '外部链接' },
                   ]}
                 />

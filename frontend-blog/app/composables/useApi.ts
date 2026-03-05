@@ -203,7 +203,7 @@ export function useApi() {
 
         /** Fetch navigation items */
         getNav: () =>
-            apiFetch<Array<{ id: string; name: string; key: string; targetType: string; targetValue?: string }>>('/public/site/nav'),
+            apiFetch<Array<{ id: string; name: string; key: string; targetType: string; targetValue?: string; children?: any[] }>>('/public/site/nav'),
 
         /** Fetch social links */
         getSocialLinks: () =>
