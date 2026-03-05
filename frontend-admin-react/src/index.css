@@ -223,7 +223,7 @@ body {
 }
 
 /* Page entrance animation */
-.admin-content > * {
+.admin-content>* {
   animation: pageIn 0.22s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -232,6 +232,7 @@ body {
     opacity: 0;
     transform: translateY(10px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -242,7 +243,8 @@ body {
    Mobile: bottom navigation
 ═══════════════════════════════ */
 .mobile-bottom-nav {
-  display: none; /* hidden on desktop */
+  display: none;
+  /* hidden on desktop */
   position: fixed;
   bottom: 0;
   left: 0;
@@ -321,6 +323,7 @@ body {
    Responsive breakpoints
 ═══════════════════════════════ */
 @media (max-width: 767px) {
+
   /* Show the mobile bottom nav */
   .mobile-bottom-nav {
     display: flex;
@@ -348,7 +351,8 @@ body {
    (hidden on desktop, shown on mobile below header)
 ═══════════════════════════════ */
 .content-mobile-tabs {
-  display: none; /* desktop: sidebar sub-menu is enough */
+  display: none;
+  /* desktop: sidebar sub-menu is enough */
 }
 
 @media (max-width: 767px) {
@@ -416,4 +420,467 @@ body {
 .card-hover:hover {
   box-shadow: 0 6px 24px rgba(0, 0, 0, 0.09) !important;
   transform: translateY(-1px);
+}
+
+/* ═══════════════════════════════
+   Dashboard Page
+═══════════════════════════════ */
+.dash-page {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* ── Hero greeting ── */
+.dash-hero {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.dash-hero-title {
+  margin: 0 0 4px !important;
+  font-size: 22px !important;
+  font-weight: 800 !important;
+  color: #1a1d23 !important;
+  letter-spacing: -0.3px;
+}
+
+.dash-hero-accent {
+  background: linear-gradient(135deg, #1f8f8a, #2bb5b0);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.dash-hero-sub {
+  color: #94a3b8 !important;
+  font-size: 13px;
+  display: block;
+}
+
+.dash-hero-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.dash-cta-btn {
+  border-radius: 10px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 4px 14px rgba(31, 143, 138, 0.3) !important;
+  transition: transform 0.15s ease, box-shadow 0.15s ease !important;
+}
+
+.dash-cta-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 20px rgba(31, 143, 138, 0.38) !important;
+}
+
+.dash-cta-btn-sec {
+  border-radius: 10px !important;
+  font-weight: 500 !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  color: #64748b !important;
+  transition: transform 0.15s ease !important;
+}
+
+.dash-cta-btn-sec:hover {
+  transform: translateY(-1px);
+  border-color: #1f8f8a !important;
+  color: #1f8f8a !important;
+}
+
+
+
+
+.dash-stat-card {
+  transition: box-shadow 0.2s ease, transform 0.2s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.dash-stat-card:hover {
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08) !important;
+  transform: translateY(-2px);
+}
+
+.dash-stat-inner {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.dash-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-size: 22px;
+  flex-shrink: 0;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dash-stat-card:hover .dash-stat-icon {
+  transform: scale(1.1) rotate(-3deg);
+}
+
+.dash-stat-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+
+.dash-stat-title {
+  font-size: 13px;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.dash-stat-subtitle {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+/* Suppress antd Statistic margin */
+.dash-stat-text .ant-statistic {
+  line-height: 1;
+}
+
+.dash-stat-text .ant-statistic-content {
+  line-height: 1.15 !important;
+}
+
+/* ── Secondary Mini Cards ── */
+.dash-mini-card {
+  transition: box-shadow 0.2s ease;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.dash-mini-card:hover {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.07) !important;
+}
+
+.dash-mini-inner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.dash-mini-icon {
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.dash-mini-value {
+  font-size: 22px;
+  font-weight: 800;
+  color: #1a1d23;
+  line-height: 1.2;
+  letter-spacing: -0.5px;
+}
+
+.dash-mini-label {
+  font-size: 12px;
+  color: #94a3b8;
+  margin-top: 2px;
+}
+
+/* ── Content Panels ── */
+.dash-panel {
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.dash-panel .ant-card-head {
+  padding: 0 20px;
+  min-height: 48px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+}
+
+.dash-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.dash-panel-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #1a1d23;
+  display: flex;
+  align-items: center;
+}
+
+/* ── List rows ── */
+.dash-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.dash-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  cursor: pointer;
+  transition: background 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dash-row:last-child {
+  border-bottom: none;
+}
+
+.dash-row:hover {
+  background: rgba(31, 143, 138, 0.03);
+}
+
+.dash-row-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.dash-row-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1d23;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: block;
+}
+
+.dash-row:hover .dash-row-title {
+  color: #1f8f8a;
+}
+
+.dash-row-time {
+  font-size: 12px;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+}
+
+/* ── Comment rows ── */
+.dash-row--comment {
+  align-items: flex-start;
+  cursor: default;
+}
+
+.dash-row--comment:hover {
+  background: rgba(0, 0, 0, 0.015);
+}
+
+.dash-row-avatar {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #e2e8f0, #cbd5e1);
+  color: #64748b;
+  font-size: 13px;
+  font-weight: 700;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.dash-row-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.dash-row-comment-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+  flex-wrap: wrap;
+  gap: 2px;
+}
+
+.dash-row-nickname {
+  font-size: 13px;
+  font-weight: 600;
+  color: #374151;
+}
+
+.dash-row-comment-content {
+  margin: 0;
+  font-size: 13px;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.5;
+}
+
+/* ── Empty state ── */
+.dash-empty {
+  padding: 36px 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  color: #94a3b8;
+  font-size: 13px;
+}
+
+/* ── Quick shortcuts ── */
+.dash-shortcuts {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.dash-shortcuts-label {
+  font-size: 13px;
+  color: #94a3b8;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.dash-shortcuts-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.dash-shortcut-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 16px 8px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 14px;
+  background: #fff;
+  cursor: pointer;
+  transition: box-shadow 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.dash-shortcut-btn:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+  transform: translateY(-2px);
+  border-color: rgba(31, 143, 138, 0.2);
+}
+
+.dash-shortcut-btn:active {
+  transform: translateY(0);
+}
+
+.dash-shortcut-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  font-size: 18px;
+  transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.dash-shortcut-btn:hover .dash-shortcut-icon {
+  transform: scale(1.12);
+}
+
+.dash-shortcut-label {
+  font-size: 12px;
+  font-weight: 500;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+/* ── Responsive overrides ── */
+@media (max-width: 767px) {
+  .dash-hero {
+    flex-direction: column;
+    margin-bottom: 16px;
+  }
+
+  .dash-hero-actions {
+    width: 100%;
+  }
+
+  .dash-cta-btn,
+  .dash-cta-btn-sec {
+    flex: 1;
+  }
+
+  .dash-shortcuts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dash-hero-title {
+    font-size: 18px !important;
+  }
+}
+
+/* ═══════════════════════════════
+   Comment Policy Section (SitePage)
+═══════════════════════════════ */
+.comment-policy-section {
+  border: 1px solid rgba(245, 158, 11, 0.2);
+  border-radius: 12px;
+  background: rgba(245, 158, 11, 0.03);
+  margin-bottom: 20px;
+  overflow: hidden;
+}
+
+.comment-policy-header {
+  display: flex;
+  align-items: center;
+  padding: 10px 16px;
+  background: rgba(245, 158, 11, 0.06);
+  border-bottom: 1px solid rgba(245, 158, 11, 0.15);
+}
+
+.comment-policy-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  transition: background 0.15s ease;
+}
+
+.comment-policy-row--last {
+  border-bottom: none;
+}
+
+.comment-policy-row:hover {
+  background: rgba(245, 158, 11, 0.04);
+}
+
+.comment-policy-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+
+.comment-policy-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a1d23;
+}
+
+.comment-policy-desc {
+  font-size: 12px;
+  color: #94a3b8;
+  line-height: 1.5;
 }

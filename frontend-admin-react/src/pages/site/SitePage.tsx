@@ -12,6 +12,7 @@ import {
   PlusOutlined,
   SaveOutlined,
 } from '@ant-design/icons';
+
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Button,
@@ -138,15 +139,6 @@ function SettingsTab(): ReactElement {
             <Input placeholder="https://cdn.example.com/og-default.png" />
           </Form.Item>
 
-          <Typography.Text strong style={{ display: 'block', marginBottom: 12 }}>评论策略</Typography.Text>
-
-          <Form.Item name="commentEnabled" label="允许评论" valuePropName="checked">
-            <Switch />
-          </Form.Item>
-          <Form.Item name="commentRequireApproval" label="评论需审核后公开" valuePropName="checked">
-            <Switch />
-          </Form.Item>
-
           <Button
             type="primary"
             htmlType="submit"
@@ -161,8 +153,89 @@ function SettingsTab(): ReactElement {
   );
 }
 
+
 // ─────────────────────────────────────────────
-// 2. Social links tab
+// 2. Comment policy tab
+// ─────────────────────────────────────────────
+
+function CommentPolicyTab(): ReactElement {
+  const [messageApi, ctx] = message.useMessage();
+  const [form] = Form.useForm();
+
+  const { data, isLoading } = useQuery({
+    queryKey: ['site-settings'],
+    queryFn: getSiteSettings,
+  });
+
+  useEffect(() => {
+    if (data) form.setFieldsValue(data);
+  }, [data, form]);
+
+  const saveMut = useMutation({
+    mutationFn: updateSiteSettings,
+    onSuccess: () => messageApi.success('评论设置已保存'),
+    onError: () => messageApi.error('保存失败'),
+  });
+
+  return (
+    <>
+      {ctx}
+      <div style={{ maxWidth: 560 }}>
+        <Typography.Paragraph type="secondary" style={{ marginBottom: 20 }}>
+          控制全站评论的开启状态与审核策略。更改后立即生效，无需重启服务。
+        </Typography.Paragraph>
+
+        <Form
+          form={form}
+          disabled={isLoading}
+          onFinish={(vals) => saveMut.mutate(vals)}
+        >
+          <div className="comment-policy-section">
+            {/* Row 1: enable comments */}
+            <div className="comment-policy-row">
+              <div className="comment-policy-info">
+                <span className="comment-policy-label">开启评论功能</span>
+                <span className="comment-policy-desc">
+                  关闭后，全站所有文章与瞬间均不显示评论区，访客无法提交新评论
+                </span>
+              </div>
+              <Form.Item name="commentEnabled" valuePropName="checked" noStyle>
+                <Switch />
+              </Form.Item>
+            </div>
+
+            {/* Row 2: require approval */}
+            <div className="comment-policy-row comment-policy-row--last">
+              <div className="comment-policy-info">
+                <span className="comment-policy-label">评论需审核后展示</span>
+                <span className="comment-policy-desc">
+                  开启后，新评论提交后默认为「待审核」状态，不会立即公开显示。
+                  需前往<Typography.Text strong style={{ fontSize: 12 }}>互动中心</Typography.Text>手动通过审核
+                </span>
+              </div>
+              <Form.Item name="commentRequireApproval" valuePropName="checked" noStyle>
+                <Switch />
+              </Form.Item>
+            </div>
+          </div>
+
+          <Button
+            type="primary"
+            htmlType="submit"
+            icon={<SaveOutlined />}
+            loading={saveMut.isPending}
+          >
+            保存评论设置
+          </Button>
+        </Form>
+      </div>
+    </>
+  );
+}
+
+
+// ─────────────────────────────────────────────
+// 3. Social links tab
 // ─────────────────────────────────────────────
 
 const PLATFORM_LABELS: Record<string, string> = {
@@ -703,6 +776,7 @@ export function SitePage(): ReactElement {
       <Tabs
         items={[
           { key: 'settings', label: '基础设置', children: <SettingsTab /> },
+          { key: 'comments', label: '评论设置', children: <CommentPolicyTab /> },
           { key: 'social', label: '社交链接', children: <SocialLinksTab /> },
           { key: 'footer', label: '页脚配置', children: <FooterItemsTab /> },
           { key: 'nav', label: '导航菜单', children: <NavItemsTab /> },
