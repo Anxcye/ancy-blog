@@ -209,6 +209,10 @@ export function useApi() {
         getSocialLinks: () =>
             apiFetch<Array<{ id: string; platform: string; title: string; url: string; iconKey?: string }>>('/public/site/social-links'),
 
+        /** Fetch footer items */
+        getFooter: () =>
+            apiFetch<Record<string, Array<{ id: string; label: string; linkType: string; internalArticleSlug?: string; externalUrl?: string; rowNum: number; orderNum: number }>>>('/public/site/footer'),
+
         /** Fetch approved friends links */
         getApprovedLinks: () =>
             apiFetch<Array<{ id: string; name: string; url: string; avatarUrl?: string; description?: string }>>('/public/links'),

@@ -8,6 +8,13 @@
     <header class="site-header" :class="{ 'site-header--scrolled': scrolled }">
       <div class="header-inner container container--wide">
 
+        <!-- Mobile menu button (first in DOM for left position) -->
+        <button class="icon-btn menu-btn" @click="mobileOpen = !mobileOpen" aria-label="菜单">
+          <span class="menu-icon" :class="{ open: mobileOpen }">
+            <span /><span /><span />
+          </span>
+        </button>
+
         <!-- Left: Avatar / brand -->
         <NuxtLink :to="localePath('/')" class="header-brand" :aria-label="t('nav.home')">
           <div class="header-avatar">
@@ -65,36 +72,37 @@
               </svg>
             </span>
           </button>
-
-          <!-- Mobile menu -->
-          <button class="icon-btn menu-btn" @click="mobileOpen = !mobileOpen" aria-label="菜单">
-            <span class="menu-icon" :class="{ open: mobileOpen }">
-              <span /><span /><span />
-            </span>
-          </button>
         </div>
       </div>
 
       <!-- Mobile drawer -->
       <Transition name="mobile-nav">
-        <div v-if="mobileOpen" class="mobile-nav" @click="mobileOpen = false">
-          <template v-for="(item, i) in flatMobileNav" :key="item.key">
-            <a
-              v-if="item.isExternal"
-              :href="item.to"
-              target="_blank"
-              class="mobile-nav-link"
-              :class="{ 'mobile-nav-child': item.isChild }"
-              :style="{ animationDelay: `${i * 30}ms` }"
-            >{{ item.label }}</a>
-            <NuxtLink
-              v-else
-              :to="localePath(item.to)"
-              class="mobile-nav-link"
-              :class="{ 'mobile-nav-child': item.isChild }"
-              :style="{ animationDelay: `${i * 30}ms` }"
-            >{{ item.label }}</NuxtLink>
-          </template>
+        <div v-if="mobileOpen" class="mobile-nav-overlay" @click="mobileOpen = false">
+          <div class="mobile-nav" @click.stop>
+            <template v-for="item in navItems" :key="item.key">
+              <!-- Primary nav item -->
+              <div class="mobile-nav-section">
+                <a v-if="item.isExternal" :href="item.to" target="_blank" class="mobile-nav-primary" @click="mobileOpen = false">
+                  {{ item.label }}
+                </a>
+                <NuxtLink v-else :to="localePath(item.to)" class="mobile-nav-primary" @click="mobileOpen = false">
+                  {{ item.label }}
+                </NuxtLink>
+
+                <!-- Secondary nav items (children) -->
+                <div v-if="item.children?.length" class="mobile-nav-secondary">
+                  <template v-for="child in item.children" :key="child.key">
+                    <a v-if="child.isExternal" :href="child.to" target="_blank" class="mobile-nav-link" @click="mobileOpen = false">
+                      {{ child.label }}
+                    </a>
+                    <NuxtLink v-else :to="localePath(child.to)" class="mobile-nav-link" @click="mobileOpen = false">
+                      {{ child.label }}
+                    </NuxtLink>
+                  </template>
+                </div>
+              </div>
+            </template>
+          </div>
         </div>
       </Transition>
     </header>
@@ -106,12 +114,43 @@
 
     <!-- ── Footer ── -->
     <footer class="site-footer">
-      <div class="container">
-        <p class="footer-copy">
-          © {{ new Date().getFullYear() }}
-          <span class="footer-accent">{{ siteSettings?.siteName || 'Ancy Blog' }}</span>
-          · Built with Nuxt
-        </p>
+      <div class="container footer-container">
+        <!-- Left: Footer rows -->
+        <div class="footer-left">
+          <div v-if="footerRows.length" class="footer-rows">
+            <div v-for="row in footerRows" :key="row.rowNum" class="footer-row">
+              <template v-for="item in row.items" :key="item.id">
+                <a v-if="item.linkType === 'external'" :href="item.externalUrl" target="_blank" class="footer-link">
+                  {{ item.label }}
+                </a>
+                <NuxtLink v-else-if="item.linkType === 'internal'" :to="localePath(`/articles/${item.internalArticleSlug}`)" class="footer-link">
+                  {{ item.label }}
+                </NuxtLink>
+                <span v-else class="footer-text">{{ item.label }}</span>
+              </template>
+            </div>
+          </div>
+
+          <!-- Copyright -->
+          <p class="footer-copy">
+            © {{ new Date().getFullYear() }}
+            <a href="https://github.com/anxcye/ancy-blog" target="_blank" class="footer-accent">{{ siteSettings?.siteName || 'Ancy Blog' }}</a>
+          </p>
+        </div>
+
+        <!-- Right: Social links -->
+        <div v-if="siteStore.socialLinks?.length" class="footer-right">
+          <a
+            v-for="link in siteStore.socialLinks"
+            :key="link.id"
+            :href="link.url"
+            target="_blank"
+            class="footer-social"
+            :title="link.title"
+          >
+            {{ link.title }}
+          </a>
+        </div>
       </div>
     </footer>
   </div>
@@ -203,16 +242,16 @@ const navItems = computed(() => {
   return defaultNavItems.value
 })
 
-const flatMobileNav = computed(() => {
-  const result: any[] = []
-  function traverse(items: any[], isChild = false) {
-    for (const item of items) {
-      result.push({ ...item, isChild })
-      if (item.children) traverse(item.children, true)
-    }
-  }
-  traverse(navItems.value)
-  return result
+const footerRows = computed(() => {
+  const footer = siteStore.footer
+  if (!footer || !Object.keys(footer).length) return []
+
+  return [1, 2, 3]
+    .map(rowNum => ({
+      rowNum,
+      items: footer[rowNum] || []
+    }))
+    .filter(row => row.items.length > 0)
 })
 
 // ── Theme ──────────────────────────────────────────────────────
@@ -481,72 +520,218 @@ watch(() => route.path, () => { mobileOpen.value = false })
 .menu-icon.open span:nth-child(3) { transform: translateY(-5.5px) rotate(-45deg); }
 
 /* ── Mobile nav drawer ── */
-.mobile-nav {
-  position: absolute;
+.mobile-nav-overlay {
+  position: fixed;
   top: var(--header-h);
   left: 0;
   right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.3);
+  backdrop-filter: blur(4px);
+  z-index: 99;
+}
+
+.mobile-nav {
   background: var(--surface);
   border-bottom: 1px solid var(--border);
-  padding: 8px 20px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+  padding: 16px 20px;
   box-shadow: var(--shadow-md);
+  max-height: calc(100vh - var(--header-h));
+  overflow-y: auto;
+}
+
+.mobile-nav-section {
+  margin-bottom: 8px;
+  opacity: 0;
+  animation: mobile-nav-spring 0.5s var(--ease-spring) forwards;
+}
+
+.mobile-nav-section:nth-child(1) { animation-delay: 0.05s; }
+.mobile-nav-section:nth-child(2) { animation-delay: 0.1s; }
+.mobile-nav-section:nth-child(3) { animation-delay: 0.15s; }
+.mobile-nav-section:nth-child(4) { animation-delay: 0.2s; }
+.mobile-nav-section:nth-child(5) { animation-delay: 0.25s; }
+
+@keyframes mobile-nav-spring {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.95);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(4px) scale(1.02);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.mobile-nav-primary {
+  display: block;
+  padding: 12px 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border);
+}
+
+.mobile-nav-secondary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+  padding-bottom: 12px;
 }
 
 .mobile-nav-link {
-  display: block;
-  padding: 12px 8px;
-  font-size: 15px;
+  display: inline-block;
+  padding: 8px 16px;
+  font-size: 13px;
   font-weight: 500;
   color: var(--text-muted);
-  border-bottom: 1px solid var(--border);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
   text-decoration: none;
+  transition: all var(--dur-fast);
 }
 
-.mobile-nav-child {
-  padding-left: 24px;
-  font-size: 14px;
-  color: var(--text-subtle);
-  border-bottom: 1px dashed var(--border);
-  transition: color var(--dur-fast);
+.mobile-nav-link:hover, .mobile-nav-link.router-link-active {
+  color: var(--accent-text);
+  background: var(--accent-soft);
+  border-color: var(--accent);
 }
-
-.mobile-nav-link:last-child { border-bottom: none; }
-.mobile-nav-link:hover, .mobile-nav-link.router-link-active { color: var(--text); }
 
 /* Mobile nav transition */
 .mobile-nav-enter-active, .mobile-nav-leave-active {
-  transition: opacity var(--dur-base), transform var(--dur-base) var(--ease-smooth);
+  transition: opacity var(--dur-base);
 }
 .mobile-nav-enter-from, .mobile-nav-leave-to {
   opacity: 0;
-  transform: translateY(-8px);
 }
 
 /* ── Footer ── */
 .site-footer {
-  padding: 32px 0;
-  border-top: 1px solid var(--border);
+  padding: 48px 0 32px;
   margin-top: 80px;
+  background: var(--accent-soft);
+  border-top: 1px solid var(--accent);
+}
+
+.footer-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 48px;
+}
+
+.footer-left {
+  flex: 1;
+}
+
+.footer-rows {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.footer-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  font-size: 14px;
+}
+
+.footer-row:first-child {
+  font-size: 16px;
+  font-weight: 500;
+}
+
+.footer-link {
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color var(--dur-fast);
+}
+
+.footer-link:hover {
+  color: var(--accent-text);
+}
+
+.footer-text {
+  color: var(--text-subtle);
 }
 
 .footer-copy {
   font-size: 13px;
   color: var(--text-subtle);
-  text-align: center;
 }
 
 .footer-accent {
   color: var(--accent-text);
-  font-weight: 500;
+  font-weight: 600;
+  text-decoration: none;
+  transition: opacity var(--dur-fast);
+}
+
+.footer-accent:hover {
+  opacity: 0.8;
+}
+
+.footer-right {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.footer-social {
+  font-size: 13px;
+  color: var(--text-muted);
+  text-decoration: none;
+  transition: color var(--dur-fast);
+}
+
+.footer-social:hover {
+  color: var(--accent-text);
+}
+
+@media (max-width: 640px) {
+  .footer-container {
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .footer-right {
+    align-items: flex-start;
+  }
 }
 
 /* ── Responsive ── */
 @media (max-width: 640px) {
+  .header-inner {
+    justify-content: space-between;
+  }
+
+  /* Left: menu button */
+  .menu-btn {
+    display: grid;
+  }
+
+  /* Center: avatar */
+  .header-brand {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  /* Right: lang + theme buttons */
+  .header-actions {
+    justify-content: flex-end;
+  }
+
   .header-nav { display: none; }
-  .menu-btn { display: grid; }
-  .lang-btn { display: none; }
 }
 </style>
