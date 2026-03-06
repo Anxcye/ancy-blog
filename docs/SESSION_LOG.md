@@ -754,3 +754,6 @@
 - Added deployment documentation:
   - `docs/DEPLOYMENT.md`
   - updated `README.md`, `docs/PROGRESS.md`, and `docs/DECISIONS.md`
+
+- Added `deploy/update.sh` as the standard upgrade entrypoint: it fetches git updates, optionally checks out a target ref, runs a database backup, triggers the container release, and smoke-checks blog/admin/public API endpoints.
+- Updated `docs/DEPLOYMENT.md` to make `update.sh` the primary production upgrade command, while keeping `release.sh` as the lower-level deployment primitive.

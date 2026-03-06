@@ -50,16 +50,31 @@ cp .env.example .env
 ./release.sh
 ```
 
-## Release Flow
-Each release should follow this order:
-1. Build fresh images.
-2. Start `postgres` and `redis`.
-3. Run database migrations.
-4. Restart `backend`.
-5. Restart `frontend-blog`.
-6. Restart `admin` and `caddy`.
+## Upgrade Flow
+For normal production upgrades, use the wrapper script:
+```bash
+cd deploy
+./update.sh
+```
 
-The provided `deploy/release.sh` already follows this order.
+To deploy a specific git tag or commit:
+```bash
+cd deploy
+./update.sh v1.0.3
+# or
+./update.sh 5d3024f
+```
+
+`deploy/update.sh` performs this order:
+1. `git fetch --tags --prune`
+2. `git pull --ff-only` or `git checkout <ref>`
+3. PostgreSQL backup
+4. Image rebuild
+5. Database migration
+6. Service restart
+7. Basic smoke checks for blog, admin, and the public site API
+
+`deploy/release.sh` remains the lower-level script that only handles the container release itself.
 
 ## Manual Operations
 Run migrations:
@@ -80,6 +95,12 @@ Create a database backup:
 ```bash
 cd deploy
 ./backup-postgres.sh
+```
+
+Run the lower-level release script without pulling git:
+```bash
+cd deploy
+./release.sh
 ```
 
 ## Environment Variables
@@ -117,11 +138,10 @@ cd deploy
 - `TRANSLATION_WORKER_BACKOFF_MAX_MS`
 
 ## Update Strategy
-Current recommendation: keep releases manual and deterministic.
+Current recommendation: keep upgrades manual and deterministic.
 - Tag a release in git.
-- Pull the target revision on the server.
-- Run `deploy/release.sh`.
-- Validate `/healthz`, homepage, and admin login.
+- Run `deploy/update.sh` on the server.
+- Let the script backup, rebuild, migrate, restart, and smoke-check the stack.
 
 Later, this can evolve into:
 - CI builds images
