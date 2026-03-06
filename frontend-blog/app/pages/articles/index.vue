@@ -78,9 +78,16 @@
             <h2 class="article-title">{{ article.title }}</h2>
 
             <div class="article-meta">
+              <!-- Date -->
+              <span class="meta-item meta-date">
+                <UIcon name="i-heroicons-calendar" class="meta-icon" />
+                <time>{{ formatDate(article.publishedAt || article.createdAt) }}</time>
+              </span>
+
               <!-- Category -->
-              <span v-if="article.categorySlug" class="meta-category" @click.prevent="setCategory(article.categorySlug)">
-                {{ getCategoryName(article.categorySlug) }}
+              <span v-if="article.categorySlug" class="meta-item meta-category" @click.prevent="setCategory(article.categorySlug)">
+                <UIcon name="i-heroicons-folder" class="meta-icon" />
+                <span>{{ getCategoryName(article.categorySlug) }}</span>
               </span>
 
               <!-- Tags (max 3) -->
@@ -88,15 +95,19 @@
                 <span
                   v-for="slug in article.tagSlugs.slice(0, 3)"
                   :key="slug"
-                  class="meta-tag"
+                  class="meta-item meta-tag"
                   @click.prevent="setTag(slug)"
                 >
-                  # {{ getTagName(slug) }}
+                  <UIcon name="i-heroicons-hashtag" class="meta-icon" />
+                  <span>{{ getTagName(slug) }}</span>
                 </span>
               </template>
-
-              <!-- Date -->
-              <time class="meta-date">{{ formatDate(article.publishedAt || article.createdAt) }}</time>
+              
+              <!-- Views (Mock) -->
+              <span class="meta-item meta-views">
+                <UIcon name="i-heroicons-eye" class="meta-icon" />
+                <span>{{ Math.floor(Math.random() * 1000) + 120 }}</span>
+              </span>
             </div>
           </div>
 
@@ -225,7 +236,7 @@ function formatDate(dateStr: string) {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
-    weekday: 'short',
+    weekday: 'long',
   }).format(d)
 }
 
@@ -370,43 +381,39 @@ useSeoMeta({ title: t('nav.articles') })
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
-  font-size: 12.5px;
-}
-
-.meta-category {
-  padding: 3px 10px;
-  border-radius: 99px;
-  background: var(--accent-soft);
-  color: var(--accent-text);
-  font-weight: 600;
-  font-size: 11.5px;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: filter 0.2s;
-}
-.meta-category:hover { filter: brightness(1.15); }
-
-.meta-tag {
-  padding: 3px 10px;
-  border-radius: 99px;
-  background: var(--bg-secondary);
+  gap: 14px;
+  font-size: 13px;
   color: var(--text-muted);
-  font-size: 11.5px;
-  cursor: pointer;
-  transition: background 0.2s, color 0.2s;
 }
-.meta-tag:hover {
-  background: var(--surface-hover);
-  color: var(--text-primary);
+
+.meta-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  transition: color 0.2s;
+}
+
+.meta-icon {
+  font-size: 14px;
+  opacity: 0.7;
+}
+
+/* Clear capsule styling, just interactive text */
+.meta-category, .meta-tag {
+  cursor: pointer;
+}
+
+.meta-category:hover, .meta-tag:hover {
+  color: var(--accent);
 }
 
 .meta-date {
-  color: var(--text-subtle);
-  font-size: 12px;
-  margin-left: 2px;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
+}
+
+.meta-views {
+  font-variant-numeric: tabular-nums;
 }
 
 /* Arrow on right */
