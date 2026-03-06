@@ -62,15 +62,15 @@
         </div>
       </div>
 
-      <div v-else-if="articles?.rows?.length" class="article-list">
+      <div v-else-if="allArticles.length" class="article-list">
         <NuxtLink
-          v-for="(article, i) in articles.rows"
+          v-for="(article, i) in allArticles"
           :key="article.id"
           :to="localePath(`/articles/${article.slug}`)"
           class="article-item"
-          :style="{ animationDelay: `${i * 70}ms` }"
+          :style="{ animationDelay: `${(i % 9) * 70}ms` }"
         >
-          <!-- Left: index number -->
+          <!-- Left: index number (global index based on i) -->
           <span class="article-index">{{ String(i + 1).padStart(2, '0') }}</span>
 
           <!-- Center: title + meta -->
@@ -120,22 +120,13 @@
         <p>{{ t('home.noArticles') }}</p>
       </div>
 
-      <!-- Pagination -->
-      <div v-if="totalPages > 1" class="pagination">
-        <button
-          class="page-btn"
-          :disabled="page <= 1"
-          @click="page--"
-        >←</button>
-
-        <span class="page-info">{{ page }} / {{ totalPages }}</span>
-
-        <button
-          class="page-btn"
-          :disabled="page >= totalPages"
-          @click="page++"
-        >→</button>
-      </div>
+      <!-- Infinite Scroll Trigger -->
+      <InfiniteScrollTrigger
+        v-if="allArticles.length > 0"
+        :loading="loadingMore"
+        :done="!hasMore"
+        @load="loadMore"
+      />
 
     </div>
   </div>
@@ -149,7 +140,6 @@ const route = useRoute()
 const router = useRouter()
 
 // ── Filters from URL ──────────────────────────────────────────────
-const page = ref(Number(route.query.page) || 1)
 const activeCategory = ref((route.query.category as string) || '')
 const activeTag = ref((route.query.tag as string) || '')
 
@@ -163,42 +153,77 @@ const [{ data: categories }, { data: tags }] = await Promise.all([
   }),
 ])
 
-// ── Load articles (reactive to filters) ───────────────────────────
-const { data: articles, pending, refresh } = await useAsyncData(
+// ── Load articles (Infinite Scroll) ───────────────────────────────
+const page = ref(1)
+const allArticles = ref<any[]>([])
+const total = ref(0)
+const loadingMore = ref(false)
+
+const fetchParams = computed(() => ({
+  page: page.value,
+  pageSize: 9,
+  category: activeCategory.value || undefined,
+  tag: activeTag.value || undefined,
+}))
+
+// SSR Initial load (force page 1)
+const { data: initialData, pending } = await useAsyncData(
   'articles-list',
-  () => listArticles({
-    page: page.value,
-    pageSize: 9,
-    category: activeCategory.value || undefined,
-    tag: activeTag.value || undefined,
-  }),
-  {
-    watch: [page, activeCategory, activeTag],
-    getCachedData: () => undefined,  // always re-fetch; prevents stale SSR payload on CSR nav
-  }
+  () => listArticles({ ...fetchParams.value, page: 1 }),
+  { getCachedData: () => undefined }
 )
 
-const totalPages = computed(() =>
-  articles.value ? Math.ceil(articles.value.total / 9) : 1
-)
+// Sync SSR data to local refs
+if (initialData.value) {
+  allArticles.value = initialData.value.rows || []
+  total.value = initialData.value.total || 0
+}
 
-// ── Sync URL to filters ───────────────────────────────────────────
-watch([page, activeCategory, activeTag], () => {
-  router.replace({
-    query: {
-      ...(page.value > 1 ? { page: page.value } : {}),
-      ...(activeCategory.value ? { category: activeCategory.value } : {}),
-      ...(activeTag.value ? { tag: activeTag.value } : {}),
+const hasMore = computed(() => allArticles.value.length < total.value)
+
+async function loadMore() {
+  if (loadingMore.value || !hasMore.value) return
+  loadingMore.value = true
+  page.value++
+  try {
+    const res = await listArticles(fetchParams.value)
+    if (res.rows?.length) {
+      allArticles.value.push(...res.rows)
     }
-  })
-  window.scrollTo({ top: 0, behavior: 'smooth' })
+  } catch (err) {
+    page.value--
+    console.error(err)
+  } finally {
+    loadingMore.value = false
+  }
+}
+
+// ── Sync URL to filters & Reset List ──────────────────────────────
+watch([activeCategory, activeTag], async () => {
+  page.value = 1
+  pending.value = true
+  try {
+    const res = await listArticles(fetchParams.value)
+    allArticles.value = res.rows || []
+    total.value = res.total || 0
+    
+    router.replace({
+      query: {
+        ...(activeCategory.value ? { category: activeCategory.value } : {}),
+        ...(activeTag.value ? { tag: activeTag.value } : {}),
+      }
+    })
+  } finally {
+    pending.value = false
+  }
 })
 
 // ── Sync URL changes back to filters ──────────────────────────────
 watch(() => route.query, (query) => {
-  page.value = Number(query.page) || 1
-  activeCategory.value = (query.category as string) || ''
-  activeTag.value = (query.tag as string) || ''
+  if (query.category !== activeCategory.value || query.tag !== activeTag.value) {
+    activeCategory.value = (query.category as string) || ''
+    activeTag.value = (query.tag as string) || ''
+  }
 }, { deep: true })
 
 function setCategory(slug: string) {
@@ -455,38 +480,6 @@ useSeoMeta({ title: t('nav.articles') })
   from { background-position: 200% 0; }
   to   { background-position: -200% 0; }
 }
-
-/* -- Pagination ─────────────────────────────────────────────────── */
-.pagination {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 20px;
-  margin-top: 40px;
-}
-
-.page-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: var(--radius-md);
-  border: 1px solid var(--border);
-  background: var(--surface);
-  color: var(--text-muted);
-  font-size: 16px;
-  display: grid;
-  place-items: center;
-  transition: all var(--dur-fast);
-  cursor: pointer;
-}
-
-.page-btn:hover:not(:disabled) {
-  border-color: var(--accent);
-  color: var(--accent-text);
-  background: var(--accent-soft);
-}
-
-.page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-.page-info { font-size: 14px; color: var(--text-muted); min-width: 60px; text-align: center; }
 
 /* Empty */
 .empty-state { text-align: center; padding: 64px 0; color: var(--text-subtle); }
