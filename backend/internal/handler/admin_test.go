@@ -152,6 +152,59 @@ func TestAdminListMoments(t *testing.T) {
 	}
 }
 
+func TestAdminUpdateSiteSettingsMergesPartialPayload(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	var saved domain.SiteSettings
+	repo := &handlerRepoStub{
+		getSiteSettingsFunc: func() domain.SiteSettings {
+			return domain.SiteSettings{
+				SiteName:               "Ancy Blog",
+				AvatarURL:              "https://cdn.example.com/avatar.png",
+				HeroIntroMD:            "hello",
+				DefaultLocale:          "zh-CN",
+				CommentEnabled:         true,
+				CommentRequireApproval: false,
+				LinkSubmissionEnabled:  true,
+				SiteDescription:        "desc",
+			}
+		},
+		updateSiteSettingsFunc: func(settings domain.SiteSettings) domain.SiteSettings {
+			saved = settings
+			return settings
+		},
+	}
+	core := service.NewContentService(repo, nil)
+	h := NewAdminHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewIntegrationService(core),
+		service.NewTranslationService(core),
+		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+		service.NewAuthService("admin", "123456", 0, 0),
+		nil,
+	)
+	r := adminRouter(h)
+	r.PUT("/site/settings", h.UpdateSiteSettings)
+
+	body := bytes.NewBufferString(`{"linkSubmissionEnabled":false}`)
+	req := httptest.NewRequest(http.MethodPut, "/site/settings", body)
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", w.Code, w.Body.String())
+	}
+	if saved.AvatarURL != "https://cdn.example.com/avatar.png" {
+		t.Fatalf("expected avatar to be preserved, got %q", saved.AvatarURL)
+	}
+	if saved.LinkSubmissionEnabled {
+		t.Fatalf("expected linkSubmissionEnabled to be false")
+	}
+}
+
 func TestAdminUpdateIntegrationProviderNotFound(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	repo := &handlerRepoStub{updateIntegrationProvider: func(string, bool, []byte, []byte) (domain.IntegrationProvider, error) {

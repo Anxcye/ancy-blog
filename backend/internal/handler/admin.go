@@ -330,18 +330,38 @@ func (h *AdminHandler) UpdateSiteSettings(c *gin.Context) {
 		badRequest(c, "VALIDATION_ERROR", "invalid request body")
 		return
 	}
-	updated := h.siteService.UpdateSiteSettings(domain.SiteSettings{
-		SiteName:               req.SiteName,
-		AvatarURL:              req.AvatarURL,
-		HeroIntroMD:            req.HeroIntroMD,
-		DefaultLocale:          req.DefaultLocale,
-		CommentEnabled:         req.CommentEnabled,
-		CommentRequireApproval: req.CommentRequireApproval,
-		LinkSubmissionEnabled:  req.LinkSubmissionEnabled,
-		SiteDescription:        req.SiteDescription,
-		SeoKeywords:            req.SeoKeywords,
-		OgImageURL:             req.OgImageURL,
-	})
+	current := h.siteService.GetSiteSettings()
+	if req.SiteName != nil {
+		current.SiteName = *req.SiteName
+	}
+	if req.AvatarURL != nil {
+		current.AvatarURL = *req.AvatarURL
+	}
+	if req.HeroIntroMD != nil {
+		current.HeroIntroMD = *req.HeroIntroMD
+	}
+	if req.DefaultLocale != nil {
+		current.DefaultLocale = *req.DefaultLocale
+	}
+	if req.CommentEnabled != nil {
+		current.CommentEnabled = *req.CommentEnabled
+	}
+	if req.CommentRequireApproval != nil {
+		current.CommentRequireApproval = *req.CommentRequireApproval
+	}
+	if req.LinkSubmissionEnabled != nil {
+		current.LinkSubmissionEnabled = *req.LinkSubmissionEnabled
+	}
+	if req.SiteDescription != nil {
+		current.SiteDescription = *req.SiteDescription
+	}
+	if req.SeoKeywords != nil {
+		current.SeoKeywords = *req.SeoKeywords
+	}
+	if req.OgImageURL != nil {
+		current.OgImageURL = *req.OgImageURL
+	}
+	updated := h.siteService.UpdateSiteSettings(current)
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: updated})
 }
 

@@ -28,6 +28,7 @@ type handlerRepoStub struct {
 	listContentCommentsFunc      func(contentType, contentID string, page, pageSize int) ([]domain.Comment, int)
 	listTimelineFunc             func(page, pageSize int, locale string) ([]domain.TimelineItem, int)
 	listFooterItemsFunc          func() []domain.FooterItem
+	getSiteSettingsFunc          func() domain.SiteSettings
 	countArticleCommentsFunc     func(articleID string) (int, error)
 	countContentCommentsFunc     func(contentType, contentID string) (int, error)
 	listCommentDescendantsFunc   func(rootIDs []string) []domain.Comment
@@ -41,6 +42,7 @@ type handlerRepoStub struct {
 	listTranslationContentsFunc  func(page, pageSize int, sourceType, sourceID, locale string) ([]domain.TranslationContent, int)
 	getTranslationContentFunc    func(sourceType, sourceID, locale string) (domain.TranslationContent, bool)
 	upsertTranslationContentFunc func(sourceType, sourceID, locale, title, summary, content, status string, publishedAt time.Time, translatedByJobID string) (domain.TranslationContent, error)
+	updateSiteSettingsFunc       func(settings domain.SiteSettings) domain.SiteSettings
 }
 
 func (s *handlerRepoStub) CreateComment(comment domain.Comment) (domain.Comment, error) {
@@ -52,7 +54,17 @@ func (s *handlerRepoStub) CreateComment(comment domain.Comment) (domain.Comment,
 
 // GetSiteSettings returns a permissive default so comment tests pass without extra setup.
 func (s *handlerRepoStub) GetSiteSettings() domain.SiteSettings {
+	if s.getSiteSettingsFunc != nil {
+		return s.getSiteSettingsFunc()
+	}
 	return domain.SiteSettings{SiteName: "Test", DefaultLocale: "en", CommentEnabled: true, LinkSubmissionEnabled: true}
+}
+
+func (s *handlerRepoStub) UpdateSiteSettings(settings domain.SiteSettings) domain.SiteSettings {
+	if s.updateSiteSettingsFunc != nil {
+		return s.updateSiteSettingsFunc(settings)
+	}
+	return settings
 }
 
 func (s *handlerRepoStub) ListArticles(page, pageSize int, status, contentKind, keyword string) ([]domain.Article, int) {

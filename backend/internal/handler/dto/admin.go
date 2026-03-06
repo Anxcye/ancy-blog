@@ -52,16 +52,16 @@ type MomentBatchDeleteRequest struct {
 }
 
 type SiteSettingsUpdateRequest struct {
-	SiteName               string `json:"siteName"`
-	AvatarURL              string `json:"avatarUrl"`
-	HeroIntroMD            string `json:"heroIntroMd"`
-	DefaultLocale          string `json:"defaultLocale"`
-	CommentEnabled         bool   `json:"commentEnabled"`
-	CommentRequireApproval bool   `json:"commentRequireApproval"`
-	LinkSubmissionEnabled  bool   `json:"linkSubmissionEnabled"`
-	SiteDescription        string `json:"siteDescription"`
-	SeoKeywords            string `json:"seoKeywords"`
-	OgImageURL             string `json:"ogImageUrl"`
+	SiteName               *string `json:"siteName"`
+	AvatarURL              *string `json:"avatarUrl"`
+	HeroIntroMD            *string `json:"heroIntroMd"`
+	DefaultLocale          *string `json:"defaultLocale"`
+	CommentEnabled         *bool   `json:"commentEnabled"`
+	CommentRequireApproval *bool   `json:"commentRequireApproval"`
+	LinkSubmissionEnabled  *bool   `json:"linkSubmissionEnabled"`
+	SiteDescription        *string `json:"siteDescription"`
+	SeoKeywords            *string `json:"seoKeywords"`
+	OgImageURL             *string `json:"ogImageUrl"`
 }
 
 type FooterItemUpsertRequest struct {

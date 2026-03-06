@@ -58,6 +58,7 @@ import type {
   FooterItemFormValues,
   NavItem,
   NavItemFormValues,
+  SiteSettings,
   SocialLink,
   SocialLinkFormValues,
 } from '../../types/site';
@@ -93,7 +94,10 @@ function SettingsTab(): ReactElement {
           form={form}
           layout="vertical"
           disabled={isLoading}
-          onFinish={(vals) => saveMut.mutate(vals)}
+          onFinish={(vals) => saveMut.mutate({
+            ...(data as SiteSettings),
+            ...vals,
+          })}
         >
           <Form.Item
             name="siteName"
@@ -189,7 +193,10 @@ function CommentPolicyTab(): ReactElement {
         <Form
           form={form}
           disabled={isLoading}
-          onFinish={(vals) => saveMut.mutate(vals)}
+          onFinish={(vals) => saveMut.mutate({
+            ...(data as SiteSettings),
+            ...vals,
+          })}
         >
           <div className="comment-policy-section">
             {/* Row 1: enable comments */}

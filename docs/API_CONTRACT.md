@@ -426,7 +426,9 @@
 - Request: site settings payload
 - Response: success boolean
 - Error Codes: VALIDATION_ERROR, AUTH_UNAUTHORIZED
-- Notes: Invalidate `site:settings:{locale}` cache after successful update.
+- Notes:
+  - Supports partial update payloads; omitted fields keep their previous values.
+  - Invalidate `site:settings:{locale}` cache after successful update.
 
 - ID: ADM-SITE-002
 - Method: POST
