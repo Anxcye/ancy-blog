@@ -178,9 +178,27 @@ func (s *ContentService) ListPublishedMoments(page, pageSize int, locale string)
 	return s.repo.ListPublishedMoments(page, pageSize, locale)
 }
 
+func (s *ContentService) GetPublishedMomentByID(id, locale string) (domain.Moment, bool) {
+	return s.repo.GetPublishedMomentByID(id, locale)
+}
+
 func (s *ContentService) CreateComment(comment domain.Comment) (domain.Comment, error) {
-	if strings.TrimSpace(comment.ArticleID) == "" {
-		return domain.Comment{}, fmt.Errorf("%w: articleId is required", apperr.ErrValidation)
+	if strings.TrimSpace(comment.ContentType) == "" {
+		if strings.TrimSpace(comment.ArticleID) != "" {
+			comment.ContentType = "article"
+		}
+	}
+	if strings.TrimSpace(comment.ContentID) == "" && strings.TrimSpace(comment.ArticleID) != "" {
+		comment.ContentID = comment.ArticleID
+	}
+	if comment.ContentType == "article" && strings.TrimSpace(comment.ArticleID) == "" {
+		comment.ArticleID = comment.ContentID
+	}
+	if comment.ContentType != "article" && comment.ContentType != "moment" {
+		return domain.Comment{}, fmt.Errorf("%w: contentType is invalid", apperr.ErrValidation)
+	}
+	if strings.TrimSpace(comment.ContentID) == "" {
+		return domain.Comment{}, fmt.Errorf("%w: contentId is required", apperr.ErrValidation)
 	}
 	if strings.TrimSpace(comment.Content) == "" {
 		return domain.Comment{}, fmt.Errorf("%w: content is required", apperr.ErrValidation)
@@ -211,8 +229,16 @@ func (s *ContentService) ListArticleComments(articleID string, page, pageSize in
 	return s.repo.ListArticleComments(articleID, page, pageSize)
 }
 
+func (s *ContentService) ListContentComments(contentType, contentID string, page, pageSize int) ([]domain.Comment, int) {
+	return s.repo.ListContentComments(contentType, contentID, page, pageSize)
+}
+
 func (s *ContentService) ListArticleCommentThreads(articleID string, page, pageSize int) ([]domain.CommentNode, int) {
-	roots, total := s.repo.ListArticleComments(articleID, page, pageSize)
+	return s.ListContentCommentThreads("article", articleID, page, pageSize)
+}
+
+func (s *ContentService) ListContentCommentThreads(contentType, contentID string, page, pageSize int) ([]domain.CommentNode, int) {
+	roots, total := s.repo.ListContentComments(contentType, contentID, page, pageSize)
 	if len(roots) == 0 {
 		return []domain.CommentNode{}, total
 	}
@@ -282,6 +308,10 @@ func (s *ContentService) ListCommentChildren(parentID string, page, pageSize int
 
 func (s *ContentService) CountArticleComments(articleID string) (int, error) {
 	return s.repo.CountArticleComments(articleID)
+}
+
+func (s *ContentService) CountContentComments(contentType, contentID string) (int, error) {
+	return s.repo.CountContentComments(contentType, contentID)
 }
 
 func (s *ContentService) ListCommentPage(page, pageSize int, status string) ([]domain.Comment, int) {

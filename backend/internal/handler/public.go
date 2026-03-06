@@ -87,11 +87,34 @@ func (h *PublicHandler) Moments(c *gin.Context) {
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.Moment]{Total: total, Rows: rows}})
 }
 
+func (h *PublicHandler) MomentByID(c *gin.Context) {
+	id := c.Param("id")
+	locale := c.Query("locale")
+	moment, ok := h.articleService.GetPublishedMomentByID(id, locale)
+	if !ok {
+		response.JSON(c, http.StatusNotFound, response.Envelope{Code: "MOMENT_NOT_FOUND", Message: "moment not found"})
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: moment})
+}
+
 func (h *PublicHandler) CommentByArticle(c *gin.Context) {
-	articleID := c.Param("articleId")
+	h.renderCommentThreads(c, "article", c.Param("articleId"))
+}
+
+func (h *PublicHandler) CommentByContent(c *gin.Context) {
+	contentType, contentID, ok := publicCommentTarget(c)
+	if !ok {
+		badRequest(c, "VALIDATION_ERROR", "invalid content target")
+		return
+	}
+	h.renderCommentThreads(c, contentType, contentID)
+}
+
+func (h *PublicHandler) renderCommentThreads(c *gin.Context, contentType, contentID string) {
 	page := getIntQuery(c, "page", 1)
 	pageSize := getIntQuery(c, "pageSize", 10)
-	rows, total := h.commentService.ListArticleCommentThreads(articleID, page, pageSize)
+	rows, total := h.commentService.ListContentCommentThreads(contentType, contentID, page, pageSize)
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[dto.PublicComment]{Total: total, Rows: mapPublicComments(rows)}})
 }
 
@@ -108,13 +131,37 @@ func (h *PublicHandler) CommentChildren(c *gin.Context) {
 }
 
 func (h *PublicHandler) CommentArticleTotal(c *gin.Context) {
-	articleID := c.Param("articleId")
-	total, err := h.commentService.CountArticleComments(articleID)
+	h.renderCommentTotal(c, "article", c.Param("articleId"))
+}
+
+func (h *PublicHandler) CommentContentTotal(c *gin.Context) {
+	contentType, contentID, ok := publicCommentTarget(c)
+	if !ok {
+		badRequest(c, "VALIDATION_ERROR", "invalid content target")
+		return
+	}
+	h.renderCommentTotal(c, contentType, contentID)
+}
+
+func (h *PublicHandler) renderCommentTotal(c *gin.Context, contentType, contentID string) {
+	total, err := h.commentService.CountContentComments(contentType, contentID)
 	if err != nil {
 		response.JSON(c, http.StatusInternalServerError, response.Envelope{Code: "INTERNAL_ERROR", Message: "failed to count comments"})
 		return
 	}
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: total})
+}
+
+func publicCommentTarget(c *gin.Context) (string, string, bool) {
+	contentType := strings.TrimSpace(c.Param("contentType"))
+	contentID := strings.TrimSpace(c.Param("contentId"))
+	if contentType != "article" && contentType != "moment" {
+		return "", "", false
+	}
+	if contentID == "" {
+		return "", "", false
+	}
+	return contentType, contentID, true
 }
 
 func (h *PublicHandler) AddComment(c *gin.Context) {
@@ -123,8 +170,16 @@ func (h *PublicHandler) AddComment(c *gin.Context) {
 		badRequest(c, "VALIDATION_ERROR", "invalid request body")
 		return
 	}
+	contentType := req.ContentType
+	contentID := req.ContentID
+	if contentType == "" && req.ArticleID != "" {
+		contentType = "article"
+		contentID = req.ArticleID
+	}
 	comment, err := h.commentService.CreateComment(domain.Comment{
 		ArticleID:   req.ArticleID,
+		ContentType: contentType,
+		ContentID:   contentID,
 		ParentID:    req.ParentID,
 		RootID:      req.RootID,
 		Content:     req.Content,
@@ -231,6 +286,8 @@ func mapPublicComment(row domain.CommentNode) dto.PublicComment {
 	return dto.PublicComment{
 		ID:                row.ID,
 		ArticleID:         row.ArticleID,
+		ContentType:       row.ContentType,
+		ContentID:         row.ContentID,
 		ParentID:          row.ParentID,
 		RootID:            row.RootID,
 		Content:           row.Content,

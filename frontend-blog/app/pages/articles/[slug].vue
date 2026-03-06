@@ -50,7 +50,7 @@
 
       <!-- ── Comments ── -->
       <section v-if="article?.allowComment && siteSettings?.commentEnabled" class="comments-section">
-        <CommentList :article-id="article.id" :require-approval="siteSettings?.commentRequireApproval" />
+        <CommentList content-type="article" :content-id="article.id" :require-approval="siteSettings?.commentRequireApproval" />
       </section>
 
     </div>

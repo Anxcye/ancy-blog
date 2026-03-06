@@ -91,7 +91,9 @@ CREATE INDEX IF NOT EXISTS idx_moments_pinned_order_published_at ON moments (is_
 
 CREATE TABLE IF NOT EXISTS comments (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    article_id UUID NOT NULL REFERENCES articles(id) ON DELETE CASCADE,
+    article_id UUID REFERENCES articles(id) ON DELETE CASCADE,
+    content_type VARCHAR(16) NOT NULL CHECK (content_type IN ('article', 'moment')),
+    content_id UUID NOT NULL,
     parent_id UUID REFERENCES comments(id) ON DELETE SET NULL,
     root_id UUID REFERENCES comments(id) ON DELETE SET NULL,
     content TEXT NOT NULL,
@@ -115,6 +117,7 @@ CREATE TABLE IF NOT EXISTS comments (
     CONSTRAINT chk_comments_parent_not_self CHECK (parent_id IS NULL OR parent_id <> id)
 );
 
+CREATE INDEX IF NOT EXISTS idx_comments_content_status_created_at ON comments (content_type, content_id, status, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_comments_article_status_created_at ON comments (article_id, status, created_at DESC);
 CREATE INDEX IF NOT EXISTS idx_comments_parent_created_at ON comments (parent_id, created_at ASC);
 CREATE INDEX IF NOT EXISTS idx_comments_root_created_at ON comments (root_id, created_at ASC);

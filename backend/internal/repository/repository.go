@@ -31,12 +31,15 @@ type ContentRepository interface {
 	BatchUpdateMomentStatus(ids []string, status string) int
 	ListMoments(page, pageSize int, status string) ([]domain.Moment, int)
 	ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int)
+	GetPublishedMomentByID(id, locale string) (domain.Moment, bool)
 
 	CreateComment(comment domain.Comment) (domain.Comment, error)
 	ListArticleComments(articleID string, page, pageSize int) ([]domain.Comment, int)
+	ListContentComments(contentType, contentID string, page, pageSize int) ([]domain.Comment, int)
 	ListCommentChildren(parentID string, page, pageSize int) ([]domain.Comment, int)
 	ListCommentDescendants(rootIDs []string) []domain.Comment
 	CountArticleComments(articleID string) (int, error)
+	CountContentComments(contentType, contentID string) (int, error)
 	ListCommentPage(page, pageSize int, status string) ([]domain.Comment, int)
 	UpdateCommentAdmin(id string, status, isPinned string) (domain.Comment, error)
 

@@ -59,7 +59,18 @@
     },
     "moments": {
         "title": "Moments",
-        "empty": "No moments yet"
+        "subtitle": "Shorter notes, quicker thoughts, and fragments not meant to become full articles yet.",
+        "empty": "No moments yet",
+        "showComments": "Show comments",
+        "hideComments": "Hide comments",
+        "writeComment": "Write a comment",
+        "commentCount": "{n} comments",
+        "loadingMore": "Loading more moments...",
+        "noMore": "No more moments",
+        "viewDetail": "View detail",
+        "detailTitle": "Moment detail",
+        "closeDetail": "Close moment detail",
+        "detailMissing": "This moment is unavailable or no longer exists."
     },
     "timeline": {
         "title": "Timeline",

@@ -86,11 +86,13 @@ Indexes/Constraints:
 - Index: `(tag_id, article_id)`
 
 ## Table: `comments`
-Purpose: Threaded comments for articles (issue-like discussion style).
+Purpose: Threaded comments for articles and moments (issue-like discussion style).
 
 Fields:
 - `id`
-- `article_id` (required, FK to `articles.id`)
+- `article_id` (nullable, legacy article FK kept for compatibility)
+- `content_type` (`article | moment`)
+- `content_id` (required, polymorphic content target id)
 - `parent_id` (nullable, FK to `comments.id`)
 - `root_id` (nullable, FK to `comments.id`)
 - `content` (required)
@@ -113,6 +115,7 @@ Fields:
 - `deleted_at` (nullable)
 
 Indexes/Constraints:
+- Index: `(content_type, content_id, status, created_at DESC)`
 - Index: `(article_id, status, created_at DESC)`
 - Index: `(parent_id, created_at ASC)`
 - Index: `(root_id, created_at ASC)`

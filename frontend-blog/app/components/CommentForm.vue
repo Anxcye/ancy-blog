@@ -94,12 +94,13 @@
 <script setup lang="ts">
 import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useApi, type Comment } from '~/composables/useApi'
+import { useApi, type Comment, type CommentContentType } from '~/composables/useApi'
 import { useStorage } from '@vueuse/core'
 import { renderCommentMarkdown } from '~/utils/commentMarkdown'
 
 const props = defineProps<{
-  articleId: string
+  contentType: CommentContentType
+  contentId: string
   replyTo?: Comment
   requireApproval?: boolean
 }>()
@@ -175,7 +176,9 @@ async function handleSubmit() {
       rootId = props.replyTo.rootId || props.replyTo.id
     }
     await createComment({
-      articleId: props.articleId,
+      articleId: props.contentType === 'article' ? props.contentId : undefined,
+      contentType: props.contentType,
+      contentId: props.contentId,
       parentId,
       rootId,
       toCommentId: props.replyTo ? props.replyTo.id : undefined,

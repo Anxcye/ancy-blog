@@ -23,6 +23,7 @@ type contentRepoStub struct {
 	reviewLinkFunc                func(id, reviewStatus, reviewNote, relatedArticleID string) (domain.Link, error)
 	getArticleByIDFunc            func(id string) (domain.Article, bool)
 	getPublishedArticleBySlugFunc func(slug string) (domain.Article, bool)
+	getPublishedMomentByIDFunc    func(id, locale string) (domain.Moment, bool)
 	createFooterItemFunc          func(item domain.FooterItem) (domain.FooterItem, error)
 	createSlotItemFunc            func(slotKey string, item domain.SlotItem) (domain.SlotItem, error)
 	getSiteSettingsFunc           func() domain.SiteSettings
@@ -30,7 +31,9 @@ type contentRepoStub struct {
 	listPublishedMomentsFunc      func(page, pageSize int, locale string) ([]domain.Moment, int)
 	listTimelineFunc              func(page, pageSize int, locale string) ([]domain.TimelineItem, int)
 	listArticleCommentsFunc       func(articleID string, page, pageSize int) ([]domain.Comment, int)
+	listContentCommentsFunc       func(contentType, contentID string, page, pageSize int) ([]domain.Comment, int)
 	listCommentDescendantsFunc    func(rootIDs []string) []domain.Comment
+	countContentCommentsFunc      func(contentType, contentID string) (int, error)
 
 	getIntegrationProviderFunc    func(providerKey string) (domain.IntegrationProvider, bool)
 	updateIntegrationProviderFunc func(providerKey string, enabled bool, configJSON, metaJSON []byte) (domain.IntegrationProvider, error)
@@ -83,6 +86,13 @@ func (s *contentRepoStub) GetPublishedArticleBySlug(slug string) (domain.Article
 	return domain.Article{}, false
 }
 
+func (s *contentRepoStub) GetPublishedMomentByID(id, locale string) (domain.Moment, bool) {
+	if s.getPublishedMomentByIDFunc != nil {
+		return s.getPublishedMomentByIDFunc(id, locale)
+	}
+	return domain.Moment{}, false
+}
+
 func (s *contentRepoStub) CreateFooterItem(item domain.FooterItem) (domain.FooterItem, error) {
 	if s.createFooterItemFunc != nil {
 		return s.createFooterItemFunc(item)
@@ -132,11 +142,25 @@ func (s *contentRepoStub) ListArticleComments(articleID string, page, pageSize i
 	return nil, 0
 }
 
+func (s *contentRepoStub) ListContentComments(contentType, contentID string, page, pageSize int) ([]domain.Comment, int) {
+	if s.listContentCommentsFunc != nil {
+		return s.listContentCommentsFunc(contentType, contentID, page, pageSize)
+	}
+	return nil, 0
+}
+
 func (s *contentRepoStub) ListCommentDescendants(rootIDs []string) []domain.Comment {
 	if s.listCommentDescendantsFunc != nil {
 		return s.listCommentDescendantsFunc(rootIDs)
 	}
 	return nil
+}
+
+func (s *contentRepoStub) CountContentComments(contentType, contentID string) (int, error) {
+	if s.countContentCommentsFunc != nil {
+		return s.countContentCommentsFunc(contentType, contentID)
+	}
+	return 0, nil
 }
 
 func (s *contentRepoStub) GetIntegrationProvider(providerKey string) (domain.IntegrationProvider, bool) {
@@ -236,12 +260,12 @@ func TestCreateArticleSetsDefaults(t *testing.T) {
 
 func TestListArticleCommentThreadsBuildsNestedReplies(t *testing.T) {
 	repo := &contentRepoStub{
-		listArticleCommentsFunc: func(articleID string, page, pageSize int) ([]domain.Comment, int) {
-			if articleID != "article-1" || page != 1 || pageSize != 10 {
-				t.Fatalf("unexpected pagination: %s %d %d", articleID, page, pageSize)
+		listContentCommentsFunc: func(contentType, contentID string, page, pageSize int) ([]domain.Comment, int) {
+			if contentType != "article" || contentID != "article-1" || page != 1 || pageSize != 10 {
+				t.Fatalf("unexpected pagination: %s %s %d %d", contentType, contentID, page, pageSize)
 			}
 			return []domain.Comment{
-				{ID: "root-1", ArticleID: articleID, Nickname: "Root", CreatedAt: time.Date(2026, 3, 6, 10, 0, 0, 0, time.UTC)},
+				{ID: "root-1", ContentType: contentType, ContentID: contentID, ArticleID: contentID, Nickname: "Root", CreatedAt: time.Date(2026, 3, 6, 10, 0, 0, 0, time.UTC)},
 			}, 1
 		},
 		listCommentDescendantsFunc: func(rootIDs []string) []domain.Comment {

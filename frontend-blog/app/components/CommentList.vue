@@ -9,7 +9,8 @@
 
     <CommentForm
       class="root-form"
-      :article-id="articleId"
+      :content-type="contentType"
+      :content-id="contentId"
       :require-approval="requireApproval"
       @success="handleRootSuccess"
     />
@@ -43,7 +44,8 @@
       >
         <CommentItem
           :comment="comment"
-          :article-id="articleId"
+          :content-type="contentType"
+          :content-id="contentId"
           :is-replying="replyingToId === comment.id"
           :replying-to-id="replyingToId"
           :require-approval="requireApproval"
@@ -78,14 +80,19 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useI18n } from 'vue-i18n'
-import { useApi, type CommentThread } from '~/composables/useApi'
+import { useApi, type CommentContentType, type CommentThread } from '~/composables/useApi'
 import CommentItem from './CommentItem.vue'
 import CommentForm from './CommentForm.vue'
 import InfiniteScrollTrigger from './InfiniteScrollTrigger.vue'
 
 const props = defineProps<{
-  articleId: string
+  contentType: CommentContentType
+  contentId: string
   requireApproval?: boolean
+}>()
+
+const emit = defineEmits<{
+  (e: 'countChange', total: number): void
 }>()
 
 const { t } = useI18n()
@@ -112,7 +119,8 @@ function clearReplyTarget() {
 
 async function fetchTotal() {
   try {
-    totalComments.value = await getCommentTotal(props.articleId)
+    totalComments.value = await getCommentTotal(props.contentType, props.contentId)
+    emit('countChange', totalComments.value)
   } catch (err) {
     console.error('Failed to count comments', err)
   }
@@ -120,7 +128,7 @@ async function fetchTotal() {
 
 async function fetchComments(nextPage: number, append = false) {
   try {
-    const res = await listComments(props.articleId, { page: nextPage, pageSize: 12 })
+    const res = await listComments(props.contentType, props.contentId, { page: nextPage, pageSize: 12 })
     const rows = res.rows || []
     commentThreads.value = append ? dedupeThreads([...commentThreads.value, ...rows]) : rows
     threadTotal.value = res.total || 0

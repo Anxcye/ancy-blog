@@ -37,7 +37,8 @@
 
       <div v-if="isReplying" class="reply-box-wrapper">
         <CommentForm
-          :article-id="articleId"
+          :content-type="contentType"
+          :content-id="contentId"
           :reply-to="comment"
           :require-approval="requireApproval"
           @cancel="$emit('cancelReply', comment.id)"
@@ -50,7 +51,8 @@
           v-for="child in comment.children"
           :key="child.id"
           :comment="child"
-          :article-id="articleId"
+          :content-type="contentType"
+          :content-id="contentId"
           :is-replying="replyingToId === child.id"
           :replying-to-id="replyingToId"
           :depth="depth + 1"
@@ -67,12 +69,13 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
-import type { CommentThread } from '~/composables/useApi'
+import type { CommentContentType, CommentThread } from '~/composables/useApi'
 import { renderCommentMarkdown } from '~/utils/commentMarkdown'
 
 const props = withDefaults(defineProps<{
   comment: CommentThread
-  articleId: string
+  contentType: CommentContentType
+  contentId: string
   isReplying?: boolean
   replyingToId?: string | null
   depth?: number

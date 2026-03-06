@@ -32,6 +32,7 @@ This guide governs both frontend apps:
   - right: profile avatar.
 - Add a softly floating down-arrow at hero bottom.
 - Navigation wording should be literary and brand-toned, not generic labels.
+- Moments page should read as a quiet vertical note stream, not a dashboard timeline or masonry grid.
 
 ## Motion & Particles
 - Use spring-like easing for interactions and page entry.

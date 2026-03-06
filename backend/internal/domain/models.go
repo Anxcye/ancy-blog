@@ -45,6 +45,7 @@ type Moment struct {
 	Content      string    `json:"content"`
 	Status       string    `json:"status"`
 	AllowComment bool      `json:"allowComment"`
+	CommentCount int       `json:"commentCount"`
 	PublishedAt  time.Time `json:"publishedAt"`
 	CreatedAt    time.Time `json:"createdAt"`
 	UpdatedAt    time.Time `json:"updatedAt"`
@@ -52,7 +53,9 @@ type Moment struct {
 
 type Comment struct {
 	ID                string    `json:"id"`
-	ArticleID         string    `json:"articleId"`
+	ArticleID         string    `json:"articleId,omitempty"`
+	ContentType       string    `json:"contentType"`
+	ContentID         string    `json:"contentId"`
 	ParentID          string    `json:"parentId,omitempty"`
 	RootID            string    `json:"rootId,omitempty"`
 	Content           string    `json:"content"`

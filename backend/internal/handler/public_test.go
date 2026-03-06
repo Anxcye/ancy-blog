@@ -82,12 +82,12 @@ func TestPublicAddCommentSuccess(t *testing.T) {
 func TestPublicCommentByArticleReturnsThreadedComments(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	repo := &handlerRepoStub{
-		listArticleCommentsFunc: func(articleID string, page, pageSize int) ([]domain.Comment, int) {
-			if articleID != "article-1" || page != 1 || pageSize != 10 {
-				t.Fatalf("unexpected query: %s %d %d", articleID, page, pageSize)
+		listContentCommentsFunc: func(contentType, contentID string, page, pageSize int) ([]domain.Comment, int) {
+			if contentType != "article" || contentID != "article-1" || page != 1 || pageSize != 10 {
+				t.Fatalf("unexpected query: %s %s %d %d", contentType, contentID, page, pageSize)
 			}
 			return []domain.Comment{
-				{ID: "root-1", ArticleID: articleID, Nickname: "Admin", Source: "admin"},
+				{ID: "root-1", ContentType: contentType, ContentID: contentID, ArticleID: contentID, Nickname: "Admin", Source: "admin"},
 			}, 1
 		},
 		listCommentDescendantsFunc: func(rootIDs []string) []domain.Comment {
@@ -199,6 +199,39 @@ func TestPublicMomentsPassesLocale(t *testing.T) {
 	r.GET("/moments", h.Moments)
 
 	req := httptest.NewRequest(http.MethodGet, "/moments?locale=en-US", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	if capturedLocale != "en-US" {
+		t.Fatalf("expected locale en-US, got %s", capturedLocale)
+	}
+}
+
+func TestPublicMomentByIDPassesLocale(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	capturedLocale := ""
+	repo := &handlerRepoStub{
+		getPublishedMomentByIDFunc: func(id, locale string) (domain.Moment, bool) {
+			capturedLocale = locale
+			return domain.Moment{ID: id, Content: "hello", Status: "published", AllowComment: true}, true
+		},
+	}
+	core := service.NewContentService(repo, nil)
+	h := NewPublicHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewTimelineService(core),
+	)
+
+	r := gin.New()
+	r.GET("/moments/:id", h.MomentByID)
+
+	req := httptest.NewRequest(http.MethodGet, "/moments/m1?locale=en-US", nil)
 	w := httptest.NewRecorder()
 	r.ServeHTTP(w, req)
 

@@ -19,6 +19,7 @@ export interface PaginatedData<T> {
 // ── Article types ──────────────────────────────────────────────────
 export type ArticleStatus = 'draft' | 'published' | 'scheduled' | 'archived'
 export type ContentKind = 'post' | 'page'
+export type CommentContentType = 'article' | 'moment'
 
 export interface ArticleCard {
     id: string
@@ -52,7 +53,9 @@ export interface Moment {
     id: string
     content: string
     status: string
-    isPinned: boolean
+    allowComment: boolean
+    commentCount: number
+    isPinned?: boolean
     publishedAt?: string
     createdAt: string
 }
@@ -60,7 +63,9 @@ export interface Moment {
 // ── Comment types ──────────────────────────────────────────────────
 export interface Comment {
     id: string
-    articleId: string
+    articleId?: string
+    contentType: CommentContentType
+    contentId: string
     parentId?: string
     rootId?: string
     toCommentId?: string
@@ -82,7 +87,9 @@ export interface CommentThread extends Comment {
 }
 
 export interface CommentCreatePayload {
-    articleId: string
+    articleId?: string
+    contentType: CommentContentType
+    contentId: string
     parentId?: string
     rootId?: string
     toCommentId?: string
@@ -205,17 +212,23 @@ export function useApi() {
         listMoments: (params?: { page?: number; pageSize?: number }) =>
             apiFetch<PaginatedData<Moment>>('/public/moments', { params }),
 
+        /** Fetch moment detail */
+        getMoment: (id: string) =>
+            apiFetch<Moment>(`/public/moments/${id}`, {
+                params: locale.value === 'en' ? { locale: 'en-US' } : undefined,
+            }),
+
         /** Fetch mixed timeline */
         listTimeline: (params?: { page?: number; pageSize?: number }) =>
             apiFetch<PaginatedData<TimelineItem>>('/public/timeline', { params }),
 
         /** Fetch comments for an article */
-        listComments: (articleId: string, params?: { page?: number; pageSize?: number }) =>
-            apiFetch<PaginatedData<CommentThread>>(`/public/comments/article/${articleId}`, { params }),
+        listComments: (contentType: CommentContentType, contentId: string, params?: { page?: number; pageSize?: number }) =>
+            apiFetch<PaginatedData<CommentThread>>(`/public/comments/content/${contentType}/${contentId}`, { params }),
 
         /** Fetch total approved comment count */
-        getCommentTotal: (articleId: string) =>
-            apiFetch<number>(`/public/comments/article/${articleId}/total`),
+        getCommentTotal: (contentType: CommentContentType, contentId: string) =>
+            apiFetch<number>(`/public/comments/content/${contentType}/${contentId}/total`),
 
         /** Fetch children for a root comment */
         listCommentChildren: (commentId: string, params?: { page?: number; pageSize?: number }) =>

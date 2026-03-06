@@ -59,7 +59,18 @@
     },
     "moments": {
         "title": "瞬间",
-        "empty": "暂无瞬间记录"
+        "subtitle": "短一点，快一点，留下一些还没长成文章的想法。",
+        "empty": "暂无瞬间记录",
+        "showComments": "展开评论",
+        "hideComments": "收起评论",
+        "writeComment": "写评论",
+        "commentCount": "{n} 条评论",
+        "loadingMore": "正在加载更多瞬间...",
+        "noMore": "没有更多瞬间了",
+        "viewDetail": "查看详情",
+        "detailTitle": "瞬间详情",
+        "closeDetail": "关闭瞬间详情",
+        "detailMissing": "这条瞬间暂时不可见或已不存在。"
     },
     "timeline": {
         "title": "时间轴",

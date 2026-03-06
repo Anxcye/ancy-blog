@@ -43,6 +43,8 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 
 ## Comment Rules
 - Comments support threaded replies.
+- Articles and moments both support the same public comment system.
+- Public pages should lazy-load per-item comment threads for moments instead of expanding all comment sections by default.
 - Public article comment lists must return recursive reply threads instead of flat reply pages.
 - Public comment payloads must exclude visitor privacy fields such as `email`, `ip`, and `user_agent`.
 - Comments support admin pinning on root comments and replies.

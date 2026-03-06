@@ -8,6 +8,8 @@ import "time"
 
 type CreateCommentRequest struct {
 	ArticleID   string `json:"articleId"`
+	ContentType string `json:"contentType"`
+	ContentID   string `json:"contentId"`
 	ParentID    string `json:"parentId"`
 	RootID      string `json:"rootId"`
 	Content     string `json:"content"`
@@ -22,6 +24,8 @@ type CreateCommentRequest struct {
 type PublicComment struct {
 	ID                string          `json:"id"`
 	ArticleID         string          `json:"articleId"`
+	ContentType       string          `json:"contentType"`
+	ContentID         string          `json:"contentId"`
 	ParentID          string          `json:"parentId,omitempty"`
 	RootID            string          `json:"rootId,omitempty"`
 	Content           string          `json:"content"`

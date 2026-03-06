@@ -20,6 +20,7 @@ type Repository struct {
 
 	articles map[string]domain.Article
 	moments  map[string]domain.Moment
+	comments map[string]domain.Comment
 	links    map[string]domain.Link
 
 	articleTranslations map[string]map[string]translationRecord
@@ -53,6 +54,7 @@ func NewRepository() *Repository {
 	r := &Repository{
 		articles:            make(map[string]domain.Article),
 		moments:             make(map[string]domain.Moment),
+		comments:            make(map[string]domain.Comment),
 		links:               make(map[string]domain.Link),
 		articleTranslations: make(map[string]map[string]translationRecord),
 		momentTranslations:  make(map[string]map[string]translationRecord),
@@ -403,6 +405,7 @@ func (r *Repository) ListMoments(page, pageSize int, status string) ([]domain.Mo
 		if status != "" && m.Status != status {
 			continue
 		}
+		m.CommentCount = r.countCommentsLocked("moment", m.ID)
 		items = append(items, m)
 	}
 	sort.Slice(items, func(i, j int) bool {
@@ -427,11 +430,176 @@ func (r *Repository) ListPublishedMoments(page, pageSize int, locale string) ([]
 					}
 				}
 			}
+			m.CommentCount = r.countCommentsLocked("moment", m.ID)
 			items = append(items, m)
 		}
 	}
 	sort.Slice(items, func(i, j int) bool { return items[i].PublishedAt.After(items[j].PublishedAt) })
 	return paginateMoments(items, page, pageSize)
+}
+
+func (r *Repository) GetPublishedMomentByID(id, locale string) (domain.Moment, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	m, ok := r.moments[id]
+	if !ok || m.Status != "published" {
+		return domain.Moment{}, false
+	}
+	if strings.TrimSpace(locale) != "" {
+		if tr, ok := r.getMomentTranslation(m.ID, locale); ok && translationVisible(tr) {
+			if strings.TrimSpace(tr.content) != "" {
+				m.Content = tr.content
+			}
+		}
+	}
+	m.CommentCount = r.countCommentsLocked("moment", m.ID)
+	return m, true
+}
+
+func (r *Repository) CreateComment(comment domain.Comment) (domain.Comment, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	now := time.Now().UTC()
+	if comment.ContentType == "" && comment.ArticleID != "" {
+		comment.ContentType = "article"
+	}
+	if comment.ContentID == "" && comment.ArticleID != "" {
+		comment.ContentID = comment.ArticleID
+	}
+	if comment.ContentType == "article" {
+		comment.ArticleID = comment.ContentID
+	}
+	comment.ID = uuid.NewString()
+	comment.CreatedAt = now
+	comment.UpdatedAt = now
+	if comment.Status == "" {
+		comment.Status = "approved"
+	}
+	if comment.Source == "" {
+		comment.Source = "web"
+	}
+	r.comments[comment.ID] = comment
+	return comment, nil
+}
+
+func (r *Repository) ListArticleComments(articleID string, page, pageSize int) ([]domain.Comment, int) {
+	return r.ListContentComments("article", articleID, page, pageSize)
+}
+
+func (r *Repository) ListContentComments(contentType, contentID string, page, pageSize int) ([]domain.Comment, int) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	items := make([]domain.Comment, 0)
+	for _, comment := range r.comments {
+		if comment.ContentType != contentType || comment.ContentID != contentID {
+			continue
+		}
+		if comment.Status != "approved" || comment.ParentID != "" {
+			continue
+		}
+		items = append(items, comment)
+	}
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].CreatedAt.After(items[j].CreatedAt)
+	})
+	return paginateComments(items, page, pageSize)
+}
+
+func (r *Repository) ListCommentChildren(parentID string, page, pageSize int) ([]domain.Comment, int) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	items := make([]domain.Comment, 0)
+	for _, comment := range r.comments {
+		if comment.ParentID == parentID && comment.Status == "approved" {
+			items = append(items, comment)
+		}
+	}
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].CreatedAt.Before(items[j].CreatedAt)
+	})
+	return paginateComments(items, page, pageSize)
+}
+
+func (r *Repository) ListCommentDescendants(rootIDs []string) []domain.Comment {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	rootSet := make(map[string]struct{}, len(rootIDs))
+	for _, id := range rootIDs {
+		rootSet[id] = struct{}{}
+	}
+	items := make([]domain.Comment, 0)
+	for _, comment := range r.comments {
+		if comment.Status != "approved" || comment.ParentID == "" {
+			continue
+		}
+		if _, ok := rootSet[comment.RootID]; ok {
+			items = append(items, comment)
+		}
+	}
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].CreatedAt.Before(items[j].CreatedAt)
+	})
+	return items
+}
+
+func (r *Repository) CountArticleComments(articleID string) (int, error) {
+	return r.CountContentComments("article", articleID)
+}
+
+func (r *Repository) CountContentComments(contentType, contentID string) (int, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	total := 0
+	for _, comment := range r.comments {
+		if comment.ContentType == contentType && comment.ContentID == contentID && comment.Status == "approved" {
+			total++
+		}
+	}
+	return total, nil
+}
+
+func (r *Repository) ListCommentPage(page, pageSize int, status string) ([]domain.Comment, int) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	items := make([]domain.Comment, 0)
+	for _, comment := range r.comments {
+		if status != "" && comment.Status != status {
+			continue
+		}
+		items = append(items, comment)
+	}
+	sort.Slice(items, func(i, j int) bool {
+		return items[i].CreatedAt.After(items[j].CreatedAt)
+	})
+	return paginateComments(items, page, pageSize)
+}
+
+func (r *Repository) UpdateCommentAdmin(id string, status, isPinned string) (domain.Comment, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	comment, ok := r.comments[id]
+	if !ok {
+		return domain.Comment{}, apperr.ErrCommentNotFound
+	}
+	if status != "" {
+		comment.Status = status
+	}
+	if isPinned == "1" || strings.EqualFold(isPinned, "true") {
+		comment.IsPinned = "1"
+	} else {
+		comment.IsPinned = "0"
+	}
+	comment.UpdatedAt = time.Now().UTC()
+	r.comments[id] = comment
+	return comment, nil
 }
 
 func (r *Repository) SubmitLink(link domain.Link) (domain.Link, error) {
@@ -1202,6 +1370,30 @@ func paginateLinks(items []domain.Link, page, pageSize int) ([]domain.Link, int)
 		end = total
 	}
 	return items[start:end], total
+}
+
+func paginateComments(items []domain.Comment, page, pageSize int) ([]domain.Comment, int) {
+	page, pageSize = normalizePagination(page, pageSize)
+	total := len(items)
+	start := (page - 1) * pageSize
+	if start >= total {
+		return []domain.Comment{}, total
+	}
+	end := start + pageSize
+	if end > total {
+		end = total
+	}
+	return items[start:end], total
+}
+
+func (r *Repository) countCommentsLocked(contentType, contentID string) int {
+	total := 0
+	for _, comment := range r.comments {
+		if comment.ContentType == contentType && comment.ContentID == contentID && comment.Status == "approved" {
+			total++
+		}
+	}
+	return total
 }
 
 func paginateTimeline(items []domain.TimelineItem, page, pageSize int) ([]domain.TimelineItem, int) {

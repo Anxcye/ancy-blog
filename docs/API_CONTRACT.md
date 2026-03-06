@@ -225,7 +225,7 @@
 ## Public/Admin - Comments
 - ID: PUB-COMMENT-001
 - Method: GET
-- Path: /api/v1/public/comments/article/{articleId}
+- Path: /api/v1/public/comments/content/{contentType}/{contentId}
 - Auth Required: No
 - Request: query `page`, `pageSize`
 - Response: paginated threaded comments, each row is a root comment node with recursive `children`
@@ -241,7 +241,7 @@
 
 - ID: PUB-COMMENT-003
 - Method: GET
-- Path: /api/v1/public/comments/article/{articleId}/total
+- Path: /api/v1/public/comments/content/{contentType}/{contentId}/total
 - Auth Required: No
 - Request: None
 - Response: total approved comments count
@@ -251,9 +251,17 @@
 - Method: POST
 - Path: /api/v1/public/comments
 - Auth Required: No
-- Request: comment create payload
+- Request: comment create payload including `contentType` and `contentId`
 - Response: created comment id
 - Error Codes: VALIDATION_ERROR
+
+- ID: PUB-MOMENT-002
+- Method: GET
+- Path: /api/v1/public/moments/{id}
+- Auth Required: No
+- Request: query `locale`
+- Response: published moment detail
+- Error Codes: MOMENT_NOT_FOUND
 
 - ID: ADM-COMMENT-001
 - Method: GET

@@ -434,7 +434,12 @@ func (r *Repository) ListMoments(page, pageSize int, status string) ([]domain.Mo
 	}
 
 	listQuery := `
-SELECT id::text, content, status, allow_comment, COALESCE(published_at, created_at), created_at, updated_at
+SELECT id::text, content, status, allow_comment,
+       (
+         SELECT COUNT(*) FROM comments c
+         WHERE c.content_type='moment' AND c.content_id=moments.id AND c.status='approved' AND c.deleted_at IS NULL
+       ) AS comment_count,
+       COALESCE(published_at, created_at), created_at, updated_at
 FROM moments
 WHERE ` + whereClause + `
 ORDER BY updated_at DESC, created_at DESC
@@ -449,7 +454,7 @@ LIMIT $` + strconv.Itoa(len(args)+1) + ` OFFSET $` + strconv.Itoa(len(args)+2)
 	items := make([]domain.Moment, 0)
 	for rows.Next() {
 		var m domain.Moment
-		if err := rows.Scan(&m.ID, &m.Content, &m.Status, &m.AllowComment, &m.PublishedAt, &m.CreatedAt, &m.UpdatedAt); err == nil {
+		if err := rows.Scan(&m.ID, &m.Content, &m.Status, &m.AllowComment, &m.CommentCount, &m.PublishedAt, &m.CreatedAt, &m.UpdatedAt); err == nil {
 			items = append(items, m)
 		}
 	}
@@ -465,6 +470,10 @@ func (r *Repository) ListPublishedMoments(page, pageSize int, locale string) ([]
 	}
 	rows, err := r.db.Query(`
 SELECT m.id::text, COALESCE(mt.content, m.content), m.status, m.allow_comment,
+       (
+         SELECT COUNT(*) FROM comments c
+         WHERE c.content_type='moment' AND c.content_id=m.id AND c.status='approved' AND c.deleted_at IS NULL
+       ) AS comment_count,
        COALESCE(m.published_at, m.created_at), m.created_at, m.updated_at
 FROM moments m
 LEFT JOIN moment_translations mt
@@ -483,11 +492,34 @@ LIMIT $2 OFFSET $3
 	items := make([]domain.Moment, 0)
 	for rows.Next() {
 		var m domain.Moment
-		if err := rows.Scan(&m.ID, &m.Content, &m.Status, &m.AllowComment, &m.PublishedAt, &m.CreatedAt, &m.UpdatedAt); err == nil {
+		if err := rows.Scan(&m.ID, &m.Content, &m.Status, &m.AllowComment, &m.CommentCount, &m.PublishedAt, &m.CreatedAt, &m.UpdatedAt); err == nil {
 			items = append(items, m)
 		}
 	}
 	return items, total
+}
+
+func (r *Repository) GetPublishedMomentByID(id, locale string) (domain.Moment, bool) {
+	var m domain.Moment
+	err := r.db.QueryRow(`
+SELECT m.id::text, COALESCE(mt.content, m.content), m.status, m.allow_comment,
+       (
+         SELECT COUNT(*) FROM comments c
+         WHERE c.content_type='moment' AND c.content_id=m.id AND c.status='approved' AND c.deleted_at IS NULL
+       ) AS comment_count,
+       COALESCE(m.published_at, m.created_at), m.created_at, m.updated_at
+FROM moments m
+LEFT JOIN moment_translations mt
+  ON mt.moment_id = m.id
+ AND mt.locale = $2
+ AND mt.status = 'published'
+ AND (mt.published_at IS NULL OR mt.published_at <= NOW())
+WHERE m.id=$1 AND m.status='published' AND m.deleted_at IS NULL
+`, id, locale).Scan(&m.ID, &m.Content, &m.Status, &m.AllowComment, &m.CommentCount, &m.PublishedAt, &m.CreatedAt, &m.UpdatedAt)
+	if err != nil {
+		return domain.Moment{}, false
+	}
+	return m, true
 }
 
 func (r *Repository) ListCategories() []domain.Category {

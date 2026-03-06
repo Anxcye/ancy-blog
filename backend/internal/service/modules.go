@@ -78,6 +78,9 @@ func (s *ArticleService) BatchUpdateMomentStatus(ids []string, status string) (i
 func (s *ArticleService) ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int) {
 	return s.core.ListPublishedMoments(page, pageSize, locale)
 }
+func (s *ArticleService) GetPublishedMomentByID(id, locale string) (domain.Moment, bool) {
+	return s.core.GetPublishedMomentByID(id, locale)
+}
 func (s *ArticleService) ListCategories() []domain.Category { return s.core.ListCategories() }
 func (s *ArticleService) CreateCategory(category domain.Category) (domain.Category, error) {
 	return s.core.CreateCategory(category)
@@ -98,14 +101,23 @@ func (s *CommentService) CreateComment(comment domain.Comment) (domain.Comment, 
 func (s *CommentService) ListArticleComments(articleID string, page, pageSize int) ([]domain.Comment, int) {
 	return s.core.ListArticleComments(articleID, page, pageSize)
 }
+func (s *CommentService) ListContentComments(contentType, contentID string, page, pageSize int) ([]domain.Comment, int) {
+	return s.core.ListContentComments(contentType, contentID, page, pageSize)
+}
 func (s *CommentService) ListArticleCommentThreads(articleID string, page, pageSize int) ([]domain.CommentNode, int) {
 	return s.core.ListArticleCommentThreads(articleID, page, pageSize)
+}
+func (s *CommentService) ListContentCommentThreads(contentType, contentID string, page, pageSize int) ([]domain.CommentNode, int) {
+	return s.core.ListContentCommentThreads(contentType, contentID, page, pageSize)
 }
 func (s *CommentService) ListCommentChildren(parentID string, page, pageSize int) ([]domain.Comment, int) {
 	return s.core.ListCommentChildren(parentID, page, pageSize)
 }
 func (s *CommentService) CountArticleComments(articleID string) (int, error) {
 	return s.core.CountArticleComments(articleID)
+}
+func (s *CommentService) CountContentComments(contentType, contentID string) (int, error) {
+	return s.core.CountContentComments(contentType, contentID)
 }
 func (s *CommentService) ListCommentPage(page, pageSize int, status string) ([]domain.Comment, int) {
 	return s.core.ListCommentPage(page, pageSize, status)

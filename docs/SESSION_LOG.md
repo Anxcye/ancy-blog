@@ -679,3 +679,16 @@
 - Validation:
   - `go test ./...` passed in `backend/`.
   - `pnpm --dir frontend-blog build` passed.
+- Extended comments from article-only targets to polymorphic content targets:
+  - comments now support `content_type` and `content_id`, with migration `000017_comment_content_target` and schema/data-model updates.
+  - public comment APIs now expose generic content routes for both `article` and `moment` while keeping article wrappers compatible.
+- Enabled comments on the public moments page:
+  - moments list now returns `commentCount` from backend.
+  - public `moments` page switched from pager buttons to infinite scroll.
+  - each moment can lazily expand its own comment thread and reuse the shared threaded comment components.
+- Frontend refactor:
+  - comment components now accept `contentType + contentId` instead of article-only props.
+  - article page migrated to the generic comment component API without changing visible article behavior.
+- Validation:
+  - `go test ./...` passed in `backend/`.
+  - `pnpm --dir frontend-blog build` passed.
