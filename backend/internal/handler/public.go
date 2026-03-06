@@ -5,7 +5,10 @@
 package handler
 
 import (
+	"crypto/sha256"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/anxcye/ancy-blog/backend/internal/domain"
 	"github.com/anxcye/ancy-blog/backend/internal/handler/dto"
@@ -56,6 +59,14 @@ func (h *PublicHandler) ArticleBySlug(c *gin.Context) {
 		response.JSON(c, http.StatusNotFound, response.Envelope{Code: "ARTICLE_NOT_FOUND", Message: "article not found"})
 		return
 	}
+	// Record view asynchronously: fingerprint = SHA-256(ip + ua + date)
+	go func(articleID, ip, ua string) {
+		date := time.Now().UTC().Format("2006-01-02")
+		raw := fmt.Sprintf("%s|%s|%s", ip, ua, date)
+		sum := sha256.Sum256([]byte(raw))
+		key := fmt.Sprintf("%x", sum)
+		_, _ = h.articleService.RecordView(articleID, key)
+	}(article.ID, c.ClientIP(), c.GetHeader("User-Agent"))
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: article})
 }
 

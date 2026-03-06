@@ -35,6 +35,7 @@ export interface ArticleCard {
     updatedAt: string
     categorySlug?: string
     tagSlugs?: string[]
+    viewCount: number
 }
 
 export interface ArticleDetail extends ArticleCard {

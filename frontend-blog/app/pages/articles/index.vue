@@ -103,10 +103,10 @@
                 </span>
               </template>
               
-              <!-- Views (Mock) -->
+              <!-- Views -->
               <span class="meta-item meta-views">
                 <UIcon name="i-heroicons-eye" class="meta-icon" />
-                <span>{{ Math.floor(Math.random() * 1000) + 120 }}</span>
+                <span>{{ article.viewCount }}</span>
               </span>
             </div>
           </div>

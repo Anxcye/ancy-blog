@@ -34,6 +34,7 @@ type Article struct {
 	CoverImage    string    `json:"coverImage,omitempty"`
 	CategorySlug  string    `json:"categorySlug,omitempty"`
 	TagSlugs      []string  `json:"tagSlugs,omitempty"`
+	ViewCount     int64     `json:"viewCount"`
 	PublishedAt   time.Time `json:"publishedAt"`
 	CreatedAt     time.Time `json:"createdAt"`
 	UpdatedAt     time.Time `json:"updatedAt"`

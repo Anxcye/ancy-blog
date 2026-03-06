@@ -233,7 +233,7 @@ func (r *Repository) ListPublishedArticles(page, pageSize int, category, tag, co
 SELECT a.id::text, a.title, a.slug, a.content_kind, COALESCE(a.summary,''), '' as content, a.status, a.visibility,
        a.allow_comment, a.origin_type, COALESCE(a.source_url,''), a.ai_assist_level, COALESCE(a.cover_image,''),
        COALESCE(a.published_at, a.created_at), a.created_at, a.updated_at,
-       COALESCE(c.slug, '')
+       COALESCE(c.slug, ''), a.view_count
 FROM articles a
 LEFT JOIN categories c ON c.id = a.category_id AND c.deleted_at IS NULL
 WHERE ` + whereClause + `
@@ -250,7 +250,7 @@ LIMIT $` + strconv.Itoa(len(listArgs)-1) + ` OFFSET $` + strconv.Itoa(len(listAr
 		var a domain.Article
 		if err := rows.Scan(&a.ID, &a.Title, &a.Slug, &a.ContentKind, &a.Summary, &a.Content, &a.Status, &a.Visibility,
 			&a.AllowComment, &a.OriginType, &a.SourceURL, &a.AIAssistLevel, &a.CoverImage, &a.PublishedAt, &a.CreatedAt, &a.UpdatedAt,
-			&a.CategorySlug); err == nil {
+			&a.CategorySlug, &a.ViewCount); err == nil {
 			a.TagSlugs = r.articleTagSlugs(a.ID)
 			items = append(items, a)
 		}
@@ -263,11 +263,11 @@ func (r *Repository) GetPublishedArticleBySlug(slug string) (domain.Article, boo
 	err := r.db.QueryRow(`
 SELECT id::text, title, slug, content_kind, COALESCE(summary,''), COALESCE(content,''), status, visibility,
        allow_comment, origin_type, COALESCE(source_url,''), ai_assist_level, COALESCE(cover_image,''),
-       COALESCE(published_at, created_at), created_at, updated_at
+       COALESCE(published_at, created_at), created_at, updated_at, view_count
 FROM articles
 WHERE slug=$1 AND status='published' AND deleted_at IS NULL
 `, slug).Scan(&a.ID, &a.Title, &a.Slug, &a.ContentKind, &a.Summary, &a.Content, &a.Status, &a.Visibility,
-		&a.AllowComment, &a.OriginType, &a.SourceURL, &a.AIAssistLevel, &a.CoverImage, &a.PublishedAt, &a.CreatedAt, &a.UpdatedAt)
+		&a.AllowComment, &a.OriginType, &a.SourceURL, &a.AIAssistLevel, &a.CoverImage, &a.PublishedAt, &a.CreatedAt, &a.UpdatedAt, &a.ViewCount)
 	if err != nil {
 		return domain.Article{}, false
 	}
@@ -279,7 +279,7 @@ func (r *Repository) GetPublishedArticleBySlugWithLocale(slug, locale string) (d
 	err := r.db.QueryRow(`
 SELECT a.id::text, COALESCE(at.title, a.title), a.slug, a.content_kind, COALESCE(at.summary, a.summary, ''), COALESCE(at.content, a.content), a.status, a.visibility,
        a.allow_comment, a.origin_type, COALESCE(a.source_url,''), a.ai_assist_level, COALESCE(a.cover_image,''),
-       COALESCE(a.published_at, a.created_at), a.created_at, a.updated_at
+       COALESCE(a.published_at, a.created_at), a.created_at, a.updated_at, a.view_count
 FROM articles a
 LEFT JOIN article_translations at
   ON at.article_id = a.id
@@ -288,7 +288,7 @@ LEFT JOIN article_translations at
  AND (at.published_at IS NULL OR at.published_at <= NOW())
 WHERE a.slug=$1 AND a.status='published' AND a.deleted_at IS NULL
 `, slug, locale).Scan(&a.ID, &a.Title, &a.Slug, &a.ContentKind, &a.Summary, &a.Content, &a.Status, &a.Visibility,
-		&a.AllowComment, &a.OriginType, &a.SourceURL, &a.AIAssistLevel, &a.CoverImage, &a.PublishedAt, &a.CreatedAt, &a.UpdatedAt)
+		&a.AllowComment, &a.OriginType, &a.SourceURL, &a.AIAssistLevel, &a.CoverImage, &a.PublishedAt, &a.CreatedAt, &a.UpdatedAt, &a.ViewCount)
 	if err != nil {
 		return domain.Article{}, false
 	}
@@ -626,4 +626,28 @@ ORDER BY t.name ASC`, articleID)
 		}
 	}
 	return slugs
+}
+
+// RecordView inserts a dedup row into article_views and bumps view_count on articles.
+// visitorKey should be SHA-256(ip + ua + date) to ensure daily deduplication.
+// If the visitor already viewed today, view_count is NOT incremented again.
+func (r *Repository) RecordView(articleID, visitorKey string) (int64, error) {
+	var newCount int64
+	err := r.db.QueryRow(`
+WITH ins AS (
+  INSERT INTO article_views (article_id, visitor_key)
+  VALUES ($1, $2)
+  ON CONFLICT (article_id, visitor_key) DO NOTHING
+  RETURNING 1
+)
+UPDATE articles
+SET view_count = view_count + (SELECT COUNT(*) FROM ins)
+WHERE id = $1
+RETURNING view_count
+`, articleID, visitorKey).Scan(&newCount)
+	if err != nil {
+		// Fallback: just read current count if update failed
+		_ = r.db.QueryRow(`SELECT view_count FROM articles WHERE id=$1`, articleID).Scan(&newCount)
+	}
+	return newCount, nil
 }

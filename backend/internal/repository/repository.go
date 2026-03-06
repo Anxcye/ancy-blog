@@ -21,6 +21,9 @@ type ContentRepository interface {
 	GetPublishedArticleBySlugWithLocale(slug, locale string) (domain.Article, bool)
 	SlugExists(slug string) bool
 	GetArticleByID(id string) (domain.Article, bool)
+	// RecordView inserts a deduplicated view row and bumps the denormalized counter.
+	// visitorKey = SHA-256(ip + user-agent + date); returns the new total.
+	RecordView(articleID, visitorKey string) (int64, error)
 
 	CreateMoment(moment domain.Moment) (domain.Moment, error)
 	UpdateMoment(id string, moment domain.Moment) (domain.Moment, error)

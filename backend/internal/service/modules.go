@@ -88,6 +88,9 @@ func (s *ArticleService) CreateTag(tag domain.Tag) (domain.Tag, error) {
 	return s.core.CreateTag(tag)
 }
 func (s *ArticleService) DeleteTag(id string) bool { return s.core.DeleteTag(id) }
+func (s *ArticleService) RecordView(articleID, visitorKey string) (int64, error) {
+	return s.core.RecordView(articleID, visitorKey)
+}
 
 func (s *CommentService) CreateComment(comment domain.Comment) (domain.Comment, error) {
 	return s.core.CreateComment(comment)
