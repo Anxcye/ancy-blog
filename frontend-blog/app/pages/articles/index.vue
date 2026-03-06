@@ -80,13 +80,13 @@
             <div class="article-meta">
               <!-- Date -->
               <span class="meta-item meta-date">
-                <UIcon name="i-heroicons-calendar" class="meta-icon" />
+                <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
                 <time>{{ formatDate(article.publishedAt || article.createdAt) }}</time>
               </span>
 
               <!-- Category -->
               <span v-if="article.categorySlug" class="meta-item meta-category" @click.prevent="setCategory(article.categorySlug)">
-                <UIcon name="i-heroicons-folder" class="meta-icon" />
+                <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
                 <span>{{ getCategoryName(article.categorySlug) }}</span>
               </span>
 
@@ -98,14 +98,14 @@
                   class="meta-item meta-tag"
                   @click.prevent="setTag(slug)"
                 >
-                  <UIcon name="i-heroicons-hashtag" class="meta-icon" />
+                  <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
                   <span>{{ getTagName(slug) }}</span>
                 </span>
               </template>
               
               <!-- Views -->
               <span class="meta-item meta-views">
-                <UIcon name="i-heroicons-eye" class="meta-icon" />
+                <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
                 <span>{{ article.viewCount }}</span>
               </span>
             </div>
@@ -389,13 +389,14 @@ useSeoMeta({ title: t('nav.articles') })
 .meta-item {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
   transition: color 0.2s;
 }
 
 .meta-icon {
-  font-size: 14px;
-  opacity: 0.7;
+  width: 13.5px;
+  height: 13.5px;
+  opacity: 0.65;
 }
 
 /* Clear capsule styling, just interactive text */
