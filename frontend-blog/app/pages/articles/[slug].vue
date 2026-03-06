@@ -50,77 +50,7 @@
 
       <!-- ── Comments ── -->
       <section v-if="article?.allowComment && siteSettings?.commentEnabled" class="comments-section">
-        <h2 class="comments-title">
-          {{ t('article.comments') }}
-          <span v-if="commentTotal" class="comments-count">{{ commentTotal.total }}</span>
-        </h2>
-
-        <!-- Comment list -->
-        <div v-if="comments?.rows?.length" class="comment-list">
-          <div
-            v-for="comment in comments.rows"
-            :key="comment.id"
-            class="comment-item"
-          >
-            <div class="comment-avatar">
-              <img v-if="comment.avatarUrl" :src="comment.avatarUrl" :alt="comment.nickname" />
-              <span v-else>{{ comment.nickname.charAt(0).toUpperCase() }}</span>
-            </div>
-            <div class="comment-content">
-              <div class="comment-header">
-                <a
-                  v-if="comment.website"
-                  :href="comment.website"
-                  target="_blank"
-                  rel="noopener noreferrer nofollow"
-                  class="comment-name"
-                >{{ comment.nickname }}</a>
-                <span v-else class="comment-name">{{ comment.nickname }}</span>
-                <time class="comment-date">{{ formatDateShort(comment.createdAt) }}</time>
-              </div>
-              <p class="comment-text">{{ comment.content }}</p>
-            </div>
-          </div>
-        </div>
-
-        <p v-else class="comments-empty">{{ t('article.noComments') }}</p>
-
-        <!-- Comment form -->
-        <form class="comment-form" @submit.prevent="submitComment">
-          <h3 class="form-title">{{ t('article.leaveComment') }}</h3>
-
-          <div class="form-row">
-            <div class="form-field">
-              <label>{{ t('comment.nickname') }} *</label>
-              <input v-model="commentForm.nickname" type="text" required :placeholder="t('comment.nickname')" />
-            </div>
-            <div class="form-field">
-              <label>{{ t('comment.email') }}</label>
-              <input v-model="commentForm.email" type="email" :placeholder="t('comment.email')" />
-            </div>
-          </div>
-
-          <div class="form-field">
-            <label>{{ t('comment.website') }}</label>
-            <input v-model="commentForm.website" type="url" :placeholder="t('comment.website')" />
-          </div>
-
-          <div class="form-field">
-            <label>{{ t('article.comments') }} *</label>
-            <textarea
-              v-model="commentForm.content"
-              required
-              rows="4"
-              :placeholder="t('comment.content')"
-            />
-          </div>
-
-          <div class="form-actions">
-            <button type="submit" class="submit-btn" :disabled="submitting">
-              {{ submitting ? t('comment.submitting') : t('comment.submit') }}
-            </button>
-          </div>
-        </form>
+        <CommentList :article-id="article.id" />
       </section>
 
     </div>
@@ -131,7 +61,7 @@
 const { t } = useI18n()
 const localePath = useLocalePath()
 const route = useRoute()
-const { getArticle, listComments, getCommentTotal, createComment, getSiteSettings } = useApi()
+const { getArticle, getSiteSettings } = useApi()
 
 const slug = computed(() => route.params.slug as string)
 
@@ -145,12 +75,8 @@ if (error.value || !article.value) {
   throw createError({ statusCode: 404, message: 'Article not found' })
 }
 
-// ── Fetch site settings, comments, total ────────────────────────
-const [{ data: siteSettings }, { data: comments }, { data: commentTotal }] = await Promise.all([
-  useAsyncData('article-site-settings', getSiteSettings),
-  useAsyncData(`comments-${article.value.id}`, () => listComments(article.value!.id, { pageSize: 50 })),
-  useAsyncData(`comment-total-${article.value.id}`, () => getCommentTotal(article.value!.id)),
-])
+// ── Fetch site settings ────────────────────────
+const { data: siteSettings } = await useAsyncData('article-site-settings', getSiteSettings)
 
 // ── Helpers ─────────────────────────────────────────────────────
 function formatDate(iso?: string): string {
@@ -158,43 +84,10 @@ function formatDate(iso?: string): string {
   return new Date(iso).toLocaleDateString('zh-CN', { year: 'numeric', month: 'long', day: 'numeric' })
 }
 
-function formatDateShort(iso: string): string {
-  return new Date(iso).toLocaleDateString('zh-CN', { month: 'numeric', day: 'numeric' })
-}
-
 const AI_LEVEL_LABEL: Record<string, string> = {
   polish: '文字润色', dictation: '语音速记', assisted: 'AI 辅助', generated: 'AI 生成', translated: 'AI 翻译'
 }
 function aiAssistLabel(level: string): string { return AI_LEVEL_LABEL[level] || level }
-
-// ── Comment form ─────────────────────────────────────────────────
-const toast = useToast()
-const commentForm = reactive({ nickname: '', email: '', website: '', content: '' })
-const submitting = ref(false)
-
-const doSubmitComment = async () => {
-  if (!article.value || !commentForm.content.trim()) return
-  submitting.value = true
-  
-  try {
-    await createComment({
-      articleId: article.value.id,
-      content: commentForm.content,
-      nickname: commentForm.nickname,
-      email: commentForm.email || undefined,
-      website: commentForm.website || undefined,
-    })
-    toast.add({ title: t('comment.success'), color: 'green', icon: 'i-heroicons-check-circle' })
-    commentForm.content = ''
-  } catch {
-    toast.add({ title: '提交失败，请稍后重试', color: 'red', icon: 'i-heroicons-x-circle' })
-  } finally {
-    submitting.value = false
-  }
-}
-
-// Enterprise Debounce: prevents spamming the submit button
-const submitComment = useDebounceFn(doSubmitComment, 500)
 
 // ── SEO & JSON-LD ───────────────────────────────────────────────
 useArticleSeo(article.value, siteSettings.value || null)
@@ -286,155 +179,5 @@ useArticleSeo(article.value, siteSettings.value || null)
 .comments-section {
   border-top: 1px solid var(--border);
   padding-top: 48px;
-}
-
-.comments-title {
-  font-size: 1.2rem;
-  font-weight: 700;
-  margin-bottom: 28px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.comments-count {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-subtle);
-  background: var(--bg-secondary);
-  padding: 2px 10px;
-  border-radius: 99px;
-}
-
-.comment-list { display: flex; flex-direction: column; gap: 20px; margin-bottom: 40px; }
-
-.comment-item {
-  display: flex;
-  gap: 14px;
-}
-
-.comment-avatar {
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--accent-soft);
-  flex-shrink: 0;
-  overflow: hidden;
-  display: grid;
-  place-items: center;
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--accent-text);
-  border: 1.5px solid var(--border);
-}
-
-.comment-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
-.comment-content { flex: 1; min-width: 0; }
-
-.comment-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 6px;
-}
-
-.comment-name {
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text);
-}
-
-a.comment-name { color: var(--accent-text); }
-a.comment-name:hover { text-decoration: underline; }
-
-.comment-date { font-size: 12px; color: var(--text-subtle); }
-
-.comment-text {
-  font-size: 14px;
-  line-height: 1.65;
-  color: var(--text-muted);
-  white-space: pre-wrap;
-  word-break: break-word;
-}
-
-.comments-empty { color: var(--text-subtle); font-size: 14px; margin-bottom: 40px; }
-
-/* ── Comment form ── */
-.comment-form {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 28px;
-}
-
-.form-title {
-  font-size: 1rem;
-  font-weight: 700;
-  margin-bottom: 20px;
-}
-
-.form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 16px;
-}
-
-.form-field {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-  margin-bottom: 16px;
-}
-
-.form-field label {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-}
-
-.form-field input,
-.form-field textarea {
-  border: 1px solid var(--border);
-  border-radius: var(--radius-md);
-  padding: 10px 14px;
-  font-size: 14px;
-  font-family: inherit;
-  color: var(--text);
-  background: var(--bg);
-  transition: border-color var(--dur-fast), box-shadow var(--dur-fast);
-  resize: vertical;
-}
-
-.form-field input:focus,
-.form-field textarea:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
-}
-
-.form-actions { display: flex; align-items: center; gap: 16px; margin-top: 4px; }
-
-.submit-btn {
-  padding: 10px 24px;
-  background: var(--accent);
-  color: white;
-  border-radius: var(--radius-md);
-  font-size: 14px;
-  font-weight: 600;
-  transition: opacity var(--dur-fast), transform var(--dur-fast) var(--ease-spring);
-}
-
-.submit-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
-.submit-btn:disabled { opacity: 0.55; cursor: not-allowed; }
-
-.submit-result { font-size: 13px; }
-.submit-result.success { color: #16a34a; }
-.submit-result.error { color: #dc2626; }
-
-@media (max-width: 640px) {
-  .form-row { grid-template-columns: 1fr; }
 }
 </style>
