@@ -49,22 +49,26 @@
       </div>
 
       <!-- Articles -->
-      <div v-if="pending" class="article-grid">
-        <div v-for="n in 6" :key="n" class="skeleton-card">
-          <div class="skeleton-line" style="height: 14px; width: 40%;" />
-          <div class="skeleton-line" style="height: 22px; width: 85%; margin-top: 8px;" />
-          <div class="skeleton-line" style="height: 14px; width: 65%; margin-top: 6px;" />
+      <div v-if="pending" class="article-list">
+        <div v-for="n in 6" :key="n" class="skeleton-article-item">
+          <div class="skeleton-line" style="height: 28px; width: 60%; margin-bottom: 12px;" />
+          <div class="skeleton-line" style="height: 16px; width: 30%;" />
         </div>
       </div>
 
-      <div v-else-if="articles?.rows?.length" class="article-grid">
-        <ArticleCard
+      <div v-else-if="articles?.rows?.length" class="article-list">
+        <NuxtLink
           v-for="(article, i) in articles.rows"
           :key="article.id"
-          :article="article"
-          class="grid-item"
-          :style="{ animationDelay: `${i * 50}ms` }"
-        />
+          :to="localePath(`/articles/${article.slug}`)"
+          class="horizontal-article-item"
+          :style="{ animationDelay: `${i * 80}ms` }"
+        >
+          <h2 class="article-item-title">{{ article.title }}</h2>
+          <div class="article-item-meta">
+            <time class="meta-date">{{ new Date(article.publishedAt || article.createdAt).toLocaleDateString() }}</time>
+          </div>
+        </NuxtLink>
       </div>
 
       <div v-else class="empty-state">
@@ -94,6 +98,7 @@
 
 <script setup lang="ts">
 const { t } = useI18n()
+const localePath = useLocalePath()
 const { listArticles, getCategories, getTags } = useApi()
 const route = useRoute()
 const router = useRouter()
@@ -237,26 +242,83 @@ useSeoMeta({ title: t('nav.articles') })
 .tag-pill:hover { color: var(--text-muted); border-color: var(--border); }
 .tag-pill.active { color: var(--accent-text); background: var(--accent-soft); border-color: var(--accent); }
 
-/* Article grid — same as homepage */
-.article-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+/* Article List */
+.article-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
   margin-bottom: 40px;
 }
 
-.grid-item { animation: card-in 0.45s var(--ease-spring) both; }
-@keyframes card-in {
-  from { opacity: 0; transform: translateY(18px); }
-  to   { opacity: 1; transform: none; }
+.horizontal-article-item {
+  display: block;
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  background: transparent;
+  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: slide-up-spring 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  cursor: pointer;
+  position: relative;
+}
+
+.horizontal-article-item:last-child {
+  border-bottom: none;
+}
+
+.horizontal-article-item:hover {
+  transform: translateX(12px);
+}
+
+.horizontal-article-item::before {
+  content: '';
+  position: absolute;
+  left: -16px;
+  top: 50%;
+  transform: translateY(-50%) scale(0);
+  width: 4px;
+  height: 0;
+  background: var(--accent);
+  border-radius: 4px;
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  opacity: 0;
+}
+
+.horizontal-article-item:hover::before {
+  transform: translateY(-50%) scale(1);
+  height: 40%;
+  opacity: 1;
+}
+
+.article-item-title {
+  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+  line-height: 1.3;
+  transition: color var(--dur-fast);
+}
+
+.horizontal-article-item:hover .article-item-title {
+  color: var(--accent);
+}
+
+.article-item-meta {
+  display: flex;
+  gap: 16px;
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+@keyframes slide-up-spring {
+  0% { opacity: 0; transform: translateY(30px) scale(0.98); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 /* Skeleton */
-.skeleton-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 20px 24px;
+.skeleton-article-item {
+  padding: 24px 0;
+  border-bottom: 1px solid var(--border);
 }
 
 .skeleton-line {
@@ -308,6 +370,8 @@ useSeoMeta({ title: t('nav.articles') })
 .empty-state { text-align: center; padding: 64px 0; color: var(--text-subtle); }
 
 @media (max-width: 640px) {
-  .article-grid { grid-template-columns: 1fr; }
+  .horizontal-article-item:hover {
+    transform: translateX(4px);
+  }
 }
 </style>
