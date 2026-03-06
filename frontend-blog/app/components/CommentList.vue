@@ -78,7 +78,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { useApi, type CommentContentType, type CommentThread } from '~/composables/useApi'
 import CommentItem from './CommentItem.vue'
@@ -144,6 +144,20 @@ async function fetchComments(nextPage: number, append = false) {
 }
 
 onMounted(async () => {
+  pending.value = true
+  await Promise.all([
+    fetchTotal(),
+    fetchComments(1),
+  ])
+})
+
+watch(() => [props.contentType, props.contentId] as const, async ([nextType, nextId], [prevType, prevId]) => {
+  if (nextType === prevType && nextId === prevId) return
+  page.value = 1
+  commentThreads.value = []
+  totalComments.value = 0
+  threadTotal.value = 0
+  replyingToId.value = null
   pending.value = true
   await Promise.all([
     fetchTotal(),

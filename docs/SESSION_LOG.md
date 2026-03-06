@@ -679,6 +679,11 @@
 - Validation:
   - `go test ./...` passed in `backend/`.
   - `pnpm --dir frontend-blog build` passed.
+- Follow-up fixes for the moments detail modal:
+  - forced the moments page to use a stable page key with `scrollToTop: false` so `/moments` and `/moments/:id` no longer remount the feed on close.
+  - made the modal surface fully opaque to improve readability over the blurred backdrop.
+  - passed site-level comment availability into the modal and keyed the embedded `CommentList` by moment id.
+  - updated `CommentList` to refetch whenever `contentType` or `contentId` changes, which fixes comment thread switching inside the moment modal.
 - Refined the public moments detail experience:
   - preserved the moments feed list state across `/moments` <-> `/moments/:id` route changes so closing the modal does not trigger a visible reload.
   - moved the detail modal to top-aligned presentation, locked background scroll, and kept wheel focus inside the dialog.

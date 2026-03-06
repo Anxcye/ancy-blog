@@ -77,6 +77,7 @@
       :open="!!selectedMomentId"
       :moment="selectedMoment"
       :loading="detailPending"
+      :comment-enabled="siteSettings?.commentEnabled !== false"
       :require-approval="siteSettings?.commentRequireApproval"
       :previous-moment="previousMoment"
       :next-moment="nextMoment"
@@ -94,6 +95,11 @@ import { useI18n } from 'vue-i18n'
 import InfiniteScrollTrigger from '~/components/InfiniteScrollTrigger.vue'
 import MomentDetailModal from '~/components/MomentDetailModal.vue'
 import type { Moment } from '~/composables/useApi'
+
+definePageMeta({
+  key: 'moments-feed',
+  scrollToTop: false,
+})
 
 const { t, locale } = useI18n()
 const localePath = useLocalePath()

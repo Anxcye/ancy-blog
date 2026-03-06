@@ -42,8 +42,9 @@
               </button>
             </div>
 
-            <div v-if="moment.allowComment" class="dialog-comments">
+            <div v-if="commentEnabled" class="dialog-comments">
               <CommentList
+                :key="moment.id"
                 content-type="moment"
                 :content-id="moment.id"
                 :require-approval="requireApproval"
@@ -76,6 +77,7 @@ const props = defineProps<{
   open: boolean
   moment?: Moment | null
   loading?: boolean
+  commentEnabled?: boolean
   requireApproval?: boolean
   previousMoment?: Moment | null
   nextMoment?: Moment | null
@@ -146,7 +148,8 @@ function formatDate(iso: string): string {
   overscroll-behavior: contain;
   padding: 28px;
   border-radius: 28px;
-  background: color-mix(in srgb, var(--bg-primary) 94%, white);
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  background: var(--bg-primary);
   box-shadow: 0 24px 80px color-mix(in srgb, #081018 18%, transparent);
   outline: none;
 }
