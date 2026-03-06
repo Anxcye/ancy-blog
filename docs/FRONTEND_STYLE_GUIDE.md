@@ -56,6 +56,10 @@ This guide governs both frontend apps:
   - large editorial title;
   - restrained explanatory subtitle;
   - optional compact stat pills aligned to the right on wide screens and stacked on mobile.
+- Friends page should read as a neighbor directory, not as a form-first utility page:
+  - place any editorial intro ahead of the directory list;
+  - prefer light roster rows over heavy grid cards;
+  - keep the submission form collapsed behind a clear CTA by default.
 
 ## Responsive & SEO Constraints
 - Mobile-first layout and touch targets >= `40px`.

@@ -714,6 +714,11 @@
 - Updated header labels to `归处 / 篇章 / 片刻 / 履迹 / 友邻` and `Harbor / Chapters / Fragments / Footsteps / Neighbors`.
 - Refined hero copy again so the page titles themselves now match the editorial navigation tone instead of only reusing functional route labels.
 - Updated hero subtitles for `articles`, `moments`, `timeline`, and `friends` to read more intentionally and consistently in both Chinese and English.
+- Restructured the public `friends` page into an editorial neighbor directory:
+  - moved the intro content ahead of the approved links list;
+  - replaced generic grid cards with lighter roster-style rows and subtle pointer-follow hover motion;
+  - collapsed the friend-link application form behind an explicit CTA with submission rules and a live preview.
+- Wired the public `friends` page to reuse the shared article comment thread when the backing `friends` page article allows comments, and removed the hero divider line on that page.
 - Reworked the public timeline page into grouped chronological sections with infinite scroll instead of pager buttons.
 - Timeline moments now open the shared moment detail modal locally, while articles continue to link out as full pages.
 - Strengthened the timeline’s month anchors and widened the visual contrast between chapter rows and fragment rows so the chronology reads as content, not as a generic event list.

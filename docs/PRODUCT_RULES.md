@@ -56,6 +56,8 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 - Visitors can submit link applications.
 - Admin reviews each submission (`pending/approved/rejected`).
 - Approved links can optionally associate one article (`related_article_id`).
+- Public friends page should prioritize editorial context and the approved directory before the submission form.
+- Public friend-link submission form should default to collapsed and expand on explicit user intent.
 - Suggested submission fields:
   - site name
   - site URL
@@ -136,6 +138,7 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 ## Internal Pages Rules
 - Internal static-like pages (e.g. "About Me", "About This Site") are stored in `articles` with `content_kind=page`.
 - Internal link items should reference article slug, not hardcoded URL.
+- When an internal page is backed by an article record that allows comments, the public page may reuse the shared article comment system.
 
 ## Moments Interaction Rules
 - Timeline should behave as a month-grouped archive index:
