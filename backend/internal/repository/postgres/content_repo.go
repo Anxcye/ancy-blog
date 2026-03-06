@@ -201,41 +201,44 @@ WHERE id IN (` + strings.Join(placeholders, ",") + `) AND deleted_at IS NULL`
 }
 
 func (r *Repository) ListPublishedArticles(page, pageSize int, category, tag, contentKind string) ([]domain.Article, int) {
-	_ = category
-	_ = tag
 	page, pageSize = normalizePagination(page, pageSize)
 	offset := (page - 1) * pageSize
 
-	countQuery := `SELECT COUNT(*) FROM articles WHERE status='published' AND deleted_at IS NULL`
+	conditions := []string{"status='published'", "deleted_at IS NULL"}
 	args := []any{}
+
 	if contentKind != "" {
-		countQuery += ` AND content_kind=$1`
 		args = append(args, contentKind)
+		conditions = append(conditions, "content_kind=$"+strconv.Itoa(len(args)))
 	}
+	if category != "" {
+		args = append(args, category)
+		conditions = append(conditions, "category_id IN (SELECT id FROM categories WHERE slug=$"+strconv.Itoa(len(args))+" AND deleted_at IS NULL)")
+	}
+	if tag != "" {
+		args = append(args, tag)
+		conditions = append(conditions, "id IN (SELECT article_id FROM article_tags at JOIN tags t ON at.tag_id=t.id WHERE t.slug=$"+strconv.Itoa(len(args))+" AND t.deleted_at IS NULL)")
+	}
+
+	whereClause := strings.Join(conditions, " AND ")
+
+	countQuery := "SELECT COUNT(*) FROM articles WHERE " + whereClause
 	var total int
 	if err := r.db.QueryRow(countQuery, args...).Scan(&total); err != nil {
 		return []domain.Article{}, 0
 	}
 
+	listArgs := append(args, pageSize, offset)
 	query := `
-SELECT id::text, title, slug, content_kind, COALESCE(summary,''), COALESCE(content,''), status, visibility,
+SELECT id::text, title, slug, content_kind, COALESCE(summary,''), '' as content, status, visibility,
        allow_comment, origin_type, COALESCE(source_url,''), ai_assist_level, COALESCE(cover_image,''),
        COALESCE(published_at, created_at), created_at, updated_at
 FROM articles
-WHERE status='published' AND deleted_at IS NULL`
-	if contentKind != "" {
-		query += ` AND content_kind=$1`
-	}
-	query += ` ORDER BY published_at DESC NULLS LAST, created_at DESC LIMIT $2 OFFSET $3`
-	if contentKind == "" {
-		query = strings.Replace(query, "$2", "$1", 1)
-		query = strings.Replace(query, "$3", "$2", 1)
-		args = []any{pageSize, offset}
-	} else {
-		args = append(args, pageSize, offset)
-	}
+WHERE ` + whereClause + `
+ORDER BY published_at DESC NULLS LAST, created_at DESC
+LIMIT $` + strconv.Itoa(len(listArgs)-1) + ` OFFSET $` + strconv.Itoa(len(listArgs))
 
-	rows, err := r.db.Query(query, args...)
+	rows, err := r.db.Query(query, listArgs...)
 	if err != nil {
 		return []domain.Article{}, total
 	}
