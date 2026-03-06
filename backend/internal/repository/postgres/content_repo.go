@@ -204,25 +204,25 @@ func (r *Repository) ListPublishedArticles(page, pageSize int, category, tag, co
 	page, pageSize = normalizePagination(page, pageSize)
 	offset := (page - 1) * pageSize
 
-	conditions := []string{"status='published'", "deleted_at IS NULL"}
+	conditions := []string{"a.status='published'", "a.deleted_at IS NULL"}
 	args := []any{}
 
 	if contentKind != "" {
 		args = append(args, contentKind)
-		conditions = append(conditions, "content_kind=$"+strconv.Itoa(len(args)))
+		conditions = append(conditions, "a.content_kind=$"+strconv.Itoa(len(args)))
 	}
 	if category != "" {
 		args = append(args, category)
-		conditions = append(conditions, "category_id IN (SELECT id FROM categories WHERE slug=$"+strconv.Itoa(len(args))+" AND deleted_at IS NULL)")
+		conditions = append(conditions, "a.category_id IN (SELECT id FROM categories WHERE slug=$"+strconv.Itoa(len(args))+" AND deleted_at IS NULL)")
 	}
 	if tag != "" {
 		args = append(args, tag)
-		conditions = append(conditions, "id IN (SELECT article_id FROM article_tags at JOIN tags t ON at.tag_id=t.id WHERE t.slug=$"+strconv.Itoa(len(args))+" AND t.deleted_at IS NULL)")
+		conditions = append(conditions, "a.id IN (SELECT article_id FROM article_tags at2 JOIN tags t ON at2.tag_id=t.id WHERE t.slug=$"+strconv.Itoa(len(args))+" AND t.deleted_at IS NULL)")
 	}
 
 	whereClause := strings.Join(conditions, " AND ")
 
-	countQuery := "SELECT COUNT(*) FROM articles WHERE " + whereClause
+	countQuery := "SELECT COUNT(*) FROM articles a LEFT JOIN categories c ON c.id = a.category_id AND c.deleted_at IS NULL WHERE " + whereClause
 	var total int
 	if err := r.db.QueryRow(countQuery, args...).Scan(&total); err != nil {
 		return []domain.Article{}, 0

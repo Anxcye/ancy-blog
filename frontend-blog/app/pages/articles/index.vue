@@ -131,7 +131,7 @@
 </template>
 
 <script setup lang="ts">
-const { t } = useI18n()
+const { t, locale } = useI18n()
 const localePath = useLocalePath()
 const { listArticles, getCategories, getTags } = useApi()
 const route = useRoute()
@@ -216,15 +216,17 @@ function getTagName(slug: string) {
   return tags.value?.find(t => t.slug === slug)?.name ?? slug
 }
 
-// ── Date formatter ───────────────────────────────────────────────
+// ── Date formatter (i18n-aware) ────────────────────────────────
 function formatDate(dateStr: string) {
   const d = new Date(dateStr)
-  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
-  const weekday = days[d.getDay()]
-  return `${year}.${month}.${day} ${weekday}`
+  // Map nuxt/i18n locale codes to BCP 47 locale tags
+  const bcp47 = locale.value === 'zh' ? 'zh-CN' : 'en-US'
+  return new Intl.DateTimeFormat(bcp47, {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    weekday: 'short',
+  }).format(d)
 }
 
 // ── SEO ──────────────────────────────────────────────────────────
