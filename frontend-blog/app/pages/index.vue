@@ -9,24 +9,25 @@
     <section class="hero">
       <div class="hero-inner container">
         <!-- Main title with embedded avatar -->
-        <h1 class="hero-title" :class="{ visible: heroVisible }">
+        <h1 class="hero-title">
           <span class="title-line">
-            <span class="title-text">Hi, I'm</span>
+            <span v-for="(char, i) in 'Hi, I\'m'.split('')" :key="`hi-${i}`" class="char char-muted" :style="{ animationDelay: `${i * 50}ms` }">{{ char === ' ' ? '\u00A0' : char }}</span>
             <img
               v-if="siteSettings?.avatarUrl"
               :src="siteSettings.avatarUrl"
               :alt="siteSettings?.siteName"
               class="title-avatar"
+              :style="{ animationDelay: '400ms' }"
             />
-            <span class="title-name">{{ siteSettings?.siteName || 'Ancy' }}</span>
+            <span v-for="(char, i) in (siteSettings?.siteName || 'Ancy').split('')" :key="`name-${i}`" class="char char-name" :style="{ animationDelay: `${(i + 9) * 50}ms` }">{{ char }}</span>
           </span>
-          <span class="title-line title-gradient">
-            {{ siteSettings?.heroIntroMd || t('home.heroSubtitle') }}
+          <span class="title-line">
+            <span v-for="(char, i) in (siteSettings?.heroIntroMd || t('home.heroSubtitle')).split('')" :key="`intro-${i}`" class="char char-gradient" :style="{ animationDelay: `${i * 50}ms` }">{{ char === ' ' ? '\u00A0' : char }}</span>
           </span>
         </h1>
 
         <!-- Floating social links -->
-        <div v-if="socialLinks.length" class="hero-socials" :class="{ visible: heroVisible }">
+        <div v-if="socialLinks.length" class="hero-socials">
           <a
             v-for="link in socialLinks"
             :key="link.id"
@@ -49,7 +50,7 @@
       </div>
 
       <!-- Down arrow -->
-      <div class="hero-arrow" :class="{ visible: heroVisible }">
+      <div class="hero-arrow">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
           <path d="M12 5v14M5 12l7 7 7-7"/>
         </svg>
@@ -111,13 +112,6 @@ const [{ data: siteSettings }, { data: socialLinks }, { data: articles, pending 
   useAsyncData('home-articles', () => listArticles({ pageSize: 6 })),
 ])
 
-// ── Hero entrance ──────────────────────────────────────────────────────
-const heroVisible = ref(false)
-onMounted(() => {
-  const id = requestAnimationFrame(() => { heroVisible.value = true })
-  onUnmounted(() => cancelAnimationFrame(id))
-})
-
 // ── SEO ────────────────────────────────────────────────────────────
 useSeoMeta({
   title: siteSettings.value?.siteName || 'Ancy Blog',
@@ -149,24 +143,33 @@ useSeoMeta({
   font-weight: 800;
   line-height: 1.1;
   margin: 0;
-  opacity: 0;
-  transform: translateY(40px);
-  transition: opacity 0.8s var(--ease-out), transform 0.8s var(--ease-out);
 }
 
-.hero-title.visible {
-  opacity: 1;
-  transform: translateY(0);
+.char {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(20px) scale(0.8);
+  animation: char-spring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.char-muted { color: var(--text-muted); font-weight: 600; }
+.char-name  { color: var(--text); }
+.char-gradient {
+  background: linear-gradient(135deg, var(--accent), var(--accent-text));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+@keyframes char-spring {
+  0% { opacity: 0; transform: translateY(20px) scale(0.8); }
+  60% { opacity: 1; transform: translateY(-4px) scale(1.05); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .title-line {
   display: block;
   margin-bottom: 1em;
-}
-
-.title-text {
-  color: var(--text-muted);
-  font-weight: 600;
 }
 
 .title-avatar {
@@ -179,10 +182,8 @@ useSeoMeta({
   margin: 0 0.15em;
   border: 3px solid var(--accent);
   box-shadow: 0 4px 20px rgba(var(--accent-rgb, 31,143,138), 0.3);
-}
-
-.title-name {
-  color: var(--text);
+  opacity: 0;
+  animation: char-spring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
 .title-gradient {
@@ -198,14 +199,6 @@ useSeoMeta({
   gap: 16px;
   justify-content: center;
   margin-top: 120px;
-  opacity: 0;
-  transform: translateY(20px);
-  transition: opacity 0.6s var(--ease-out) 0.3s, transform 0.6s var(--ease-out) 0.3s;
-}
-
-.hero-socials.visible {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 .social-icon {
@@ -218,6 +211,9 @@ useSeoMeta({
   border: 1px solid var(--border);
   border-radius: 50%;
   transition: all 0.3s var(--ease-out);
+  opacity: 0;
+  animation: char-spring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  animation-delay: 1s;
 }
 
 .social-icon:hover {
@@ -251,11 +247,12 @@ useSeoMeta({
   left: 50%;
   transform: translateX(-50%);
   opacity: 0;
-  transition: opacity 1s 0.8s;
-  animation: float 2.5s ease-in-out infinite;
+  animation: arrow-fade 1s 1.2s forwards, float 2.5s 1.2s ease-in-out infinite;
 }
 
-.hero-arrow.visible { opacity: 0.4; }
+@keyframes arrow-fade {
+  to { opacity: 0.4; }
+}
 
 .hero-arrow svg { width: 24px; height: 24px; color: var(--text-muted); }
 

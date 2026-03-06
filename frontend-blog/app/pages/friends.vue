@@ -10,9 +10,6 @@
         <p class="page-subtitle word-bounce" style="animation-delay: 100ms">散落平行时空的节点，都在这里建立连接。</p>
       </div>
 
-      <!-- Optional Article Intro -->
-      <TiptapRenderer v-if="article?.content" :content="article.content" class="friends-intro" />
-
       <!-- Skeleton Loading -->
       <div v-if="pending" class="links-grid">
         <div v-for="n in 6" :key="n" class="link-card skeleton-card">
@@ -50,22 +47,41 @@
         目前还没有记录任何宇宙信号...
       </div>
 
+      <!-- Optional Article Intro -->
+      <TiptapRenderer v-if="article?.content" :content="article.content" class="friends-intro" />
+
       <!-- Submission Form -->
       <div class="submit-section">
         <h2 class="submit-title">申请友链</h2>
-        <form @submit.prevent="handleSubmit" class="submit-form">
-          <div class="form-row">
+        <div class="submit-container">
+          <!-- Preview -->
+          <div class="preview-area">
+            <p class="preview-label">预览效果</p>
+            <div class="link-card preview-card">
+              <div class="link-avatar">
+                <img v-if="form.avatarUrl" :src="form.avatarUrl" :alt="form.name" />
+                <span v-else class="link-fallback">{{ form.name ? form.name.charAt(0).toUpperCase() : '?' }}</span>
+              </div>
+              <div class="link-info">
+                <h3 class="link-name">{{ form.name || '站点名称' }}</h3>
+                <p class="link-desc">{{ form.description || '站点简介' }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Form -->
+          <form @submit.prevent="handleSubmit" class="submit-form">
             <input v-model="form.name" type="text" placeholder="站点名称 *" required class="form-input" />
             <input v-model="form.url" type="url" placeholder="站点链接 *" required class="form-input" />
-          </div>
-          <input v-model="form.avatarUrl" type="url" placeholder="头像链接" class="form-input" />
-          <textarea v-model="form.description" placeholder="站点简介" rows="3" class="form-textarea"></textarea>
-          <input v-model="form.contactEmail" type="email" placeholder="联系邮箱" class="form-input" />
-          <button type="submit" :disabled="submitting" class="submit-btn">
-            {{ submitting ? '提交中...' : '提交申请' }}
-          </button>
-          <p v-if="submitMessage" class="submit-message" :class="{ success: submitSuccess }">{{ submitMessage }}</p>
-        </form>
+            <input v-model="form.avatarUrl" type="url" placeholder="头像链接" class="form-input" />
+            <textarea v-model="form.description" placeholder="站点简介" rows="2" class="form-textarea"></textarea>
+            <input v-model="form.contactEmail" type="email" placeholder="联系邮箱" class="form-input" />
+            <button type="submit" :disabled="submitting" class="submit-btn">
+              {{ submitting ? '提交中...' : '提交申请' }}
+            </button>
+            <p v-if="submitMessage" class="submit-message" :class="{ success: submitSuccess }">{{ submitMessage }}</p>
+          </form>
+        </div>
       </div>
     </div>
   </div>
@@ -156,40 +172,38 @@ useSeoMeta({ title: '友人帐 - 友情链接' })
 
 .link-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 12px;
   padding: 20px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
   text-decoration: none;
   color: var(--text);
   transition: all var(--dur-base) var(--ease-out);
   opacity: 0;
   animation: fade-up 0.5s var(--ease-spring) forwards;
+  text-align: center;
 }
 
 .link-card:hover {
   transform: translateY(-4px);
-  border-color: var(--accent);
-  box-shadow: var(--shadow-md), 0 0 0 1px var(--accent-soft);
 }
 
 .link-avatar {
-  width: 56px;
-  height: 56px;
+  width: 64px;
+  height: 64px;
   flex-shrink: 0;
   border-radius: 50%;
   overflow: hidden;
   background: var(--bg-secondary);
-  border: 1.5px solid var(--border);
+  border: 2px solid var(--border);
   display: grid;
   place-items: center;
   transition: transform var(--dur-base);
 }
 
 .link-card:hover .link-avatar {
-  transform: scale(1.05) rotate(5deg);
+  transform: scale(1.1);
+  border-color: var(--accent);
 }
 
 .link-avatar img {
@@ -210,12 +224,9 @@ useSeoMeta({ title: '友人帐 - 友情链接' })
 }
 
 .link-name {
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 600;
-  margin: 0 0 4px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  margin: 0 0 6px;
   color: var(--text);
   transition: color var(--dur-fast);
 }
@@ -273,10 +284,7 @@ useSeoMeta({ title: '友人帐 - 友情链接' })
 .submit-section {
   margin-top: 80px;
   padding: 40px;
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
+  border-top: 1px solid var(--border);
 }
 
 .submit-title {
@@ -286,23 +294,41 @@ useSeoMeta({ title: '友人帐 - 友情链接' })
   text-align: center;
 }
 
-.submit-form {
-  max-width: 600px;
-  margin: 0 auto;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.form-row {
+.submit-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 16px;
+  gap: 32px;
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.preview-area {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.preview-label {
+  font-size: 13px;
+  color: var(--text-muted);
+  font-weight: 500;
+}
+
+.preview-card {
+  pointer-events: none;
+  opacity: 1;
+  animation: none;
+}
+
+.submit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
 .form-input, .form-textarea {
   width: 100%;
-  padding: 12px 16px;
+  padding: 10px 14px;
   background: var(--bg);
   border: 1px solid var(--border);
   border-radius: var(--radius-md);
@@ -322,12 +348,12 @@ useSeoMeta({ title: '友人帐 - 友情链接' })
 }
 
 .submit-btn {
-  padding: 12px 24px;
+  padding: 10px 20px;
   background: var(--accent);
   color: white;
   border: none;
   border-radius: var(--radius-md);
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   cursor: pointer;
   transition: all var(--dur-fast);
@@ -335,7 +361,6 @@ useSeoMeta({ title: '友人帐 - 友情链接' })
 
 .submit-btn:hover:not(:disabled) {
   background: var(--accent-hover);
-  transform: translateY(-2px);
 }
 
 .submit-btn:disabled {
@@ -345,9 +370,9 @@ useSeoMeta({ title: '友人帐 - 友情链接' })
 
 .submit-message {
   text-align: center;
-  padding: 12px;
+  padding: 10px;
   border-radius: var(--radius-md);
-  font-size: 14px;
+  font-size: 13px;
   background: var(--surface-hover);
   color: var(--text-muted);
 }
@@ -357,8 +382,8 @@ useSeoMeta({ title: '友人帐 - 友情链接' })
   color: var(--accent-text);
 }
 
-@media (max-width: 640px) {
-  .form-row {
+@media (max-width: 768px) {
+  .submit-container {
     grid-template-columns: 1fr;
   }
   .submit-section {
