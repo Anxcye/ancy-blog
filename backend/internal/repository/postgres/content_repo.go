@@ -230,12 +230,14 @@ func (r *Repository) ListPublishedArticles(page, pageSize int, category, tag, co
 
 	listArgs := append(args, pageSize, offset)
 	query := `
-SELECT id::text, title, slug, content_kind, COALESCE(summary,''), '' as content, status, visibility,
-       allow_comment, origin_type, COALESCE(source_url,''), ai_assist_level, COALESCE(cover_image,''),
-       COALESCE(published_at, created_at), created_at, updated_at
-FROM articles
+SELECT a.id::text, a.title, a.slug, a.content_kind, COALESCE(a.summary,''), '' as content, a.status, a.visibility,
+       a.allow_comment, a.origin_type, COALESCE(a.source_url,''), a.ai_assist_level, COALESCE(a.cover_image,''),
+       COALESCE(a.published_at, a.created_at), a.created_at, a.updated_at,
+       COALESCE(c.slug, '')
+FROM articles a
+LEFT JOIN categories c ON c.id = a.category_id AND c.deleted_at IS NULL
 WHERE ` + whereClause + `
-ORDER BY published_at DESC NULLS LAST, created_at DESC
+ORDER BY a.published_at DESC NULLS LAST, a.created_at DESC
 LIMIT $` + strconv.Itoa(len(listArgs)-1) + ` OFFSET $` + strconv.Itoa(len(listArgs))
 
 	rows, err := r.db.Query(query, listArgs...)
@@ -247,7 +249,9 @@ LIMIT $` + strconv.Itoa(len(listArgs)-1) + ` OFFSET $` + strconv.Itoa(len(listAr
 	for rows.Next() {
 		var a domain.Article
 		if err := rows.Scan(&a.ID, &a.Title, &a.Slug, &a.ContentKind, &a.Summary, &a.Content, &a.Status, &a.Visibility,
-			&a.AllowComment, &a.OriginType, &a.SourceURL, &a.AIAssistLevel, &a.CoverImage, &a.PublishedAt, &a.CreatedAt, &a.UpdatedAt); err == nil {
+			&a.AllowComment, &a.OriginType, &a.SourceURL, &a.AIAssistLevel, &a.CoverImage, &a.PublishedAt, &a.CreatedAt, &a.UpdatedAt,
+			&a.CategorySlug); err == nil {
+			a.TagSlugs = r.articleTagSlugs(a.ID)
 			items = append(items, a)
 		}
 	}

@@ -51,8 +51,14 @@
       <!-- Articles -->
       <div v-if="pending" class="article-list">
         <div v-for="n in 6" :key="n" class="skeleton-article-item">
-          <div class="skeleton-line" style="height: 28px; width: 60%; margin-bottom: 12px;" />
-          <div class="skeleton-line" style="height: 16px; width: 30%;" />
+          <div class="skeleton-inner">
+            <div class="skeleton-line" style="height: 32px; width: 55%; margin-bottom: 14px;" />
+            <div style="display:flex; gap:8px;">
+              <div class="skeleton-line" style="height: 20px; width: 60px;" />
+              <div class="skeleton-line" style="height: 20px; width: 80px;" />
+              <div class="skeleton-line" style="height: 20px; width: 50px;" />
+            </div>
+          </div>
         </div>
       </div>
 
@@ -61,13 +67,41 @@
           v-for="(article, i) in articles.rows"
           :key="article.id"
           :to="localePath(`/articles/${article.slug}`)"
-          class="horizontal-article-item"
-          :style="{ animationDelay: `${i * 80}ms` }"
+          class="article-item"
+          :style="{ animationDelay: `${i * 70}ms` }"
         >
-          <h2 class="article-item-title">{{ article.title }}</h2>
-          <div class="article-item-meta">
-            <time class="meta-date">{{ new Date(article.publishedAt || article.createdAt).toLocaleDateString() }}</time>
+          <!-- Left: index number -->
+          <span class="article-index">{{ String(i + 1).padStart(2, '0') }}</span>
+
+          <!-- Center: title + meta -->
+          <div class="article-body">
+            <h2 class="article-title">{{ article.title }}</h2>
+
+            <div class="article-meta">
+              <!-- Category -->
+              <span v-if="article.categorySlug" class="meta-category" @click.prevent="setCategory(article.categorySlug)">
+                {{ getCategoryName(article.categorySlug) }}
+              </span>
+
+              <!-- Tags (max 3) -->
+              <template v-if="article.tagSlugs?.length">
+                <span
+                  v-for="slug in article.tagSlugs.slice(0, 3)"
+                  :key="slug"
+                  class="meta-tag"
+                  @click.prevent="setTag(slug)"
+                >
+                  # {{ getTagName(slug) }}
+                </span>
+              </template>
+
+              <!-- Date -->
+              <time class="meta-date">{{ formatDate(article.publishedAt || article.createdAt) }}</time>
+            </div>
           </div>
+
+          <!-- Right: arrow indicator -->
+          <span class="article-arrow">→</span>
         </NuxtLink>
       </div>
 
@@ -174,6 +208,25 @@ function clearFilters() {
   page.value = 1
 }
 
+// ── Lookup helpers ──────────────────────────────────────────────
+function getCategoryName(slug: string) {
+  return categories.value?.find(c => c.slug === slug)?.name ?? slug
+}
+function getTagName(slug: string) {
+  return tags.value?.find(t => t.slug === slug)?.name ?? slug
+}
+
+// ── Date formatter ───────────────────────────────────────────────
+function formatDate(dateStr: string) {
+  const d = new Date(dateStr)
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
+  const year = d.getFullYear()
+  const month = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  const weekday = days[d.getDay()]
+  return `${year}.${month}.${day} ${weekday}`
+}
+
 // ── SEO ──────────────────────────────────────────────────────────
 useSeoMeta({ title: t('nav.articles') })
 </script>
@@ -242,84 +295,144 @@ useSeoMeta({ title: t('nav.articles') })
 .tag-pill:hover { color: var(--text-muted); border-color: var(--border); }
 .tag-pill.active { color: var(--accent-text); background: var(--accent-soft); border-color: var(--accent); }
 
-/* Article List */
+/* ── Article List ─────────────────────────────────────────────── */
 .article-list {
   display: flex;
   flex-direction: column;
-  gap: 16px;
   margin-bottom: 40px;
 }
 
-.horizontal-article-item {
-  display: block;
-  padding: 24px 0;
-  border-bottom: 1px solid var(--border);
+.article-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 22px 0;
   text-decoration: none;
   background: transparent;
-  transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-  animation: slide-up-spring 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  cursor: pointer;
+  border-radius: 0;
   position: relative;
+  animation: slide-up-spring 0.65s cubic-bezier(0.34, 1.4, 0.64, 1) both;
+  transition: transform 0.35s cubic-bezier(0.34, 1.5, 0.64, 1);
+  cursor: pointer;
+  overflow: hidden;
 }
 
-.horizontal-article-item:last-child {
-  border-bottom: none;
+.article-item:hover {
+  transform: translateX(10px);
 }
 
-.horizontal-article-item:hover {
-  transform: translateX(12px);
-}
-
-.horizontal-article-item::before {
-  content: '';
-  position: absolute;
-  left: -16px;
-  top: 50%;
-  transform: translateY(-50%) scale(0);
-  width: 4px;
-  height: 0;
-  background: var(--accent);
-  border-radius: 4px;
-  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  opacity: 0;
-}
-
-.horizontal-article-item:hover::before {
-  transform: translateY(-50%) scale(1);
-  height: 40%;
-  opacity: 1;
-}
-
-.article-item-title {
-  font-size: clamp(1.25rem, 2.5vw, 1.75rem);
+/* Index number on the left */
+.article-index {
+  font-size: 11px;
   font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-  line-height: 1.3;
-  transition: color var(--dur-fast);
+  letter-spacing: 0.05em;
+  color: var(--text-subtle);
+  opacity: 0.45;
+  min-width: 26px;
+  font-variant-numeric: tabular-nums;
+  transition: opacity 0.25s, color 0.25s;
+  flex-shrink: 0;
+  margin-top: 2px;
+  align-self: flex-start;
 }
 
-.horizontal-article-item:hover .article-item-title {
+.article-item:hover .article-index {
+  opacity: 1;
   color: var(--accent);
 }
 
-.article-item-meta {
+/* Title + meta block */
+.article-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.article-title {
+  font-size: clamp(1.1rem, 2.2vw, 1.5rem);
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 10px;
+  line-height: 1.35;
+  transition: color 0.2s ease;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.article-item:hover .article-title {
+  color: var(--accent);
+}
+
+/* Meta row */
+.article-meta {
   display: flex;
-  gap: 16px;
-  font-size: 14px;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  font-size: 12.5px;
+}
+
+.meta-category {
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-weight: 600;
+  font-size: 11.5px;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: filter 0.2s;
+}
+.meta-category:hover { filter: brightness(1.15); }
+
+.meta-tag {
+  padding: 3px 10px;
+  border-radius: 99px;
+  background: var(--bg-secondary);
   color: var(--text-muted);
+  font-size: 11.5px;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s;
+}
+.meta-tag:hover {
+  background: var(--surface-hover);
+  color: var(--text-primary);
 }
 
+.meta-date {
+  color: var(--text-subtle);
+  font-size: 12px;
+  margin-left: 2px;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.01em;
+}
+
+/* Arrow on right */
+.article-arrow {
+  color: var(--text-subtle);
+  opacity: 0;
+  font-size: 16px;
+  flex-shrink: 0;
+  transform: translateX(-6px);
+  transition: opacity 0.25s, transform 0.3s cubic-bezier(0.34, 1.5, 0.64, 1), color 0.2s;
+}
+.article-item:hover .article-arrow {
+  opacity: 1;
+  transform: translateX(0);
+  color: var(--accent);
+}
+
+/* Spring in animation */
 @keyframes slide-up-spring {
-  0% { opacity: 0; transform: translateY(30px) scale(0.98); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
+  0%   { opacity: 0; transform: translateY(28px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0)   scale(1); }
 }
 
-/* Skeleton */
+/* -- Skeleton ----------------------------------------------------------- */
 .skeleton-article-item {
-  padding: 24px 0;
-  border-bottom: 1px solid var(--border);
+  padding: 22px 0;
 }
+.skeleton-inner { padding-left: 46px; }
 
 .skeleton-line {
   background: linear-gradient(90deg, var(--bg-secondary) 25%, var(--surface-hover) 50%, var(--bg-secondary) 75%);
@@ -333,7 +446,7 @@ useSeoMeta({ title: t('nav.articles') })
   to   { background-position: -200% 0; }
 }
 
-/* Pagination */
+/* -- Pagination ─────────────────────────────────────────────────── */
 .pagination {
   display: flex;
   align-items: center;
@@ -363,15 +476,14 @@ useSeoMeta({ title: t('nav.articles') })
 }
 
 .page-btn:disabled { opacity: 0.35; cursor: not-allowed; }
-
 .page-info { font-size: 14px; color: var(--text-muted); min-width: 60px; text-align: center; }
 
 /* Empty */
 .empty-state { text-align: center; padding: 64px 0; color: var(--text-subtle); }
 
 @media (max-width: 640px) {
-  .horizontal-article-item:hover {
-    transform: translateX(4px);
-  }
+  .article-item { gap: 12px; }
+  .article-item:hover { transform: translateX(4px); }
+  .article-title { font-size: 1rem; white-space: normal; }
 }
 </style>
