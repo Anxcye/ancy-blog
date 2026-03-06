@@ -1,12 +1,12 @@
 <!-- File: app/components/MomentDetailModal.vue
-     Purpose: Render a URL-driven moment detail modal with comments.
+     Purpose: Render the URL-driven moment detail modal with focused scrolling and comment thread.
      Module: frontend-blog/components, presentation layer.
      Related: app/pages/moments/[[id]].vue and components/CommentList.vue. -->
 <template>
   <Teleport to="body">
     <Transition name="moment-modal">
       <div v-if="open" class="moment-modal" @click.self="$emit('close')">
-        <div class="moment-dialog" role="dialog" aria-modal="true" :aria-label="t('moments.detailTitle')">
+        <div ref="dialogRef" class="moment-dialog" role="dialog" aria-modal="true" :aria-label="t('moments.detailTitle')" tabindex="-1">
           <button class="close-btn" type="button" :aria-label="t('moments.closeDetail')" @click="$emit('close')">
             ×
           </button>
@@ -19,6 +19,27 @@
 
             <div class="dialog-content">
               <p>{{ moment.content }}</p>
+            </div>
+
+            <div class="dialog-nav" :class="{ 'single-side': !previousMoment || !nextMoment }">
+              <button
+                class="nav-btn"
+                type="button"
+                :disabled="!previousMoment"
+                @click="$emit('prev')"
+              >
+                <span class="nav-label">{{ t('moments.previous') }}</span>
+                <span v-if="previousMoment" class="nav-text">{{ previousMoment.content }}</span>
+              </button>
+              <button
+                class="nav-btn align-right"
+                type="button"
+                :disabled="!nextMoment"
+                @click="$emit('next')"
+              >
+                <span class="nav-label">{{ t('moments.next') }}</span>
+                <span v-if="nextMoment" class="nav-text">{{ nextMoment.content }}</span>
+              </button>
             </div>
 
             <div v-if="moment.allowComment" class="dialog-comments">
@@ -46,7 +67,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, nextTick, ref, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CommentList from '~/components/CommentList.vue'
 import type { Moment } from '~/composables/useApi'
@@ -56,16 +77,42 @@ const props = defineProps<{
   moment?: Moment | null
   loading?: boolean
   requireApproval?: boolean
+  previousMoment?: Moment | null
+  nextMoment?: Moment | null
 }>()
 
 defineEmits<{
   (e: 'close'): void
   (e: 'countChange', total: number): void
+  (e: 'prev'): void
+  (e: 'next'): void
 }>()
 
 const { t, locale } = useI18n()
-
 const commentCount = computed(() => props.moment?.commentCount || 0)
+const dialogRef = ref<HTMLElement | null>(null)
+let previousBodyOverflow = ''
+
+watch(() => props.open, async (open) => {
+  if (import.meta.server) return
+  if (open) {
+    previousBodyOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    await nextTick()
+    if (dialogRef.value) {
+      dialogRef.value.scrollTop = 0
+    }
+    dialogRef.value?.focus()
+    return
+  }
+  document.body.style.overflow = previousBodyOverflow
+}, { immediate: true })
+
+onBeforeUnmount(() => {
+  if (import.meta.client) {
+    document.body.style.overflow = previousBodyOverflow
+  }
+})
 
 function formatDate(iso: string): string {
   return new Intl.DateTimeFormat(locale.value === 'en' ? 'en-US' : 'zh-CN', {
@@ -84,9 +131,9 @@ function formatDate(iso: string): string {
   inset: 0;
   z-index: 70;
   display: flex;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: center;
-  padding: 24px;
+  padding: 72px 24px 24px;
   background: color-mix(in srgb, #081018 38%, transparent);
   backdrop-filter: blur(8px);
 }
@@ -94,12 +141,14 @@ function formatDate(iso: string): string {
 .moment-dialog {
   position: relative;
   width: min(760px, 100%);
-  max-height: min(88vh, 920px);
+  max-height: calc(100vh - 96px);
   overflow: auto;
+  overscroll-behavior: contain;
   padding: 28px;
   border-radius: 28px;
   background: color-mix(in srgb, var(--bg-primary) 94%, white);
   box-shadow: 0 24px 80px color-mix(in srgb, #081018 18%, transparent);
+  outline: none;
 }
 
 .close-btn {
@@ -141,6 +190,64 @@ function formatDate(iso: string): string {
   color: var(--text);
   white-space: pre-wrap;
   word-break: break-word;
+}
+
+.dialog-nav {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.dialog-nav.single-side {
+  grid-template-columns: 1fr;
+}
+
+.nav-btn {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-height: 72px;
+  padding: 14px 16px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: color-mix(in srgb, var(--bg-secondary) 44%, transparent);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    transform 260ms cubic-bezier(0.22, 1.18, 0.36, 1),
+    border-color 180ms ease,
+    background 180ms ease;
+}
+
+.nav-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+}
+
+.nav-btn:disabled {
+  cursor: default;
+  opacity: 0.48;
+}
+
+.align-right {
+  text-align: right;
+}
+
+.nav-label {
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-subtle);
+}
+
+.nav-text {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-height: 1.7;
 }
 
 .dialog-comments {
@@ -195,12 +302,17 @@ function formatDate(iso: string): string {
 
 @media (max-width: 640px) {
   .moment-modal {
-    padding: 12px;
+    padding: 56px 12px 12px;
   }
 
   .moment-dialog {
+    max-height: calc(100vh - 68px);
     padding: 22px 18px;
     border-radius: 24px;
+  }
+
+  .dialog-nav {
+    grid-template-columns: 1fr;
   }
 }
 </style>

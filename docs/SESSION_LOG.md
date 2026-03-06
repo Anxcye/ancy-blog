@@ -679,6 +679,12 @@
 - Validation:
   - `go test ./...` passed in `backend/`.
   - `pnpm --dir frontend-blog build` passed.
+- Refined the public moments detail experience:
+  - preserved the moments feed list state across `/moments` <-> `/moments/:id` route changes so closing the modal does not trigger a visible reload.
+  - moved the detail modal to top-aligned presentation, locked background scroll, and kept wheel focus inside the dialog.
+  - added previous/next navigation inside the modal and removed the inline "view detail" CTA from feed items.
+  - added subtle pointer-follow hover motion and accent background feedback on moment rows while keeping the list itself clean.
+  - kept moment comments inside the detail modal via the shared public `CommentList` thread component.
 - Extended comments from article-only targets to polymorphic content targets:
   - comments now support `content_type` and `content_id`, with migration `000017_comment_content_target` and schema/data-model updates.
   - public comment APIs now expose generic content routes for both `article` and `moment` while keeping article wrappers compatible.

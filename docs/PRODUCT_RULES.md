@@ -137,6 +137,12 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 - Internal static-like pages (e.g. "About Me", "About This Site") are stored in `articles` with `content_kind=page`.
 - Internal link items should reference article slug, not hardcoded URL.
 
+## Moments Interaction Rules
+- Public `moments` feed is for browsing only; detailed interaction happens in a route-driven modal (`/moments/:id`).
+- Each moment detail modal must support previous/next navigation when adjacent moments are available in the loaded feed.
+- Closing the moment detail modal must preserve the current feed state and scroll context instead of refetching the list.
+- Moment comments reuse the same public threaded comment components as article comments.
+
 ## Caching Rules (Redis)
 - Cache read-heavy site data:
   - site settings

@@ -41,6 +41,9 @@ This guide governs both frontend apps:
 - Particle layer: sparse petal-like particles, very low density (about one visible fall event per ~3s), tinted by current accent.
 - Comment composer triggers can use stronger spring feedback than article cards, but still need a restrained editorial shell.
 - Comment thread lists may use responsive masonry/waterfall stacking when cards have uneven heights.
+- Moments detail should open in a route-driven modal instead of expanding inline inside the feed.
+- The moments modal should align near the top of the viewport, lock background scroll, and keep wheel focus inside the dialog.
+- Moments feed items may use subtle pointer-follow background motion on hover, but should not show explicit "view detail" buttons.
 
 ## Responsive & SEO Constraints
 - Mobile-first layout and touch targets >= `40px`.

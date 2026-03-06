@@ -1,5 +1,5 @@
 <!-- File: app/pages/moments/[[id]].vue
-     Purpose: Moments feed with URL-driven detail modal for comments and deep linking.
+     Purpose: Render the moments feed with a URL-driven detail modal and preserved list state.
      Module: frontend-blog/pages, presentation layer.
      Related: components/MomentDetailModal.vue and composables/useApi.ts. -->
 <template>
@@ -32,7 +32,13 @@
           :class="{ active: selectedMomentId === moment.id }"
           :style="{ animationDelay: `${i * 50}ms` }"
         >
-          <button class="moment-trigger" type="button" @click="openMoment(moment.id)">
+          <button
+            class="moment-trigger"
+            type="button"
+            @click="openMoment(moment.id)"
+            @mousemove="setPointerPosition($event)"
+            @mouseleave="resetPointerPosition($event)"
+          >
             <div class="moment-head">
               <span class="moment-dot" />
               <time class="moment-date">{{ formatDate(moment.publishedAt || moment.createdAt) }}</time>
@@ -43,7 +49,6 @@
 
               <div class="moment-actions">
                 <span class="comment-count">{{ t('moments.commentCount', { n: moment.commentCount || 0 }) }}</span>
-                <span class="detail-link">{{ t('moments.viewDetail') }}</span>
               </div>
             </div>
           </button>
@@ -73,13 +78,18 @@
       :moment="selectedMoment"
       :loading="detailPending"
       :require-approval="siteSettings?.commentRequireApproval"
+      :previous-moment="previousMoment"
+      :next-moment="nextMoment"
       @close="closeMoment"
       @count-change="handleDetailCountChange"
+      @prev="openPreviousMoment"
+      @next="openNextMoment"
     />
   </div>
 </template>
 
 <script setup lang="ts">
+import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import InfiniteScrollTrigger from '~/components/InfiniteScrollTrigger.vue'
 import MomentDetailModal from '~/components/MomentDetailModal.vue'
@@ -92,29 +102,49 @@ const router = useRouter()
 const { listMoments, getMoment, getSiteSettings } = useApi()
 
 const PAGE_SIZE = 12
-const page = ref(1)
-const allMoments = ref<Moment[]>([])
-const total = ref(0)
+const allMoments = useState<Moment[]>('moments-feed-rows', () => [])
+const total = useState<number>('moments-feed-total', () => 0)
+const page = useState<number>('moments-feed-page', () => 1)
+const feedReady = useState<boolean>('moments-feed-ready', () => false)
 const loadingMore = ref(false)
 const detailPending = ref(false)
 const selectedMoment = ref<Moment | null>(null)
 
-const [{ data: siteSettings }, { data: initialData, pending }] = await Promise.all([
+const [{ data: siteSettings }, { pending: initialPending }] = await Promise.all([
   useAsyncData('moments-site-settings', getSiteSettings),
-  useAsyncData('moments-first-page', () => listMoments({ page: 1, pageSize: PAGE_SIZE }))
+  useAsyncData('moments-first-page', async () => {
+    if (feedReady.value) {
+      return {
+        rows: allMoments.value,
+        total: total.value,
+        page: page.value,
+        pageSize: PAGE_SIZE,
+      }
+    }
+
+    const res = await listMoments({ page: 1, pageSize: PAGE_SIZE })
+    allMoments.value = res.rows || []
+    total.value = res.total || 0
+    page.value = 1
+    feedReady.value = true
+    return res
+  }),
 ])
 
-watch(initialData, (newVal) => {
-  if (!newVal) return
-  allMoments.value = newVal.rows || []
-  total.value = newVal.total || 0
-  page.value = 1
-}, { immediate: true })
-
+const pending = computed(() => initialPending.value && !feedReady.value)
 const hasMore = computed(() => allMoments.value.length < total.value)
 const selectedMomentId = computed(() => typeof route.params.id === 'string' ? route.params.id : '')
+const selectedIndex = computed(() => allMoments.value.findIndex((item) => item.id === selectedMomentId.value))
+const previousMoment = computed(() => {
+  if (selectedIndex.value <= 0) return null
+  return allMoments.value[selectedIndex.value - 1] || null
+})
+const nextMoment = computed(() => {
+  if (selectedIndex.value < 0) return null
+  return allMoments.value[selectedIndex.value + 1] || null
+})
 
-watch([selectedMomentId, allMoments], async ([id]) => {
+watch(selectedMomentId, async (id) => {
   if (!id) {
     selectedMoment.value = null
     detailPending.value = false
@@ -144,7 +174,8 @@ async function loadMore() {
   try {
     const res = await listMoments({ page: page.value, pageSize: PAGE_SIZE })
     if (res.rows?.length) {
-      allMoments.value.push(...res.rows)
+      allMoments.value = dedupeMoments([...allMoments.value, ...res.rows])
+      total.value = res.total || total.value
     }
   } catch (err) {
     page.value -= 1
@@ -162,6 +193,18 @@ function closeMoment() {
   router.push(localePath('/moments'))
 }
 
+function openPreviousMoment() {
+  if (previousMoment.value) {
+    openMoment(previousMoment.value.id)
+  }
+}
+
+function openNextMoment() {
+  if (nextMoment.value) {
+    openMoment(nextMoment.value.id)
+  }
+}
+
 function handleDetailCountChange(count: number) {
   if (!selectedMoment.value) return
   selectedMoment.value.commentCount = count
@@ -172,7 +215,38 @@ function syncMoment(moment: Moment) {
   const index = allMoments.value.findIndex((item) => item.id === moment.id)
   if (index >= 0) {
     allMoments.value[index] = { ...allMoments.value[index], ...moment }
+    return
   }
+  allMoments.value = [moment, ...allMoments.value]
+}
+
+function dedupeMoments(items: Moment[]) {
+  const seen = new Map<string, Moment>()
+  for (const item of items) {
+    seen.set(item.id, item)
+  }
+  return Array.from(seen.values())
+}
+
+function setPointerPosition(event: MouseEvent) {
+  const target = event.currentTarget as HTMLElement | null
+  if (!target) return
+  const rect = target.getBoundingClientRect()
+  const x = (event.clientX - rect.left) / rect.width
+  const y = (event.clientY - rect.top) / rect.height
+  target.style.setProperty('--pointer-x', `${(x * 100).toFixed(2)}%`)
+  target.style.setProperty('--pointer-y', `${(y * 100).toFixed(2)}%`)
+  target.style.setProperty('--offset-x', `${((x - 0.5) * 8).toFixed(2)}px`)
+  target.style.setProperty('--offset-y', `${((y - 0.5) * 8).toFixed(2)}px`)
+}
+
+function resetPointerPosition(event: MouseEvent) {
+  const target = event.currentTarget as HTMLElement | null
+  if (!target) return
+  target.style.setProperty('--pointer-x', '50%')
+  target.style.setProperty('--pointer-y', '50%')
+  target.style.setProperty('--offset-x', '0px')
+  target.style.setProperty('--offset-y', '0px')
 }
 
 function formatDate(iso: string): string {
@@ -218,24 +292,58 @@ useSeoMeta({
 .moments-feed {
   display: flex;
   flex-direction: column;
-  gap: 30px;
+  gap: 22px;
 }
 
 .moment-item {
   animation: fade-up 0.42s var(--ease-spring) both;
 }
 
-.moment-item.active .moment-trigger {
-  background: color-mix(in srgb, var(--accent) 4%, transparent);
-}
-
 .moment-trigger {
+  --pointer-x: 50%;
+  --pointer-y: 50%;
+  --offset-x: 0px;
+  --offset-y: 0px;
+  position: relative;
   width: 100%;
+  overflow: hidden;
   border: none;
+  border-radius: 24px;
   background: transparent;
-  padding: 0;
+  padding: 18px 20px;
   text-align: left;
   cursor: pointer;
+  transition:
+    transform 320ms cubic-bezier(0.22, 1.18, 0.36, 1),
+    background 220ms ease;
+}
+
+.moment-trigger::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background:
+    radial-gradient(circle at var(--pointer-x) var(--pointer-y), color-mix(in srgb, var(--accent) 12%, transparent), transparent 38%),
+    color-mix(in srgb, var(--bg-secondary) 36%, transparent);
+  opacity: 0;
+  transition: opacity 220ms ease;
+}
+
+.moment-trigger:hover,
+.moment-item.active .moment-trigger {
+  transform: translate3d(var(--offset-x), var(--offset-y), 0);
+}
+
+.moment-trigger:hover::before,
+.moment-item.active .moment-trigger::before {
+  opacity: 1;
+}
+
+.moment-head,
+.moment-body {
+  position: relative;
+  z-index: 1;
 }
 
 .moment-head {
@@ -283,11 +391,6 @@ useSeoMeta({
 .comment-count {
   font-size: 12px;
   color: var(--text-subtle);
-}
-
-.detail-link {
-  font-size: 13px;
-  color: var(--accent);
 }
 
 .moment-skeleton {
@@ -379,6 +482,11 @@ useSeoMeta({
 }
 
 @media (max-width: 640px) {
+  .moment-trigger {
+    padding: 14px 0;
+    border-radius: 20px;
+  }
+
   .moment-body,
   .skeleton-content {
     padding-left: 0;
