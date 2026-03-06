@@ -684,6 +684,9 @@
   - made the modal surface fully opaque to improve readability over the blurred backdrop.
   - passed site-level comment availability into the modal and keyed the embedded `CommentList` by moment id.
   - updated `CommentList` to refetch whenever `contentType` or `contentId` changes, which fixes comment thread switching inside the moment modal.
+- Added Markdown support for moments:
+  - public `moments` list items and detail modal now render moment content through a shared markdown-it renderer instead of plain text.
+  - `frontend-admin-react` moment editor now provides `Write / Preview` mode and a Markdown help link for authoring.
 - Refined the public moments detail experience:
   - preserved the moments feed list state across `/moments` <-> `/moments/:id` route changes so closing the modal does not trigger a visible reload.
   - moved the detail modal to top-aligned presentation, locked background scroll, and kept wheel focus inside the dialog.

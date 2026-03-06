@@ -142,6 +142,7 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 - Each moment detail modal must support previous/next navigation when adjacent moments are available in the loaded feed.
 - Closing the moment detail modal must preserve the current feed state and scroll context instead of refetching the list.
 - Moment comments reuse the same public threaded comment components as article comments.
+- Moment content is authored and stored as Markdown source, then rendered as Markdown on the public blog and in admin preview.
 
 ## Caching Rules (Redis)
 - Cache read-heavy site data:

@@ -45,7 +45,7 @@
             </div>
 
             <div class="moment-body">
-              <p class="moment-content">{{ moment.content }}</p>
+              <div class="moment-content markdown-body" v-html="renderMomentPreview(moment.content)"></div>
 
               <div class="moment-actions">
                 <span class="comment-count">{{ t('moments.commentCount', { n: moment.commentCount || 0 }) }}</span>
@@ -95,6 +95,7 @@ import { useI18n } from 'vue-i18n'
 import InfiniteScrollTrigger from '~/components/InfiniteScrollTrigger.vue'
 import MomentDetailModal from '~/components/MomentDetailModal.vue'
 import type { Moment } from '~/composables/useApi'
+import { renderContentMarkdown } from '~/utils/contentMarkdown'
 
 definePageMeta({
   key: 'moments-feed',
@@ -265,6 +266,10 @@ function formatDate(iso: string): string {
   }).format(new Date(iso))
 }
 
+function renderMomentPreview(content: string): string {
+  return renderContentMarkdown(content)
+}
+
 useSeoMeta({
   title: () => selectedMoment.value
     ? `${t('moments.title')} · ${formatDate(selectedMoment.value.publishedAt || selectedMoment.value.createdAt)}`
@@ -383,8 +388,50 @@ useSeoMeta({
   font-size: 15px;
   line-height: 1.85;
   color: var(--text);
-  white-space: pre-wrap;
   word-break: break-word;
+}
+
+.moment-content :deep(p),
+.moment-content :deep(ul),
+.moment-content :deep(ol),
+.moment-content :deep(blockquote),
+.moment-content :deep(pre) {
+  margin: 0 0 12px;
+}
+
+.moment-content :deep(p:last-child),
+.moment-content :deep(ul:last-child),
+.moment-content :deep(ol:last-child),
+.moment-content :deep(blockquote:last-child),
+.moment-content :deep(pre:last-child) {
+  margin-bottom: 0;
+}
+
+.moment-content :deep(ul),
+.moment-content :deep(ol) {
+  padding-left: 20px;
+}
+
+.moment-content :deep(blockquote) {
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+  color: var(--text-muted);
+}
+
+.moment-content :deep(pre) {
+  overflow-x: auto;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: color-mix(in srgb, var(--bg-secondary) 80%, white);
+}
+
+.moment-content :deep(code) {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.92em;
+}
+
+.moment-content :deep(pre code) {
+  background: transparent;
 }
 
 .moment-actions {

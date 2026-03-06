@@ -15,6 +15,7 @@ import {
   Input,
   Popconfirm,
   Row,
+  Segmented,
   Select,
   Space,
   Table,
@@ -34,6 +35,7 @@ import {
   updateMoment,
 } from '../../api/moments';
 import type { Moment, MomentFormValues, MomentListParams, MomentStatus } from '../../types/moment';
+import { renderMarkdown } from '../../utils/markdown';
 
 const STATUS_COLOR: Record<string, string> = {
   draft: 'default',
@@ -63,6 +65,7 @@ export function MomentsPage(): ReactElement {
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingMoment, setEditingMoment] = useState<Moment | null>(null);
+  const [editorMode, setEditorMode] = useState<'write' | 'preview'>('write');
 
   const { data, isLoading } = useQuery({
     queryKey: ['moments', params],
@@ -119,6 +122,7 @@ export function MomentsPage(): ReactElement {
         form.resetFields();
         form.setFieldValue('status', 'published');
       }
+      setEditorMode('write');
     }
   }, [drawerOpen, editingMoment, form]);
 
@@ -131,6 +135,8 @@ export function MomentsPage(): ReactElement {
     setEditingMoment(moment);
     setDrawerOpen(true);
   }
+
+  const previewHtml = renderMarkdown(Form.useWatch('content', form) ?? '');
 
   const batchPending = batchDelMut.isPending || batchStatusMut.isPending;
 
@@ -306,7 +312,7 @@ export function MomentsPage(): ReactElement {
       {/* Create / Edit drawer */}
       <Drawer
         title={editingMoment ? '编辑瞬间' : '发布瞬间'}
-        width={480}
+        width={720}
         open={drawerOpen}
         onClose={() => setDrawerOpen(false)}
         extra={
@@ -329,12 +335,63 @@ export function MomentsPage(): ReactElement {
             label="内容"
             rules={[{ required: true, message: '请填写内容' }]}
           >
-            <Input.TextArea
-              rows={8}
-              placeholder="分享一个想法、一句话、一段文字..."
-              showCount
-              maxLength={2000}
-            />
+            <div style={{ border: '1px solid #d9d9d9', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
+              <div
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 12,
+                  padding: '10px 12px',
+                  borderBottom: '1px solid #f0f0f0',
+                  background: '#fafafa',
+                }}
+              >
+                <Segmented<'write' | 'preview'>
+                  size="small"
+                  value={editorMode}
+                  onChange={(value) => setEditorMode(value)}
+                  options={[
+                    { label: 'Write', value: 'write' },
+                    { label: 'Preview', value: 'preview' },
+                  ]}
+                />
+                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+                  支持 Markdown，见{' '}
+                  <a
+                    href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    GitHub Markdown 指南
+                  </a>
+                </Typography.Text>
+              </div>
+
+              {editorMode === 'write' ? (
+                <Input.TextArea
+                  variant="borderless"
+                  rows={10}
+                  placeholder="分享一个想法、一句话、一段文字..."
+                  showCount
+                  maxLength={2000}
+                  style={{ padding: '12px 14px' }}
+                />
+              ) : (
+                <div
+                  dangerouslySetInnerHTML={{
+                    __html: previewHtml || '<p style=\"color:#999\">暂无预览内容。</p>',
+                  }}
+                  style={{
+                    minHeight: 240,
+                    padding: '12px 14px',
+                    lineHeight: 1.8,
+                    color: '#1f1f1f',
+                    background: '#fff',
+                  }}
+                />
+              )}
+            </div>
           </Form.Item>
 
           <Form.Item name="status" label="状态">

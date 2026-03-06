@@ -12,44 +12,44 @@
           </button>
 
           <div v-if="moment" class="dialog-body">
-            <div class="dialog-meta">
-              <span class="meta-pill">{{ formatDate(moment.publishedAt || moment.createdAt) }}</span>
-              <span class="meta-pill">{{ t('moments.commentCount', { n: commentCount }) }}</span>
-            </div>
+            <div class="dialog-surface">
+              <div class="dialog-meta">
+                <span class="meta-pill">{{ formatDate(moment.publishedAt || moment.createdAt) }}</span>
+                <span class="meta-pill">{{ t('moments.commentCount', { n: commentCount }) }}</span>
+              </div>
 
-            <div class="dialog-content">
-              <p>{{ moment.content }}</p>
-            </div>
+              <div class="dialog-content markdown-body" v-html="renderMomentContent(moment.content)"></div>
 
-            <div class="dialog-nav" :class="{ 'single-side': !previousMoment || !nextMoment }">
-              <button
-                class="nav-btn"
-                type="button"
-                :disabled="!previousMoment"
-                @click="$emit('prev')"
-              >
-                <span class="nav-label">{{ t('moments.previous') }}</span>
-                <span v-if="previousMoment" class="nav-text">{{ previousMoment.content }}</span>
-              </button>
-              <button
-                class="nav-btn align-right"
-                type="button"
-                :disabled="!nextMoment"
-                @click="$emit('next')"
-              >
-                <span class="nav-label">{{ t('moments.next') }}</span>
-                <span v-if="nextMoment" class="nav-text">{{ nextMoment.content }}</span>
-              </button>
-            </div>
+              <div class="dialog-nav" :class="{ 'single-side': !previousMoment || !nextMoment }">
+                <button
+                  class="nav-btn"
+                  type="button"
+                  :disabled="!previousMoment"
+                  @click="$emit('prev')"
+                >
+                  <span class="nav-arrow" aria-hidden="true">←</span>
+                  <span class="nav-label">{{ t('moments.previous') }}</span>
+                </button>
+                <button
+                  class="nav-btn align-right"
+                  type="button"
+                  :disabled="!nextMoment"
+                  @click="$emit('next')"
+                >
+                  <span class="nav-label">{{ t('moments.next') }}</span>
+                  <span class="nav-arrow" aria-hidden="true">→</span>
+                </button>
+              </div>
 
-            <div v-if="commentEnabled" class="dialog-comments">
-              <CommentList
-                :key="moment.id"
-                content-type="moment"
-                :content-id="moment.id"
-                :require-approval="requireApproval"
-                @count-change="$emit('countChange', $event)"
-              />
+              <div v-if="commentEnabled" class="dialog-comments">
+                <CommentList
+                  :key="moment.id"
+                  content-type="moment"
+                  :content-id="moment.id"
+                  :require-approval="requireApproval"
+                  @count-change="$emit('countChange', $event)"
+                />
+              </div>
             </div>
           </div>
 
@@ -72,6 +72,7 @@ import { computed, nextTick, ref, watch, onBeforeUnmount } from 'vue'
 import { useI18n } from 'vue-i18n'
 import CommentList from '~/components/CommentList.vue'
 import type { Moment } from '~/composables/useApi'
+import { renderContentMarkdown } from '~/utils/contentMarkdown'
 
 const props = defineProps<{
   open: boolean
@@ -125,6 +126,10 @@ function formatDate(iso: string): string {
     minute: '2-digit',
   }).format(new Date(iso))
 }
+
+function renderMomentContent(content: string): string {
+  return renderContentMarkdown(content)
+}
 </script>
 
 <style scoped>
@@ -146,11 +151,10 @@ function formatDate(iso: string): string {
   max-height: calc(100vh - 96px);
   overflow: auto;
   overscroll-behavior: contain;
-  padding: 28px;
-  border-radius: 28px;
-  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
-  background: var(--bg-primary);
-  box-shadow: 0 24px 80px color-mix(in srgb, #081018 18%, transparent);
+  padding: 0;
+  border: none;
+  background: transparent;
+  box-shadow: none;
   outline: none;
 }
 
@@ -175,6 +179,14 @@ function formatDate(iso: string): string {
   margin-bottom: 18px;
 }
 
+.dialog-surface {
+  padding: 22px 22px 26px;
+  border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
+  border-radius: 22px;
+  background: #ffffff;
+  box-shadow: 0 10px 24px rgba(8, 16, 24, 0.06);
+}
+
 .meta-pill {
   display: inline-flex;
   align-items: center;
@@ -191,66 +203,106 @@ function formatDate(iso: string): string {
   font-size: 16px;
   line-height: 1.95;
   color: var(--text);
-  white-space: pre-wrap;
   word-break: break-word;
 }
 
+.dialog-content :deep(p),
+.dialog-content :deep(ul),
+.dialog-content :deep(ol),
+.dialog-content :deep(blockquote),
+.dialog-content :deep(pre) {
+  margin: 0 0 14px;
+}
+
+.dialog-content :deep(p:last-child),
+.dialog-content :deep(ul:last-child),
+.dialog-content :deep(ol:last-child),
+.dialog-content :deep(blockquote:last-child),
+.dialog-content :deep(pre:last-child) {
+  margin-bottom: 0;
+}
+
+.dialog-content :deep(ul),
+.dialog-content :deep(ol) {
+  padding-left: 22px;
+}
+
+.dialog-content :deep(blockquote) {
+  padding-left: 14px;
+  border-left: 3px solid var(--border);
+  color: var(--text-muted);
+}
+
+.dialog-content :deep(pre) {
+  overflow-x: auto;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #f6f7f8;
+}
+
+.dialog-content :deep(code) {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.92em;
+}
+
+.dialog-content :deep(pre code) {
+  background: transparent;
+}
+
 .dialog-nav {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
   margin-top: 28px;
 }
 
 .dialog-nav.single-side {
-  grid-template-columns: 1fr;
+  justify-content: flex-start;
 }
 
 .nav-btn {
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
+  align-items: center;
   gap: 6px;
-  min-height: 72px;
-  padding: 14px 16px;
-  border: 1px solid var(--border);
-  border-radius: 18px;
-  background: color-mix(in srgb, var(--bg-secondary) 44%, transparent);
-  color: var(--text);
+  min-height: auto;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: var(--accent-text);
   text-align: left;
   cursor: pointer;
   transition:
-    transform 260ms cubic-bezier(0.22, 1.18, 0.36, 1),
-    border-color 180ms ease,
-    background 180ms ease;
+    transform 220ms cubic-bezier(0.22, 1.18, 0.36, 1),
+    color 180ms ease,
+    opacity 180ms ease;
 }
 
 .nav-btn:hover:not(:disabled) {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--accent) 35%, var(--border));
+  transform: translateY(-1px);
+  color: var(--accent);
 }
 
 .nav-btn:disabled {
   cursor: default;
-  opacity: 0.48;
+  opacity: 0.34;
 }
 
 .align-right {
   text-align: right;
+  margin-left: auto;
 }
 
 .nav-label {
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--text-subtle);
+  font-size: 13px;
+  line-height: 1.4;
+  font-weight: 600;
 }
 
-.nav-text {
-  display: -webkit-box;
-  overflow: hidden;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  line-height: 1.7;
+.nav-arrow {
+  font-size: 14px;
+  line-height: 1;
 }
 
 .dialog-comments {
@@ -310,12 +362,15 @@ function formatDate(iso: string): string {
 
   .moment-dialog {
     max-height: calc(100vh - 68px);
-    padding: 22px 18px;
-    border-radius: 24px;
+  }
+
+  .dialog-surface {
+    padding: 18px 16px 22px;
+    border-radius: 18px;
   }
 
   .dialog-nav {
-    grid-template-columns: 1fr;
+    justify-content: flex-start;
   }
 }
 </style>

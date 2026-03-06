@@ -86,6 +86,9 @@ importers:
       lodash.throttle:
         specifier: ^4.1.1
         version: 4.1.1
+      markdown-it:
+        specifier: ^14.1.1
+        version: 14.1.1
       react:
         specifier: ^19.2.0
         version: 19.2.4
@@ -111,6 +114,9 @@ importers:
       '@types/lodash.throttle':
         specifier: ^4.1.9
         version: 4.1.9
+      '@types/markdown-it':
+        specifier: ^14.1.2
+        version: 14.1.2
       '@types/node':
         specifier: ^24.10.1
         version: 24.11.0
