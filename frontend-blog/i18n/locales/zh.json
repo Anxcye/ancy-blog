@@ -66,8 +66,8 @@
     },
     "moments": {
         "eyebrow": "Fragments",
-        "title": "瞬间",
-        "subtitle": "短一点，快一点，留下一些还没长成文章的想法。",
+        "title": "片刻",
+        "subtitle": "短句、碎念、半成形的念头，先在这里停一下。",
         "total": "{n} 条瞬间",
         "empty": "暂无瞬间记录",
         "commentCount": "{n} 条评论",
@@ -81,22 +81,30 @@
     },
     "timeline": {
         "eyebrow": "Chronicle",
-        "title": "时间轴",
-        "subtitle": "把文章和瞬间按时间排开，看内容是怎样一点点长出来的。",
+        "title": "履迹",
+        "subtitle": "把篇章与片刻按时间排开，看一段段思路怎样慢慢接上。",
         "total": "{n} 条记录",
+        "groupCount": "{n} 条",
+        "mixedLabel": "篇章与片刻",
+        "articleLabel": "篇章",
+        "momentLabel": "片刻",
+        "untitledArticle": "未命名篇章",
+        "loadingMore": "正在续接更早的记录...",
+        "noMore": "已经走到目前为止",
         "empty": "暂无内容"
     },
     "articlesPage": {
         "eyebrow": "Archive",
-        "subtitle": "从完整文章到专题记录，按主题和标签慢慢翻。",
+        "title": "篇章",
+        "subtitle": "把写成形的思路、经验和长一点的表达，都安静收在这里。",
         "total": "{n} 篇文章",
         "category": "分类 · {name}",
         "tag": "标签 · {name}"
     },
     "friends": {
         "eyebrow": "Connections",
-        "title": "友人帐",
-        "subtitle": "把值得互访的站点安静地放在一起，也留一个申请入口。",
+        "title": "友邻",
+        "subtitle": "把值得来往的站点放在一起，也给后来相遇的人留一个位置。",
         "total": "{n} 位朋友",
         "openSubmission": "开放申请"
     },

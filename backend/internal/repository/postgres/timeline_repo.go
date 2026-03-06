@@ -22,13 +22,15 @@ SELECT
 `).Scan(&total)
 
 	rows, err := r.db.Query(`
-SELECT content_type, id, title, summary, slug, content, published_at
+SELECT content_type, id, title, summary, slug, category_slug, category_name, content, published_at
 FROM (
   SELECT 'article' AS content_type,
          a.id::text AS id,
          COALESCE(at.title, a.title) AS title,
          COALESCE(at.summary, a.summary,'') AS summary,
          a.slug,
+         COALESCE(c.slug, '') AS category_slug,
+         COALESCE(c.name, '') AS category_name,
          COALESCE(at.content, '') AS content,
          COALESCE(a.published_at, a.created_at) AS published_at
   FROM articles a
@@ -37,6 +39,9 @@ FROM (
    AND at.locale = $1
    AND at.status = 'published'
    AND (at.published_at IS NULL OR at.published_at <= NOW())
+  LEFT JOIN categories c
+    ON c.id = a.category_id
+   AND c.deleted_at IS NULL
   WHERE a.status='published' AND a.deleted_at IS NULL
   UNION ALL
   SELECT 'moment' AS content_type,
@@ -44,6 +49,8 @@ FROM (
          '' AS title,
          '' AS summary,
          '' AS slug,
+         '' AS category_slug,
+         '' AS category_name,
          COALESCE(mt.content, m.content) AS content,
          COALESCE(m.published_at, m.created_at) AS published_at
   FROM moments m
@@ -64,7 +71,7 @@ LIMIT $2 OFFSET $3
 	items := make([]domain.TimelineItem, 0)
 	for rows.Next() {
 		var t domain.TimelineItem
-		if err := rows.Scan(&t.ContentType, &t.ID, &t.Title, &t.Summary, &t.Slug, &t.Content, &t.PublishedAt); err == nil {
+		if err := rows.Scan(&t.ContentType, &t.ID, &t.Title, &t.Summary, &t.Slug, &t.CategorySlug, &t.CategoryName, &t.Content, &t.PublishedAt); err == nil {
 			items = append(items, t)
 		}
 	}

@@ -138,6 +138,12 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 - Internal link items should reference article slug, not hardcoded URL.
 
 ## Moments Interaction Rules
+- Timeline should behave as a month-grouped archive index:
+  - newest month expanded by default
+  - older months collapsed by default
+  - article rows navigate to article detail pages
+  - moment rows open the shared moment detail modal
+  - compact row layout should prefer `date + text + tail label/category` over card styling
 - Public `moments` feed is for browsing only; detailed interaction happens in a route-driven modal (`/moments/:id`).
 - Each moment detail modal must support previous/next navigation when adjacent moments are available in the loaded feed.
 - Closing the moment detail modal must preserve the current feed state and scroll context instead of refetching the list.

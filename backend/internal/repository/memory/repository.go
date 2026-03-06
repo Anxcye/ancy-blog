@@ -1017,6 +1017,8 @@ func (r *Repository) ListTimeline(page, pageSize int, locale string) ([]domain.T
 				Title:       a.Title,
 				Summary:     a.Summary,
 				Slug:        a.Slug,
+				CategorySlug: a.CategorySlug,
+				CategoryName: r.findCategoryNameBySlug(a.CategorySlug),
 				Content:     content,
 				PublishedAt: a.PublishedAt,
 			})
@@ -1035,6 +1037,18 @@ func (r *Repository) ListTimeline(page, pageSize int, locale string) ([]domain.T
 	}
 	sort.Slice(items, func(i, j int) bool { return items[i].PublishedAt.After(items[j].PublishedAt) })
 	return paginateTimeline(items, page, pageSize)
+}
+
+func (r *Repository) findCategoryNameBySlug(slug string) string {
+	if strings.TrimSpace(slug) == "" {
+		return ""
+	}
+	for _, category := range r.categories {
+		if category.Slug == slug {
+			return category.Name
+		}
+	}
+	return ""
 }
 
 func (r *Repository) ClaimNextQueuedTranslationJob() (domain.TranslationJob, bool, error) {

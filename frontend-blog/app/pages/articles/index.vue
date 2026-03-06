@@ -11,7 +11,7 @@
         <span class="hero-eyebrow">{{ t('articlesPage.eyebrow') }}</span>
         <div class="hero-main">
           <div class="hero-copy">
-            <h1 class="page-title">{{ t('nav.articles') }}</h1>
+            <h1 class="page-title">{{ t('articlesPage.title') }}</h1>
             <p class="page-subtitle">{{ t('articlesPage.subtitle') }}</p>
           </div>
           <div class="hero-stats">

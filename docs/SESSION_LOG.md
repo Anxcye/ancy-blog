@@ -712,3 +712,16 @@
 - Added matching i18n copy for the new hero subtitles and stat labels so the four entry pages no longer drift visually or structurally.
 - Split header navigation display copy from page-title copy via `navDisplay` i18n keys so the top nav can use more literary wording without changing SEO/page headings.
 - Updated header labels to `归处 / 篇章 / 片刻 / 履迹 / 友邻` and `Harbor / Chapters / Fragments / Footsteps / Neighbors`.
+- Refined hero copy again so the page titles themselves now match the editorial navigation tone instead of only reusing functional route labels.
+- Updated hero subtitles for `articles`, `moments`, `timeline`, and `friends` to read more intentionally and consistently in both Chinese and English.
+- Reworked the public timeline page into grouped chronological sections with infinite scroll instead of pager buttons.
+- Timeline moments now open the shared moment detail modal locally, while articles continue to link out as full pages.
+- Strengthened the timeline’s month anchors and widened the visual contrast between chapter rows and fragment rows so the chronology reads as content, not as a generic event list.
+- Tightened the timeline into month-first disclosure: month groups now default to collapsed except the latest month, and expanded rows render as compact one-line entries instead of cards.
+- Timeline rows now show `month/day + title/fragment preview + tail label`, keeping the page closer to an editorial archive index than a feed of cards.
+- Fixed the timeline row mapping to use backend `contentType` instead of a nonexistent `type` field, which restores article titles and correct article navigation inside the compact chronology view.
+- Extended timeline items with article category metadata so compact archive rows can render `篇章 / 分类` style tails.
+- Replaced the timeline row dynamic component branch with explicit article links and moment buttons to restore reliable article navigation.
+- Tightened the compact timeline index spacing again by reducing month-group gaps, row height, date-column width, and tail-label footprint so the page reads more like a dense archive list.
+- Lowered the compact timeline row height and text line-height without shrinking the chosen font sizes, keeping the dense archive feel while preserving the current typography scale.
+- Nudged the compact timeline row copy back up slightly in size while keeping the tighter row height, preserving readability without returning to a loose layout.

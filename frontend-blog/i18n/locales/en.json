@@ -66,8 +66,8 @@
     },
     "moments": {
         "eyebrow": "Fragments",
-        "title": "Moments",
-        "subtitle": "Shorter notes, quicker thoughts, and fragments not meant to become full articles yet.",
+        "title": "Fragments",
+        "subtitle": "Short notes, passing thoughts, and half-formed ideas resting here for a while.",
         "total": "{n} moments",
         "empty": "No moments yet",
         "commentCount": "{n} comments",
@@ -81,22 +81,30 @@
     },
     "timeline": {
         "eyebrow": "Chronicle",
-        "title": "Timeline",
-        "subtitle": "Articles and moments arranged by time so the growth of the site stays visible.",
+        "title": "Footsteps",
+        "subtitle": "Chapters and fragments arranged by time, so the path of thought stays visible.",
         "total": "{n} records",
+        "groupCount": "{n} items",
+        "mixedLabel": "Chapters & Fragments",
+        "articleLabel": "Chapter",
+        "momentLabel": "Fragment",
+        "untitledArticle": "Untitled chapter",
+        "loadingMore": "Tracing earlier entries...",
+        "noMore": "You've reached the beginning for now",
         "empty": "Nothing yet"
     },
     "articlesPage": {
         "eyebrow": "Archive",
-        "subtitle": "Browse full-length writing and topic notes by theme and tag.",
+        "title": "Chapters",
+        "subtitle": "Longer writing, shaped thoughts, and finished notes gathered into one quiet archive.",
         "total": "{n} articles",
         "category": "Category · {name}",
         "tag": "Tag · {name}"
     },
     "friends": {
         "eyebrow": "Connections",
-        "title": "Friends",
-        "subtitle": "A quiet place for linked sites worth revisiting, with an open submission path.",
+        "title": "Neighbors",
+        "subtitle": "A shelf for sites worth revisiting, with room left for future encounters.",
         "total": "{n} friends",
         "openSubmission": "Open submissions"
     },

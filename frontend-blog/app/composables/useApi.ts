@@ -127,11 +127,13 @@ export interface SiteSettings {
 
 // ── Timeline ───────────────────────────────────────────────────────
 export interface TimelineItem {
-    type: 'article' | 'moment'
+    contentType: 'article' | 'moment'
     id: string
     title?: string
     slug?: string
     summary?: string
+    categorySlug?: string
+    categoryName?: string
     content?: string
     publishedAt: string
 }

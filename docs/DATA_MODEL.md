@@ -386,3 +386,18 @@ Indexes/Constraints:
 ## Notes
 - `ip` is intentionally stored in plaintext for moderation/abuse tracing (project decision).
 - If privacy requirements change later, move to hashed or masked storage and add retention policy.
+## Timeline Projection
+- `timeline` is a read projection, not a standalone table.
+- Source entities:
+  - published `articles`
+  - published `moments`
+- Public projection fields:
+  - `contentType`
+  - `id`
+  - `title`
+  - `summary`
+  - `slug`
+  - `categorySlug`
+  - `categoryName`
+  - `content`
+  - `publishedAt`

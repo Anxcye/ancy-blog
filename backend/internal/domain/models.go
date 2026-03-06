@@ -187,6 +187,8 @@ type TimelineItem struct {
 	Title       string    `json:"title,omitempty"`
 	Summary     string    `json:"summary,omitempty"`
 	Slug        string    `json:"slug,omitempty"`
+	CategorySlug string   `json:"categorySlug,omitempty"`
+	CategoryName string   `json:"categoryName,omitempty"`
 	Content     string    `json:"content,omitempty"`
 	PublishedAt time.Time `json:"publishedAt"`
 }

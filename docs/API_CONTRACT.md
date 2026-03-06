@@ -403,6 +403,13 @@
 - Auth Required: No
 - Request: query `page`, `pageSize`, `locale` (optional)
 - Response: mixed timeline feed (`article` + `moment`) sorted by publish time desc.
+- Item Fields:
+  - `contentType`: `article | moment`
+  - `id`
+  - `title`, `summary`, `slug` for article rows
+  - `categorySlug`, `categoryName` for article rows
+  - `content` for moment rows
+  - `publishedAt`
 - Error Codes: None
 
 ## Admin - Site

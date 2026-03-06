@@ -34,6 +34,12 @@ This guide governs both frontend apps:
 - Navigation wording should be literary and brand-toned, not generic labels.
 - Navigation display copy may be more literary than page titles, but should remain understandable on first read.
 - Moments page should read as a quiet vertical note stream, not a dashboard timeline or masonry grid.
+- Timeline page should behave like grouped editorial chronology, not a generic product timeline:
+  - group entries by month or another clear time anchor;
+  - mix article and moment rows in one stream;
+  - let moment rows reuse the shared moment detail modal instead of inventing a second detail pattern.
+  - default to collapsed month groups except for the newest group;
+  - expanded entries should stay compact, closer to an archive index than to a card feed.
 
 ## Motion & Particles
 - Use spring-like easing for interactions and page entry.
