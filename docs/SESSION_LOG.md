@@ -736,3 +736,4 @@
 - Tightened the compact timeline index spacing again by reducing month-group gaps, row height, date-column width, and tail-label footprint so the page reads more like a dense archive list.
 - Lowered the compact timeline row height and text line-height without shrinking the chosen font sizes, keeping the dense archive feel while preserving the current typography scale.
 - Nudged the compact timeline row copy back up slightly in size while keeping the tighter row height, preserving readability without returning to a loose layout.
+- Removed the legacy `frontend-admin/` workspace from the repository and standardized current guidance around `frontend-admin-react/` as the only active admin frontend.

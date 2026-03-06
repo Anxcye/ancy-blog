@@ -3,7 +3,7 @@
 ## Scope
 This guide governs both frontend apps:
 - `frontend-blog/`: public reading experience.
-- `frontend-admin/`: content and system management.
+- `frontend-admin-react/`: content and system management.
 
 ## Admin Design Direction
 - Tone: clean, calm, efficient, and lightweight.

@@ -1,12 +1,12 @@
 # Repository Guidelines
 
 ## Purpose
-This repository is a full rewrite of the blog system using `Go + PostgreSQL + Redis + Vue3`.  
+This repository is a full rewrite of the blog system using `Go + PostgreSQL + Redis + React/Vue`.  
 Development is AI-assisted and document-driven.
 
 ## Project Structure
 - `backend/`: Go API service.
-- `frontend-admin/`: Vue3 admin app.
+- `frontend-admin-react/`: React admin app.
 - `frontend-blog/`: Vue3 public blog app.
 - `deploy/`: deployment scripts and runtime manifests.
 - `docs/`: roadmap, progress, API contracts, decisions, and session logs.

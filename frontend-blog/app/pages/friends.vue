@@ -24,14 +24,6 @@
       <TiptapRenderer v-if="article?.content" :content="article.content" class="friends-intro" />
 
       <section class="directory-shell">
-        <div class="section-heading">
-          <div>
-            <p class="section-kicker">{{ t('friends.directoryEyebrow') }}</p>
-            <h2 class="section-title">{{ t('friends.directoryTitle') }}</h2>
-          </div>
-          <p class="section-note">{{ t('friends.directoryNote') }}</p>
-        </div>
-
         <div v-if="pending" class="links-directory">
           <div v-for="n in 6" :key="n" class="link-row skeleton-row">
             <div class="link-row-inner">
@@ -333,16 +325,7 @@ useSeoMeta({ title: () => `${t('friends.title')} - ${t('nav.links')}` })
 .directory-shell {
   display: flex;
   flex-direction: column;
-  gap: 22px;
-}
-
-.section-heading {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 20px;
-  padding-bottom: 14px;
-  border-bottom: 1px solid color-mix(in srgb, var(--border) 76%, transparent);
+  gap: 0;
 }
 
 .section-kicker {

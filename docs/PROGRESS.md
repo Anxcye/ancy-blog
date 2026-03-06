@@ -78,6 +78,7 @@
 - [x] Added admin moments management (backend list/update APIs and frontend moments CRUD page baseline).
 - [x] Added actionable dashboard metrics and quick entries for content/moderation/system workflows.
 - [x] Completed admin site CRUD loop (footer/social/nav create+edit+delete) and added global 401 redirect handling plus translation-center pagination.
+- [x] Removed legacy `frontend-admin/` workspace and standardized the repo on `frontend-admin-react/` as the only active admin frontend.
 
 - [x] Added pagination to interaction center lists (comments and link submissions).
 

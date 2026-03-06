@@ -2,7 +2,7 @@
 
 A clean rewrite of the blog platform with:
 - Backend: Go + Gin + PostgreSQL + Redis
-- Frontend: Vue 3 (admin + public site)
+- Frontend: React (admin) + Vue 3 (public site)
 
 ## Current Status
 - Repository is initialized for the rewrite phase.
@@ -11,8 +11,8 @@ A clean rewrite of the blog platform with:
 
 ## Project Structure
 - `backend/`: Go API service.
-- `frontend-admin/`: Vue 3 admin app (to be scaffolded).
-- `frontend-blog/`: Vue 3 public app (to be scaffolded).
+- `frontend-admin-react/`: React admin app.
+- `frontend-blog/`: Vue 3 public app.
 - `docs/`: product rules, data model, API contracts, progress logs.
 - `AGENTS.md`: contributor and AI-collaboration rules.
 
@@ -42,4 +42,3 @@ curl http://127.0.0.1:8080/healthz
   - file purpose
   - module/layer position
   - related modules
-

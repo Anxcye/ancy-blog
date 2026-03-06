@@ -107,5 +107,4 @@ Before each merge:
 
 ## 10. Handoff Notes for Next Process
 - Use `frontend-admin-react/` as the only active admin workspace.
-- Do not add new business logic to legacy `frontend-admin/` except emergency fixes.
 - Keep backend contract-first approach; update `docs/API_CONTRACT.md` before endpoint changes.
