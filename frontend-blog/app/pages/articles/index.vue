@@ -8,8 +8,18 @@
 
       <!-- Page title -->
       <div class="page-hero">
-        <h1 class="page-title">{{ t('nav.articles') }}</h1>
-        <p class="page-subtitle">{{ t('home.recentArticles') }}</p>
+        <span class="hero-eyebrow">{{ t('articlesPage.eyebrow') }}</span>
+        <div class="hero-main">
+          <div class="hero-copy">
+            <h1 class="page-title">{{ t('nav.articles') }}</h1>
+            <p class="page-subtitle">{{ t('articlesPage.subtitle') }}</p>
+          </div>
+          <div class="hero-stats">
+            <span class="hero-stat">{{ t('articlesPage.total', { n: total || allArticles.length }) }}</span>
+            <span v-if="activeCategory" class="hero-stat muted">{{ t('articlesPage.category', { name: getCategoryName(activeCategory) }) }}</span>
+            <span v-else-if="activeTag" class="hero-stat muted">{{ t('articlesPage.tag', { name: getTagName(activeTag) }) }}</span>
+          </div>
+        </div>
       </div>
 
       <!-- Filter pills -->
@@ -69,50 +79,54 @@
           :to="localePath(`/articles/${article.slug}`)"
           class="article-item"
           :style="{ animationDelay: `${(i % 9) * 70}ms` }"
+          @mousemove="setPointerPosition($event)"
+          @mouseleave="resetPointerPosition($event)"
         >
-          <!-- Left: index number (global index based on i) -->
-          <span class="article-index">{{ String(i + 1).padStart(2, '0') }}</span>
+          <div class="article-inner">
+            <!-- Left: index number (global index based on i) -->
+            <span class="article-index">{{ String(i + 1).padStart(2, '0') }}</span>
 
-          <!-- Center: title + meta -->
-          <div class="article-body">
-            <h2 class="article-title">{{ article.title }}</h2>
+            <!-- Center: title + meta -->
+            <div class="article-body">
+              <h2 class="article-title">{{ article.title }}</h2>
 
-            <div class="article-meta">
-              <!-- Date -->
-              <span class="meta-item meta-date">
-                <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
-                <time>{{ formatDate(article.publishedAt || article.createdAt) }}</time>
-              </span>
-
-              <!-- Category -->
-              <span v-if="article.categorySlug" class="meta-item meta-category" @click.prevent="setCategory(article.categorySlug)">
-                <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
-                <span>{{ getCategoryName(article.categorySlug) }}</span>
-              </span>
-
-              <!-- Tags (max 3) -->
-              <template v-if="article.tagSlugs?.length">
-                <span
-                  v-for="slug in article.tagSlugs.slice(0, 3)"
-                  :key="slug"
-                  class="meta-item meta-tag"
-                  @click.prevent="setTag(slug)"
-                >
-                  <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
-                  <span>{{ getTagName(slug) }}</span>
+              <div class="article-meta">
+                <!-- Date -->
+                <span class="meta-item meta-date">
+                  <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>
+                  <time>{{ formatDate(article.publishedAt || article.createdAt) }}</time>
                 </span>
-              </template>
-              
-              <!-- Views -->
-              <span class="meta-item meta-views">
-                <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
-                <span>{{ article.viewCount }}</span>
-              </span>
-            </div>
-          </div>
 
-          <!-- Right: arrow indicator -->
-          <span class="article-arrow">→</span>
+                <!-- Category -->
+                <span v-if="article.categorySlug" class="meta-item meta-category" @click.prevent="setCategory(article.categorySlug)">
+                  <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                  <span>{{ getCategoryName(article.categorySlug) }}</span>
+                </span>
+
+                <!-- Tags (max 3) -->
+                <template v-if="article.tagSlugs?.length">
+                  <span
+                    v-for="slug in article.tagSlugs.slice(0, 3)"
+                    :key="slug"
+                    class="meta-item meta-tag"
+                    @click.prevent="setTag(slug)"
+                  >
+                    <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"></line><line x1="4" y1="15" x2="20" y2="15"></line><line x1="10" y1="3" x2="8" y2="21"></line><line x1="16" y1="3" x2="14" y2="21"></line></svg>
+                    <span>{{ getTagName(slug) }}</span>
+                  </span>
+                </template>
+                
+                <!-- Views -->
+                <span class="meta-item meta-views">
+                  <svg class="meta-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                  <span>{{ article.viewCount }}</span>
+                </span>
+              </div>
+            </div>
+
+            <!-- Right: arrow indicator -->
+            <span class="article-arrow">→</span>
+          </div>
         </NuxtLink>
       </div>
 
@@ -240,6 +254,27 @@ function clearFilters() {
   page.value = 1
 }
 
+function setPointerPosition(event: MouseEvent) {
+  const target = event.currentTarget as HTMLElement | null
+  if (!target) return
+  const rect = target.getBoundingClientRect()
+  const x = (event.clientX - rect.left) / rect.width
+  const y = (event.clientY - rect.top) / rect.height
+  target.style.setProperty('--pointer-x', `${(x * 100).toFixed(2)}%`)
+  target.style.setProperty('--pointer-y', `${(y * 100).toFixed(2)}%`)
+  target.style.setProperty('--offset-x', `${((x - 0.5) * 24).toFixed(2)}px`)
+  target.style.setProperty('--offset-y', `${((y - 0.5) * 14).toFixed(2)}px`)
+}
+
+function resetPointerPosition(event: MouseEvent) {
+  const target = event.currentTarget as HTMLElement | null
+  if (!target) return
+  target.style.setProperty('--pointer-x', '50%')
+  target.style.setProperty('--pointer-y', '50%')
+  target.style.setProperty('--offset-x', '0px')
+  target.style.setProperty('--offset-y', '0px')
+}
+
 // ── Lookup helpers ──────────────────────────────────────────────
 function getCategoryName(slug: string) {
   return categories.value?.find(c => c.slug === slug)?.name ?? slug
@@ -272,13 +307,71 @@ useSeoMeta({ title: t('nav.articles') })
 }
 
 /* Page hero */
-.page-hero { margin-bottom: 36px; }
-.page-title {
-  font-size: clamp(1.5rem, 3vw, 2rem);
-  font-weight: 800;
-  margin-bottom: 6px;
+.page-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 40px;
+  padding: 4px 0 26px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
 }
-.page-subtitle { font-size: 14px; color: var(--text-muted); }
+
+.hero-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.hero-main {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.hero-copy {
+  max-width: 620px;
+}
+
+.page-title {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.page-subtitle {
+  margin: 10px 0 0;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text-subtle);
+}
+
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hero-stat {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.hero-stat.muted {
+  color: var(--text-subtle);
+}
 
 /* Filters */
 .filter-bar {
@@ -333,26 +426,66 @@ useSeoMeta({ title: t('nav.articles') })
 .article-list {
   display: flex;
   flex-direction: column;
+  gap: 6px;
   margin-bottom: 40px;
 }
 
 .article-item {
-  display: flex;
-  align-items: center;
-  gap: 20px;
-  padding: 22px 0;
+  --pointer-x: 50%;
+  --pointer-y: 50%;
+  --offset-x: 0px;
+  --offset-y: 0px;
+  padding: 16px 18px;
   text-decoration: none;
   background: transparent;
   border-radius: 0;
   position: relative;
   animation: slide-up-spring 0.65s cubic-bezier(0.34, 1.4, 0.64, 1) both;
-  transition: transform 0.35s cubic-bezier(0.34, 1.5, 0.64, 1);
+  transition: transform 0.22s cubic-bezier(0.22, 1.18, 0.36, 1);
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
+}
+
+.article-item::before {
+  content: '';
+  position: absolute;
+  inset: 4px -4px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at var(--pointer-x) var(--pointer-y), color-mix(in srgb, var(--accent) 10%, transparent), transparent 34%),
+    linear-gradient(180deg, rgba(12, 18, 24, 0.018), rgba(12, 18, 24, 0.04)),
+    color-mix(in srgb, var(--bg-secondary) 58%, transparent);
+  opacity: 0;
+  transform: translate3d(var(--offset-x), var(--offset-y), 0);
+  transition: opacity 220ms ease, transform 0.18s cubic-bezier(0.22, 1.18, 0.36, 1);
+  pointer-events: none;
+}
+
+.article-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  width: 100%;
+  will-change: transform;
+  transform: translate3d(var(--offset-x), var(--offset-y), 0);
+  transition: transform 0.18s cubic-bezier(0.22, 1.18, 0.36, 1);
 }
 
 .article-item:hover {
-  transform: translateX(10px);
+  transform: none;
+}
+
+.article-item:hover::before {
+  opacity: 1;
+}
+
+.dark .article-item::before {
+  background:
+    radial-gradient(circle at var(--pointer-x) var(--pointer-y), color-mix(in srgb, var(--accent) 12%, transparent), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.038)),
+    color-mix(in srgb, var(--bg-secondary) 66%, rgba(255, 255, 255, 0.02));
 }
 
 /* Index number on the left */
@@ -384,17 +517,13 @@ useSeoMeta({ title: t('nav.articles') })
 .article-title {
   font-size: clamp(1.1rem, 2.2vw, 1.5rem);
   font-weight: 700;
-  color: var(--text-primary);
+  color: var(--text);
   margin-bottom: 10px;
   line-height: 1.35;
   transition: color 0.2s ease;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-
-.article-item:hover .article-title {
-  color: var(--accent);
 }
 
 /* Meta row */
@@ -481,8 +610,27 @@ useSeoMeta({ title: t('nav.articles') })
 .empty-state { text-align: center; padding: 64px 0; color: var(--text-subtle); }
 
 @media (max-width: 640px) {
-  .article-item { gap: 12px; }
-  .article-item:hover { transform: translateX(4px); }
+  .page-hero {
+    gap: 14px;
+    margin-bottom: 34px;
+    padding-bottom: 22px;
+  }
+
+  .hero-main {
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+  }
+
+  .article-item { padding: 12px 8px; }
+  .article-list { gap: 2px; }
+  .article-item::before { inset: 4px 0; border-radius: 20px; }
+  .article-inner { gap: 12px; }
+  .article-inner { transform: translate3d(calc(var(--offset-x) * 0.7), calc(var(--offset-y) * 0.7), 0); }
+  .article-item::before { transform: translate3d(calc(var(--offset-x) * 0.7), calc(var(--offset-y) * 0.7), 0); }
   .article-title { font-size: 1rem; white-space: normal; }
 }
 </style>

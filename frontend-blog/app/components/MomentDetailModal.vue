@@ -47,6 +47,7 @@
                   content-type="moment"
                   :content-id="moment.id"
                   :require-approval="requireApproval"
+                  :show-loading-skeleton="false"
                   @count-change="$emit('countChange', $event)"
                 />
               </div>

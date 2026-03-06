@@ -706,3 +706,9 @@
 - Validation:
   - `go test ./...` passed in `backend/`.
   - `pnpm --dir frontend-blog build` passed.
+- Made public comment loading skeleton configurable in `CommentList` so pages can opt out without forking the thread UI.
+- Disabled the initial comment skeleton inside the moments detail modal to keep that dialog visually calmer while preserving the shared comment list behavior elsewhere.
+- Unified the public heroes for `articles`, `moments`, `timeline`, and `friends` into one editorial pattern with eyebrow, title, subtitle, and compact stat pills.
+- Added matching i18n copy for the new hero subtitles and stat labels so the four entry pages no longer drift visually or structurally.
+- Split header navigation display copy from page-title copy via `navDisplay` i18n keys so the top nav can use more literary wording without changing SEO/page headings.
+- Updated header labels to `归处 / 篇章 / 片刻 / 履迹 / 友邻` and `Harbor / Chapters / Fragments / Footsteps / Neighbors`.

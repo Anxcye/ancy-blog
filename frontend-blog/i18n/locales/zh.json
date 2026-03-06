@@ -6,6 +6,13 @@
         "timeline": "时间轴",
         "links": "链接"
     },
+    "navDisplay": {
+        "home": "归处",
+        "articles": "篇章",
+        "moments": "片刻",
+        "timeline": "履迹",
+        "links": "友邻"
+    },
     "home": {
         "heroSubtitle": "写代码，也写想法",
         "recentArticles": "近期文章",
@@ -58,8 +65,10 @@
         "authorBadge": "博主"
     },
     "moments": {
+        "eyebrow": "Fragments",
         "title": "瞬间",
         "subtitle": "短一点，快一点，留下一些还没长成文章的想法。",
+        "total": "{n} 条瞬间",
         "empty": "暂无瞬间记录",
         "commentCount": "{n} 条评论",
         "loadingMore": "正在加载更多瞬间...",
@@ -71,8 +80,25 @@
         "next": "下一条"
     },
     "timeline": {
+        "eyebrow": "Chronicle",
         "title": "时间轴",
+        "subtitle": "把文章和瞬间按时间排开，看内容是怎样一点点长出来的。",
+        "total": "{n} 条记录",
         "empty": "暂无内容"
+    },
+    "articlesPage": {
+        "eyebrow": "Archive",
+        "subtitle": "从完整文章到专题记录，按主题和标签慢慢翻。",
+        "total": "{n} 篇文章",
+        "category": "分类 · {name}",
+        "tag": "标签 · {name}"
+    },
+    "friends": {
+        "eyebrow": "Connections",
+        "title": "友人帐",
+        "subtitle": "把值得互访的站点安静地放在一起，也留一个申请入口。",
+        "total": "{n} 位朋友",
+        "openSubmission": "开放申请"
     },
     "meta": {
         "darkMode": "切换深色模式",

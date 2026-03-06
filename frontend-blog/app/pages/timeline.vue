@@ -6,7 +6,16 @@
   <div class="timeline-page">
     <div class="container">
       <div class="page-hero">
-        <h1 class="page-title">{{ t('timeline.title') }}</h1>
+        <span class="hero-eyebrow">{{ t('timeline.eyebrow') }}</span>
+        <div class="hero-main">
+          <div class="hero-copy">
+            <h1 class="page-title">{{ t('timeline.title') }}</h1>
+            <p class="page-subtitle">{{ t('timeline.subtitle') }}</p>
+          </div>
+          <div class="hero-stats">
+            <span class="hero-stat">{{ t('timeline.total', { n: items?.total || items?.rows?.length || 0 }) }}</span>
+          </div>
+        </div>
       </div>
 
       <div v-if="pending" class="timeline">
@@ -109,8 +118,68 @@ useSeoMeta({ title: t('timeline.title') })
   padding-bottom: 80px;
 }
 
-.page-hero { margin-bottom: 40px; }
-.page-title { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; }
+.page-hero {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 40px;
+  padding: 4px 0 26px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+}
+
+.hero-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.hero-main {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.hero-copy {
+  max-width: 620px;
+}
+
+.page-title {
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+
+.page-subtitle {
+  margin: 10px 0 0;
+  max-width: 560px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text-subtle);
+}
+
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hero-stat {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
 
 /* Timeline */
 .timeline { position: relative; padding-left: 36px; }
@@ -232,4 +301,21 @@ useSeoMeta({ title: t('timeline.title') })
 .page-info { font-size: 14px; color: var(--text-muted); min-width: 60px; text-align: center; }
 
 .empty-state { text-align: center; padding: 64px 0; color: var(--text-subtle); font-size: 15px; }
+
+@media (max-width: 640px) {
+  .page-hero {
+    gap: 14px;
+    margin-bottom: 34px;
+    padding-bottom: 22px;
+  }
+
+  .hero-main {
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+  }
+}
 </style>

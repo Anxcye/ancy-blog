@@ -32,6 +32,7 @@ This guide governs both frontend apps:
   - right: profile avatar.
 - Add a softly floating down-arrow at hero bottom.
 - Navigation wording should be literary and brand-toned, not generic labels.
+- Navigation display copy may be more literary than page titles, but should remain understandable on first read.
 - Moments page should read as a quiet vertical note stream, not a dashboard timeline or masonry grid.
 
 ## Motion & Particles
@@ -44,6 +45,11 @@ This guide governs both frontend apps:
 - Moments detail should open in a route-driven modal instead of expanding inline inside the feed.
 - The moments modal should align near the top of the viewport, lock background scroll, and keep wheel focus inside the dialog.
 - Moments feed items may use subtle pointer-follow background motion on hover, but should not show explicit "view detail" buttons.
+- Public list/info pages such as `articles`, `moments`, `timeline`, and `friends` should share a consistent hero shell:
+  - small uppercase eyebrow;
+  - large editorial title;
+  - restrained explanatory subtitle;
+  - optional compact stat pills aligned to the right on wide screens and stacked on mobile.
 
 ## Responsive & SEO Constraints
 - Mobile-first layout and touch targets >= `40px`.

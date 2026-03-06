@@ -6,8 +6,17 @@
   <div class="friends-page">
     <div class="container">
       <div class="page-hero">
-        <h1 class="page-title word-bounce">友人帐</h1>
-        <p class="page-subtitle word-bounce" style="animation-delay: 100ms">散落平行时空的节点，都在这里建立连接。</p>
+        <span class="hero-eyebrow">{{ t('friends.eyebrow') }}</span>
+        <div class="hero-main">
+          <div class="hero-copy">
+            <h1 class="page-title">{{ t('friends.title') }}</h1>
+            <p class="page-subtitle">{{ t('friends.subtitle') }}</p>
+          </div>
+          <div class="hero-stats">
+            <span class="hero-stat">{{ t('friends.total', { n: links?.length || 0 }) }}</span>
+            <span class="hero-stat muted">{{ t('friends.openSubmission') }}</span>
+          </div>
+        </div>
       </div>
 
       <!-- Skeleton Loading -->
@@ -88,6 +97,7 @@
 </template>
 
 <script setup lang="ts">
+const { t } = useI18n()
 const { getApprovedLinks, getArticle, submitLink } = useApi()
 
 const { data: links, pending } = await useAsyncData('friends-links', getApprovedLinks, {
@@ -124,7 +134,7 @@ async function handleSubmit() {
   }
 }
 
-useSeoMeta({ title: '友人帐 - 友情链接' })
+useSeoMeta({ title: () => `${t('friends.title')} - ${t('nav.links')}` })
 </script>
 
 <style scoped>
@@ -134,19 +144,70 @@ useSeoMeta({ title: '友人帐 - 友情链接' })
 }
 
 .page-hero {
-  text-align: center;
-  margin-bottom: 56px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 44px;
+  padding: 4px 0 26px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+}
+
+.hero-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.hero-main {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.hero-copy {
+  max-width: 620px;
 }
 
 .page-title {
-  font-size: clamp(2rem, 4vw, 3rem);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
   font-weight: 800;
-  margin-bottom: 12px;
+  letter-spacing: -0.02em;
+  margin: 0;
 }
 
 .page-subtitle {
-  font-size: 1.1rem;
+  margin: 10px 0 0;
+  max-width: 560px;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--text-subtle);
+}
+
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hero-stat {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
   color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.hero-stat.muted {
+  color: var(--text-subtle);
 }
 
 .friends-intro {
@@ -268,18 +329,6 @@ useSeoMeta({ title: '友人帐 - 友情链接' })
   font-size: 15px;
 }
 
-.word-bounce {
-  display: inline-block;
-  opacity: 0;
-  animation: word-spring 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-@keyframes word-spring {
-  0% { opacity: 0; transform: translateY(20px) scale(0.8); }
-  60% { opacity: 1; transform: translateY(-4px) scale(1.05); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
-}
-
 /* Submission Form */
 .submit-section {
   margin-top: 80px;
@@ -383,6 +432,21 @@ useSeoMeta({ title: '友人帐 - 友情链接' })
 }
 
 @media (max-width: 768px) {
+  .page-hero {
+    gap: 14px;
+    margin-bottom: 34px;
+    padding-bottom: 22px;
+  }
+
+  .hero-main {
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+  }
+
   .submit-container {
     grid-template-columns: 1fr;
   }

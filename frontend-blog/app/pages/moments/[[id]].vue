@@ -6,8 +6,16 @@
   <div class="moments-page">
     <div class="container">
       <div class="page-hero">
-        <h1 class="page-title">{{ t('moments.title') }}</h1>
-        <p class="page-subtitle">{{ t('moments.subtitle') }}</p>
+        <span class="hero-eyebrow">{{ t('moments.eyebrow') }}</span>
+        <div class="hero-main">
+          <div class="hero-copy">
+            <h1 class="page-title">{{ t('moments.title') }}</h1>
+            <p class="page-subtitle">{{ t('moments.subtitle') }}</p>
+          </div>
+          <div class="hero-stats">
+            <span class="hero-stat">{{ t('moments.total', { n: total || allMoments.length }) }}</span>
+          </div>
+        </div>
       </div>
 
       <div v-if="pending" class="moments-feed" aria-hidden="true">
@@ -284,20 +292,65 @@ useSeoMeta({
 }
 
 .page-hero {
-  margin-bottom: 44px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 40px;
+  padding: 4px 0 26px;
+  border-bottom: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+}
+
+.hero-eyebrow {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+}
+
+.hero-main {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.hero-copy {
+  max-width: 620px;
 }
 
 .page-title {
-  font-size: clamp(1.8rem, 4vw, 2.6rem);
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
   font-weight: 800;
-  letter-spacing: 0.04em;
+  letter-spacing: -0.02em;
+  margin: 0;
 }
 
 .page-subtitle {
-  margin-top: 12px;
+  margin: 10px 0 0;
   max-width: 560px;
   color: var(--text-subtle);
   line-height: 1.8;
+}
+
+.hero-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.hero-stat {
+  display: inline-flex;
+  align-items: center;
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 999px;
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
+  color: var(--text-muted);
+  font-size: 12px;
+  white-space: nowrap;
 }
 
 .moments-feed {
@@ -324,6 +377,7 @@ useSeoMeta({
   padding: 18px 20px;
   text-align: left;
   cursor: pointer;
+  transform: translate3d(var(--offset-x), var(--offset-y), 0);
   transition:
     transform 320ms cubic-bezier(0.22, 1.18, 0.36, 1),
     background 220ms ease;
@@ -335,20 +389,24 @@ useSeoMeta({
   inset: 0;
   border-radius: inherit;
   background:
-    radial-gradient(circle at var(--pointer-x) var(--pointer-y), color-mix(in srgb, var(--accent) 12%, transparent), transparent 38%),
-    color-mix(in srgb, var(--bg-secondary) 36%, transparent);
+    radial-gradient(circle at var(--pointer-x) var(--pointer-y), color-mix(in srgb, var(--accent) 10%, transparent), transparent 34%),
+    linear-gradient(180deg, rgba(12, 18, 24, 0.018), rgba(12, 18, 24, 0.04)),
+    color-mix(in srgb, var(--bg-secondary) 58%, transparent);
   opacity: 0;
-  transition: opacity 220ms ease;
-}
-
-.moment-trigger:hover,
-.moment-item.active .moment-trigger {
-  transform: translate3d(var(--offset-x), var(--offset-y), 0);
+  transform: translate3d(calc(var(--offset-x) * 0.92), calc(var(--offset-y) * 0.92), 0);
+  transition: opacity 220ms ease, transform 320ms cubic-bezier(0.22, 1.18, 0.36, 1);
 }
 
 .moment-trigger:hover::before,
 .moment-item.active .moment-trigger::before {
   opacity: 1;
+}
+
+.dark .moment-trigger::before {
+  background:
+    radial-gradient(circle at var(--pointer-x) var(--pointer-y), color-mix(in srgb, var(--accent) 12%, transparent), transparent 34%),
+    linear-gradient(180deg, rgba(255, 255, 255, 0.018), rgba(255, 255, 255, 0.038)),
+    color-mix(in srgb, var(--bg-secondary) 66%, rgba(255, 255, 255, 0.02));
 }
 
 .moment-head,
@@ -535,6 +593,21 @@ useSeoMeta({
 }
 
 @media (max-width: 640px) {
+  .page-hero {
+    gap: 14px;
+    margin-bottom: 34px;
+    padding-bottom: 22px;
+  }
+
+  .hero-main {
+    align-items: flex-start;
+    gap: 18px;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+  }
+
   .moment-trigger {
     padding: 14px 0;
     border-radius: 20px;

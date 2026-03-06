@@ -6,6 +6,13 @@
         "timeline": "Timeline",
         "links": "Links"
     },
+    "navDisplay": {
+        "home": "Harbor",
+        "articles": "Chapters",
+        "moments": "Fragments",
+        "timeline": "Footsteps",
+        "links": "Neighbors"
+    },
     "home": {
         "heroSubtitle": "Code & Thoughts",
         "recentArticles": "Recent Articles",
@@ -58,8 +65,10 @@
         "authorBadge": "Author"
     },
     "moments": {
+        "eyebrow": "Fragments",
         "title": "Moments",
         "subtitle": "Shorter notes, quicker thoughts, and fragments not meant to become full articles yet.",
+        "total": "{n} moments",
         "empty": "No moments yet",
         "commentCount": "{n} comments",
         "loadingMore": "Loading more moments...",
@@ -71,8 +80,25 @@
         "next": "Next"
     },
     "timeline": {
+        "eyebrow": "Chronicle",
         "title": "Timeline",
+        "subtitle": "Articles and moments arranged by time so the growth of the site stays visible.",
+        "total": "{n} records",
         "empty": "Nothing yet"
+    },
+    "articlesPage": {
+        "eyebrow": "Archive",
+        "subtitle": "Browse full-length writing and topic notes by theme and tag.",
+        "total": "{n} articles",
+        "category": "Category · {name}",
+        "tag": "Tag · {name}"
+    },
+    "friends": {
+        "eyebrow": "Connections",
+        "title": "Friends",
+        "subtitle": "A quiet place for linked sites worth revisiting, with an open submission path.",
+        "total": "{n} friends",
+        "openSubmission": "Open submissions"
     },
     "meta": {
         "darkMode": "Switch to dark mode",

@@ -15,7 +15,7 @@
       @success="handleRootSuccess"
     />
 
-    <div v-if="pending" class="comments-list skeleton-list" aria-hidden="true">
+    <div v-if="pending && showLoadingSkeleton" class="comments-list skeleton-list" aria-hidden="true">
       <article v-for="card in skeletonCards" :key="card" class="thread-card skeleton-card">
         <div class="skeleton-comment-head">
           <span class="skeleton-avatar"></span>
@@ -56,7 +56,7 @@
       </article>
     </div>
 
-    <div v-else class="empty-state">
+    <div v-else-if="!pending" class="empty-state">
       {{ t('article.noComments') }}
     </div>
 
@@ -89,6 +89,7 @@ const props = defineProps<{
   contentType: CommentContentType
   contentId: string
   requireApproval?: boolean
+  showLoadingSkeleton?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -108,6 +109,7 @@ const replyingToId = ref<string | null>(null)
 const skeletonCards = [1, 2, 3]
 
 const hasMore = computed(() => commentThreads.value.length < threadTotal.value)
+const showLoadingSkeleton = computed(() => props.showLoadingSkeleton !== false)
 
 function setReplyTarget(target: CommentThread) {
   replyingToId.value = target.id
