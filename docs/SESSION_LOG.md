@@ -724,6 +724,7 @@
   - public `friends` page hides the submission CTA and shows a closed-state note when disabled;
   - admin site settings now expose the toggle so operations can pause submissions without changing frontend code.
 - Fixed admin site settings persistence so saving a partial settings form (for example only the friend-link toggle) no longer clears unrelated fields such as avatar, hero intro, or SEO metadata.
+- Recorded an architecture rule that singleton settings endpoints must use patch-style merge semantics, with backend merge behavior as the required safety boundary.
 - Reworked the public timeline page into grouped chronological sections with infinite scroll instead of pager buttons.
 - Timeline moments now open the shared moment detail modal locally, while articles continue to link out as full pages.
 - Strengthened the timeline’s month anchors and widened the visual contrast between chapter rows and fragment rows so the chronology reads as content, not as a generic event list.

@@ -29,3 +29,12 @@
 - Decision: Use Gin as the HTTP framework.
 - Rationale: Widely adopted in Go projects, mature middleware ecosystem, clear routing model.
 - Consequences: Standardize handler/middleware patterns around Gin context.
+
+## ADR-006: Singleton Settings Update Semantics
+- Date: 2026-03-06
+- Decision: Treat singleton-style settings resources as patch-merge updates even when exposed through `PUT` endpoints.
+- Rationale: Admin UIs may save one settings section at a time, so omitted fields must preserve existing values instead of being cleared by whole-object replacement.
+- Consequences:
+  - Handler DTOs for singleton settings should use optional/pointer fields.
+  - Handlers should read current state first, then merge only fields present in the request.
+  - Frontend section forms may still merge local cached settings before submit, but backend merge behavior is the required safety boundary.

@@ -867,6 +867,9 @@
   - `ogImageUrl` (string) — default Open Graph image URL.
 - New field added (migration 000018):
   - `linkSubmissionEnabled` (bool) — global switch to allow/disallow public friend-link submissions.
+- Update semantics:
+  - This singleton settings endpoint uses patch-style merge semantics.
+  - Omitted fields keep their previous values instead of being reset.
 
 ### Article Pin / Featured (migration 000009)
 - `isPinned` (bool) — pinned articles sort first in `ListArticles`; shown as badge in admin.
