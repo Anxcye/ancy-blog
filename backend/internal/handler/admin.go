@@ -337,6 +337,7 @@ func (h *AdminHandler) UpdateSiteSettings(c *gin.Context) {
 		DefaultLocale:          req.DefaultLocale,
 		CommentEnabled:         req.CommentEnabled,
 		CommentRequireApproval: req.CommentRequireApproval,
+		LinkSubmissionEnabled:  req.LinkSubmissionEnabled,
 		SiteDescription:        req.SiteDescription,
 		SeoKeywords:            req.SeoKeywords,
 		OgImageURL:             req.OgImageURL,

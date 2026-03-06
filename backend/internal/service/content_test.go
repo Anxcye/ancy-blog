@@ -7,9 +7,11 @@ package service
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"testing"
 	"time"
 
+	"github.com/anxcye/ancy-blog/backend/internal/apperr"
 	"github.com/anxcye/ancy-blog/backend/internal/domain"
 	"github.com/anxcye/ancy-blog/backend/internal/repository"
 )
@@ -381,6 +383,20 @@ func TestGetSiteSettingsReadsFromCache(t *testing.T) {
 	_ = svc.GetSiteSettings()
 	if calls != 1 {
 		t.Fatalf("expected one repository call due to cache, got %d", calls)
+	}
+}
+
+func TestSubmitLinkRejectsWhenLinkSubmissionDisabled(t *testing.T) {
+	repo := &contentRepoStub{
+		getSiteSettingsFunc: func() domain.SiteSettings {
+			return domain.SiteSettings{LinkSubmissionEnabled: false}
+		},
+	}
+	svc := NewContentService(repo, nil)
+
+	_, err := svc.SubmitLink(domain.Link{Name: "Example", URL: "https://example.com"})
+	if !errors.Is(err, apperr.ErrLinkSubmissionDisabled) {
+		t.Fatalf("expected ErrLinkSubmissionDisabled, got %v", err)
 	}
 }
 

@@ -57,6 +57,9 @@ export interface SiteSettings {
   avatarUrl: string;
   heroIntroMd: string;
   defaultLocale: string;
+  commentEnabled?: boolean;
+  commentRequireApproval?: boolean;
+  linkSubmissionEnabled?: boolean;
 }
 
 export interface FooterItem {

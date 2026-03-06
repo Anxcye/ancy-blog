@@ -13,6 +13,7 @@ var (
 	ErrMomentNotFound         = errors.New("moment not found")
 	ErrCommentNotFound        = errors.New("comment not found")
 	ErrLinkNotFound           = errors.New("link not found")
+	ErrLinkSubmissionDisabled = errors.New("link submission disabled")
 	ErrFooterItemNotFound     = errors.New("footer item not found")
 	ErrSocialLinkNotFound     = errors.New("social link not found")
 	ErrNavItemNotFound        = errors.New("nav item not found")

@@ -15,6 +15,7 @@
 ## Done
 - [x] Implemented friend link submission form on friends page with live preview and responsive layout.
 - [x] Redesigned friends page: vertical link cards without background, reordered content (hero → links → article → form).
+- [x] Added site-level friend-link submission toggle with backend enforcement, blog frontend state sync, and admin setting control.
 - [x] Implemented character-by-character spring animation for homepage hero with color differentiation and simultaneous line animation.
 - [x] Redesigned homepage hero with large title style: embedded avatar decoration, gradient subtitle from backend heroIntroMd, floating social icons, 100vh full-screen layout.
 - [x] Implemented hierarchical navigation with dynamic category dropdown: admin can configure parent-child nav items via `parentId` field, blog frontend auto-injects category list when `targetType=category` with no predefined children.

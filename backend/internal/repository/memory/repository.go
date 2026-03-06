@@ -67,11 +67,12 @@ func NewRepository() *Repository {
 			{ID: uuid.NewString(), Name: "Vue", Slug: "vue"},
 		},
 		siteSettings: domain.SiteSettings{
-			SiteName:       "Ancy Blog",
-			AvatarURL:      "",
-			HeroIntroMD:    "Hi, I build things.",
-			DefaultLocale:  "en",
-			CommentEnabled: true,
+			SiteName:              "Ancy Blog",
+			AvatarURL:             "",
+			HeroIntroMD:           "Hi, I build things.",
+			DefaultLocale:         "en",
+			CommentEnabled:        true,
+			LinkSubmissionEnabled: true,
 		},
 		footerItems: make(map[string]domain.FooterItem),
 		socialLinks: make(map[string]domain.SocialLink),
@@ -1012,15 +1013,15 @@ func (r *Repository) ListTimeline(page, pageSize int, locale string) ([]domain.T
 				}
 			}
 			items = append(items, domain.TimelineItem{
-				ContentType: "article",
-				ID:          a.ID,
-				Title:       a.Title,
-				Summary:     a.Summary,
-				Slug:        a.Slug,
+				ContentType:  "article",
+				ID:           a.ID,
+				Title:        a.Title,
+				Summary:      a.Summary,
+				Slug:         a.Slug,
 				CategorySlug: a.CategorySlug,
 				CategoryName: r.findCategoryNameBySlug(a.CategorySlug),
-				Content:     content,
-				PublishedAt: a.PublishedAt,
+				Content:      content,
+				PublishedAt:  a.PublishedAt,
 			})
 		}
 	}

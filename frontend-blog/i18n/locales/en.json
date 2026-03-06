@@ -107,6 +107,7 @@
         "subtitle": "A quiet place for sites I keep returning to, with room left for future encounters too.",
         "total": "{n} friends",
         "openSubmission": "Link exchanges welcome",
+        "closedSubmission": "Submissions currently closed",
         "directoryEyebrow": "Directory",
         "directoryTitle": "Sites I keep visiting",
         "directoryNote": "These are sites worth revisiting, and you're welcome to bring your own corner of the web here too.",
@@ -116,6 +117,7 @@
         "submitEyebrow": "Submission",
         "submitTitle": "Leave your site here too",
         "submitNote": "If you'd like to keep a doorway open between our sites, you're welcome to leave your details here.",
+        "submitClosedNote": "Friend-link submissions are paused for now. This section will reopen when I am ready to review new sites again.",
         "showSubmission": "Share my site",
         "hideSubmission": "Maybe later",
         "ruleAvailability": "A reachable site with clear basic information is enough to start.",
@@ -133,7 +135,8 @@
         "submitting": "Submitting...",
         "submitAction": "Send my site",
         "submitSuccess": "Received. I will review it soon, and it will appear here once approved.",
-        "submitFailure": "That did not come through. Please try again."
+        "submitFailure": "That did not come through. Please try again.",
+        "submitDisabled": "Friend-link submissions are currently closed."
     },
     "meta": {
         "darkMode": "Switch to dark mode",

@@ -201,6 +201,9 @@ const settingsForm = reactive<SiteSettings>({
   avatarUrl: '',
   heroIntroMd: '',
   defaultLocale: 'zh-CN',
+  commentEnabled: true,
+  commentRequireApproval: false,
+  linkSubmissionEnabled: true,
 });
 
 const editingFooterId = ref('');
@@ -429,6 +432,9 @@ async function loadAll(): Promise<void> {
     settingsForm.avatarUrl = settings.avatarUrl || '';
     settingsForm.heroIntroMd = settings.heroIntroMd || '';
     settingsForm.defaultLocale = settings.defaultLocale || 'zh-CN';
+    settingsForm.commentEnabled = settings.commentEnabled ?? true;
+    settingsForm.commentRequireApproval = settings.commentRequireApproval ?? false;
+    settingsForm.linkSubmissionEnabled = settings.linkSubmissionEnabled ?? true;
     footerItems.value = footer;
     socialLinks.value = socials;
     navItems.value = navs;

@@ -218,6 +218,18 @@ function CommentPolicyTab(): ReactElement {
                 <Switch />
               </Form.Item>
             </div>
+
+            <div className="comment-policy-row comment-policy-row--last">
+              <div className="comment-policy-info">
+                <span className="comment-policy-label">开放友链申请</span>
+                <span className="comment-policy-desc">
+                  关闭后，公共友邻页不再显示申请入口，访客提交友链申请也会被后端直接拒绝。
+                </span>
+              </div>
+              <Form.Item name="linkSubmissionEnabled" valuePropName="checked" noStyle>
+                <Switch />
+              </Form.Item>
+            </div>
           </div>
 
           <Button

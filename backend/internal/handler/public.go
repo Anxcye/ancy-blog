@@ -6,11 +6,13 @@ package handler
 
 import (
 	"crypto/sha256"
+	"errors"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
+	"github.com/anxcye/ancy-blog/backend/internal/apperr"
 	"github.com/anxcye/ancy-blog/backend/internal/domain"
 	"github.com/anxcye/ancy-blog/backend/internal/handler/dto"
 	"github.com/anxcye/ancy-blog/backend/internal/response"
@@ -193,6 +195,10 @@ func (h *PublicHandler) AddComment(c *gin.Context) {
 		UserAgent:   c.GetHeader("User-Agent"),
 	})
 	if err != nil {
+		if errors.Is(err, apperr.ErrLinkSubmissionDisabled) {
+			response.JSON(c, http.StatusForbidden, response.Envelope{Code: "LINK_SUBMISSION_DISABLED", Message: "link submission is disabled"})
+			return
+		}
 		badRequest(c, "VALIDATION_ERROR", err.Error())
 		return
 	}

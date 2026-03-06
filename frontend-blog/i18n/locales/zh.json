@@ -107,6 +107,7 @@
         "subtitle": "把常来常往的站点安静放在这里，也欢迎后来相遇的人来坐一坐。",
         "total": "{n} 位朋友",
         "openSubmission": "欢迎交换友链",
+        "closedSubmission": "暂未开放申请",
         "directoryEyebrow": "Directory",
         "directoryTitle": "来往中的站点",
         "directoryNote": "这里放着一些愿意彼此来往的站点，也欢迎你带着自己的小天地过来打个招呼。",
@@ -116,6 +117,7 @@
         "submitEyebrow": "Submission",
         "submitTitle": "也把你的站点留在这里",
         "submitNote": "如果你也愿意彼此留一个入口，欢迎把站点信息发过来，我会认真看看。",
+        "submitClosedNote": "这段时间先不收新的友链申请，之后重新开放时会在这里说明。",
         "showSubmission": "写下我的站点",
         "hideSubmission": "先收起来",
         "ruleAvailability": "站点能稳定访问，基本信息完整就很好。",
@@ -133,7 +135,8 @@
         "submitting": "提交中...",
         "submitAction": "把站点送过来",
         "submitSuccess": "已经收到，我会尽快看看，审核通过后就会显示在这里。",
-        "submitFailure": "这次没送达，再试一次看看。"
+        "submitFailure": "这次没送达，再试一次看看。",
+        "submitDisabled": "友链申请暂未开放。"
     },
     "meta": {
         "darkMode": "切换深色模式",

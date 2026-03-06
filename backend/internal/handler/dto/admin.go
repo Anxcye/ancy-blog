@@ -58,6 +58,7 @@ type SiteSettingsUpdateRequest struct {
 	DefaultLocale          string `json:"defaultLocale"`
 	CommentEnabled         bool   `json:"commentEnabled"`
 	CommentRequireApproval bool   `json:"commentRequireApproval"`
+	LinkSubmissionEnabled  bool   `json:"linkSubmissionEnabled"`
 	SiteDescription        string `json:"siteDescription"`
 	SeoKeywords            string `json:"seoKeywords"`
 	OgImageURL             string `json:"ogImageUrl"`

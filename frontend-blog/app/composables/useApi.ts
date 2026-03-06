@@ -120,6 +120,7 @@ export interface SiteSettings {
     defaultLocale: string
     commentEnabled: boolean
     commentRequireApproval: boolean
+    linkSubmissionEnabled: boolean
     siteDescription?: string
     seoKeywords?: string
     ogImageUrl?: string

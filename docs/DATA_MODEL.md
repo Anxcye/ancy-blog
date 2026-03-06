@@ -177,6 +177,12 @@ Fields:
 - `avatar_url` (nullable)
 - `hero_intro_md` (nullable, short markdown text for homepage center intro)
 - `default_locale` (required, default `en`)
+- `comment_enabled` (required, default `true`)
+- `comment_require_approval` (required, default `false`)
+- `link_submission_enabled` (required, default `true`)
+- `site_description` (nullable)
+- `seo_keywords` (nullable)
+- `og_image_url` (nullable)
 - `created_at`
 - `updated_at`
 

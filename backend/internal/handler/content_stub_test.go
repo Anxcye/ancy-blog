@@ -52,7 +52,7 @@ func (s *handlerRepoStub) CreateComment(comment domain.Comment) (domain.Comment,
 
 // GetSiteSettings returns a permissive default so comment tests pass without extra setup.
 func (s *handlerRepoStub) GetSiteSettings() domain.SiteSettings {
-	return domain.SiteSettings{SiteName: "Test", DefaultLocale: "en", CommentEnabled: true}
+	return domain.SiteSettings{SiteName: "Test", DefaultLocale: "en", CommentEnabled: true, LinkSubmissionEnabled: true}
 }
 
 func (s *handlerRepoStub) ListArticles(page, pageSize int, status, contentKind, keyword string) ([]domain.Article, int) {

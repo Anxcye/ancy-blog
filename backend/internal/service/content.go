@@ -332,6 +332,9 @@ func (s *ContentService) SubmitLink(link domain.Link) (domain.Link, error) {
 	if strings.TrimSpace(link.Name) == "" || strings.TrimSpace(link.URL) == "" {
 		return domain.Link{}, fmt.Errorf("%w: name and url are required", apperr.ErrValidation)
 	}
+	if !s.repo.GetSiteSettings().LinkSubmissionEnabled {
+		return domain.Link{}, apperr.ErrLinkSubmissionDisabled
+	}
 	if _, err := url.ParseRequestURI(link.URL); err != nil {
 		return domain.Link{}, fmt.Errorf("%w: url is invalid", apperr.ErrValidation)
 	}

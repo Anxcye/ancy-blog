@@ -292,7 +292,7 @@
 - Auth Required: No
 - Request: link submission payload
 - Response: submission id
-- Error Codes: VALIDATION_ERROR, RATE_LIMITED
+- Error Codes: VALIDATION_ERROR, RATE_LIMITED, LINK_SUBMISSION_DISABLED
 
 - ID: PUB-LINK-002
 - Method: GET
@@ -354,7 +354,13 @@
   "siteName": "Ancy Blog",
   "avatarUrl": "https://...",
   "heroIntroMd": "Hi, I build things.",
-  "defaultLocale": "en"
+  "defaultLocale": "en",
+  "commentEnabled": true,
+  "commentRequireApproval": false,
+  "linkSubmissionEnabled": true,
+  "siteDescription": "...",
+  "seoKeywords": "...",
+  "ogImageUrl": "https://..."
 }
 ```
 - Error Codes: None
@@ -857,6 +863,8 @@
   - `siteDescription` (string) — used for SEO meta description.
   - `seoKeywords` (string) — comma-separated SEO keywords.
   - `ogImageUrl` (string) — default Open Graph image URL.
+- New field added (migration 000018):
+  - `linkSubmissionEnabled` (bool) — global switch to allow/disallow public friend-link submissions.
 
 ### Article Pin / Featured (migration 000009)
 - `isPinned` (bool) — pinned articles sort first in `ListArticles`; shown as badge in admin.

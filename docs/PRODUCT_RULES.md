@@ -54,6 +54,7 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 
 ## Link (Friend Link) Rules
 - Visitors can submit link applications.
+- Site settings must support a global `link_submission_enabled` toggle for public friend-link applications.
 - Admin reviews each submission (`pending/approved/rejected`).
 - Approved links can optionally associate one article (`related_article_id`).
 - Public friends page should prioritize editorial context and the approved directory before the submission form.

@@ -14,7 +14,9 @@
           </div>
           <div class="hero-stats">
             <span class="hero-stat">{{ t('friends.total', { n: links?.length || 0 }) }}</span>
-            <span class="hero-stat muted">{{ t('friends.openSubmission') }}</span>
+            <span class="hero-stat muted">
+              {{ siteSettings?.linkSubmissionEnabled ? t('friends.openSubmission') : t('friends.closedSubmission') }}
+            </span>
           </div>
         </div>
       </div>
@@ -86,9 +88,12 @@
             <div>
               <p class="section-kicker">{{ t('friends.submitEyebrow') }}</p>
               <h2 class="section-title">{{ t('friends.submitTitle') }}</h2>
-              <p class="submit-note">{{ t('friends.submitNote') }}</p>
+              <p class="submit-note">
+                {{ siteSettings?.linkSubmissionEnabled ? t('friends.submitNote') : t('friends.submitClosedNote') }}
+              </p>
             </div>
             <button
+              v-if="siteSettings?.linkSubmissionEnabled"
               type="button"
               class="submit-trigger"
               :aria-expanded="showSubmission"
@@ -104,7 +109,7 @@
             <li>{{ t('friends.ruleReciprocal') }}</li>
           </ul>
 
-          <div v-if="showSubmission" class="submit-container">
+          <div v-if="siteSettings?.linkSubmissionEnabled && showSubmission" class="submit-container">
             <div class="preview-area">
               <p class="preview-label">{{ t('friends.previewLabel') }}</p>
               <div class="link-row preview-row">
@@ -216,6 +221,11 @@ function resetLinkMove(event: MouseEvent) {
 }
 
 async function handleSubmit() {
+  if (!siteSettings.value?.linkSubmissionEnabled) {
+    submitSuccess.value = false
+    submitMessage.value = t('friends.submitDisabled')
+    return
+  }
   submitting.value = true
   submitMessage.value = ''
   try {

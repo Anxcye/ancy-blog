@@ -719,6 +719,10 @@
   - replaced generic grid cards with lighter roster-style rows and subtle pointer-follow hover motion;
   - collapsed the friend-link application form behind an explicit CTA with submission rules and a live preview.
 - Wired the public `friends` page to reuse the shared article comment thread when the backing `friends` page article allows comments, and removed the hero divider line on that page.
+- Added a global `linkSubmissionEnabled` site setting:
+  - backend now rejects public friend-link submissions when the toggle is off;
+  - public `friends` page hides the submission CTA and shows a closed-state note when disabled;
+  - admin site settings now expose the toggle so operations can pause submissions without changing frontend code.
 - Reworked the public timeline page into grouped chronological sections with infinite scroll instead of pager buttons.
 - Timeline moments now open the shared moment detail modal locally, while articles continue to link out as full pages.
 - Strengthened the timeline’s month anchors and widened the visual contrast between chapter rows and fragment rows so the chronology reads as content, not as a generic event list.

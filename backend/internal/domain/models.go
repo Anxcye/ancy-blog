@@ -117,6 +117,7 @@ type SiteSettings struct {
 	DefaultLocale          string `json:"defaultLocale"`
 	CommentEnabled         bool   `json:"commentEnabled"`
 	CommentRequireApproval bool   `json:"commentRequireApproval"`
+	LinkSubmissionEnabled  bool   `json:"linkSubmissionEnabled"`
 	SiteDescription        string `json:"siteDescription,omitempty"`
 	SeoKeywords            string `json:"seoKeywords,omitempty"`
 	OgImageURL             string `json:"ogImageUrl,omitempty"`
@@ -182,15 +183,15 @@ type SlotItem struct {
 }
 
 type TimelineItem struct {
-	ContentType string    `json:"contentType"`
-	ID          string    `json:"id"`
-	Title       string    `json:"title,omitempty"`
-	Summary     string    `json:"summary,omitempty"`
-	Slug        string    `json:"slug,omitempty"`
-	CategorySlug string   `json:"categorySlug,omitempty"`
-	CategoryName string   `json:"categoryName,omitempty"`
-	Content     string    `json:"content,omitempty"`
-	PublishedAt time.Time `json:"publishedAt"`
+	ContentType  string    `json:"contentType"`
+	ID           string    `json:"id"`
+	Title        string    `json:"title,omitempty"`
+	Summary      string    `json:"summary,omitempty"`
+	Slug         string    `json:"slug,omitempty"`
+	CategorySlug string    `json:"categorySlug,omitempty"`
+	CategoryName string    `json:"categoryName,omitempty"`
+	Content      string    `json:"content,omitempty"`
+	PublishedAt  time.Time `json:"publishedAt"`
 }
 
 type SlotContentItem struct {
