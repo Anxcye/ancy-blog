@@ -33,7 +33,7 @@ useIntersectionObserver(target, ([entry]) => {
     emit('load')
   }
 }, {
-  rootMargin: '200px 0px', // trigger fetch when 200px away from viewport
+  rootMargin: '0px', // trigger fetch exactly when it hits the viewport
 })
 </script>
 

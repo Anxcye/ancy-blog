@@ -159,25 +159,26 @@ const allArticles = ref<any[]>([])
 const total = ref(0)
 const loadingMore = ref(false)
 
-const fetchParams = computed(() => ({
-  page: page.value,
-  pageSize: 9,
-  category: activeCategory.value || undefined,
-  tag: activeTag.value || undefined,
-}))
-
-// SSR Initial load (force page 1)
+// Use useAsyncData to automatically fetch & cache the FIRST page whenever category or tag changes
 const { data: initialData, pending } = await useAsyncData(
-  'articles-list',
-  () => listArticles({ ...fetchParams.value, page: 1 }),
-  { getCachedData: () => undefined }
+  'articles-first-page',
+  () => listArticles({
+    page: 1,
+    pageSize: 9,
+    category: activeCategory.value || undefined,
+    tag: activeTag.value || undefined,
+  }),
+  { watch: [activeCategory, activeTag] }
 )
 
-// Sync SSR data to local refs
-if (initialData.value) {
-  allArticles.value = initialData.value.rows || []
-  total.value = initialData.value.total || 0
-}
+// Always sync the first page payload back to our infinite scroll accumulator
+watch(initialData, (newVal) => {
+  if (newVal) {
+    allArticles.value = newVal.rows || []
+    total.value = newVal.total || 0
+    page.value = 1
+  }
+}, { immediate: true })
 
 const hasMore = computed(() => allArticles.value.length < total.value)
 
@@ -186,7 +187,12 @@ async function loadMore() {
   loadingMore.value = true
   page.value++
   try {
-    const res = await listArticles(fetchParams.value)
+    const res = await listArticles({
+      page: page.value,
+      pageSize: 9,
+      category: activeCategory.value || undefined,
+      tag: activeTag.value || undefined,
+    })
     if (res.rows?.length) {
       allArticles.value.push(...res.rows)
     }
@@ -198,24 +204,14 @@ async function loadMore() {
   }
 }
 
-// ── Sync URL to filters & Reset List ──────────────────────────────
-watch([activeCategory, activeTag], async () => {
-  page.value = 1
-  pending.value = true
-  try {
-    const res = await listArticles(fetchParams.value)
-    allArticles.value = res.rows || []
-    total.value = res.total || 0
-    
-    router.replace({
-      query: {
-        ...(activeCategory.value ? { category: activeCategory.value } : {}),
-        ...(activeTag.value ? { tag: activeTag.value } : {}),
-      }
-    })
-  } finally {
-    pending.value = false
-  }
+// ── Sync URL to filters ──────────────────────────────
+watch([activeCategory, activeTag], () => {
+  router.replace({
+    query: {
+      ...(activeCategory.value ? { category: activeCategory.value } : {}),
+      ...(activeTag.value ? { tag: activeTag.value } : {}),
+    }
+  })
 })
 
 // ── Sync URL changes back to filters ──────────────────────────────
