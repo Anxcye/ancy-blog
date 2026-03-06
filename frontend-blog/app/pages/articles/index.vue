@@ -107,11 +107,9 @@ const activeTag = ref((route.query.tag as string) || '')
 const [{ data: categories }, { data: tags }] = await Promise.all([
   useAsyncData('article-page-categories', getCategories, {
     default: () => [],
-    getCachedData: () => undefined,  // always re-fetch on client nav
   }),
   useAsyncData('article-page-tags', getTags, {
     default: () => [],
-    getCachedData: () => undefined,
   }),
 ])
 
@@ -145,6 +143,13 @@ watch([page, activeCategory, activeTag], () => {
   })
   window.scrollTo({ top: 0, behavior: 'smooth' })
 })
+
+// ── Sync URL changes back to filters ──────────────────────────────
+watch(() => route.query, (query) => {
+  page.value = Number(query.page) || 1
+  activeCategory.value = (query.category as string) || ''
+  activeTag.value = (query.tag as string) || ''
+}, { deep: true })
 
 function setCategory(slug: string) {
   activeCategory.value = activeCategory.value === slug ? '' : slug
