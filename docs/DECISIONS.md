@@ -38,3 +38,14 @@
   - Handler DTOs for singleton settings should use optional/pointer fields.
   - Handlers should read current state first, then merge only fields present in the request.
   - Frontend section forms may still merge local cached settings before submit, but backend merge behavior is the required safety boundary.
+
+
+## ADR-007: Production Deployment Topology
+- Date: 2026-03-06
+- Decision: Deploy the system on a single Linux host using Docker Compose, with Cloudflare in front, Caddy as the origin reverse proxy, `frontend-blog` as a Nuxt SSR service on `example.com`, `backend` routed through `example.com/api`, and `frontend-admin-react` served on `admin.example.com`.
+- Rationale: This project currently benefits more from operational simplicity, deterministic releases, and easy rollback/debugging than from orchestration complexity. The chosen split also keeps the public site same-origin with the API while isolating the admin surface on its own domain.
+- Consequences:
+  - Production releases should run migrations before application restarts.
+  - `frontend-blog` remains an SSR Node service instead of static export.
+  - `frontend-admin-react` is built as static assets and served behind the same reverse proxy layer.
+  - Cloudflare caching and access policies should treat `example.com/api/*` and `admin.example.com/*` as dynamic/non-cacheable paths.

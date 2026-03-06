@@ -1,0 +1,21 @@
+{
+  email {$ACME_EMAIL}
+}
+
+{$APP_DOMAIN} {
+  encode zstd gzip
+
+  @api path /api/*
+  handle @api {
+    reverse_proxy backend:8080
+  }
+
+  handle {
+    reverse_proxy frontend-blog:3000
+  }
+}
+
+{$ADMIN_DOMAIN} {
+  encode zstd gzip
+  reverse_proxy admin:80
+}

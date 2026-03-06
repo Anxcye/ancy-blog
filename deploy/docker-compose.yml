@@ -1,0 +1,116 @@
+services:
+  caddy:
+    image: caddy:2.10-alpine
+    container_name: ancy-blog-caddy
+    restart: unless-stopped
+    depends_on:
+      frontend-blog:
+        condition: service_started
+      backend:
+        condition: service_started
+      admin:
+        condition: service_started
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    environment:
+      APP_DOMAIN: ${APP_DOMAIN}
+      ADMIN_DOMAIN: ${ADMIN_DOMAIN}
+      ACME_EMAIL: ${ACME_EMAIL}
+    networks:
+      - edge
+
+  backend:
+    build:
+      context: ../backend
+      dockerfile: Dockerfile
+    image: ancy-blog-backend:${APP_IMAGE_TAG:-latest}
+    container_name: ancy-blog-backend
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      APP_ENV: production
+      HTTP_HOST: 0.0.0.0
+      HTTP_PORT: 8080
+      DB_HOST: postgres
+      DB_PORT: 5432
+      REDIS_ADDR: redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
+    networks:
+      - edge
+      - data
+
+  frontend-blog:
+    build:
+      context: ../frontend-blog
+      dockerfile: Dockerfile
+      args:
+        NUXT_PUBLIC_API_BASE: https://${APP_DOMAIN}/api/v1
+    image: ancy-blog-frontend-blog:${APP_IMAGE_TAG:-latest}
+    container_name: ancy-blog-frontend-blog
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      NUXT_PUBLIC_API_BASE: https://${APP_DOMAIN}/api/v1
+    networks:
+      - edge
+
+  admin:
+    build:
+      context: ../frontend-admin-react
+      dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: https://${APP_DOMAIN}/api/v1
+    image: ancy-blog-admin:${APP_IMAGE_TAG:-latest}
+    container_name: ancy-blog-admin
+    restart: unless-stopped
+    networks:
+      - edge
+
+  postgres:
+    image: postgres:16-alpine
+    container_name: ancy-blog-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      TZ: ${TZ:-Asia/Shanghai}
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - data
+
+  redis:
+    image: redis:7-alpine
+    container_name: ancy-blog-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    networks:
+      - data
+
+volumes:
+  postgres_data:
+  redis_data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  edge:
+  data:

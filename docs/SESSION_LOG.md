@@ -737,3 +737,20 @@
 - Lowered the compact timeline row height and text line-height without shrinking the chosen font sizes, keeping the dense archive feel while preserving the current typography scale.
 - Nudged the compact timeline row copy back up slightly in size while keeping the tighter row height, preserving readability without returning to a loose layout.
 - Removed the legacy `frontend-admin/` workspace from the repository and standardized current guidance around `frontend-admin-react/` as the only active admin frontend.
+
+
+---
+## 2026-03-06
+### Summary
+- Added production deployment baseline under `deploy/`:
+  - `docker-compose.yml` for `caddy`, `backend`, `frontend-blog`, `admin`, `postgres`, and `redis`
+  - `caddy/Caddyfile` routing `example.com`, `example.com/api/*`, and `admin.example.com`
+  - `release.sh` to build images, run migrations, and restart services in a safe order
+  - `backup-postgres.sh` for timestamped PostgreSQL dumps
+- Added container packaging for all runtimes:
+  - `backend/Dockerfile` builds both `server` and `migrate`
+  - `frontend-blog/Dockerfile` packages Nuxt SSR output
+  - `frontend-admin-react/Dockerfile` builds static assets and serves them with nginx
+- Added deployment documentation:
+  - `docs/DEPLOYMENT.md`
+  - updated `README.md`, `docs/PROGRESS.md`, and `docs/DECISIONS.md`

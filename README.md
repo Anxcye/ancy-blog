@@ -13,6 +13,7 @@ A clean rewrite of the blog platform with:
 - `backend/`: Go API service.
 - `frontend-admin-react/`: React admin app.
 - `frontend-blog/`: Vue 3 public app.
+- `deploy/`: Docker Compose, reverse proxy, and release scripts.
 - `docs/`: product rules, data model, API contracts, progress logs.
 - `AGENTS.md`: contributor and AI-collaboration rules.
 
@@ -32,6 +33,7 @@ curl http://127.0.0.1:8080/healthz
 - `docs/PRODUCT_RULES.md`
 - `docs/DATA_MODEL.md`
 - `docs/API_CONTRACT.md`
+- `docs/DEPLOYMENT.md`
 - `docs/PROGRESS.md`
 - `docs/SESSION_LOG.md`
 
