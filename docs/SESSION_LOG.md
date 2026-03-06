@@ -625,3 +625,24 @@
   - Replaced `Input.TextArea` placeholder in `ArticleEditorPage.tsx` with `<SimpleEditor />`.
 - Validation:
   - `pnpm run build` passed (3422 modules, 0 TS errors).
+
+## 2026-03-06
+### Summary
+- Implemented friend link submission form on friends page:
+  - Added `LinkSubmissionPayload` interface and `submitLink` API method to useApi composable
+  - Created submission form with left preview panel and right input form layout
+  - Form fields: name, url, avatarUrl, description, contactEmail
+  - Live preview updates as user types
+  - Success/error message handling with form reset on successful submission
+- Redesigned friends page link cards:
+  - Changed from horizontal to vertical layout (avatar → name → description)
+  - Removed background and borders for cleaner look
+  - Centered text alignment
+  - Reordered page content: hero → links grid → article intro → submission form
+- Enhanced homepage hero animations:
+  - Implemented character-by-character spring animation for title text
+  - Added color differentiation: `Hi, I'm` in muted gray, name in default text color, subtitle with gradient
+  - Both title lines animate simultaneously with 50ms stagger per character
+  - Each character uses cubic-bezier spring easing with scale and translateY effects
+  - Social icons and down arrow animate after text with delays
+

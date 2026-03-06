@@ -2,7 +2,6 @@
 
 ## Todo
 - [ ] Blog: 404 / error pages for frontend-blog.
-- [ ] Blog: 友情链接页面 (links page).
 - [ ] Blog: 关于我页面 (article content_kind=page renderer).
 - [ ] Blog: 评论回复功能 (threaded replies).
 - [ ] Blog: Open Graph & structured data (JSON-LD) for articles.
@@ -14,6 +13,9 @@
 - [ ] Blog: particle background (sparse petal/dot animation, accent-tinted).
 
 ## Done
+- [x] Implemented friend link submission form on friends page with live preview and responsive layout.
+- [x] Redesigned friends page: vertical link cards without background, reordered content (hero → links → article → form).
+- [x] Implemented character-by-character spring animation for homepage hero with color differentiation and simultaneous line animation.
 - [x] Redesigned homepage hero with large title style: embedded avatar decoration, gradient subtitle from backend heroIntroMd, floating social icons, 100vh full-screen layout.
 - [x] Implemented hierarchical navigation with dynamic category dropdown: admin can configure parent-child nav items via `parentId` field, blog frontend auto-injects category list when `targetType=category` with no predefined children.
 - [x] Initialized `frontend-blog/` with Nuxt 4 (minimal template, color-mode, i18n zh/en, Google Fonts).
