@@ -98,6 +98,9 @@ func (s *CommentService) CreateComment(comment domain.Comment) (domain.Comment, 
 func (s *CommentService) ListArticleComments(articleID string, page, pageSize int) ([]domain.Comment, int) {
 	return s.core.ListArticleComments(articleID, page, pageSize)
 }
+func (s *CommentService) ListArticleCommentThreads(articleID string, page, pageSize int) ([]domain.CommentNode, int) {
+	return s.core.ListArticleCommentThreads(articleID, page, pageSize)
+}
 func (s *CommentService) ListCommentChildren(parentID string, page, pageSize int) ([]domain.Comment, int) {
 	return s.core.ListCommentChildren(parentID, page, pageSize)
 }

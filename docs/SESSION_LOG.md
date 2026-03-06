@@ -646,3 +646,36 @@
   - Each character uses cubic-bezier spring easing with scale and translateY effects
   - Social icons and down arrow animate after text with delays
 
+- Fixed blog comment visibility and privacy issues:
+  - frontend comment list now loads root comments and fetches child replies from `/public/comments/:id/children`, so approved replies are visible after refresh.
+  - comment submit payload now carries `rootId` for flattened reply threading consistency.
+  - public comment APIs now return a sanitized DTO and no longer expose visitor email, IP, user-agent, or internal source fields.
+- Validation:
+  - `pnpm --dir frontend-blog build` passed.
+  - `go test ./internal/app ./internal/repository/postgres ./internal/server ./internal/service` passed indirectly within `go test ./...`; full suite still has unrelated `internal/handler/admin_test.go` constructor drift failures.
+- Refined blog comment UX and data wiring:
+  - comment form now supports `avatarUrl` input and persists it locally.
+  - moderation hint now follows backend `siteSettings.commentRequireApproval` instead of hardcoded copy.
+  - fixed public comment total parsing to use the backend numeric count response.
+  - fixed public comment `isPinned` to be a boolean, preventing false-positive pinned badges on normal comments.
+  - removed comment form wrapper background and border styling.
+- Added safe markdown rendering for blog comments:
+  - introduced a small escaped markdown renderer for headings, lists, quotes, links, inline code, and fenced code blocks.
+  - comment items now render markdown HTML instead of plain text while preserving XSS safety by escaping raw HTML first.
+- Replaced handwritten comment markdown parsing with `markdown-it`.
+- Added GitHub-style comment editor tabs (`Write` / `Preview`) so visitors can preview rendered markdown before submitting.
+- Upgraded blog article comments from flat root+children loading to threaded comment pages:
+  - backend public comment list now returns recursive comment trees with `isAuthor` and reply target nickname metadata.
+  - content service now assembles descendants per root page, so frontend no longer issues one child request per root.
+  - reply submission now stores direct parent linkage while preserving `rootId` for thread queries.
+- Refined article comment UX:
+  - comment list now renders as responsive waterfall cards with infinite scroll continuation.
+  - nested replies render recursively instead of being flattened into one visual level.
+  - comment form now shows inline success feedback after submit.
+  - comment timestamps are richer and author badges come from backend metadata instead of nickname guessing.
+- Maintenance:
+  - updated API contract, product rules, and frontend style guide for threaded public comments and waterfall presentation.
+  - fixed `backend/internal/handler/admin_test.go` constructor drift so full backend `go test ./...` passes again.
+- Validation:
+  - `go test ./...` passed in `backend/`.
+  - `pnpm --dir frontend-blog build` passed.

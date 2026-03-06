@@ -1,8 +1,8 @@
 <!-- File: app/components/CommentItem.vue
-     Purpose: Single comment rendering + recursive children.
+     Purpose: Render a single threaded comment node with recursive replies and reply actions.
      Module: components, presentation layer. -->
 <template>
-  <div class="comment-item" :id="`comment-${comment.id}`">
+  <div class="comment-item" :class="{ 'is-root': depth === 0, 'is-child': depth > 0 }" :id="`comment-${comment.id}`">
     <div class="comment-avatar">
       <img v-if="comment.avatarUrl" :src="comment.avatarUrl" :alt="comment.nickname" />
       <span v-else>{{ comment.nickname.charAt(0).toUpperCase() }}</span>
@@ -15,85 +15,114 @@
         </a>
         <span v-else class="comment-author">{{ comment.nickname }}</span>
 
-        <span class="comment-badge" v-if="comment.isPinned">置顶</span>
-        <span class="comment-badge admin-badge" v-if="isAdmin">博主</span>
+        <span class="comment-badge" v-if="comment.isPinned">{{ t('comment.pinned') }}</span>
+        <span class="comment-badge admin-badge" v-if="comment.isAuthor">{{ t('comment.authorBadge') }}</span>
 
         <span class="comment-meta">
           <time :datetime="comment.createdAt">{{ formatDate(comment.createdAt) }}</time>
         </span>
       </div>
 
-      <div class="comment-content">
-        <span class="reply-target" v-if="isSubReply && replyToNickname">@{{ replyToNickname }}</span>
-        <!-- Content should ideally be markdown rendered, but for now we just show it. 
-             Security note: ensure backend escapes malicious scripts or render safely. -->
-        <p>{{ comment.content }}</p>
+      <div class="comment-content markdown-body">
+        <span class="reply-target" v-if="comment.toCommentNickname">@{{ comment.toCommentNickname }}</span>
+        <div class="comment-markdown" v-html="renderedContent"></div>
       </div>
 
       <div class="comment-actions">
         <button class="action-btn" @click="$emit('reply', comment)">
           <svg viewBox="0 0 24 24" fill="none" class="icon"><path d="M3 10h10a5 5 0 0 1 5 5v2a5 5 0 0 1-5 5H3m0-12l4-4m-4 4l4 4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path></svg>
-          回复
+          {{ t('comment.reply') }}
         </button>
       </div>
-      
-      <!-- Sub-comments Recursive Render -->
-      <!-- Wait for CommentList children rendering, or handle it via a flat sorted list in CommentList -->
-      <slot name="children"></slot>
-      
+
       <div v-if="isReplying" class="reply-box-wrapper">
-         <CommentForm 
-            :article-id="articleId" 
-            :reply-to="comment" 
-            @cancel="$emit('cancelReply', comment.id)" 
-            @success="$emit('replySuccess')"
-         />
+        <CommentForm
+          :article-id="articleId"
+          :reply-to="comment"
+          :require-approval="requireApproval"
+          @cancel="$emit('cancelReply', comment.id)"
+          @success="$emit('replySuccess')"
+        />
+      </div>
+
+      <div v-if="comment.children?.length" class="comment-children">
+        <CommentItem
+          v-for="child in comment.children"
+          :key="child.id"
+          :comment="child"
+          :article-id="articleId"
+          :is-replying="replyingToId === child.id"
+          :replying-to-id="replyingToId"
+          :depth="depth + 1"
+          :require-approval="requireApproval"
+          @reply="$emit('reply', $event)"
+          @cancelReply="$emit('cancelReply', $event)"
+          @replySuccess="$emit('replySuccess')"
+        />
       </div>
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import type { Comment } from '~/composables/useApi'
+import { computed } from 'vue'
+import { useI18n } from 'vue-i18n'
+import type { CommentThread } from '~/composables/useApi'
+import { renderCommentMarkdown } from '~/utils/commentMarkdown'
 
-const props = defineProps<{
-  comment: Comment
+const props = withDefaults(defineProps<{
+  comment: CommentThread
   articleId: string
   isReplying?: boolean
-  isSubReply?: boolean
-  replyToNickname?: string
-}>()
+  replyingToId?: string | null
+  depth?: number
+  requireApproval?: boolean
+}>(), {
+  depth: 0,
+  replyingToId: null,
+})
 
 const emit = defineEmits<{
-  (e: 'reply', parent: Comment): void
+  (e: 'reply', parent: CommentThread): void
   (e: 'cancelReply', id: string): void
   (e: 'replySuccess'): void
 }>()
 
-// Use standard datetime formatting
+const { t, locale } = useI18n()
+
 function formatDate(dateStr: string) {
-  const d = new Date(dateStr)
-  return new Intl.DateTimeFormat('zh-CN', {
-    month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit'
-  }).format(d)
+  const date = new Date(dateStr)
+  return new Intl.DateTimeFormat(locale.value === 'en' ? 'en-US' : 'zh-CN', {
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+  }).format(date)
 }
 
-// Temporary heuristic for admin badge, could be adjusted
-const isAdmin = computed(() => {
-   return props.comment.nickname.toLowerCase() === 'admin'
-})
+const renderedContent = computed(() => renderCommentMarkdown(props.comment.content))
 </script>
 
 <style scoped>
 .comment-item {
   display: flex;
-  gap: 16px;
-  margin-top: 24px;
+  gap: 14px;
+}
+
+.comment-item.is-root {
+  margin-top: 0;
+}
+
+.comment-item.is-child {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid color-mix(in srgb, var(--border) 72%, transparent);
 }
 
 .comment-avatar {
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   border-radius: 50%;
   background: var(--surface-hover);
   color: var(--text-muted);
@@ -145,39 +174,84 @@ a.comment-author:hover {
 .comment-badge {
   font-size: 11px;
   padding: 2px 6px;
-  border-radius: 4px;
+  border-radius: 999px;
   background: var(--surface-hover);
   color: var(--text-muted);
-  font-weight: 500;
+  font-weight: 600;
   line-height: 1;
 }
 
 .admin-badge {
   background: var(--accent-soft);
   color: var(--accent-text);
-  border: 1px solid var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 50%, transparent);
 }
 
 .comment-content {
   font-size: 14px;
-  line-height: 1.6;
+  line-height: 1.7;
   color: var(--text);
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   word-break: break-word;
-}
-
-.comment-content p {
-  margin: 0 0 8px;
-}
-
-.comment-content p:last-child {
-  margin: 0;
 }
 
 .reply-target {
   color: var(--accent);
-  font-weight: 500;
+  font-weight: 600;
   margin-right: 6px;
+}
+
+.markdown-body :deep(p),
+.markdown-body :deep(ul),
+.markdown-body :deep(ol),
+.markdown-body :deep(blockquote),
+.markdown-body :deep(pre) {
+  margin: 0 0 10px;
+}
+
+.markdown-body :deep(p:last-child),
+.markdown-body :deep(ul:last-child),
+.markdown-body :deep(ol:last-child),
+.markdown-body :deep(blockquote:last-child),
+.markdown-body :deep(pre:last-child) {
+  margin-bottom: 0;
+}
+
+.markdown-body :deep(ul),
+.markdown-body :deep(ol) {
+  padding-left: 20px;
+}
+
+.markdown-body :deep(blockquote) {
+  padding-left: 12px;
+  border-left: 2px solid var(--border);
+  color: var(--text-muted);
+}
+
+.markdown-body :deep(pre) {
+  overflow-x: auto;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+}
+
+.markdown-body :deep(code) {
+  font-family: 'Fira Code', monospace;
+  font-size: 0.92em;
+  padding: 0.15em 0.35em;
+  border-radius: 4px;
+  background: var(--bg-secondary);
+}
+
+.markdown-body :deep(pre code) {
+  padding: 0;
+  background: transparent;
+}
+
+.markdown-body :deep(a) {
+  color: var(--accent-text);
+  text-decoration: underline;
 }
 
 .comment-actions {
@@ -210,11 +284,26 @@ a.comment-author:hover {
 
 .reply-box-wrapper {
   margin-top: 16px;
-  animation: slide-down 0.2s var(--ease-out);
 }
 
-@keyframes slide-down {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
+.comment-children {
+  margin-top: 16px;
+  padding-left: 16px;
+  border-left: 2px solid color-mix(in srgb, var(--accent) 16%, var(--border));
+}
+
+@media (max-width: 640px) {
+  .comment-item {
+    gap: 12px;
+  }
+
+  .comment-avatar {
+    width: 36px;
+    height: 36px;
+  }
+
+  .comment-children {
+    padding-left: 12px;
+  }
 }
 </style>

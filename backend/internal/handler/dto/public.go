@@ -4,6 +4,8 @@
 // Related: handler/public.go and related domain mapping.
 package dto
 
+import "time"
+
 type CreateCommentRequest struct {
 	ArticleID   string `json:"articleId"`
 	ParentID    string `json:"parentId"`
@@ -15,6 +17,26 @@ type CreateCommentRequest struct {
 	AvatarURL   string `json:"avatarUrl"`
 	Source      string `json:"source"`
 	ToCommentID string `json:"toCommentId"`
+}
+
+type PublicComment struct {
+	ID                string          `json:"id"`
+	ArticleID         string          `json:"articleId"`
+	ParentID          string          `json:"parentId,omitempty"`
+	RootID            string          `json:"rootId,omitempty"`
+	Content           string          `json:"content"`
+	Status            string          `json:"status"`
+	IsPinned          bool            `json:"isPinned"`
+	IsAuthor          bool            `json:"isAuthor"`
+	LikeCount         int             `json:"likeCount"`
+	ReplyCount        int             `json:"replyCount"`
+	Nickname          string          `json:"nickname"`
+	Website           string          `json:"website,omitempty"`
+	AvatarURL         string          `json:"avatarUrl,omitempty"`
+	ToCommentID       string          `json:"toCommentId,omitempty"`
+	ToCommentNickname string          `json:"toCommentNickname,omitempty"`
+	CreatedAt         time.Time       `json:"createdAt"`
+	Children          []PublicComment `json:"children,omitempty"`
 }
 
 type SubmitLinkRequest struct {

@@ -35,6 +35,7 @@ type ContentRepository interface {
 	CreateComment(comment domain.Comment) (domain.Comment, error)
 	ListArticleComments(articleID string, page, pageSize int) ([]domain.Comment, int)
 	ListCommentChildren(parentID string, page, pageSize int) ([]domain.Comment, int)
+	ListCommentDescendants(rootIDs []string) []domain.Comment
 	CountArticleComments(articleID string) (int, error)
 	ListCommentPage(page, pageSize int, status string) ([]domain.Comment, int)
 	UpdateCommentAdmin(id string, status, isPinned string) (domain.Comment, error)

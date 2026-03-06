@@ -43,6 +43,9 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 
 ## Comment Rules
 - Comments support threaded replies.
+- Public article comment lists must return recursive reply threads instead of flat reply pages.
+- Public comment payloads must exclude visitor privacy fields such as `email`, `ip`, and `user_agent`.
+- Comments support admin pinning on root comments and replies.
 - Store `ip` in plaintext by project decision.
 - Record `user_agent` for moderation and abuse analysis.
 - Comment reactions are tracked via generic `reactions` records.

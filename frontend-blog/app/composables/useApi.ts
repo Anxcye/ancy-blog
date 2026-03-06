@@ -62,24 +62,35 @@ export interface Comment {
     id: string
     articleId: string
     parentId?: string
+    rootId?: string
+    toCommentId?: string
     content: string
     status: string
     isPinned: boolean
     likeCount: number
     replyCount: number
     nickname: string
+    isAuthor: boolean
     website?: string
     avatarUrl?: string
+    toCommentNickname?: string
     createdAt: string
+}
+
+export interface CommentThread extends Comment {
+    children: CommentThread[]
 }
 
 export interface CommentCreatePayload {
     articleId: string
     parentId?: string
+    rootId?: string
+    toCommentId?: string
     content: string
     nickname: string
     email?: string
     website?: string
+    avatarUrl?: string
 }
 
 export interface LinkSubmissionPayload {
@@ -200,11 +211,15 @@ export function useApi() {
 
         /** Fetch comments for an article */
         listComments: (articleId: string, params?: { page?: number; pageSize?: number }) =>
-            apiFetch<PaginatedData<Comment>>(`/public/comments/article/${articleId}`, { params }),
+            apiFetch<PaginatedData<CommentThread>>(`/public/comments/article/${articleId}`, { params }),
 
         /** Fetch total approved comment count */
         getCommentTotal: (articleId: string) =>
-            apiFetch<{ total: number }>(`/public/comments/article/${articleId}/total`),
+            apiFetch<number>(`/public/comments/article/${articleId}/total`),
+
+        /** Fetch children for a root comment */
+        listCommentChildren: (commentId: string, params?: { page?: number; pageSize?: number }) =>
+            apiFetch<PaginatedData<Comment>>(`/public/comments/${commentId}/children`, { params }),
 
         /** Submit a comment */
         createComment: (payload: CommentCreatePayload) =>

@@ -23,9 +23,11 @@ type handlerRepoStub struct {
 	getPublishedArticleBySlug    func(slug string) (domain.Article, bool)
 	listPublishedArticlesFunc    func(page, pageSize int, category, tag, contentKind string) ([]domain.Article, int)
 	listPublishedMomentsFunc     func(page, pageSize int, locale string) ([]domain.Moment, int)
+	listArticleCommentsFunc      func(articleID string, page, pageSize int) ([]domain.Comment, int)
 	listTimelineFunc             func(page, pageSize int, locale string) ([]domain.TimelineItem, int)
 	listFooterItemsFunc          func() []domain.FooterItem
 	countArticleCommentsFunc     func(articleID string) (int, error)
+	listCommentDescendantsFunc   func(rootIDs []string) []domain.Comment
 	slugExistsFunc               func(slug string) bool
 	listIntegrationProvidersFunc func(providerType string) []domain.IntegrationProvider
 	updateIntegrationProvider    func(providerKey string, enabled bool, configJSON, metaJSON []byte) (domain.IntegrationProvider, error)
@@ -99,6 +101,13 @@ func (s *handlerRepoStub) ListPublishedMoments(page, pageSize int, locale string
 	return nil, 0
 }
 
+func (s *handlerRepoStub) ListArticleComments(articleID string, page, pageSize int) ([]domain.Comment, int) {
+	if s.listArticleCommentsFunc != nil {
+		return s.listArticleCommentsFunc(articleID, page, pageSize)
+	}
+	return nil, 0
+}
+
 func (s *handlerRepoStub) ListTimeline(page, pageSize int, locale string) ([]domain.TimelineItem, int) {
 	if s.listTimelineFunc != nil {
 		return s.listTimelineFunc(page, pageSize, locale)
@@ -118,6 +127,13 @@ func (s *handlerRepoStub) CountArticleComments(articleID string) (int, error) {
 		return s.countArticleCommentsFunc(articleID)
 	}
 	return 0, nil
+}
+
+func (s *handlerRepoStub) ListCommentDescendants(rootIDs []string) []domain.Comment {
+	if s.listCommentDescendantsFunc != nil {
+		return s.listCommentDescendantsFunc(rootIDs)
+	}
+	return nil
 }
 
 func (s *handlerRepoStub) SlugExists(slug string) bool {

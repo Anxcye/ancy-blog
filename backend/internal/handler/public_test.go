@@ -79,6 +79,71 @@ func TestPublicAddCommentSuccess(t *testing.T) {
 	}
 }
 
+func TestPublicCommentByArticleReturnsThreadedComments(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	repo := &handlerRepoStub{
+		listArticleCommentsFunc: func(articleID string, page, pageSize int) ([]domain.Comment, int) {
+			if articleID != "article-1" || page != 1 || pageSize != 10 {
+				t.Fatalf("unexpected query: %s %d %d", articleID, page, pageSize)
+			}
+			return []domain.Comment{
+				{ID: "root-1", ArticleID: articleID, Nickname: "Admin", Source: "admin"},
+			}, 1
+		},
+		listCommentDescendantsFunc: func(rootIDs []string) []domain.Comment {
+			if len(rootIDs) != 1 || rootIDs[0] != "root-1" {
+				t.Fatalf("unexpected rootIDs: %#v", rootIDs)
+			}
+			return []domain.Comment{
+				{ID: "reply-1", ArticleID: "article-1", ParentID: "root-1", RootID: "root-1", Nickname: "Reader", Source: "web"},
+			}
+		},
+	}
+	core := service.NewContentService(repo, nil)
+	h := NewPublicHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewTimelineService(core),
+	)
+
+	r := gin.New()
+	r.GET("/comments/article/:articleId", h.CommentByArticle)
+
+	req := httptest.NewRequest(http.MethodGet, "/comments/article/article-1?page=1&pageSize=10", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d", w.Code)
+	}
+	var env response.Envelope
+	if err := json.Unmarshal(w.Body.Bytes(), &env); err != nil {
+		t.Fatalf("unmarshal failed: %v", err)
+	}
+	data, _ := json.Marshal(env.Data)
+	var result struct {
+		Rows []struct {
+			ID       string `json:"id"`
+			IsAuthor bool   `json:"isAuthor"`
+			Children []struct {
+				ID                string `json:"id"`
+				ToCommentNickname string `json:"toCommentNickname"`
+			} `json:"children"`
+		} `json:"rows"`
+	}
+	if err := json.Unmarshal(data, &result); err != nil {
+		t.Fatalf("result unmarshal failed: %v", err)
+	}
+	if len(result.Rows) != 1 || !result.Rows[0].IsAuthor {
+		t.Fatalf("expected one author root comment, got %#v", result.Rows)
+	}
+	if len(result.Rows[0].Children) != 1 || result.Rows[0].Children[0].ToCommentNickname != "Admin" {
+		t.Fatalf("expected threaded child reply target, got %#v", result.Rows[0].Children)
+	}
+}
+
 func TestPublicSiteFooterGroupedByRow(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	repo := &handlerRepoStub{listFooterItemsFunc: func() []domain.FooterItem {

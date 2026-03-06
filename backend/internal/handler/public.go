@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/anxcye/ancy-blog/backend/internal/domain"
@@ -90,8 +91,8 @@ func (h *PublicHandler) CommentByArticle(c *gin.Context) {
 	articleID := c.Param("articleId")
 	page := getIntQuery(c, "page", 1)
 	pageSize := getIntQuery(c, "pageSize", 10)
-	rows, total := h.commentService.ListArticleComments(articleID, page, pageSize)
-	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.Comment]{Total: total, Rows: rows}})
+	rows, total := h.commentService.ListArticleCommentThreads(articleID, page, pageSize)
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[dto.PublicComment]{Total: total, Rows: mapPublicComments(rows)}})
 }
 
 func (h *PublicHandler) CommentChildren(c *gin.Context) {
@@ -99,7 +100,11 @@ func (h *PublicHandler) CommentChildren(c *gin.Context) {
 	page := getIntQuery(c, "page", 1)
 	pageSize := getIntQuery(c, "pageSize", 10)
 	rows, total := h.commentService.ListCommentChildren(parentID, page, pageSize)
-	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.Comment]{Total: total, Rows: rows}})
+	items := make([]dto.PublicComment, 0, len(rows))
+	for _, row := range rows {
+		items = append(items, mapPublicComment(domain.CommentNode{Comment: row}))
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[dto.PublicComment]{Total: total, Rows: items}})
 }
 
 func (h *PublicHandler) CommentArticleTotal(c *gin.Context) {
@@ -212,4 +217,38 @@ func (h *PublicHandler) Timeline(c *gin.Context) {
 	locale := c.Query("locale")
 	rows, total := h.timelineService.ListTimeline(page, pageSize, locale)
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.TimelineItem]{Total: total, Rows: rows}})
+}
+
+func mapPublicComments(rows []domain.CommentNode) []dto.PublicComment {
+	items := make([]dto.PublicComment, 0, len(rows))
+	for _, row := range rows {
+		items = append(items, mapPublicComment(row))
+	}
+	return items
+}
+
+func mapPublicComment(row domain.CommentNode) dto.PublicComment {
+	return dto.PublicComment{
+		ID:                row.ID,
+		ArticleID:         row.ArticleID,
+		ParentID:          row.ParentID,
+		RootID:            row.RootID,
+		Content:           row.Content,
+		Status:            row.Status,
+		IsPinned:          row.IsPinned == "1",
+		IsAuthor:          isCommentAuthor(row.Comment),
+		LikeCount:         row.LikeCount,
+		ReplyCount:        row.ReplyCount,
+		Nickname:          row.Nickname,
+		Website:           row.Website,
+		AvatarURL:         row.AvatarURL,
+		ToCommentID:       row.ToCommentID,
+		ToCommentNickname: row.ToCommentNickname,
+		CreatedAt:         row.CreatedAt,
+		Children:          mapPublicComments(row.Children),
+	}
+}
+
+func isCommentAuthor(comment domain.Comment) bool {
+	return strings.EqualFold(comment.Source, "admin") || strings.EqualFold(comment.Nickname, "admin")
 }

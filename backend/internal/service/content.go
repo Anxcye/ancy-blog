@@ -9,6 +9,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/url"
+	"sort"
 	"strings"
 	"time"
 
@@ -187,6 +188,9 @@ func (s *ContentService) CreateComment(comment domain.Comment) (domain.Comment, 
 	if strings.TrimSpace(comment.Nickname) == "" {
 		return domain.Comment{}, fmt.Errorf("%w: nickname is required", apperr.ErrValidation)
 	}
+	if strings.TrimSpace(comment.ParentID) != "" && strings.TrimSpace(comment.RootID) == "" {
+		comment.RootID = comment.ParentID
+	}
 
 	// Enforce site-level comment policy
 	settings := s.repo.GetSiteSettings()
@@ -205,6 +209,71 @@ func (s *ContentService) CreateComment(comment domain.Comment) (domain.Comment, 
 
 func (s *ContentService) ListArticleComments(articleID string, page, pageSize int) ([]domain.Comment, int) {
 	return s.repo.ListArticleComments(articleID, page, pageSize)
+}
+
+func (s *ContentService) ListArticleCommentThreads(articleID string, page, pageSize int) ([]domain.CommentNode, int) {
+	roots, total := s.repo.ListArticleComments(articleID, page, pageSize)
+	if len(roots) == 0 {
+		return []domain.CommentNode{}, total
+	}
+
+	rootIDs := make([]string, 0, len(roots))
+	for _, root := range roots {
+		rootIDs = append(rootIDs, root.ID)
+	}
+
+	descendants := s.repo.ListCommentDescendants(rootIDs)
+	rootSet := make(map[string]struct{}, len(roots))
+	commentByID := make(map[string]domain.Comment, len(roots)+len(descendants))
+	childrenByParent := make(map[string][]domain.Comment)
+	childrenByRoot := make(map[string][]domain.Comment)
+	normalizedDescendants := make([]domain.Comment, 0, len(descendants))
+
+	for _, root := range roots {
+		rootSet[root.ID] = struct{}{}
+		commentByID[root.ID] = root
+	}
+
+	for _, comment := range descendants {
+		parent, hasParent := commentByID[comment.ParentID]
+		if hasParent {
+			comment.ToCommentID = parent.ID
+			comment.ToCommentNickname = parent.Nickname
+		}
+		commentByID[comment.ID] = comment
+		normalizedDescendants = append(normalizedDescendants, comment)
+	}
+
+	for _, comment := range normalizedDescendants {
+		parentID := comment.ParentID
+		if parentID != "" {
+			if _, ok := commentByID[parentID]; !ok {
+				if _, rootOK := rootSet[comment.RootID]; rootOK {
+					childrenByRoot[comment.RootID] = append(childrenByRoot[comment.RootID], comment)
+				}
+				continue
+			}
+			childrenByParent[parentID] = append(childrenByParent[parentID], comment)
+			continue
+		}
+		if _, ok := rootSet[comment.RootID]; ok {
+			childrenByRoot[comment.RootID] = append(childrenByRoot[comment.RootID], comment)
+		}
+	}
+
+	for parentID := range childrenByParent {
+		sortCommentsByThreadOrder(childrenByParent[parentID])
+	}
+	for rootID := range childrenByRoot {
+		sortCommentsByThreadOrder(childrenByRoot[rootID])
+	}
+
+	items := make([]domain.CommentNode, 0, len(roots))
+	for _, root := range roots {
+		items = append(items, buildCommentNode(root, childrenByParent, childrenByRoot, map[string]bool{}))
+	}
+
+	return items, total
 }
 
 func (s *ContentService) ListCommentChildren(parentID string, page, pageSize int) ([]domain.Comment, int) {
@@ -766,6 +835,40 @@ func (s *ContentService) GetIntegrationProviderForRuntime(providerKey string) (d
 
 func (s *ContentService) ListTimeline(page, pageSize int, locale string) ([]domain.TimelineItem, int) {
 	return s.repo.ListTimeline(page, pageSize, locale)
+}
+
+func buildCommentNode(
+	comment domain.Comment,
+	childrenByParent map[string][]domain.Comment,
+	childrenByRoot map[string][]domain.Comment,
+	visited map[string]bool,
+) domain.CommentNode {
+	if visited[comment.ID] {
+		return domain.CommentNode{Comment: comment}
+	}
+	visited[comment.ID] = true
+
+	children := childrenByParent[comment.ID]
+	if comment.ParentID == "" && len(children) == 0 {
+		children = childrenByRoot[comment.ID]
+	}
+
+	node := domain.CommentNode{Comment: comment}
+	for _, child := range children {
+		node.Children = append(node.Children, buildCommentNode(child, childrenByParent, childrenByRoot, visited))
+	}
+	return node
+}
+
+func sortCommentsByThreadOrder(items []domain.Comment) {
+	sort.SliceStable(items, func(i, j int) bool {
+		leftPinned := items[i].IsPinned == "1"
+		rightPinned := items[j].IsPinned == "1"
+		if leftPinned != rightPinned {
+			return leftPinned
+		}
+		return items[i].CreatedAt.Before(items[j].CreatedAt)
+	})
 }
 
 func maskSecretJSON(raw []byte) []byte {

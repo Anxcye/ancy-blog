@@ -7,6 +7,7 @@ package postgres
 import (
 	"database/sql"
 	"errors"
+	"fmt"
 	"strings"
 	"time"
 
@@ -61,22 +62,7 @@ LIMIT $2 OFFSET $3
 	if err != nil {
 		return []domain.Comment{}, total
 	}
-	defer rows.Close()
-	items := make([]domain.Comment, 0)
-	for rows.Next() {
-		var c domain.Comment
-		var pinned bool
-		if err := rows.Scan(&c.ID, &c.ArticleID, &c.ParentID, &c.RootID, &c.Content, &c.Status, &pinned, &c.LikeCount, &c.ReplyCount,
-			&c.Nickname, &c.Email, &c.Website, &c.AvatarURL, &c.Source, &c.IP, &c.UserAgent, &c.CreatedAt, &c.UpdatedAt); err == nil {
-			if pinned {
-				c.IsPinned = "1"
-			} else {
-				c.IsPinned = "0"
-			}
-			items = append(items, c)
-		}
-	}
-	return items, total
+	return scanCommentRows(rows), total
 }
 
 func (r *Repository) ListCommentChildren(parentID string, page, pageSize int) ([]domain.Comment, int) {
@@ -97,22 +83,35 @@ LIMIT $2 OFFSET $3
 	if err != nil {
 		return []domain.Comment{}, total
 	}
-	defer rows.Close()
-	items := make([]domain.Comment, 0)
-	for rows.Next() {
-		var c domain.Comment
-		var pinned bool
-		if err := rows.Scan(&c.ID, &c.ArticleID, &c.ParentID, &c.RootID, &c.Content, &c.Status, &pinned, &c.LikeCount, &c.ReplyCount,
-			&c.Nickname, &c.Email, &c.Website, &c.AvatarURL, &c.Source, &c.IP, &c.UserAgent, &c.CreatedAt, &c.UpdatedAt); err == nil {
-			if pinned {
-				c.IsPinned = "1"
-			} else {
-				c.IsPinned = "0"
-			}
-			items = append(items, c)
-		}
+	return scanCommentRows(rows), total
+}
+
+func (r *Repository) ListCommentDescendants(rootIDs []string) []domain.Comment {
+	if len(rootIDs) == 0 {
+		return []domain.Comment{}
 	}
-	return items, total
+
+	args := make([]any, 0, len(rootIDs))
+	placeholders := make([]string, 0, len(rootIDs))
+	for idx, id := range rootIDs {
+		args = append(args, id)
+		placeholders = append(placeholders, fmt.Sprintf("$%d", idx+1))
+	}
+
+	query := fmt.Sprintf(`
+SELECT id::text, article_id::text, COALESCE(parent_id::text,''), COALESCE(root_id::text,''), content, status, is_pinned,
+       like_count, reply_count, nickname, COALESCE(email,''), COALESCE(website,''), COALESCE(avatar_url,''),
+       source, COALESCE(ip,''), COALESCE(user_agent,''), created_at, updated_at
+FROM comments
+WHERE status='approved' AND deleted_at IS NULL AND parent_id IS NOT NULL AND root_id IN (%s)
+ORDER BY root_id, is_pinned DESC, created_at ASC
+`, strings.Join(placeholders, ","))
+
+	rows, err := r.db.Query(query, args...)
+	if err != nil {
+		return []domain.Comment{}
+	}
+	return scanCommentRows(rows)
 }
 
 func (r *Repository) CountArticleComments(articleID string) (int, error) {
@@ -161,22 +160,7 @@ WHERE deleted_at IS NULL`
 	if err != nil {
 		return []domain.Comment{}, total
 	}
-	defer rows.Close()
-	items := make([]domain.Comment, 0)
-	for rows.Next() {
-		var c domain.Comment
-		var pinned bool
-		if err := rows.Scan(&c.ID, &c.ArticleID, &c.ParentID, &c.RootID, &c.Content, &c.Status, &pinned, &c.LikeCount, &c.ReplyCount,
-			&c.Nickname, &c.Email, &c.Website, &c.AvatarURL, &c.Source, &c.IP, &c.UserAgent, &c.CreatedAt, &c.UpdatedAt); err == nil {
-			if pinned {
-				c.IsPinned = "1"
-			} else {
-				c.IsPinned = "0"
-			}
-			items = append(items, c)
-		}
-	}
-	return items, total
+	return scanCommentRows(rows), total
 }
 
 func (r *Repository) UpdateCommentAdmin(id string, status, isPinned string) (domain.Comment, error) {
@@ -204,4 +188,24 @@ RETURNING id::text, article_id::text, COALESCE(parent_id::text,''), COALESCE(roo
 		c.IsPinned = "0"
 	}
 	return c, nil
+}
+
+func scanCommentRows(rows *sql.Rows) []domain.Comment {
+	defer rows.Close()
+
+	items := make([]domain.Comment, 0)
+	for rows.Next() {
+		var c domain.Comment
+		var pinned bool
+		if err := rows.Scan(&c.ID, &c.ArticleID, &c.ParentID, &c.RootID, &c.Content, &c.Status, &pinned, &c.LikeCount, &c.ReplyCount,
+			&c.Nickname, &c.Email, &c.Website, &c.AvatarURL, &c.Source, &c.IP, &c.UserAgent, &c.CreatedAt, &c.UpdatedAt); err == nil {
+			if pinned {
+				c.IsPinned = "1"
+			} else {
+				c.IsPinned = "0"
+			}
+			items = append(items, c)
+		}
+	}
+	return items
 }

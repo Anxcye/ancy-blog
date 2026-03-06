@@ -29,6 +29,8 @@ type contentRepoStub struct {
 	listIntegrationProvidersFunc  func(providerType string) []domain.IntegrationProvider
 	listPublishedMomentsFunc      func(page, pageSize int, locale string) ([]domain.Moment, int)
 	listTimelineFunc              func(page, pageSize int, locale string) ([]domain.TimelineItem, int)
+	listArticleCommentsFunc       func(articleID string, page, pageSize int) ([]domain.Comment, int)
+	listCommentDescendantsFunc    func(rootIDs []string) []domain.Comment
 
 	getIntegrationProviderFunc    func(providerKey string) (domain.IntegrationProvider, bool)
 	updateIntegrationProviderFunc func(providerKey string, enabled bool, configJSON, metaJSON []byte) (domain.IntegrationProvider, error)
@@ -123,6 +125,20 @@ func (s *contentRepoStub) ListTimeline(page, pageSize int, locale string) ([]dom
 	return nil, 0
 }
 
+func (s *contentRepoStub) ListArticleComments(articleID string, page, pageSize int) ([]domain.Comment, int) {
+	if s.listArticleCommentsFunc != nil {
+		return s.listArticleCommentsFunc(articleID, page, pageSize)
+	}
+	return nil, 0
+}
+
+func (s *contentRepoStub) ListCommentDescendants(rootIDs []string) []domain.Comment {
+	if s.listCommentDescendantsFunc != nil {
+		return s.listCommentDescendantsFunc(rootIDs)
+	}
+	return nil
+}
+
 func (s *contentRepoStub) GetIntegrationProvider(providerKey string) (domain.IntegrationProvider, bool) {
 	if s.getIntegrationProviderFunc != nil {
 		return s.getIntegrationProviderFunc(providerKey)
@@ -215,6 +231,47 @@ func TestCreateArticleSetsDefaults(t *testing.T) {
 	}
 	if created.ID != "a1" {
 		t.Fatalf("unexpected article id: %s", created.ID)
+	}
+}
+
+func TestListArticleCommentThreadsBuildsNestedReplies(t *testing.T) {
+	repo := &contentRepoStub{
+		listArticleCommentsFunc: func(articleID string, page, pageSize int) ([]domain.Comment, int) {
+			if articleID != "article-1" || page != 1 || pageSize != 10 {
+				t.Fatalf("unexpected pagination: %s %d %d", articleID, page, pageSize)
+			}
+			return []domain.Comment{
+				{ID: "root-1", ArticleID: articleID, Nickname: "Root", CreatedAt: time.Date(2026, 3, 6, 10, 0, 0, 0, time.UTC)},
+			}, 1
+		},
+		listCommentDescendantsFunc: func(rootIDs []string) []domain.Comment {
+			if len(rootIDs) != 1 || rootIDs[0] != "root-1" {
+				t.Fatalf("unexpected rootIDs: %#v", rootIDs)
+			}
+			return []domain.Comment{
+				{ID: "child-1", ArticleID: "article-1", ParentID: "root-1", RootID: "root-1", Nickname: "Alice", CreatedAt: time.Date(2026, 3, 6, 10, 1, 0, 0, time.UTC)},
+				{ID: "child-2", ArticleID: "article-1", ParentID: "child-1", RootID: "root-1", Nickname: "Bob", CreatedAt: time.Date(2026, 3, 6, 10, 2, 0, 0, time.UTC)},
+			}
+		},
+	}
+	svc := NewContentService(repo, nil)
+
+	rows, total := svc.ListArticleCommentThreads("article-1", 1, 10)
+
+	if total != 1 || len(rows) != 1 {
+		t.Fatalf("unexpected thread result: total=%d rows=%d", total, len(rows))
+	}
+	if len(rows[0].Children) != 1 {
+		t.Fatalf("expected one child, got %d", len(rows[0].Children))
+	}
+	if rows[0].Children[0].ToCommentNickname != "Root" {
+		t.Fatalf("expected reply target Root, got %s", rows[0].Children[0].ToCommentNickname)
+	}
+	if len(rows[0].Children[0].Children) != 1 {
+		t.Fatalf("expected nested child, got %d", len(rows[0].Children[0].Children))
+	}
+	if rows[0].Children[0].Children[0].ToCommentNickname != "Alice" {
+		t.Fatalf("expected nested reply target Alice, got %s", rows[0].Children[0].Children[0].ToCommentNickname)
 	}
 }
 

@@ -38,6 +38,8 @@ This guide governs both frontend apps:
 - Entry pattern: `slide-up + fade` with `40-60ms` stagger.
 - Hover/click: mild lift and press feedback; keep calm and short (`200-400ms`).
 - Particle layer: sparse petal-like particles, very low density (about one visible fall event per ~3s), tinted by current accent.
+- Comment composer triggers can use stronger spring feedback than article cards, but still need a restrained editorial shell.
+- Comment thread lists may use responsive masonry/waterfall stacking when cards have uneven heights.
 
 ## Responsive & SEO Constraints
 - Mobile-first layout and touch targets >= `40px`.

@@ -228,7 +228,7 @@
 - Path: /api/v1/public/comments/article/{articleId}
 - Auth Required: No
 - Request: query `page`, `pageSize`
-- Response: paginated root comments
+- Response: paginated threaded comments, each row is a root comment node with recursive `children`
 - Error Codes: None
 
 - ID: PUB-COMMENT-002

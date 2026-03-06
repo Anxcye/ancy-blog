@@ -72,6 +72,12 @@ type Comment struct {
 	CreatedAt         time.Time `json:"createdAt"`
 	UpdatedAt         time.Time `json:"updatedAt"`
 }
+
+type CommentNode struct {
+	Comment
+	Children []CommentNode `json:"children,omitempty"`
+}
+
 type Link struct {
 	ID                 string    `json:"id"`
 	Name               string    `json:"name"`
