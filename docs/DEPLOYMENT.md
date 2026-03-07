@@ -43,7 +43,7 @@
 3. Clone this repository to the server.
 4. In GitHub repository settings, add variable `APP_DOMAIN=example.com` so frontend images are built with the correct API base.
 5. Publish GHCR packages as public, or run `docker login ghcr.io` on the server before the first deploy.
-6. Copy `deploy/.env.example` to `deploy/.env` and fill all secrets, especially `IMAGE_NAMESPACE`.
+6. Copy `deploy/.env.example` to `deploy/.env` and fill all secrets. The default `IMAGE_NAMESPACE` is already `anxcye/ancy-blog`.
 7. If the server needs custom redirects or environment-specific Caddy rules, place them in `deploy/caddy/local/*.caddy`.
 
 ## Initial Deploy
@@ -57,7 +57,7 @@ cp .env.example .env
 Recommended production value in `deploy/.env`:
 ```env
 IMAGE_REGISTRY=ghcr.io
-IMAGE_NAMESPACE=<github-owner>/ancy-blog
+IMAGE_NAMESPACE=anxcye/ancy-blog
 APP_IMAGE_TAG=latest
 ```
 
@@ -161,6 +161,7 @@ EOF
 Current recommendation: keep upgrades manual and deterministic.
 - Tag a release in git.
 - Wait for the `build-images` workflow to finish successfully in GitHub Actions.
+- The workflow only publishes on tag pushes (plus manual dispatch), so normal branch pushes do not produce production images.
 - Let GitHub Actions build and publish images to GHCR.
 - Keep secrets in `deploy/.env`.
 - Keep server-specific Caddy rules in `deploy/caddy/local/*.caddy`.
