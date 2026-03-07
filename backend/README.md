@@ -34,6 +34,13 @@ make migrate-up
 make migrate-version
 ```
 
+If a migration fails and leaves the schema dirty, fix the SQL and then force the version before rerunning:
+```bash
+cd backend
+go run ./cmd/migrate -action force -version 14
+go run ./cmd/migrate -action up
+```
+
 Run PostgreSQL integration tests:
 ```bash
 cd backend

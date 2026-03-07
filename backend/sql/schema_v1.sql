@@ -361,4 +361,9 @@ INSERT INTO integration_providers (provider_type, provider_key, name, enabled, c
 SELECT 'llm', 'openai_compatible', 'OpenAI Compatible', FALSE, '{}'::jsonb, '{}'::jsonb
 WHERE NOT EXISTS (SELECT 1 FROM integration_providers WHERE provider_key = 'openai_compatible');
 
+INSERT INTO integration_providers (provider_type, provider_key, name, enabled, config_json, meta_json)
+SELECT 'llm', 'tmdb', 'TMDB', FALSE, '{"api_key": ""}'::jsonb,
+       '{"description": "The Movie Database API for fetching movie and TV show metadata"}'::jsonb
+WHERE NOT EXISTS (SELECT 1 FROM integration_providers WHERE provider_key = 'tmdb');
+
 COMMIT;

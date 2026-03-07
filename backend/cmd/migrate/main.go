@@ -19,12 +19,14 @@ func main() {
 	var (
 		action  string
 		steps   int
+		version int
 		path    string
 		verbose bool
 	)
 
-	flag.StringVar(&action, "action", "up", "migration action: up | down | steps | version")
+	flag.StringVar(&action, "action", "up", "migration action: up | down | steps | version | force")
 	flag.IntVar(&steps, "steps", 1, "number of steps for action=steps (negative rolls back)")
+	flag.IntVar(&version, "version", 0, "target version for action=force")
 	flag.StringVar(&path, "path", "file://migrations", "migration source path")
 	flag.BoolVar(&verbose, "v", false, "enable verbose logging")
 	flag.Parse()
@@ -74,6 +76,13 @@ func main() {
 		}
 		fmt.Printf("version: %d dirty: %v\n", v, dirty)
 		return
+	case "force":
+		if version <= 0 {
+			log.Fatalf("force action requires -version > 0")
+		}
+		if err := m.Force(version); err != nil {
+			log.Fatalf("migrate force failed: %v", err)
+		}
 	default:
 		log.Fatalf("unsupported action: %s", action)
 	}
