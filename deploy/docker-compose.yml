@@ -26,10 +26,7 @@ services:
       - edge
 
   backend:
-    build:
-      context: ../backend
-      dockerfile: Dockerfile
-    image: ancy-blog-backend:${APP_IMAGE_TAG:-latest}
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE}/backend:${APP_IMAGE_TAG:-latest}
     container_name: ancy-blog-backend
     restart: unless-stopped
     env_file:
@@ -51,12 +48,7 @@ services:
       - data
 
   frontend-blog:
-    build:
-      context: ../frontend-blog
-      dockerfile: Dockerfile
-      args:
-        NUXT_PUBLIC_API_BASE: https://${APP_DOMAIN}/api/v1
-    image: ancy-blog-frontend-blog:${APP_IMAGE_TAG:-latest}
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE}/frontend-blog:${APP_IMAGE_TAG:-latest}
     container_name: ancy-blog-frontend-blog
     restart: unless-stopped
     environment:
@@ -66,12 +58,7 @@ services:
       - edge
 
   admin:
-    build:
-      context: ../frontend-admin-react
-      dockerfile: Dockerfile
-      args:
-        VITE_API_BASE_URL: https://${APP_DOMAIN}/api/v1
-    image: ancy-blog-admin:${APP_IMAGE_TAG:-latest}
+    image: ${IMAGE_REGISTRY:-ghcr.io}/${IMAGE_NAMESPACE}/frontend-admin-react:${APP_IMAGE_TAG:-latest}
     container_name: ancy-blog-admin
     restart: unless-stopped
     networks:

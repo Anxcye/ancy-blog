@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # File: release.sh
-# Purpose: Run the production release flow with image build, migration, and service restart.
+# Purpose: Run the production release flow with image pull, migration, and service restart.
 # Module: deploy automation, release workflow layer.
 # Related: deploy/docker-compose.yml, backend/cmd/migrate, deploy/.env.example.
 
@@ -15,7 +15,7 @@ if [[ ! -f .env ]]; then
   exit 1
 fi
 
-docker compose --env-file .env build backend frontend-blog admin
+docker compose --env-file .env pull backend frontend-blog admin
 docker compose --env-file .env up -d postgres redis
 docker compose --env-file .env run --rm backend /app/migrate -action up
 docker compose --env-file .env up -d backend frontend-blog admin caddy

@@ -13,7 +13,7 @@
 - [ ] Blog: particle background (sparse petal/dot animation, accent-tinted).
 
 ## Done
-- [x] Added single-host production deployment baseline: Dockerfiles for backend/blog/admin, Docker Compose orchestration, Caddy reverse proxy, release script, PostgreSQL backup script, and deployment guide for `example.com` + `admin.example.com` behind Cloudflare.
+- [x] Added single-host production deployment baseline: Dockerfiles for backend/blog/admin, Docker Compose orchestration, Caddy reverse proxy, PostgreSQL backup script, upgrade script, GHCR-based image delivery via GitHub Actions, and deployment guide for `example.com` + `admin.example.com` behind Cloudflare.
 - [x] Implemented friend link submission form on friends page with live preview and responsive layout.
 - [x] Redesigned friends page: vertical link cards without background, reordered content (hero → links → article → form).
 - [x] Added site-level friend-link submission toggle with backend enforcement, blog frontend state sync, and admin setting control.

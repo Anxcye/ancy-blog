@@ -6,6 +6,7 @@
 - Admin app: `https://admin.example.com`
 - CDN / edge proxy: Cloudflare
 - Origin runtime: single Linux host with Docker Compose
+- Image delivery: GitHub Actions builds to GHCR, server pulls prebuilt images
 
 ## Why This Topology
 - `frontend-blog` runs as Nuxt SSR, so it should stay as a Node service instead of a static export.
@@ -40,8 +41,10 @@
 1. Provision an Ubuntu 22.04+ host.
 2. Install Docker Engine and Docker Compose plugin.
 3. Clone this repository to the server.
-4. Copy `deploy/.env.example` to `deploy/.env` and fill all secrets.
-5. If the server needs custom redirects or environment-specific Caddy rules, place them in `deploy/caddy/local/*.caddy`.
+4. In GitHub repository settings, add variable `APP_DOMAIN=example.com` so frontend images are built with the correct API base.
+5. Publish GHCR packages as public, or run `docker login ghcr.io` on the server before the first deploy.
+6. Copy `deploy/.env.example` to `deploy/.env` and fill all secrets, especially `IMAGE_NAMESPACE`.
+7. If the server needs custom redirects or environment-specific Caddy rules, place them in `deploy/caddy/local/*.caddy`.
 
 ## Initial Deploy
 ```bash
@@ -49,6 +52,13 @@ cd deploy
 cp .env.example .env
 # edit .env
 ./release.sh
+```
+
+Recommended production value in `deploy/.env`:
+```env
+IMAGE_REGISTRY=ghcr.io
+IMAGE_NAMESPACE=<github-owner>/ancy-blog
+APP_IMAGE_TAG=latest
 ```
 
 ## Upgrade Flow
@@ -70,7 +80,7 @@ cd deploy
 1. `git fetch --tags --prune`
 2. `git pull --ff-only` or `git checkout <ref>`
 3. PostgreSQL backup
-4. Image rebuild
+4. Image pull from GHCR
 5. Database migration
 6. Service restart
 7. Basic smoke checks for blog, admin, and the public site API
@@ -150,10 +160,12 @@ EOF
 ## Update Strategy
 Current recommendation: keep upgrades manual and deterministic.
 - Tag a release in git.
+- Wait for the `build-images` workflow to finish successfully in GitHub Actions.
+- Let GitHub Actions build and publish images to GHCR.
 - Keep secrets in `deploy/.env`.
 - Keep server-specific Caddy rules in `deploy/caddy/local/*.caddy`.
 - Run `deploy/update.sh` on the server.
-- Let the script backup, rebuild, migrate, restart, and smoke-check the stack.
+- Let the script backup, pull, migrate, restart, and smoke-check the stack.
 
 Later, this can evolve into:
 - CI builds images

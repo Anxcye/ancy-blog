@@ -46,6 +46,7 @@
 - Rationale: This project currently benefits more from operational simplicity, deterministic releases, and easy rollback/debugging than from orchestration complexity. The chosen split also keeps the public site same-origin with the API while isolating the admin surface on its own domain.
 - Consequences:
   - Production releases should run migrations before application restarts.
+  - Frontend and backend images should be built in CI and published to GHCR, while the server only pulls and runs them.
   - `frontend-blog` remains an SSR Node service instead of static export.
   - `frontend-admin-react` is built as static assets and served behind the same reverse proxy layer.
   - Cloudflare caching and access policies should treat `example.com/api/*` and `admin.example.com/*` as dynamic/non-cacheable paths.

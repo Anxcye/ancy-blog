@@ -14,6 +14,7 @@ A clean rewrite of the blog platform with:
 - `frontend-admin-react/`: React admin app.
 - `frontend-blog/`: Vue 3 public app.
 - `deploy/`: Docker Compose, reverse proxy, and release scripts.
+- `.github/`: CI workflows for image build and publication.
 - `docs/`: product rules, data model, API contracts, progress logs.
 - `AGENTS.md`: contributor and AI-collaboration rules.
 
