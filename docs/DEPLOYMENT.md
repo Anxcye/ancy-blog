@@ -41,10 +41,9 @@
 1. Provision an Ubuntu 22.04+ host.
 2. Install Docker Engine and Docker Compose plugin.
 3. Clone this repository to the server.
-4. In GitHub repository settings, add variable `APP_DOMAIN=example.com` so frontend images are built with the correct API base.
-5. Publish GHCR packages as public, or run `docker login ghcr.io` on the server before the first deploy.
-6. Copy `deploy/.env.example` to `deploy/.env` and fill all secrets. The default `IMAGE_NAMESPACE` is already `anxcye/ancy-blog`.
-7. If the server needs custom redirects or environment-specific Caddy rules, place them in `deploy/caddy/local/*.caddy`.
+4. Publish GHCR packages as public, or run `docker login ghcr.io` on the server before the first deploy.
+5. Copy `deploy/.env.example` to `deploy/.env` and fill all secrets. The default `IMAGE_NAMESPACE` is already `anxcye/ancy-blog`.
+6. If the server needs custom redirects or environment-specific Caddy rules, place them in `deploy/caddy/local/*.caddy`.
 
 ## Initial Deploy
 ```bash

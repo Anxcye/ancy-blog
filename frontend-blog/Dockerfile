@@ -9,9 +9,6 @@ WORKDIR /app
 
 RUN corepack enable
 
-ARG NUXT_PUBLIC_API_BASE=http://localhost:8080/api/v1
-ENV NUXT_PUBLIC_API_BASE=${NUXT_PUBLIC_API_BASE}
-
 COPY package.json pnpm-lock.yaml* ./
 RUN pnpm install --frozen-lockfile
 

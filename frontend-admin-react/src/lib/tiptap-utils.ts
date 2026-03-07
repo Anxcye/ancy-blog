@@ -404,7 +404,7 @@ export const handleImageUpload = async (
     )
   }
 
-  const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:8080/api/v1"
+  const baseURL = import.meta.env.VITE_API_BASE_URL || "/api/v1"
   const token = useAuthStore.getState().accessToken
   const formData = new FormData()
   formData.append("file", file)

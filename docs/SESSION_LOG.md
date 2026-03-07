@@ -759,6 +759,6 @@
 - Updated `docs/DEPLOYMENT.md` to make `update.sh` the primary production upgrade command, while keeping `release.sh` as the lower-level deployment primitive.
 - Split Caddy deployment config into tracked base config plus untracked local override snippets under `deploy/caddy/local/*.caddy`, so server-specific redirects survive `git pull` cleanly.
 - Switched deployment delivery from server-side image builds to GitHub Actions publishing prebuilt images to GHCR, with the server now pulling tagged images during release.
-- Added `.github/workflows/build-images.yml` to build backend/blog/admin images on tag pushes (and manual dispatch), using repository variable `APP_DOMAIN` for frontend build-time API configuration.
+- Added `.github/workflows/build-images.yml` to build backend/blog/admin images on tag pushes (and manual dispatch), without requiring any repository-level deployment domain variables.
 - Adjusted `deploy/release.sh` so production releases only pull application images from GHCR, while `postgres`, `redis`, and `caddy` keep their existing runtime images unless explicitly changed.
 - Tightened GHCR publishing so production images are built only on tag pushes (and optional manual dispatch), while keeping `latest` aligned to the newest tagged release.
