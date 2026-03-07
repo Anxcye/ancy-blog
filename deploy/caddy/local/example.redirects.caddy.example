@@ -1,0 +1,3 @@
+# Legacy article redirects.
+redir /home/7 /articles/example-article-slug 301
+redir /home/12 /articles/another-example-article 301

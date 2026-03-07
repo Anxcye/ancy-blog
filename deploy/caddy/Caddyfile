@@ -2,7 +2,13 @@
   email {$ACME_EMAIL}
 }
 
+(common_overrides) {
+  import /etc/caddy/local/*.caddy
+}
+
 {$APP_DOMAIN} {
+  import common_overrides
+
   encode zstd gzip
 
   @api path /api/*
@@ -16,6 +22,8 @@
 }
 
 {$ADMIN_DOMAIN} {
+  import common_overrides
+
   encode zstd gzip
   reverse_proxy admin:80
 }

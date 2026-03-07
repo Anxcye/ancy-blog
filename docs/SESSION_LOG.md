@@ -757,3 +757,4 @@
 
 - Added `deploy/update.sh` as the standard upgrade entrypoint: it fetches git updates, optionally checks out a target ref, runs a database backup, triggers the container release, and smoke-checks blog/admin/public API endpoints.
 - Updated `docs/DEPLOYMENT.md` to make `update.sh` the primary production upgrade command, while keeping `release.sh` as the lower-level deployment primitive.
+- Split Caddy deployment config into tracked base config plus untracked local override snippets under `deploy/caddy/local/*.caddy`, so server-specific redirects survive `git pull` cleanly.

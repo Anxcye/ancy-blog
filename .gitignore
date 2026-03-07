@@ -45,3 +45,5 @@ build/
 out/
 
 .claude/
+# Deploy local overrides
+deploy/caddy/local/*.caddy

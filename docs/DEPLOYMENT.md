@@ -41,6 +41,7 @@
 2. Install Docker Engine and Docker Compose plugin.
 3. Clone this repository to the server.
 4. Copy `deploy/.env.example` to `deploy/.env` and fill all secrets.
+5. If the server needs custom redirects or environment-specific Caddy rules, place them in `deploy/caddy/local/*.caddy`.
 
 ## Initial Deploy
 ```bash
@@ -103,6 +104,15 @@ cd deploy
 ./release.sh
 ```
 
+Add server-local Caddy overrides without changing tracked files:
+```bash
+cd deploy
+cat > caddy/local/legacy-redirects.caddy <<'EOF'
+redir /home/7 /articles/example-article-slug 301
+EOF
+./release.sh
+```
+
 ## Environment Variables
 ### Public domains
 - `APP_DOMAIN`
@@ -140,6 +150,8 @@ cd deploy
 ## Update Strategy
 Current recommendation: keep upgrades manual and deterministic.
 - Tag a release in git.
+- Keep secrets in `deploy/.env`.
+- Keep server-specific Caddy rules in `deploy/caddy/local/*.caddy`.
 - Run `deploy/update.sh` on the server.
 - Let the script backup, rebuild, migrate, restart, and smoke-check the stack.
 
