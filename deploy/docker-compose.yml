@@ -16,12 +16,14 @@ services:
     volumes:
       - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
       - ./caddy/local:/etc/caddy/local:ro
+      - ./caddy/certs:/etc/caddy/certs:ro
       - caddy_data:/data
       - caddy_config:/config
     environment:
       APP_DOMAIN: ${APP_DOMAIN}
       ADMIN_DOMAIN: ${ADMIN_DOMAIN}
-      ACME_EMAIL: ${ACME_EMAIL}
+      ORIGIN_CERT_FILE: ${ORIGIN_CERT_FILE}
+      ORIGIN_KEY_FILE: ${ORIGIN_KEY_FILE}
     networks:
       - edge
 

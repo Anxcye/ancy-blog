@@ -1,13 +1,14 @@
-{
-  email {$ACME_EMAIL}
-}
-
 (common_overrides) {
   import /etc/caddy/local/*.caddy
 }
 
+(common_tls) {
+  tls {$ORIGIN_CERT_FILE} {$ORIGIN_KEY_FILE}
+}
+
 {$APP_DOMAIN} {
   import common_overrides
+  import common_tls
 
   encode zstd gzip
 
@@ -23,6 +24,7 @@
 
 {$ADMIN_DOMAIN} {
   import common_overrides
+  import common_tls
 
   encode zstd gzip
 

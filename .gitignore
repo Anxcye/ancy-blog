@@ -47,3 +47,6 @@ out/
 .claude/
 # Deploy local overrides
 deploy/caddy/local/*.caddy
+deploy/caddy/certs/*
+
+!deploy/caddy/certs/README.md
