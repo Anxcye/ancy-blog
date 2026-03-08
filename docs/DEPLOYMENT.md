@@ -62,7 +62,7 @@ Recommended production value in `deploy/.env`:
 ```env
 IMAGE_REGISTRY=ghcr.io
 IMAGE_NAMESPACE=anxcye/ancy-blog
-APP_IMAGE_TAG=latest
+APP_IMAGE_TAG=v1.0.0
 ORIGIN_CERT_FILE=/etc/caddy/certs/origin.pem
 ORIGIN_KEY_FILE=/etc/caddy/certs/origin.key
 ```
@@ -71,7 +71,7 @@ ORIGIN_KEY_FILE=/etc/caddy/certs/origin.key
 For normal production upgrades, use the wrapper script:
 ```bash
 cd deploy
-./update.sh
+./update.sh v1.0.3
 ```
 
 To deploy a specific git tag or commit:
@@ -85,11 +85,12 @@ cd deploy
 `deploy/update.sh` performs this order:
 1. `git fetch --tags --prune`
 2. `git pull --ff-only` or `git checkout <ref>`
-3. PostgreSQL backup
-4. Image pull from GHCR
-5. Database migration
-6. Service restart
-7. Basic smoke checks for blog, admin, and the public site API
+3. If `<ref>` is provided, update `deploy/.env` so `APP_IMAGE_TAG=<ref>`
+4. PostgreSQL backup
+5. Image pull from GHCR
+6. Database migration
+7. Service restart
+8. Basic smoke checks for blog, admin, and the public site API
 
 `deploy/release.sh` remains the lower-level script that only handles the container release itself.
 
@@ -177,9 +178,10 @@ Current recommendation: keep upgrades manual and deterministic.
 - The workflow only publishes on tag pushes (plus manual dispatch), so normal branch pushes do not produce production images.
 - Let GitHub Actions build and publish images to GHCR.
 - Keep secrets in `deploy/.env`.
+- Keep `APP_IMAGE_TAG` aligned to a published git tag instead of relying on `latest`.
 - Keep Cloudflare origin certificate files in `deploy/caddy/certs/`.
 - Keep server-specific Caddy rules in `deploy/caddy/local/*.caddy`.
-- Run `deploy/update.sh` on the server.
+- Run `deploy/update.sh <tag>` on the server.
 - Let the script backup, pull, migrate, restart, and smoke-check the stack.
 
 Later, this can evolve into:
