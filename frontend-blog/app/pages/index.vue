@@ -21,7 +21,7 @@
             />
             <span v-for="(char, i) in (siteSettings?.siteName || 'Ancy').split('')" :key="`name-${i}`" class="char char-name" :style="{ animationDelay: `${(i + 9) * 50}ms` }">{{ char }}</span>
           </span>
-          <span class="title-line">
+          <span class="title-line title-line-subtitle">
             <span v-for="(char, i) in (siteSettings?.heroIntroMd || t('home.heroSubtitle')).split('')" :key="`intro-${i}`" class="char char-gradient" :style="{ animationDelay: `${i * 50}ms` }">{{ char === ' ' ? '\u00A0' : char }}</span>
           </span>
         </h1>
@@ -125,12 +125,15 @@ useSeoMeta({
 }
 
 .hero-inner {
+  width: min(100%, 1200px);
+  margin: 0 auto;
   text-align: center;
   position: relative;
 }
 
 /* ── Title ── */
 .hero-title {
+  width: 100%;
   font-size: clamp(3rem, 8vw, 5rem);
   font-weight: 800;
   line-height: 1.1;
@@ -162,6 +165,16 @@ useSeoMeta({
 .title-line {
   display: block;
   margin-bottom: 1em;
+}
+
+.title-line-subtitle {
+  display: block;
+  width: 100%;
+  margin-bottom: 0;
+  padding-bottom: 0.12em;
+  font-size: clamp(2.4rem, 6vw, 5rem);
+  line-height: 1.12;
+  white-space: nowrap;
 }
 
 .title-avatar {
@@ -199,15 +212,19 @@ useSeoMeta({
   display: grid;
   place-items: center;
   color: var(--text-muted);
-  transition: all 0.3s var(--ease-out);
+  border-radius: 999px;
+  clip-path: circle(50%);
+  transition: transform 0.3s var(--ease-out), color 0.3s var(--ease-out), filter 0.3s var(--ease-out);
   opacity: 0;
   animation: char-spring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
   animation-delay: 1s;
+  overflow: hidden;
 }
 
 .social-icon:hover {
   color: var(--accent-text);
-  transform: translateY(-4px);
+  transform: translateY(-4px) scale(1.05);
+  filter: saturate(1.08);
 }
 
 .social-icon svg {
@@ -216,9 +233,10 @@ useSeoMeta({
 }
 
 .social-icon-img {
-  width: 42px;
-  height: 42px;
-  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 999px;
 }
 
 @media (max-width: 640px) {
@@ -230,6 +248,13 @@ useSeoMeta({
   .title-avatar {
     width: 0.8em;
     height: 0.8em;
+  }
+
+  .title-line-subtitle {
+    white-space: normal;
+    font-size: clamp(1.5rem, 7vw, 2.35rem);
+    line-height: 1.18;
+    text-wrap: balance;
   }
 }
 

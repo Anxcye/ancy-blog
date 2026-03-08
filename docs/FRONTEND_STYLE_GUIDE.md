@@ -83,3 +83,6 @@ This guide governs both frontend apps:
 - Keep style tokens in CSS variables; avoid hardcoded accent colors.
 - Respect `prefers-reduced-motion` for particle and spring effects.
 - Any style-direction change must update this file and be logged in `docs/SESSION_LOG.md`.
+
+- Homepage hero social links should use circular icon buttons rather than plain glyph links.
+- Homepage hero secondary line should stay on one line on wider screens by scaling typography down with available width; mobile may wrap naturally.

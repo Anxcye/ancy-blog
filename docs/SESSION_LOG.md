@@ -775,3 +775,5 @@
 - Updated the public blog TipTap renderer to understand and style persisted table nodes, keeping article output consistent with the new editor capabilities.
 - Restored local admin login and upload requests after switching the admin frontend to relative `/api` paths by adding a Vite dev proxy to the backend origin.
 - Fixed the public blog table renderer import path to use TipTap's named table exports, resolving a client-side module error that broke article detail pages with HTTP 500 responses.
+
+- Refined the homepage hero so social links use circular icon buttons, and kept the secondary title line single-line on desktop with width-responsive sizing while allowing mobile wrapping.
