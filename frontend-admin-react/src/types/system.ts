@@ -83,9 +83,10 @@ export interface TranslationJobListParams {
 export type TranslationContentStatus = 'draft' | 'published' | 'archived';
 
 export interface TranslationContent {
-  id: string;
   sourceType: TranslationSourceType;
   sourceId: string;
+  sourceTitle?: string;
+  sourceSlug?: string;
   locale: string;
   title?: string;
   summary?: string;

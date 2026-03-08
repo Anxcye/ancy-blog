@@ -104,6 +104,8 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 - Translation task uses configured LLM provider from integration center.
 - Translation output should be stored in locale-specific content records.
 - Translation result must include metadata: provider, model, status, and error message (if failed).
+- Admin translation management must expose translated rows independently from job history and provide source context (`source title/slug`) for review.
+- Admin translation editing must load the full persisted translation detail before saving overrides, instead of relying on truncated list payloads.
 - Translation scope:
   - Article: `title`, `summary`, `content`.
   - Moment: `content`.

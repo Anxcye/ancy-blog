@@ -1199,6 +1199,8 @@ func (r *Repository) GetTranslationContent(sourceType, sourceID, locale string) 
 		return domain.TranslationContent{
 			SourceType:        "article",
 			SourceID:          sourceID,
+			SourceTitle:       r.articles[sourceID].Title,
+			SourceSlug:        r.articles[sourceID].Slug,
 			Locale:            locale,
 			Title:             row.title,
 			Summary:           row.summary,
@@ -1221,6 +1223,7 @@ func (r *Repository) GetTranslationContent(sourceType, sourceID, locale string) 
 		return domain.TranslationContent{
 			SourceType:        "moment",
 			SourceID:          sourceID,
+			SourceTitle:       truncateText(r.moments[sourceID].Content, 80),
 			Locale:            locale,
 			Content:           row.content,
 			Status:            row.status,
@@ -1264,6 +1267,8 @@ func (r *Repository) listArticleTranslationContents(sourceID, locale string) []d
 			rows = append(rows, domain.TranslationContent{
 				SourceType:        "article",
 				SourceID:          articleID,
+				SourceTitle:       r.articles[articleID].Title,
+				SourceSlug:        r.articles[articleID].Slug,
 				Locale:            lc,
 				Title:             rec.title,
 				Summary:           rec.summary,
@@ -1292,6 +1297,7 @@ func (r *Repository) listMomentTranslationContents(sourceID, locale string) []do
 			rows = append(rows, domain.TranslationContent{
 				SourceType:        "moment",
 				SourceID:          momentID,
+				SourceTitle:       truncateText(r.moments[momentID].Content, 80),
 				Locale:            lc,
 				Content:           rec.content,
 				Status:            rec.status,
@@ -1321,6 +1327,14 @@ func contains(arr []string, val string) bool {
 		}
 	}
 	return false
+}
+
+func truncateText(text string, limit int) string {
+	text = strings.TrimSpace(text)
+	if limit <= 0 || len(text) <= limit {
+		return text
+	}
+	return strings.TrimSpace(text[:limit]) + "..."
 }
 
 func translationVisible(rec translationRecord) bool {

@@ -247,6 +247,8 @@ type TranslationJob struct {
 type TranslationContent struct {
 	SourceType        string    `json:"sourceType"`
 	SourceID          string    `json:"sourceId"`
+	SourceTitle       string    `json:"sourceTitle,omitempty"`
+	SourceSlug        string    `json:"sourceSlug,omitempty"`
 	Locale            string    `json:"locale"`
 	Title             string    `json:"title,omitempty"`
 	Summary           string    `json:"summary,omitempty"`

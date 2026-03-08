@@ -781,3 +781,9 @@
 - Fixed public request IP capture so comments, link submissions, and article view fingerprints prefer Cloudflare real-client headers instead of storing edge proxy IPs.
 - Extended site settings with a configurable `faviconUrl`, wired through backend persistence, admin site settings, and the public blog runtime head so favicon changes no longer require replacing a static asset.
 - Fixed the production upgrade workflow so `deploy/update.sh <tag>` now aligns `APP_IMAGE_TAG` with the requested git tag before running release, ensuring migrations and runtime images come from the same version.
+
+- Fixed translation management in React admin: translation rows now carry source metadata, editing fetches full translation detail before opening the drawer, and the translation table uses stable composite row keys instead of a missing `id` field.
+- Extended translation-content read models to expose `sourceTitle/sourceSlug` from source articles or source moment excerpts so admin operators can identify what they are editing.
+- Validated the change with `go test ./internal/handler ./internal/repository/memory ./internal/repository/postgres` and `pnpm --dir frontend-admin-react exec tsc -b --pretty false`.
+- Fixed PostgreSQL translation-content list query by aliasing projected title/summary/content columns so `/admin/translations/contents` no longer returns `total>0` with empty rows.
+- Fixed a second aliasing bug in the PostgreSQL translation-content list query by naming `translated_by_job_id`, which previously let `total` count succeed while row fetch still failed.

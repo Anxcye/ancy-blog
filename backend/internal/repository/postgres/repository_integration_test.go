@@ -292,6 +292,9 @@ func TestRepositoryIntegration_TranslationJobLifecycle(t *testing.T) {
 	if items[0].Content == "" {
 		t.Fatalf("expected non-empty translation content")
 	}
+	if items[0].SourceTitle != article.Title || items[0].SourceSlug != article.Slug {
+		t.Fatalf("expected source metadata, got title=%q slug=%q", items[0].SourceTitle, items[0].SourceSlug)
+	}
 
 	gotTranslation, ok := repo.GetTranslationContent("article", article.ID, "en-US")
 	if !ok {
@@ -299,6 +302,9 @@ func TestRepositoryIntegration_TranslationJobLifecycle(t *testing.T) {
 	}
 	if gotTranslation.Content != "translated body" {
 		t.Fatalf("unexpected translation detail content: %s", gotTranslation.Content)
+	}
+	if gotTranslation.SourceTitle != article.Title || gotTranslation.SourceSlug != article.Slug {
+		t.Fatalf("expected translation detail source metadata, got title=%q slug=%q", gotTranslation.SourceTitle, gotTranslation.SourceSlug)
 	}
 
 	manual, err := repo.UpsertTranslationContent("article", article.ID, "en-US", "Manual Title", "Manual Summary", "manual override", "draft", time.Time{}, "")

@@ -111,6 +111,7 @@
 - [x] Added change-admin-password endpoint (`PUT /admin/auth/password`) with session invalidation, and frontend account settings tab in SystemPage.
 - [x] Fixed 6 known issues: ListArticles now includes is_pinned/is_featured (also sorts pinned first); comment policy is enforced in CreateComment (global disable + require approval); admin password persisted as bcrypt hash in DB via CredentialStore interface (migration 000010); ArticleEditorPage publishedAt correctly restored as dayjs object on edit load; unsaved-change guard with useBlocker + beforeunload in editor; API_CONTRACT.md updated with categories/tags/change-password/site-settings/article-flags endpoints.
 - [x] Implemented TMDB card rich rendering: backend TMDB API integration (service/tmdb package + TMDBService + admin endpoint `/admin/integrations/tmdb/:type/:id`), migration 000015 adds tmdb provider to integration_providers, admin fetch-on-insert with full metadata (poster/rating/overview/releaseDate), blog renders poster + rating + overview in responsive card layout with hover effects.
+- [x] Fixed translation-content management usability in `frontend-admin-react`: source metadata is exposed in translation rows, list editing now loads full translation detail, and translation rows use stable composite keys instead of a nonexistent `id` field.
 
 ## Blocked
 - None.

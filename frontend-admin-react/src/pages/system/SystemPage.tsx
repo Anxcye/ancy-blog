@@ -46,6 +46,7 @@ import { useAuthStore } from '../../store/auth';
 
 import {
   createTranslationJob,
+  getTranslationContent,
   listProviders,
   listTranslationContents,
   listTranslationJobs,
@@ -629,6 +630,7 @@ function TranslationContentsTab(): ReactElement {
   const [params, setParams] = useState<TranslationContentListParams>({ sourceType: 'article', page: 1, pageSize: 20 });
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [editingContent, setEditingContent] = useState<TranslationContent | null>(null);
+  const [detailLoading, setDetailLoading] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ['translation-contents', params],
@@ -645,10 +647,18 @@ function TranslationContentsTab(): ReactElement {
     onError: () => messageApi.error('保存失败'),
   });
 
-  function openEdit(content: TranslationContent): void {
-    setEditingContent(content);
-    form.setFieldsValue(content);
-    setDrawerOpen(true);
+  async function openEdit(content: TranslationContent): Promise<void> {
+    try {
+      setDetailLoading(true);
+      const detail = await getTranslationContent(content.sourceType, content.sourceId, content.locale);
+      setEditingContent(detail);
+      form.setFieldsValue(detail);
+      setDrawerOpen(true);
+    } catch {
+      messageApi.error('加载译文详情失败');
+    } finally {
+      setDetailLoading(false);
+    }
   }
 
   const columns = [
@@ -668,11 +678,25 @@ function TranslationContentsTab(): ReactElement {
       width: 90,
     },
     {
-      title: '标题 / 内容预览',
+      title: '来源',
+      key: 'source',
+      render: (_: unknown, r: TranslationContent) => (
+        <div>
+          <Typography.Paragraph ellipsis={{ rows: 1 }} style={{ margin: 0, fontSize: 13, maxWidth: 240 }}>
+            {r.sourceTitle || r.sourceSlug || r.sourceId}
+          </Typography.Paragraph>
+          <Typography.Text type="secondary" style={{ fontSize: 11 }}>
+            {r.sourceSlug || `${r.sourceId.slice(0, 8)}…`}
+          </Typography.Text>
+        </div>
+      ),
+    },
+    {
+      title: '译文预览',
       key: 'preview',
       render: (_: unknown, r: TranslationContent) => (
         <Typography.Paragraph ellipsis={{ rows: 1 }} style={{ margin: 0, fontSize: 13, maxWidth: 300 }}>
-          {r.title ?? r.content}
+          {r.title || r.content}
         </Typography.Paragraph>
       ),
     },
@@ -729,14 +753,21 @@ function TranslationContentsTab(): ReactElement {
             onChange={(v) => setParams((p) => ({ ...p, locale: (v as string) || undefined, page: 1 }))}
           />
         </Col>
+        <Col xs={24} sm={12} md={6}>
+          <Input.Search
+            allowClear
+            placeholder="按 Source ID 筛选"
+            onSearch={(value) => setParams((p) => ({ ...p, sourceId: value.trim() || undefined, page: 1 }))}
+          />
+        </Col>
       </Row>
 
       <Table
-        rowKey="id"
+        rowKey={(row) => `${row.sourceType}:${row.sourceId}:${row.locale}`}
         size="small"
         columns={columns}
         dataSource={data?.rows ?? []}
-        loading={isLoading}
+        loading={isLoading || detailLoading}
         pagination={{
           current: params.page,
           pageSize: params.pageSize,
@@ -752,7 +783,11 @@ function TranslationContentsTab(): ReactElement {
         title="编辑译文"
         width={520}
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        onClose={() => {
+          setDrawerOpen(false);
+          setEditingContent(null);
+          form.resetFields();
+        }}
         extra={
           <Space>
             <Button onClick={() => setDrawerOpen(false)}>取消</Button>

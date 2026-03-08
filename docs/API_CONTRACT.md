@@ -663,6 +663,10 @@
 - Auth Required: Yes
 - Request: query `sourceType` (`article|moment`, required), `sourceId` (optional), `locale` (optional), `page`, `pageSize`
 - Response: paginated translation content rows
+- Response row fields:
+  - `sourceType`, `sourceId`, `sourceTitle`, `sourceSlug`, `locale`
+  - `title`, `summary`, `content`
+  - `status`, `publishedAt`, `translatedByJobId`, `createdAt`, `updatedAt`
 - Error Codes: VALIDATION_ERROR, AUTH_UNAUTHORIZED
 
 - ID: ADM-TR-006
@@ -671,6 +675,7 @@
 - Auth Required: Yes
 - Request: None
 - Response: translation content detail
+- Response includes source metadata fields `sourceTitle` and `sourceSlug` to support admin editing context.
 - Error Codes: TRANSLATION_CONTENT_NOT_FOUND, VALIDATION_ERROR
 
 - ID: ADM-TR-007

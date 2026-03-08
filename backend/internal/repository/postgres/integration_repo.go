@@ -433,14 +433,36 @@ func (r *Repository) ListTranslationContents(page, pageSize int, sourceType, sou
 	switch sourceType {
 	case "article":
 		baseQuery = `
-SELECT article_id::text AS source_id, locale, COALESCE(title,''), COALESCE(summary,''), COALESCE(content,''), status, published_at,
-       COALESCE(translated_by_job_id::text,''), created_at, updated_at
-FROM article_translations`
+SELECT at.article_id::text AS source_id,
+       COALESCE(a.title, '') AS source_title,
+       COALESCE(a.slug, '') AS source_slug,
+       at.locale,
+       COALESCE(at.title,'') AS title,
+       COALESCE(at.summary,'') AS summary,
+       COALESCE(at.content,'') AS content,
+       at.status,
+       at.published_at,
+       COALESCE(at.translated_by_job_id::text,'') AS translated_by_job_id,
+       at.created_at,
+       at.updated_at
+FROM article_translations at
+LEFT JOIN articles a ON a.id = at.article_id`
 	case "moment":
 		baseQuery = `
-SELECT moment_id::text AS source_id, locale, '' AS title, '' AS summary, COALESCE(content,''), status, published_at,
-       COALESCE(translated_by_job_id::text,''), created_at, updated_at
-FROM moment_translations`
+SELECT mt.moment_id::text AS source_id,
+       LEFT(COALESCE(m.content, ''), 80) AS source_title,
+       '' AS source_slug,
+       mt.locale,
+       '' AS title,
+       '' AS summary,
+       COALESCE(mt.content,'') AS content,
+       mt.status,
+       mt.published_at,
+       COALESCE(mt.translated_by_job_id::text,'') AS translated_by_job_id,
+       mt.created_at,
+       mt.updated_at
+FROM moment_translations mt
+LEFT JOIN moments m ON m.id = mt.moment_id`
 	default:
 		return []domain.TranslationContent{}, 0
 	}
@@ -453,7 +475,7 @@ FROM moment_translations`
 
 	listArgs := append(args, pageSize, offset)
 	listSQL := fmt.Sprintf(`
-SELECT source_id, locale, title, summary, content, status, published_at, translated_by_job_id, created_at, updated_at
+SELECT source_id, source_title, source_slug, locale, title, summary, content, status, published_at, translated_by_job_id, created_at, updated_at
 FROM (%s) t
 WHERE %s
 ORDER BY updated_at DESC
@@ -470,7 +492,7 @@ LIMIT $%d OFFSET $%d
 		var item domain.TranslationContent
 		var publishedAt sql.NullTime
 		item.SourceType = sourceType
-		if err := rows.Scan(&item.SourceID, &item.Locale, &item.Title, &item.Summary, &item.Content, &item.Status, &publishedAt, &item.TranslatedByJobID, &item.CreatedAt, &item.UpdatedAt); err == nil {
+		if err := rows.Scan(&item.SourceID, &item.SourceTitle, &item.SourceSlug, &item.Locale, &item.Title, &item.Summary, &item.Content, &item.Status, &publishedAt, &item.TranslatedByJobID, &item.CreatedAt, &item.UpdatedAt); err == nil {
 			if publishedAt.Valid {
 				item.PublishedAt = publishedAt.Time
 			}
@@ -487,20 +509,22 @@ func (r *Repository) GetTranslationContent(sourceType, sourceID, locale string) 
 	case "article":
 		var publishedAt sql.NullTime
 		err = r.db.QueryRow(`
-SELECT article_id::text, locale, COALESCE(title,''), COALESCE(summary,''), COALESCE(content,''), status, published_at, COALESCE(translated_by_job_id::text,''), created_at, updated_at
-FROM article_translations
-WHERE article_id=$1 AND locale=$2
-`, sourceID, locale).Scan(&row.SourceID, &row.Locale, &row.Title, &row.Summary, &row.Content, &row.Status, &publishedAt, &row.TranslatedByJobID, &row.CreatedAt, &row.UpdatedAt)
+SELECT at.article_id::text, COALESCE(a.title, ''), COALESCE(a.slug, ''), at.locale, COALESCE(at.title,''), COALESCE(at.summary,''), COALESCE(at.content,''), at.status, at.published_at, COALESCE(at.translated_by_job_id::text,''), at.created_at, at.updated_at
+FROM article_translations at
+LEFT JOIN articles a ON a.id = at.article_id
+WHERE at.article_id=$1 AND at.locale=$2
+`, sourceID, locale).Scan(&row.SourceID, &row.SourceTitle, &row.SourceSlug, &row.Locale, &row.Title, &row.Summary, &row.Content, &row.Status, &publishedAt, &row.TranslatedByJobID, &row.CreatedAt, &row.UpdatedAt)
 		if publishedAt.Valid {
 			row.PublishedAt = publishedAt.Time
 		}
 	case "moment":
 		var publishedAt sql.NullTime
 		err = r.db.QueryRow(`
-SELECT moment_id::text, locale, COALESCE(content,''), status, published_at, COALESCE(translated_by_job_id::text,''), created_at, updated_at
-FROM moment_translations
-WHERE moment_id=$1 AND locale=$2
-`, sourceID, locale).Scan(&row.SourceID, &row.Locale, &row.Content, &row.Status, &publishedAt, &row.TranslatedByJobID, &row.CreatedAt, &row.UpdatedAt)
+SELECT mt.moment_id::text, LEFT(COALESCE(m.content, ''), 80), '' AS source_slug, mt.locale, COALESCE(mt.content,''), mt.status, mt.published_at, COALESCE(mt.translated_by_job_id::text,''), mt.created_at, mt.updated_at
+FROM moment_translations mt
+LEFT JOIN moments m ON m.id = mt.moment_id
+WHERE mt.moment_id=$1 AND mt.locale=$2
+`, sourceID, locale).Scan(&row.SourceID, &row.SourceTitle, &row.SourceSlug, &row.Locale, &row.Content, &row.Status, &publishedAt, &row.TranslatedByJobID, &row.CreatedAt, &row.UpdatedAt)
 		if publishedAt.Valid {
 			row.PublishedAt = publishedAt.Time
 		}
