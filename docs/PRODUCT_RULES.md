@@ -174,3 +174,5 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
   - Public read APIs: read cache first, fallback to DB, then set cache.
   - Admin update APIs: write DB first, then invalidate related cache keys.
 - Redis is acceleration only; database remains source of truth.
+
+- When deployed behind a reverse proxy or CDN, moderation IP capture should prefer the real visitor IP headers (for example `CF-Connecting-IP`) over proxy hop addresses.

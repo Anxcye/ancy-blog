@@ -777,3 +777,5 @@
 - Fixed the public blog table renderer import path to use TipTap's named table exports, resolving a client-side module error that broke article detail pages with HTTP 500 responses.
 
 - Refined the homepage hero so social links use circular icon buttons, and kept the secondary title line single-line on desktop with width-responsive sizing while allowing mobile wrapping.
+
+- Fixed public request IP capture so comments, link submissions, and article view fingerprints prefer Cloudflare real-client headers instead of storing edge proxy IPs.

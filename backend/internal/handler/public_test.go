@@ -79,6 +79,42 @@ func TestPublicAddCommentSuccess(t *testing.T) {
 	}
 }
 
+func TestPublicAddCommentPrefersCloudflareClientIP(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	captured := domain.Comment{}
+	repo := &handlerRepoStub{createCommentFunc: func(comment domain.Comment) (domain.Comment, error) {
+		captured = comment
+		comment.ID = "c1"
+		return comment, nil
+	}}
+	core := service.NewContentService(repo, nil)
+	h := NewPublicHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewTimelineService(core),
+	)
+
+	r := gin.New()
+	r.POST("/comments", h.AddComment)
+
+	body := bytes.NewBufferString(`{"articleId":"a1","nickname":"ancy","content":"hello"}`)
+	req := httptest.NewRequest(http.MethodPost, "/comments", body)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("CF-Connecting-IP", "203.0.113.10")
+	req.Header.Set("X-Forwarded-For", "172.64.217.131")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", w.Code, w.Body.String())
+	}
+	if captured.IP != "203.0.113.10" {
+		t.Fatalf("expected CF visitor IP, got %s", captured.IP)
+	}
+}
+
 func TestPublicCommentByArticleReturnsThreadedComments(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	repo := &handlerRepoStub{

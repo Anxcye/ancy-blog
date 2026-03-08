@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
+	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -44,6 +45,29 @@ func NewPublicHandler(
 	}
 }
 
+func clientIPFromRequest(c *gin.Context) string {
+	if ip := strings.TrimSpace(c.GetHeader("CF-Connecting-IP")); ip != "" {
+		if parsed := net.ParseIP(ip); parsed != nil {
+			return parsed.String()
+		}
+	}
+	if xff := strings.TrimSpace(c.GetHeader("X-Forwarded-For")); xff != "" {
+		parts := strings.Split(xff, ",")
+		for _, part := range parts {
+			ip := strings.TrimSpace(part)
+			if parsed := net.ParseIP(ip); parsed != nil {
+				return parsed.String()
+			}
+		}
+	}
+	if ip := strings.TrimSpace(c.GetHeader("X-Real-IP")); ip != "" {
+		if parsed := net.ParseIP(ip); parsed != nil {
+			return parsed.String()
+		}
+	}
+	return c.ClientIP()
+}
+
 func (h *PublicHandler) Articles(c *gin.Context) {
 	page := getIntQuery(c, "page", 1)
 	pageSize := getIntQuery(c, "pageSize", 10)
@@ -69,7 +93,7 @@ func (h *PublicHandler) ArticleBySlug(c *gin.Context) {
 		sum := sha256.Sum256([]byte(raw))
 		key := fmt.Sprintf("%x", sum)
 		_, _ = h.articleService.RecordView(articleID, key)
-	}(article.ID, c.ClientIP(), c.GetHeader("User-Agent"))
+	}(article.ID, clientIPFromRequest(c), c.GetHeader("User-Agent"))
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: article})
 }
 
@@ -178,6 +202,7 @@ func (h *PublicHandler) AddComment(c *gin.Context) {
 		contentType = "article"
 		contentID = req.ArticleID
 	}
+	clientIP := clientIPFromRequest(c)
 	comment, err := h.commentService.CreateComment(domain.Comment{
 		ArticleID:   req.ArticleID,
 		ContentType: contentType,
@@ -191,7 +216,7 @@ func (h *PublicHandler) AddComment(c *gin.Context) {
 		AvatarURL:   req.AvatarURL,
 		Source:      req.Source,
 		ToCommentID: req.ToCommentID,
-		IP:          c.ClientIP(),
+		IP:          clientIP,
 		UserAgent:   c.GetHeader("User-Agent"),
 	})
 	if err != nil {
@@ -211,13 +236,14 @@ func (h *PublicHandler) SubmitLink(c *gin.Context) {
 		badRequest(c, "VALIDATION_ERROR", "invalid request body")
 		return
 	}
+	clientIP := clientIPFromRequest(c)
 	link, err := h.linkService.SubmitLink(domain.Link{
 		Name:               req.Name,
 		URL:                req.URL,
 		AvatarURL:          req.AvatarURL,
 		Description:        req.Description,
 		ContactEmail:       req.ContactEmail,
-		SubmittedIP:        c.ClientIP(),
+		SubmittedIP:        clientIP,
 		SubmittedUserAgent: c.GetHeader("User-Agent"),
 	})
 	if err != nil {
