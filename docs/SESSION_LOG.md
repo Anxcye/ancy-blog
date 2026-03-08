@@ -763,5 +763,6 @@
 - Adjusted `deploy/release.sh` so production releases only pull application images from GHCR, while `postgres`, `redis`, and `caddy` keep their existing runtime images unless explicitly changed.
 - Tightened GHCR publishing so production images are built only on tag pushes (and optional manual dispatch), while keeping `latest` aligned to the newest tagged release.
 - Switched origin TLS from ACME auto-issuance to Cloudflare Origin Certificate files mounted into Caddy, so long-lived Cloudflare proxy mode no longer depends on public ACME challenge renewals.
+- Added `deploy/rotate-origin-cert.sh` and documented the manual origin-certificate rotation flow so future Cloudflare certificate renewals follow one fixed server-side procedure.
 - Fixed migration `000015_add_tmdb_provider.up.sql` to match the actual `integration_providers` schema by storing TMDB description inside `meta_json` instead of a nonexistent `description` column.
 - Extended `backend/cmd/migrate` with `-action force -version N` so failed dirty migrations can be recovered without manual SQL against `schema_migrations`.

@@ -10,3 +10,9 @@ Recommended filenames:
 The certificate should cover:
 - the apex domain (for example `example.com`)
 - the wildcard subdomain (for example `*.example.com`)
+
+After replacing these files, run:
+```bash
+cd deploy
+./rotate-origin-cert.sh
+```

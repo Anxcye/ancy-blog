@@ -114,6 +114,12 @@ cd deploy
 ./backup-postgres.sh
 ```
 
+Rotate the Cloudflare Origin Certificate after replacing `deploy/caddy/certs/origin.pem` and `deploy/caddy/certs/origin.key`:
+```bash
+cd deploy
+./rotate-origin-cert.sh
+```
+
 Run the lower-level release script without pulling git:
 ```bash
 cd deploy
@@ -185,3 +191,21 @@ Later, this can evolve into:
 - At minimum, run one PostgreSQL dump per day.
 - Store dumps outside the VM when possible.
 - Keep at least 7 daily copies before pruning.
+
+## Origin Certificate Rotation
+Cloudflare Origin Certificates are long-lived, but they are not auto-renewed by this stack.
+
+Recommended rotation flow:
+1. Generate a new Origin Certificate in Cloudflare.
+2. Replace:
+   - `deploy/caddy/certs/origin.pem`
+   - `deploy/caddy/certs/origin.key`
+3. Run:
+   ```bash
+   cd deploy
+   ./rotate-origin-cert.sh
+   ```
+4. Verify:
+   - `https://example.com`
+   - `https://admin.example.com`
+   - `docker compose --env-file .env logs --tail=100 caddy`
