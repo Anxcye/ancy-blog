@@ -74,6 +74,7 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 - Site-level settings must support:
   - `site_name`
   - `avatar_url`
+  - `favicon_url`
   - `hero_intro_md` (short intro on homepage center, Markdown enabled)
 - Footer content is fully configurable by admin.
   - Supports plain text (`link_type=none`)

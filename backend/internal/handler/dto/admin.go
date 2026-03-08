@@ -54,6 +54,7 @@ type MomentBatchDeleteRequest struct {
 type SiteSettingsUpdateRequest struct {
 	SiteName               *string `json:"siteName"`
 	AvatarURL              *string `json:"avatarUrl"`
+	FaviconURL             *string `json:"faviconUrl"`
 	HeroIntroMD            *string `json:"heroIntroMd"`
 	DefaultLocale          *string `json:"defaultLocale"`
 	CommentEnabled         *bool   `json:"commentEnabled"`

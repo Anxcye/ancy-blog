@@ -12,6 +12,8 @@
 </template>
 
 <script setup lang="ts">
+const { getSiteSettings } = useApi()
+
 // ── Accent color palette ──────────────────────────────────────────
 const ACCENT_PRESETS = [
   { name: 'teal',   accent: '#2AA889', soft: 'rgba(42,168,137,0.10)',  text: '#1e9170' },
@@ -31,7 +33,19 @@ onMounted(() => {
 })
 
 // ── SEO defaults ─────────────────────────────────────────────────
+const { data: siteSettings } = await useAsyncData('global-site-settings', getSiteSettings)
+
 useHead({
-  titleTemplate: (title) => title ? `${title} · Ancy Blog` : 'Ancy Blog',
+  titleTemplate: (title) => {
+    const siteName = siteSettings.value?.siteName || 'Ancy Blog'
+    return title ? `${title} · ${siteName}` : siteName
+  },
+  link: [
+    {
+      rel: 'icon',
+      type: 'image/x-icon',
+      href: siteSettings.value?.faviconUrl || '/favicon.ico',
+    },
+  ],
 })
 </script>

@@ -85,9 +85,6 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#ffffff', media: '(prefers-color-scheme: light)' },
         { name: 'theme-color', content: '#0f1117', media: '(prefers-color-scheme: dark)' },
       ],
-      link: [
-        { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' },
-      ],
     },
     pageTransition: { name: 'page', mode: 'out-in' },
   },

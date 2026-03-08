@@ -353,6 +353,7 @@
 {
   "siteName": "Ancy Blog",
   "avatarUrl": "https://...",
+  "faviconUrl": "https://...",
   "heroIntroMd": "Hi, I build things.",
   "defaultLocale": "en",
   "commentEnabled": true,
@@ -428,6 +429,7 @@
 - Error Codes: VALIDATION_ERROR, AUTH_UNAUTHORIZED
 - Notes:
   - Supports partial update payloads; omitted fields keep their previous values.
+  - Supported fields include `siteName`, `avatarUrl`, `faviconUrl`, `heroIntroMd`, locale, comment policy, friend-link submission policy, and SEO metadata.
   - Invalidate `site:settings:{locale}` cache after successful update.
 
 - ID: ADM-SITE-002

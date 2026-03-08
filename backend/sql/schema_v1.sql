@@ -176,6 +176,7 @@ CREATE TABLE IF NOT EXISTS site_settings (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     site_name VARCHAR(128) NOT NULL,
     avatar_url TEXT,
+    favicon_url TEXT,
     hero_intro_md TEXT,
     default_locale VARCHAR(16) NOT NULL DEFAULT 'en',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

@@ -337,6 +337,9 @@ func (h *AdminHandler) UpdateSiteSettings(c *gin.Context) {
 	if req.AvatarURL != nil {
 		current.AvatarURL = *req.AvatarURL
 	}
+	if req.FaviconURL != nil {
+		current.FaviconURL = *req.FaviconURL
+	}
 	if req.HeroIntroMD != nil {
 		current.HeroIntroMD = *req.HeroIntroMD
 	}

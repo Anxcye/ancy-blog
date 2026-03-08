@@ -113,6 +113,7 @@ type Tag struct {
 type SiteSettings struct {
 	SiteName               string `json:"siteName"`
 	AvatarURL              string `json:"avatarUrl,omitempty"`
+	FaviconURL             string `json:"faviconUrl,omitempty"`
 	HeroIntroMD            string `json:"heroIntroMd,omitempty"`
 	DefaultLocale          string `json:"defaultLocale"`
 	CommentEnabled         bool   `json:"commentEnabled"`

@@ -14,11 +14,11 @@ import (
 func (r *Repository) GetSiteSettings() domain.SiteSettings {
 	var s domain.SiteSettings
 	err := r.db.QueryRow(`
-SELECT site_name, COALESCE(avatar_url,''), COALESCE(hero_intro_md,''), default_locale,
+SELECT site_name, COALESCE(avatar_url,''), COALESCE(favicon_url,''), COALESCE(hero_intro_md,''), default_locale,
        comment_enabled, comment_require_approval, link_submission_enabled,
        COALESCE(site_description,''), COALESCE(seo_keywords,''), COALESCE(og_image_url,'')
 FROM site_settings ORDER BY created_at ASC LIMIT 1`).
-		Scan(&s.SiteName, &s.AvatarURL, &s.HeroIntroMD, &s.DefaultLocale,
+		Scan(&s.SiteName, &s.AvatarURL, &s.FaviconURL, &s.HeroIntroMD, &s.DefaultLocale,
 			&s.CommentEnabled, &s.CommentRequireApproval, &s.LinkSubmissionEnabled,
 			&s.SiteDescription, &s.SeoKeywords, &s.OgImageURL)
 	if err != nil {
@@ -33,20 +33,20 @@ func (r *Repository) UpdateSiteSettings(settings domain.SiteSettings) domain.Sit
 	if err != nil {
 		_ = r.db.QueryRow(`
 INSERT INTO site_settings (site_name, avatar_url, hero_intro_md, default_locale,
-    comment_enabled, comment_require_approval, link_submission_enabled, site_description, seo_keywords, og_image_url)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING id::text
-`, settings.SiteName, nullableString(settings.AvatarURL), nullableString(settings.HeroIntroMD), settings.DefaultLocale,
+    favicon_url, comment_enabled, comment_require_approval, link_submission_enabled, site_description, seo_keywords, og_image_url)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id::text
+`, settings.SiteName, nullableString(settings.AvatarURL), nullableString(settings.FaviconURL), nullableString(settings.HeroIntroMD), settings.DefaultLocale,
 			settings.CommentEnabled, settings.CommentRequireApproval, settings.LinkSubmissionEnabled,
 			nullableString(settings.SiteDescription), nullableString(settings.SeoKeywords), nullableString(settings.OgImageURL)).Scan(&id)
 		return settings
 	}
 	_, _ = r.db.Exec(`
 UPDATE site_settings
-SET site_name=$2, avatar_url=$3, hero_intro_md=$4, default_locale=$5,
-    comment_enabled=$6, comment_require_approval=$7, link_submission_enabled=$8,
-    site_description=$9, seo_keywords=$10, og_image_url=$11, updated_at=NOW()
+SET site_name=$2, avatar_url=$3, favicon_url=$4, hero_intro_md=$5, default_locale=$6,
+    comment_enabled=$7, comment_require_approval=$8, link_submission_enabled=$9,
+    site_description=$10, seo_keywords=$11, og_image_url=$12, updated_at=NOW()
 WHERE id=$1
-`, id, settings.SiteName, nullableString(settings.AvatarURL), nullableString(settings.HeroIntroMD), settings.DefaultLocale,
+`, id, settings.SiteName, nullableString(settings.AvatarURL), nullableString(settings.FaviconURL), nullableString(settings.HeroIntroMD), settings.DefaultLocale,
 		settings.CommentEnabled, settings.CommentRequireApproval, settings.LinkSubmissionEnabled,
 		nullableString(settings.SiteDescription), nullableString(settings.SeoKeywords), nullableString(settings.OgImageURL))
 	return settings

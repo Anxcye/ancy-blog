@@ -116,6 +116,7 @@ export interface Tag { id: string; name: string; slug: string }
 export interface SiteSettings {
     siteName: string
     avatarUrl?: string
+    faviconUrl?: string
     heroIntroMd?: string
     defaultLocale: string
     commentEnabled: boolean

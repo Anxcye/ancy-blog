@@ -779,3 +779,4 @@
 - Refined the homepage hero so social links use circular icon buttons, and kept the secondary title line single-line on desktop with width-responsive sizing while allowing mobile wrapping.
 
 - Fixed public request IP capture so comments, link submissions, and article view fingerprints prefer Cloudflare real-client headers instead of storing edge proxy IPs.
+- Extended site settings with a configurable `faviconUrl`, wired through backend persistence, admin site settings, and the public blog runtime head so favicon changes no longer require replacing a static asset.

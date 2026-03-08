@@ -69,6 +69,7 @@ func NewRepository() *Repository {
 		siteSettings: domain.SiteSettings{
 			SiteName:              "Ancy Blog",
 			AvatarURL:             "",
+			FaviconURL:            "",
 			HeroIntroMD:           "Hi, I build things.",
 			DefaultLocale:         "en",
 			CommentEnabled:        true,

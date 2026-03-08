@@ -9,6 +9,7 @@
 export interface SiteSettings {
   siteName: string;
   avatarUrl?: string;
+  faviconUrl?: string;
   heroIntroMd?: string;
   defaultLocale: string;
   commentEnabled: boolean;

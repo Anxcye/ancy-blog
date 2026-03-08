@@ -109,6 +109,9 @@ function SettingsTab(): ReactElement {
           <Form.Item name="avatarUrl" label="头像 URL">
             <Input placeholder="https://cdn.example.com/avatar.png" />
           </Form.Item>
+          <Form.Item name="faviconUrl" label="Favicon URL">
+            <Input placeholder="https://cdn.example.com/favicon.png" />
+          </Form.Item>
           <Form.Item
             name="heroIntroMd"
             label={
