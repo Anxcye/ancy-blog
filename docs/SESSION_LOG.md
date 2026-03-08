@@ -787,3 +787,4 @@
 - Validated the change with `go test ./internal/handler ./internal/repository/memory ./internal/repository/postgres` and `pnpm --dir frontend-admin-react exec tsc -b --pretty false`.
 - Fixed PostgreSQL translation-content list query by aliasing projected title/summary/content columns so `/admin/translations/contents` no longer returns `total>0` with empty rows.
 - Fixed a second aliasing bug in the PostgreSQL translation-content list query by naming `translated_by_job_id`, which previously let `total` count succeed while row fetch still failed.
+- Fixed deploy/update.sh so syncing APP_IMAGE_TAG preserves real newline characters in deploy/.env instead of writing literal `\\n` text.

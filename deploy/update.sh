@@ -56,7 +56,7 @@ for i, line in enumerate(lines):
         break
 if not updated:
     lines.append(f"APP_IMAGE_TAG={target}")
-env_path.write_text("\\n".join(lines) + "\\n")
+env_path.write_text("\n".join(lines) + "\n")
 PY
   export APP_IMAGE_TAG="${TARGET_REF}"
 fi
