@@ -774,3 +774,4 @@
 - Added a second image insertion path for articles so editors can insert remote images directly by URL instead of being forced through the upload flow.
 - Updated the public blog TipTap renderer to understand and style persisted table nodes, keeping article output consistent with the new editor capabilities.
 - Restored local admin login and upload requests after switching the admin frontend to relative `/api` paths by adding a Vite dev proxy to the backend origin.
+- Fixed the public blog table renderer import path to use TipTap's named table exports, resolving a client-side module error that broke article detail pages with HTTP 500 responses.
