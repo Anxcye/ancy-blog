@@ -1,9 +1,20 @@
+/**
+ * File: simple-editor.tsx
+ * Purpose: Compose the main TipTap editor used by article authoring forms.
+ * Module: frontend-admin-react/components/tiptap-templates/simple, presentation layer.
+ * Related: table-popover, image-url-popover, and article editor page.
+ */
+
 import { useEffect, useRef, useState } from "react"
 import { EditorContent, EditorContext, useEditor } from "@tiptap/react"
 
 // --- Tiptap Core Extensions ---
 import { StarterKit } from "@tiptap/starter-kit"
 import { Image } from "@tiptap/extension-image"
+import { Table } from "@tiptap/extension-table"
+import { TableCell } from "@tiptap/extension-table-cell"
+import { TableHeader } from "@tiptap/extension-table-header"
+import { TableRow } from "@tiptap/extension-table-row"
 import { TaskItem, TaskList } from "@tiptap/extension-list"
 import { TextAlign } from "@tiptap/extension-text-align"
 import { Typography } from "@tiptap/extension-typography"
@@ -37,9 +48,11 @@ import "@/components/tiptap-node/paragraph-node/paragraph-node.scss"
 // --- Tiptap UI ---
 import { HeadingDropdownMenu } from "@/components/tiptap-ui/heading-dropdown-menu"
 import { ImageUploadButton } from "@/components/tiptap-ui/image-upload-button"
+import { ImageUrlPopover } from "@/components/tiptap-ui/image-url-popover"
 import { ListDropdownMenu } from "@/components/tiptap-ui/list-dropdown-menu"
 import { BlockquoteButton } from "@/components/tiptap-ui/blockquote-button"
 import { CodeBlockButton } from "@/components/tiptap-ui/code-block-button"
+import { TablePopover } from "@/components/tiptap-ui/table-popover"
 import {
   ColorHighlightPopover,
   ColorHighlightPopoverContent,
@@ -134,7 +147,9 @@ const MainToolbarContent = ({
       <ToolbarSeparator />
 
       <ToolbarGroup>
+        <TablePopover />
         <ImageUploadButton text="Add" />
+        <ImageUrlPopover />
       </ToolbarGroup>
 
       <ToolbarSeparator />
@@ -228,6 +243,10 @@ export function SimpleEditor({
       TaskItem.configure({ nested: true }),
       Highlight.configure({ multicolor: true }),
       Image,
+      Table.configure({ resizable: true }),
+      TableRow,
+      TableHeader,
+      TableCell,
       Typography,
       Superscript,
       Subscript,

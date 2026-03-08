@@ -766,3 +766,10 @@
 - Added `deploy/rotate-origin-cert.sh` and documented the manual origin-certificate rotation flow so future Cloudflare certificate renewals follow one fixed server-side procedure.
 - Fixed migration `000015_add_tmdb_provider.up.sql` to match the actual `integration_providers` schema by storing TMDB description inside `meta_json` instead of a nonexistent `description` column.
 - Extended `backend/cmd/migrate` with `-action force -version N` so failed dirty migrations can be recovered without manual SQL against `schema_migrations`.
+
+---
+## 2026-03-08
+### Summary
+- Extended the React admin article editor with TipTap table support, including insert and basic row or column management from the editor toolbar.
+- Added a second image insertion path for articles so editors can insert remote images directly by URL instead of being forced through the upload flow.
+- Updated the public blog TipTap renderer to understand and style persisted table nodes, keeping article output consistent with the new editor capabilities.

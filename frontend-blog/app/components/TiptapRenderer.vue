@@ -13,6 +13,10 @@ import { useEditor, EditorContent } from '@tiptap/vue-3'
 import StarterKit from '@tiptap/starter-kit'
 import Link from '@tiptap/extension-link'
 import Image from '@tiptap/extension-image'
+import Table from '@tiptap/extension-table'
+import TableCell from '@tiptap/extension-table-cell'
+import TableHeader from '@tiptap/extension-table-header'
+import TableRow from '@tiptap/extension-table-row'
 import TextAlign from '@tiptap/extension-text-align'
 import { TextStyle } from '@tiptap/extension-text-style'
 import { Color } from '@tiptap/extension-color'
@@ -41,6 +45,10 @@ const editor = useEditor({
     Highlight.configure({ multicolor: true }),
     TaskList,
     TaskItem.configure({ nested: true }),
+    Table,
+    TableRow,
+    TableHeader,
+    TableCell,
     Underline,
     Subscript,
     Superscript,
@@ -201,6 +209,30 @@ onBeforeUnmount(() => {
   max-width: 100%;
   height: auto;
   border-radius: var(--radius-md);
+}
+
+.tiptap .tableWrapper {
+  margin: 1.75em 0;
+  overflow-x: auto;
+}
+
+.tiptap table {
+  width: 100%;
+  min-width: 36rem;
+  border-collapse: collapse;
+}
+
+.tiptap th,
+.tiptap td {
+  padding: 0.8em 0.9em;
+  border: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+
+.tiptap th {
+  background: color-mix(in srgb, var(--surface) 92%, var(--accent) 8%);
+  font-weight: 600;
 }
 
 .tiptap a {

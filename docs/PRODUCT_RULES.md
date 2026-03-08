@@ -117,7 +117,8 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 
 ## Editor Rules
 - Admin article editor uses rich-text JSON as persisted content format.
-- Editor image insertion must upload through configured object storage integration (`cloudflare_r2`) and store URL references in content JSON.
+- Editor image insertion must support both direct remote image URLs and uploaded image assets, storing final URL references in content JSON.
+- Admin article editor must support table authoring with persisted TipTap table nodes that can also render on the public blog.
 - Editor must support extensible block embeds with explicit node types and attrs.
   - Initial custom blocks: `x_post` and `tmdb_card`.
   - Embed blocks should be stored in the same rich-text JSON document as normal content nodes.
