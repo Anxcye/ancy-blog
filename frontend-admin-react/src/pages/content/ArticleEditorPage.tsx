@@ -114,6 +114,7 @@ export function ArticleEditorPage(): ReactElement {
         coverImage: article.coverImage,
         originType: article.originType,
         sourceUrl: article.sourceUrl,
+        aiAssistLevel: article.aiAssistLevel ?? 'none',
         categorySlug: article.categorySlug,
         tagSlugs: article.tagSlugs ?? [],
         isPinned: article.isPinned ?? false,
@@ -306,6 +307,7 @@ export function ArticleEditorPage(): ReactElement {
           isPinned: false,
           isFeatured: false,
           originType: 'original',
+          aiAssistLevel: 'none',
           tagSlugs: [],
         }}
         disabled={articleLoading}
@@ -547,6 +549,21 @@ export function ArticleEditorPage(): ReactElement {
 
               <Form.Item name="sourceUrl" label="原文链接" style={{ marginBottom: 0 }}>
                 <Input placeholder="https://..." />
+              </Form.Item>
+            </Card>
+
+            <Card size="small" title="AI 辅助说明" style={{ marginBottom: 16 }}>
+              <Form.Item name="aiAssistLevel" label="辅助等级" style={{ marginBottom: 0 }}>
+                <Select
+                  options={[
+                    { value: 'none', label: '人工撰写' },
+                    { value: 'polish', label: '文字润色' },
+                    { value: 'dictation', label: '语音速记' },
+                    { value: 'assisted', label: 'AI 辅助' },
+                    { value: 'generated', label: 'AI 生成' },
+                    { value: 'translated', label: 'AI 翻译' },
+                  ]}
+                />
               </Form.Item>
             </Card>
 

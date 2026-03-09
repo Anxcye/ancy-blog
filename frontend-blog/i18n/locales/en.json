@@ -23,6 +23,7 @@
     "article": {
         "publishedAt": "Published",
         "updatedAt": "Updated",
+        "revised": "Revised",
         "minuteRead": "{n} min read",
         "category": "Category",
         "tags": "Tags",
@@ -31,7 +32,23 @@
         "noComments": "No comments yet, be the first!",
         "leaveComment": "Leave a comment",
         "aiDisclosure": "AI Disclosure",
-        "toc": "Contents"
+        "toc": "Contents",
+        "aiLevels": {
+            "none": "Handwritten",
+            "polish": "Polished",
+            "dictation": "Dictated",
+            "assisted": "AI Assisted",
+            "generated": "AI Generated",
+            "translated": "AI Translated"
+        },
+        "aiDescriptions": {
+            "none": "This piece was primarily written by the author without AI generation or polishing.",
+            "polish": "AI was used for wording and polish, while the ideas and content remained authored by the writer.",
+            "dictation": "AI helped turn speech or dictation into a draft that was later revised by the writer.",
+            "assisted": "AI helped with structure, partial drafting, or research support, then the writer substantially revised it.",
+            "generated": "AI produced a significant portion of the draft, which the writer then curated and edited.",
+            "translated": "AI was primarily used to produce this language version from an original written in another language."
+        }
     },
     "comment": {
         "nickname": "Name",

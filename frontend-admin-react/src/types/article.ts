@@ -71,6 +71,7 @@ export interface ArticleFormValues {
   coverImage?: string;
   originType?: OriginType;
   sourceUrl?: string;
+  aiAssistLevel?: string;
   categorySlug?: string;
   tagSlugs?: string[];
   publishedAt?: string;

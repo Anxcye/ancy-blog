@@ -23,6 +23,7 @@
     "article": {
         "publishedAt": "发布于",
         "updatedAt": "更新于",
+        "revised": "修订",
         "minuteRead": "{n} 分钟",
         "category": "分类",
         "tags": "标签",
@@ -31,7 +32,23 @@
         "noComments": "还没有评论，来说第一句吧",
         "leaveComment": "发表评论",
         "aiDisclosure": "AI 辅助说明",
-        "toc": "目录"
+        "toc": "目录",
+        "aiLevels": {
+            "none": "人工撰写",
+            "polish": "文字润色",
+            "dictation": "语音速记",
+            "assisted": "AI 辅助",
+            "generated": "AI 生成",
+            "translated": "AI 翻译"
+        },
+        "aiDescriptions": {
+            "none": "这篇内容主要由作者独立撰写完成，没有使用 AI 参与生成或润色。",
+            "polish": "AI 用于语言润色与措辞调整，主要观点和内容仍由作者完成。",
+            "dictation": "AI 用于把语音或口述内容整理成初稿，后续由作者补充修订。",
+            "assisted": "AI 参与了结构整理、部分段落生成或资料辅助，作者做了实质改写。",
+            "generated": "AI 生成了较大比例的初稿内容，作者在此基础上进行了筛选与编辑。",
+            "translated": "AI 主要用于生成当前语言版本的译文，原始内容来自另一种语言。"
+        }
     },
     "comment": {
         "nickname": "昵称",

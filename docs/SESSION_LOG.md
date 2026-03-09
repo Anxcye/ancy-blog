@@ -787,4 +787,7 @@
 - Validated the change with `go test ./internal/handler ./internal/repository/memory ./internal/repository/postgres` and `pnpm --dir frontend-admin-react exec tsc -b --pretty false`.
 - Fixed PostgreSQL translation-content list query by aliasing projected title/summary/content columns so `/admin/translations/contents` no longer returns `total>0` with empty rows.
 - Fixed a second aliasing bug in the PostgreSQL translation-content list query by naming `translated_by_job_id`, which previously let `total` count succeed while row fetch still failed.
+- Refined article detail metadata presentation: replaced capsule pills with icon-led inline items, added category-name resolution from taxonomy data, and implemented a custom hover tooltip for AI disclosure notes.
+- Restored AI disclosure editing in `frontend-admin-react` article editor by adding the missing `aiAssistLevel` form field, edit-mode hydration, and default value handling.
 - Fixed deploy/update.sh so syncing APP_IMAGE_TAG preserves real newline characters in deploy/.env instead of writing literal `\\n` text.
+- Refined article detail metadata so publish time is primary, update time only appears after meaningful post-publish edits, category is inline, and AI disclosure now has hoverable explanations.

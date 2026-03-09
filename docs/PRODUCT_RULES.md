@@ -36,6 +36,10 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
   - `assisted`: AI helped with structure/partial generation
   - `generated`: AI generated most content
   - `translated`: AI used for translation
+- Admin article editing must allow authors to set and update the AI disclosure level explicitly.
+- Public article detail metadata should display publish time as the primary timestamp.
+- Public article detail should only show update time when the article has materially changed after publication.
+- Public article detail should expose AI disclosure with a hover explanation for the selected disclosure level.
 
 ## Content Types
 - Long-form content: `articles`.

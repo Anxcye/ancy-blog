@@ -86,3 +86,9 @@ This guide governs both frontend apps:
 
 - Homepage hero social links should use circular icon buttons rather than plain glyph links.
 - Homepage hero secondary line should stay on one line on wider screens by scaling typography down with available width; mobile may wrap naturally.
+- Article detail metadata should read as one compact editorial line:
+  - publish time first;
+  - update time only when it meaningfully differs from publish time;
+  - category inline with the same shell;
+  - use icon-led inline items instead of capsule chips;
+  - AI disclosure shown as an inline item with hover explanation.
