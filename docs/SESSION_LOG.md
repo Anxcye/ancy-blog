@@ -1,3 +1,11 @@
+## 2026-03-20
+### Summary
+- Fixed admin comment moderation failure on `PUT /api/v1/admin/comments/:id` for PostgreSQL.
+- Updated `backend/internal/repository/postgres/comment_repo.go` to cast the moderation status parameter consistently in the update SQL, avoiding `SQLSTATE 42P08` type inference conflicts.
+- Extended PostgreSQL integration coverage to assert comment moderation updates succeed and clear `approved_at` when a comment is rejected.
+- Updated `docs/PROGRESS.md` to record the completed backend regression fix.
+
+---
 ## 2026-03-05
 ### Summary
 - Implemented hierarchical navigation with dynamic category dropdown:

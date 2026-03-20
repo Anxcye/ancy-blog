@@ -191,10 +191,10 @@ func (r *Repository) UpdateCommentAdmin(id string, status, isPinned string) (dom
 	pinned := isPinned == "1" || strings.EqualFold(isPinned, "true")
 	row := r.db.QueryRow(`
 UPDATE comments
-SET status=$2,
+SET status=$2::varchar(16),
     is_pinned=$3,
     approved_at=CASE
-      WHEN $2='approved' THEN COALESCE(approved_at, NOW())
+      WHEN $2::varchar(16)='approved' THEN COALESCE(approved_at, NOW())
       ELSE NULL
     END,
     updated_at=NOW()

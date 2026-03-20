@@ -13,6 +13,7 @@
 - [ ] Blog: particle background (sparse petal/dot animation, accent-tinted).
 
 ## Done
+- [x] Fixed admin comment moderation update regression: `PUT /api/v1/admin/comments/:id` now updates status reliably in PostgreSQL without parameter type inference failures.
 - [x] Extended site settings with configurable favicon URL, wired through admin settings and runtime public head metadata.
 - [x] Upgraded admin comment management with detail view, moderation metadata, and admin reply support.
 - [x] Added single-host production deployment baseline: Dockerfiles for backend/blog/admin, Docker Compose orchestration, Caddy reverse proxy, PostgreSQL backup script, upgrade script, GHCR-based image delivery via GitHub Actions, and deployment guide for `example.com` + `admin.example.com` behind Cloudflare.

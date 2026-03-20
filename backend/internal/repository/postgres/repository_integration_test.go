@@ -161,6 +161,20 @@ func TestRepositoryIntegration_CommentFlow(t *testing.T) {
 	if count != 1 {
 		t.Fatalf("expected count=1, got %d", count)
 	}
+
+	updated, err := repo.UpdateCommentAdmin(comment.ID, "rejected", "false")
+	if err != nil {
+		t.Fatalf("update comment failed: %v", err)
+	}
+	if updated.Status != "rejected" {
+		t.Fatalf("expected updated status rejected, got %s", updated.Status)
+	}
+	if updated.IsPinned != "0" {
+		t.Fatalf("expected updated isPinned=0, got %s", updated.IsPinned)
+	}
+	if !updated.ApprovedAt.IsZero() {
+		t.Fatalf("expected rejected comment approvedAt cleared, got %s", updated.ApprovedAt)
+	}
 }
 
 func TestRepositoryIntegration_TranslationJobLifecycle(t *testing.T) {
