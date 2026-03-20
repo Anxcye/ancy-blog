@@ -461,6 +461,24 @@ LIMIT $` + strconv.Itoa(len(args)+1) + ` OFFSET $` + strconv.Itoa(len(args)+2)
 	return items, total
 }
 
+func (r *Repository) GetMomentByID(id string) (domain.Moment, bool) {
+	var m domain.Moment
+	err := r.db.QueryRow(`
+SELECT id::text, content, status, allow_comment,
+       (
+         SELECT COUNT(*) FROM comments c
+         WHERE c.content_type='moment' AND c.content_id=moments.id AND c.status='approved' AND c.deleted_at IS NULL
+       ) AS comment_count,
+       COALESCE(published_at, created_at), created_at, updated_at
+FROM moments
+WHERE id=$1 AND deleted_at IS NULL
+`, id).Scan(&m.ID, &m.Content, &m.Status, &m.AllowComment, &m.CommentCount, &m.PublishedAt, &m.CreatedAt, &m.UpdatedAt)
+	if err != nil {
+		return domain.Moment{}, false
+	}
+	return m, true
+}
+
 func (r *Repository) ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int) {
 	page, pageSize = normalizePagination(page, pageSize)
 	offset := (page - 1) * pageSize

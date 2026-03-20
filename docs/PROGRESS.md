@@ -14,6 +14,7 @@
 
 ## Done
 - [x] Extended site settings with configurable favicon URL, wired through admin settings and runtime public head metadata.
+- [x] Upgraded admin comment management with detail view, moderation metadata, and admin reply support.
 - [x] Added single-host production deployment baseline: Dockerfiles for backend/blog/admin, Docker Compose orchestration, Caddy reverse proxy, PostgreSQL backup script, upgrade script, GHCR-based image delivery via GitHub Actions, and deployment guide for `example.com` + `admin.example.com` behind Cloudflare.
 - [x] Implemented friend link submission form on friends page with live preview and responsive layout.
 - [x] Redesigned friends page: vertical link cards without background, reordered content (hero → links → article → form).

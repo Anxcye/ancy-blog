@@ -158,6 +158,10 @@ func (s *ContentService) ListMoments(page, pageSize int, status string) ([]domai
 	return s.repo.ListMoments(page, pageSize, status)
 }
 
+func (s *ContentService) GetMomentByID(id string) (domain.Moment, bool) {
+	return s.repo.GetMomentByID(id)
+}
+
 func (s *ContentService) DeleteMoment(id string) bool {
 	return s.repo.DeleteMoment(id)
 }
@@ -265,6 +269,7 @@ func (s *ContentService) ListContentCommentThreads(contentType, contentID string
 		if hasParent {
 			comment.ToCommentID = parent.ID
 			comment.ToCommentNickname = parent.Nickname
+			comment.ToCommentIsAuthor = strings.EqualFold(parent.Source, "admin") || strings.EqualFold(parent.Nickname, "admin")
 		}
 		commentByID[comment.ID] = comment
 		normalizedDescendants = append(normalizedDescendants, comment)
@@ -316,6 +321,47 @@ func (s *ContentService) CountContentComments(contentType, contentID string) (in
 
 func (s *ContentService) ListCommentPage(page, pageSize int, status string) ([]domain.Comment, int) {
 	return s.repo.ListCommentPage(page, pageSize, status)
+}
+
+func (s *ContentService) ReplyToCommentAsAdmin(id, content, authorName, approvedBy, ip, userAgent string) (domain.Comment, error) {
+	if strings.TrimSpace(id) == "" {
+		return domain.Comment{}, fmt.Errorf("%w: id is required", apperr.ErrValidation)
+	}
+	if strings.TrimSpace(content) == "" {
+		return domain.Comment{}, fmt.Errorf("%w: content is required", apperr.ErrValidation)
+	}
+	target, ok := s.repo.GetCommentByID(id)
+	if !ok || target.Status == "deleted" {
+		return domain.Comment{}, apperr.ErrCommentNotFound
+	}
+	if !s.repo.GetSiteSettings().CommentEnabled {
+		return domain.Comment{}, fmt.Errorf("%w: commenting is disabled", apperr.ErrValidation)
+	}
+	if strings.TrimSpace(authorName) == "" {
+		authorName = "Admin"
+	}
+	rootID := target.RootID
+	if strings.TrimSpace(rootID) == "" {
+		rootID = target.ID
+	}
+
+	reply := domain.Comment{
+		ContentType: target.ContentType,
+		ContentID:   target.ContentID,
+		ParentID:    target.ID,
+		RootID:      rootID,
+		Content:     content,
+		Status:      "approved",
+		Nickname:    authorName,
+		Source:      "admin",
+		ApprovedBy:  approvedBy,
+		IP:          ip,
+		UserAgent:   userAgent,
+	}
+	if target.ContentType == "article" {
+		reply.ArticleID = target.ContentID
+	}
+	return s.repo.CreateComment(reply)
 }
 
 func (s *ContentService) UpdateCommentAdmin(id, status, isPinned string) (domain.Comment, error) {

@@ -8,6 +8,7 @@
 import {
   CheckOutlined,
   CloseOutlined,
+  EyeOutlined,
   LinkOutlined,
   MessageOutlined,
   StopOutlined,
@@ -16,6 +17,8 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   Button,
   Col,
+  Descriptions,
+  Drawer,
   Form,
   Input,
   Modal,
@@ -32,8 +35,9 @@ import {
 } from 'antd';
 import type { ReactElement } from 'react';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
-import { listComments, updateComment } from '../../api/comments';
+import { listComments, replyComment, updateComment } from '../../api/comments';
 import { listLinks, reviewLink } from '../../api/links';
 import type { Comment, CommentListParams, CommentStatus } from '../../types/comment';
 import type { Link, LinkListParams, LinkReviewPayload, ReviewStatus } from '../../types/link';
@@ -67,11 +71,14 @@ const COMMENT_STATUS_LABEL: Record<string, string> = {
 function CommentsTab(): ReactElement {
   const [messageApi, ctx] = message.useMessage();
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
+  const [replyForm] = Form.useForm<{ content: string }>();
   const [params, setParams] = useState<CommentListParams>({
     page: 1,
     pageSize: 20,
     status: 'pending',
   });
+  const [activeComment, setActiveComment] = useState<Comment | null>(null);
 
   const { data, isLoading } = useQuery({
     queryKey: ['comments', params],
@@ -81,12 +88,53 @@ function CommentsTab(): ReactElement {
   const updateMut = useMutation({
     mutationFn: ({ id, status }: { id: string; status: CommentStatus }) =>
       updateComment(id, { status }),
-    onSuccess: (_r, vars) => {
+    onSuccess: (comment, vars) => {
       messageApi.success(`评论已${COMMENT_STATUS_LABEL[vars.status] ?? vars.status}`);
+      if (activeComment?.id === comment.id) {
+        setActiveComment(comment);
+      }
       queryClient.invalidateQueries({ queryKey: ['comments'] });
     },
     onError: () => messageApi.error('操作失败'),
   });
+
+  const replyMut = useMutation({
+    mutationFn: ({ id, content }: { id: string; content: string }) =>
+      replyComment(id, { content }),
+    onSuccess: () => {
+      messageApi.success('管理员回复已发送');
+      replyForm.resetFields();
+      queryClient.invalidateQueries({ queryKey: ['comments'] });
+    },
+    onError: () => messageApi.error('回复失败，请重试'),
+  });
+
+  function openCommentDetail(comment: Comment): void {
+    setActiveComment(comment);
+    replyForm.resetFields();
+  }
+
+  function closeCommentDetail(): void {
+    setActiveComment(null);
+    replyForm.resetFields();
+  }
+
+  function submitReply(): void {
+    if (!activeComment) return;
+    replyForm.validateFields().then((values) => {
+      replyMut.mutate({ id: activeComment.id, content: values.content });
+    });
+  }
+
+  function openContentTarget(comment: Comment): void {
+    if (comment.contentType === 'article') {
+      navigate(`/content/articles/${comment.contentId}/edit`);
+      return;
+    }
+    navigate(`/content/moments?edit=${encodeURIComponent(comment.contentId)}`);
+  }
+
+  const contentTypeLabel = activeComment?.contentType === 'moment' ? '瞬间' : '文章';
 
   const columns = [
     {
@@ -94,24 +142,28 @@ function CommentsTab(): ReactElement {
       key: 'author',
       width: 130,
       render: (_: unknown, r: Comment) => (
-        <div>
-          <Typography.Text strong style={{ fontSize: 13 }}>{r.nickname}</Typography.Text>
-          <br />
-          <Typography.Text type="secondary" style={{ fontSize: 11 }}>{r.ip}</Typography.Text>
-        </div>
+        <Button type="link" style={{ padding: 0, height: 'auto', textAlign: 'left' }} onClick={() => openCommentDetail(r)}>
+          <div>
+            <Typography.Text strong style={{ fontSize: 13 }}>{r.nickname}</Typography.Text>
+            <br />
+            <Typography.Text type="secondary" style={{ fontSize: 11 }}>{r.ip}</Typography.Text>
+          </div>
+        </Button>
       ),
     },
     {
       title: '内容',
       dataIndex: 'content',
       key: 'content',
-      render: (content: string) => (
-        <Typography.Paragraph
-          ellipsis={{ rows: 2 }}
-          style={{ margin: 0, fontSize: 13, maxWidth: 380 }}
-        >
-          {content}
-        </Typography.Paragraph>
+      render: (content: string, record: Comment) => (
+        <Button type="link" style={{ padding: 0, height: 'auto', textAlign: 'left' }} onClick={() => openCommentDetail(record)}>
+          <Typography.Paragraph
+            ellipsis={{ rows: 2 }}
+            style={{ margin: 0, fontSize: 13, maxWidth: 380 }}
+          >
+            {content}
+          </Typography.Paragraph>
+        </Button>
       ),
     },
     {
@@ -144,9 +196,17 @@ function CommentsTab(): ReactElement {
     {
       title: '操作',
       key: 'actions',
-      width: 112,
+      width: 148,
       render: (_: unknown, r: Comment) => (
         <Space size={2}>
+          <Tooltip title="查看详情">
+            <Button
+              type="text"
+              size="small"
+              icon={<EyeOutlined />}
+              onClick={() => openCommentDetail(r)}
+            />
+          </Tooltip>
           {r.status !== 'approved' && (
             <Tooltip title="通过">
               <Button
@@ -223,6 +283,137 @@ function CommentsTab(): ReactElement {
         }}
         scroll={{ x: 680 }}
       />
+
+      <Drawer
+        title={activeComment ? `评论详情 · ${activeComment.nickname}` : '评论详情'}
+        width={760}
+        open={activeComment !== null}
+        onClose={closeCommentDetail}
+        destroyOnClose
+        extra={
+          activeComment ? (
+            <Space size={4}>
+              {activeComment.status !== 'approved' && (
+                <Button
+                  size="small"
+                  icon={<CheckOutlined />}
+                  loading={updateMut.isPending}
+                  onClick={() => updateMut.mutate({ id: activeComment.id, status: 'approved' })}
+                >
+                  通过
+                </Button>
+              )}
+              {activeComment.status !== 'rejected' && (
+                <Button
+                  size="small"
+                  danger
+                  icon={<CloseOutlined />}
+                  loading={updateMut.isPending}
+                  onClick={() => updateMut.mutate({ id: activeComment.id, status: 'rejected' })}
+                >
+                  拒绝
+                </Button>
+              )}
+              {activeComment.status !== 'spam' && (
+                <Button
+                  size="small"
+                  icon={<StopOutlined />}
+                  loading={updateMut.isPending}
+                  onClick={() => updateMut.mutate({ id: activeComment.id, status: 'spam' })}
+                >
+                  标垃圾
+                </Button>
+              )}
+            </Space>
+          ) : null
+        }
+      >
+        {activeComment && (
+          <Space direction="vertical" size={20} style={{ width: '100%' }}>
+            <div>
+              <Space wrap size={[8, 8]}>
+                <Tag color={COMMENT_STATUS_COLOR[activeComment.status]}>{COMMENT_STATUS_LABEL[activeComment.status] ?? activeComment.status}</Tag>
+                <Tag>{contentTypeLabel}</Tag>
+                <Tag>{activeComment.source || 'web'}</Tag>
+                {activeComment.toCommentNickname ? <Tag color="blue">回复 {activeComment.toCommentNickname}</Tag> : null}
+              </Space>
+            </div>
+
+            <div>
+              <Typography.Text type="secondary">评论内容</Typography.Text>
+              <div
+                style={{
+                  marginTop: 8,
+                  padding: 16,
+                  borderRadius: 12,
+                  border: '1px solid #f0f0f0',
+                  background: '#fafafa',
+                  whiteSpace: 'pre-wrap',
+                  lineHeight: 1.8,
+                }}
+              >
+                {activeComment.content || '—'}
+              </div>
+            </div>
+
+            <Descriptions
+              title="访客与审核信息"
+              size="small"
+              bordered
+              column={1}
+              items={[
+                { key: 'comment-id', label: '评论 ID', children: <Typography.Text copyable>{activeComment.id}</Typography.Text> },
+                {
+                  key: 'content-id',
+                  label: '内容目标',
+                  children: (
+                    <Space>
+                      <Typography.Text copyable>{`${contentTypeLabel} · ${activeComment.contentId}`}</Typography.Text>
+                      <Button type="link" style={{ paddingInline: 0 }} onClick={() => openContentTarget(activeComment)}>
+                        打开目标
+                      </Button>
+                    </Space>
+                  ),
+                },
+                { key: 'parent-id', label: '父评论 ID', children: activeComment.parentId ? <Typography.Text copyable>{activeComment.parentId}</Typography.Text> : '—' },
+                { key: 'root-id', label: '根评论 ID', children: activeComment.rootId ? <Typography.Text copyable>{activeComment.rootId}</Typography.Text> : '—' },
+                { key: 'nickname', label: '昵称', children: activeComment.nickname || '—' },
+                { key: 'email', label: '邮箱', children: activeComment.email || '—' },
+                { key: 'website', label: '网站', children: activeComment.website ? <Typography.Link href={activeComment.website} target="_blank">{activeComment.website}</Typography.Link> : '—' },
+                { key: 'ip', label: 'IP', children: activeComment.ip || '—' },
+                { key: 'ua', label: 'User-Agent', children: activeComment.userAgent ? <Typography.Paragraph copyable style={{ marginBottom: 0, whiteSpace: 'pre-wrap' }}>{activeComment.userAgent}</Typography.Paragraph> : '—' },
+                { key: 'risk', label: '风险分', children: String(activeComment.riskScore ?? 0) },
+                { key: 'reply-count', label: '回复数', children: String(activeComment.replyCount ?? 0) },
+                { key: 'created-at', label: '提交时间', children: fmtDate(activeComment.createdAt) },
+                { key: 'approved-at', label: '审核时间', children: activeComment.approvedAt ? fmtDate(activeComment.approvedAt) : '—' },
+              ]}
+            />
+
+            <Form form={replyForm} layout="vertical">
+              <Form.Item
+                name="content"
+                label="管理员回复"
+                rules={[{ required: true, message: '请填写回复内容' }]}
+              >
+                <Input.TextArea
+                  rows={5}
+                  maxLength={2000}
+                  showCount
+                  placeholder="以管理员身份回复这条评论，提交后会直接公开显示。"
+                />
+              </Form.Item>
+              <Space>
+                <Button type="primary" loading={replyMut.isPending} onClick={submitReply}>
+                  发送回复
+                </Button>
+                <Typography.Text type="secondary">
+                  管理员回复会作为线程中的子评论创建，来源标记为 `admin`。
+                </Typography.Text>
+              </Space>
+            </Form>
+          </Space>
+        )}
+      </Drawer>
     </>
   );
 }

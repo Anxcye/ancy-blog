@@ -333,6 +333,7 @@ func mapPublicComment(row domain.CommentNode) dto.PublicComment {
 		AvatarURL:         row.AvatarURL,
 		ToCommentID:       row.ToCommentID,
 		ToCommentNickname: row.ToCommentNickname,
+		ToCommentIsAuthor: row.ToCommentIsAuthor,
 		CreatedAt:         row.CreatedAt,
 		Children:          mapPublicComments(row.Children),
 	}

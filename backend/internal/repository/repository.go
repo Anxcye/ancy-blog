@@ -30,6 +30,7 @@ type ContentRepository interface {
 	DeleteMoment(id string) bool
 	BatchUpdateMomentStatus(ids []string, status string) int
 	ListMoments(page, pageSize int, status string) ([]domain.Moment, int)
+	GetMomentByID(id string) (domain.Moment, bool)
 	ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int)
 	GetPublishedMomentByID(id, locale string) (domain.Moment, bool)
 
@@ -41,6 +42,7 @@ type ContentRepository interface {
 	CountArticleComments(articleID string) (int, error)
 	CountContentComments(contentType, contentID string) (int, error)
 	ListCommentPage(page, pageSize int, status string) ([]domain.Comment, int)
+	GetCommentByID(id string) (domain.Comment, bool)
 	UpdateCommentAdmin(id string, status, isPinned string) (domain.Comment, error)
 
 	SubmitLink(link domain.Link) (domain.Link, error)

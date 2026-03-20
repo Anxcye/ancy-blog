@@ -114,6 +114,10 @@ type CommentUpdateRequest struct {
 	IsPinned string `json:"isPinned"`
 }
 
+type CommentReplyRequest struct {
+	Content string `json:"content"`
+}
+
 type ReviewLinkRequest struct {
 	ReviewStatus     string `json:"reviewStatus"`
 	ReviewNote       string `json:"reviewNote"`

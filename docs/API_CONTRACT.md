@@ -222,13 +222,21 @@
 - Response: affected count
 - Error Codes: VALIDATION_ERROR, AUTH_UNAUTHORIZED
 
+- ID: ADM-MOMENT-007
+- Method: GET
+- Path: /api/v1/admin/moments/{id}
+- Auth Required: Yes
+- Request: None
+- Response: moment detail
+- Error Codes: MOMENT_NOT_FOUND, AUTH_UNAUTHORIZED
+
 ## Public/Admin - Comments
 - ID: PUB-COMMENT-001
 - Method: GET
 - Path: /api/v1/public/comments/content/{contentType}/{contentId}
 - Auth Required: No
 - Request: query `page`, `pageSize`
-- Response: paginated threaded comments, each row is a root comment node with recursive `children`
+- Response: paginated threaded comments, each row is a root comment node with recursive `children`; reply nodes may include `toCommentNickname` and `toCommentIsAuthor`
 - Error Codes: None
 
 - ID: PUB-COMMENT-002
@@ -283,6 +291,19 @@
 }
 ```
 - Response: updated comment object
+- Error Codes: COMMENT_NOT_FOUND, VALIDATION_ERROR
+
+- ID: ADM-COMMENT-003
+- Method: POST
+- Path: /api/v1/admin/comments/{id}/replies
+- Auth Required: Yes
+- Request:
+```json
+{
+  "content": "管理员回复内容"
+}
+```
+- Response: created admin reply comment object
 - Error Codes: COMMENT_NOT_FOUND, VALIDATION_ERROR
 
 ## Public/Admin - Links

@@ -152,6 +152,96 @@ func TestAdminListMoments(t *testing.T) {
 	}
 }
 
+func TestAdminMomentDetailNotFound(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	repo := &handlerRepoStub{}
+	core := service.NewContentService(repo, nil)
+	h := NewAdminHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewIntegrationService(core),
+		service.NewTranslationService(core),
+		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+		service.NewAuthService("admin", "123456", 0, 0),
+		nil,
+	)
+	r := adminRouter(h)
+	r.GET("/moments/:id", h.MomentDetail)
+
+	req := httptest.NewRequest(http.MethodGet, "/moments/missing", nil)
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusNotFound {
+		t.Fatalf("expected 404, got %d body=%s", w.Code, w.Body.String())
+	}
+}
+
+func TestAdminReplyComment(t *testing.T) {
+	gin.SetMode(gin.TestMode)
+	var created domain.Comment
+	repo := &handlerRepoStub{
+		getSiteSettingsFunc: func() domain.SiteSettings {
+			return domain.SiteSettings{CommentEnabled: true}
+		},
+		getCommentByIDFunc: func(id string) (domain.Comment, bool) {
+			if id != "comment-1" {
+				t.Fatalf("unexpected comment id %s", id)
+			}
+			return domain.Comment{
+				ID:          "comment-1",
+				ContentType: "moment",
+				ContentID:   "moment-1",
+				Status:      "approved",
+			}, true
+		},
+		createCommentFunc: func(comment domain.Comment) (domain.Comment, error) {
+			created = comment
+			comment.ID = "reply-1"
+			return comment, nil
+		},
+	}
+	core := service.NewContentService(repo, nil)
+	h := NewAdminHandler(
+		service.NewArticleService(core),
+		service.NewCommentService(core),
+		service.NewLinkService(core),
+		service.NewSiteService(core),
+		service.NewIntegrationService(core),
+		service.NewTranslationService(core),
+		service.NewAIAssistService(service.NewArticleService(core), service.NewIntegrationService(core)),
+		service.NewAuthService("admin", "123456", 0, 0),
+		nil,
+	)
+	r := adminRouter(h)
+	r.POST("/comments/:id/replies", h.CommentReply)
+
+	req := httptest.NewRequest(http.MethodPost, "/comments/comment-1/replies", bytes.NewBufferString(`{"content":"Admin reply"}`))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("User-Agent", "admin-test-agent")
+	req.Header.Set("CF-Connecting-IP", "203.0.113.21")
+	w := httptest.NewRecorder()
+	r.ServeHTTP(w, req)
+
+	if w.Code != http.StatusOK {
+		t.Fatalf("expected 200, got %d body=%s", w.Code, w.Body.String())
+	}
+	if created.Source != "admin" || created.Status != "approved" {
+		t.Fatalf("expected admin approved reply, got %#v", created)
+	}
+	if created.Nickname != "admin" {
+		t.Fatalf("expected nickname admin, got %s", created.Nickname)
+	}
+	if created.ParentID != "comment-1" || created.RootID != "comment-1" {
+		t.Fatalf("unexpected threading info: %#v", created)
+	}
+	if created.IP != "203.0.113.21" || created.UserAgent != "admin-test-agent" {
+		t.Fatalf("expected admin request metadata, got %#v", created)
+	}
+}
+
 func TestAdminUpdateSiteSettingsMergesPartialPayload(t *testing.T) {
 	gin.SetMode(gin.TestMode)
 	var saved domain.SiteSettings

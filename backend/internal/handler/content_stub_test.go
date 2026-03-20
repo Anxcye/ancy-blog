@@ -18,6 +18,7 @@ type handlerRepoStub struct {
 	createCommentFunc            func(comment domain.Comment) (domain.Comment, error)
 	listArticlesFunc             func(page, pageSize int, status, contentKind, keyword string) ([]domain.Article, int)
 	getArticleByIDFunc           func(id string) (domain.Article, bool)
+	getMomentByIDFunc            func(id string) (domain.Moment, bool)
 	listMomentsFunc              func(page, pageSize int, status string) ([]domain.Moment, int)
 	updateMomentFunc             func(id string, moment domain.Moment) (domain.Moment, error)
 	getPublishedArticleBySlug    func(slug string) (domain.Article, bool)
@@ -32,6 +33,7 @@ type handlerRepoStub struct {
 	countArticleCommentsFunc     func(articleID string) (int, error)
 	countContentCommentsFunc     func(contentType, contentID string) (int, error)
 	listCommentDescendantsFunc   func(rootIDs []string) []domain.Comment
+	getCommentByIDFunc           func(id string) (domain.Comment, bool)
 	slugExistsFunc               func(slug string) bool
 	listIntegrationProvidersFunc func(providerType string) []domain.IntegrationProvider
 	updateIntegrationProvider    func(providerKey string, enabled bool, configJSON, metaJSON []byte) (domain.IntegrationProvider, error)
@@ -79,6 +81,13 @@ func (s *handlerRepoStub) GetArticleByID(id string) (domain.Article, bool) {
 		return s.getArticleByIDFunc(id)
 	}
 	return domain.Article{}, false
+}
+
+func (s *handlerRepoStub) GetMomentByID(id string) (domain.Moment, bool) {
+	if s.getMomentByIDFunc != nil {
+		return s.getMomentByIDFunc(id)
+	}
+	return domain.Moment{}, false
 }
 
 func (s *handlerRepoStub) ListMoments(page, pageSize int, status string) ([]domain.Moment, int) {
@@ -170,6 +179,13 @@ func (s *handlerRepoStub) ListCommentDescendants(rootIDs []string) []domain.Comm
 		return s.listCommentDescendantsFunc(rootIDs)
 	}
 	return nil
+}
+
+func (s *handlerRepoStub) GetCommentByID(id string) (domain.Comment, bool) {
+	if s.getCommentByIDFunc != nil {
+		return s.getCommentByIDFunc(id)
+	}
+	return domain.Comment{}, false
 }
 
 func (s *handlerRepoStub) SlugExists(slug string) bool {

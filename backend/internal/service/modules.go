@@ -71,6 +71,9 @@ func (s *ArticleService) UpdateMoment(id string, moment domain.Moment) (domain.M
 func (s *ArticleService) ListMoments(page, pageSize int, status string) ([]domain.Moment, int) {
 	return s.core.ListMoments(page, pageSize, status)
 }
+func (s *ArticleService) GetMomentByID(id string) (domain.Moment, bool) {
+	return s.core.GetMomentByID(id)
+}
 func (s *ArticleService) DeleteMoment(id string) bool { return s.core.DeleteMoment(id) }
 func (s *ArticleService) BatchUpdateMomentStatus(ids []string, status string) (int, error) {
 	return s.core.BatchUpdateMomentStatus(ids, status)
@@ -121,6 +124,9 @@ func (s *CommentService) CountContentComments(contentType, contentID string) (in
 }
 func (s *CommentService) ListCommentPage(page, pageSize int, status string) ([]domain.Comment, int) {
 	return s.core.ListCommentPage(page, pageSize, status)
+}
+func (s *CommentService) ReplyToCommentAsAdmin(id, content, authorName, approvedBy, ip, userAgent string) (domain.Comment, error) {
+	return s.core.ReplyToCommentAsAdmin(id, content, authorName, approvedBy, ip, userAgent)
 }
 func (s *CommentService) UpdateCommentAdmin(id, status, isPinned string) (domain.Comment, error) {
 	return s.core.UpdateCommentAdmin(id, status, isPinned)

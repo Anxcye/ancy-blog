@@ -19,6 +19,11 @@ export async function listMoments(params: MomentListParams): Promise<PaginatedDa
   return res.data.data;
 }
 
+export async function getMoment(id: string): Promise<Moment> {
+  const res = await httpClient.get<ApiResponse<Moment>>(`/admin/moments/${id}`);
+  return res.data.data;
+}
+
 export async function createMoment(payload: MomentFormValues): Promise<{ id: string }> {
   const res = await httpClient.post<ApiResponse<{ id: string }>>('/admin/moments', payload);
   return res.data.data;

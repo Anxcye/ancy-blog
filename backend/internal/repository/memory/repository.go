@@ -419,6 +419,18 @@ func (r *Repository) ListMoments(page, pageSize int, status string) ([]domain.Mo
 	return paginateMoments(items, page, pageSize)
 }
 
+func (r *Repository) GetMomentByID(id string) (domain.Moment, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	m, ok := r.moments[id]
+	if !ok {
+		return domain.Moment{}, false
+	}
+	m.CommentCount = r.countCommentsLocked("moment", m.ID)
+	return m, true
+}
+
 func (r *Repository) ListPublishedMoments(page, pageSize int, locale string) ([]domain.Moment, int) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -479,10 +491,14 @@ func (r *Repository) CreateComment(comment domain.Comment) (domain.Comment, erro
 	if comment.Status == "" {
 		comment.Status = "approved"
 	}
+	if comment.Status == "approved" && comment.ApprovedAt.IsZero() {
+		comment.ApprovedAt = now
+	}
 	if comment.Source == "" {
 		comment.Source = "web"
 	}
 	r.comments[comment.ID] = comment
+	r.incrementReplyCountersLocked(comment.ParentID, comment.RootID)
 	return comment, nil
 }
 
@@ -583,6 +599,14 @@ func (r *Repository) ListCommentPage(page, pageSize int, status string) ([]domai
 	return paginateComments(items, page, pageSize)
 }
 
+func (r *Repository) GetCommentByID(id string) (domain.Comment, bool) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	comment, ok := r.comments[id]
+	return comment, ok
+}
+
 func (r *Repository) UpdateCommentAdmin(id string, status, isPinned string) (domain.Comment, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -594,6 +618,13 @@ func (r *Repository) UpdateCommentAdmin(id string, status, isPinned string) (dom
 	if status != "" {
 		comment.Status = status
 	}
+	if comment.Status == "approved" {
+		if comment.ApprovedAt.IsZero() {
+			comment.ApprovedAt = time.Now().UTC()
+		}
+	} else {
+		comment.ApprovedAt = time.Time{}
+	}
 	if isPinned == "1" || strings.EqualFold(isPinned, "true") {
 		comment.IsPinned = "1"
 	} else {
@@ -602,6 +633,24 @@ func (r *Repository) UpdateCommentAdmin(id string, status, isPinned string) (dom
 	comment.UpdatedAt = time.Now().UTC()
 	r.comments[id] = comment
 	return comment, nil
+}
+
+func (r *Repository) incrementReplyCountersLocked(parentID, rootID string) {
+	if strings.TrimSpace(parentID) == "" {
+		return
+	}
+	if parent, ok := r.comments[parentID]; ok {
+		parent.ReplyCount++
+		parent.UpdatedAt = time.Now().UTC()
+		r.comments[parentID] = parent
+	}
+	if strings.TrimSpace(rootID) != "" && rootID != parentID {
+		if root, ok := r.comments[rootID]; ok {
+			root.ReplyCount++
+			root.UpdatedAt = time.Now().UTC()
+			r.comments[rootID] = root
+		}
+	}
 }
 
 func (r *Repository) SubmitLink(link domain.Link) (domain.Link, error) {

@@ -24,13 +24,15 @@ import {
   message,
 } from 'antd';
 import type { ReactElement } from 'react';
-import { useState } from 'react';
+import { useEffect, useEffectEvent, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 
 import {
   batchDeleteMoments,
   batchStatusMoments,
   createMoment,
   deleteMoment,
+  getMoment,
   listMoments,
   updateMoment,
 } from '../../api/moments';
@@ -140,6 +142,7 @@ export function MomentsPage(): ReactElement {
   const [messageApi, ctx] = message.useMessage();
   const queryClient = useQueryClient();
   const [form] = Form.useForm<MomentFormValues>();
+  const [searchParams, setSearchParams] = useSearchParams();
 
   const [params, setParams] = useState<MomentListParams>({ page: 1, pageSize: 20, status: '' });
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
@@ -150,6 +153,12 @@ export function MomentsPage(): ReactElement {
   const { data, isLoading } = useQuery({
     queryKey: ['moments', params],
     queryFn: () => listMoments(params),
+  });
+  const editMomentID = searchParams.get('edit');
+  const momentDetailQuery = useQuery({
+    queryKey: ['moment', editMomentID],
+    queryFn: () => getMoment(editMomentID ?? ''),
+    enabled: !!editMomentID,
   });
 
   const saveMut = useMutation({
@@ -193,18 +202,32 @@ export function MomentsPage(): ReactElement {
     onError: () => messageApi.error('状态更新失败'),
   });
 
+  function updateEditSearchParam(id?: string): void {
+    const next = new URLSearchParams(searchParams);
+    if (id) {
+      next.set('edit', id);
+    } else {
+      next.delete('edit');
+    }
+    setSearchParams(next, { replace: true });
+  }
+
   function openCreate(): void {
     setEditingMoment(null);
     form.resetFields();
     form.setFieldValue('status', 'published');
     setEditorMode('write');
+    updateEditSearchParam();
     setDrawerOpen(true);
   }
 
-  function openEdit(moment: Moment): void {
+  function openEdit(moment: Moment, syncURL = true): void {
     setEditingMoment(moment);
     form.setFieldsValue({ content: moment.content, status: moment.status });
     setEditorMode('write');
+    if (syncURL) {
+      updateEditSearchParam(moment.id);
+    }
     setDrawerOpen(true);
   }
 
@@ -213,7 +236,29 @@ export function MomentsPage(): ReactElement {
     setEditingMoment(null);
     setEditorMode('write');
     form.resetFields();
+    updateEditSearchParam();
   }
+
+  const syncMomentDetailToDrawer = useEffectEvent((moment: Moment) => {
+    openEdit(moment, false);
+  });
+
+  const handleMomentDetailLoadError = useEffectEvent(() => {
+    messageApi.error('无法打开该瞬间，记录不存在或已被删除');
+    updateEditSearchParam();
+  });
+
+  useEffect(() => {
+    if (editMomentID && momentDetailQuery.data && editingMoment?.id !== editMomentID) {
+      syncMomentDetailToDrawer(momentDetailQuery.data);
+    }
+  }, [editMomentID, momentDetailQuery.data, editingMoment?.id]);
+
+  useEffect(() => {
+    if (editMomentID && momentDetailQuery.isError) {
+      handleMomentDetailLoadError();
+    }
+  }, [editMomentID, momentDetailQuery.isError]);
 
   const batchPending = batchDelMut.isPending || batchStatusMut.isPending;
 

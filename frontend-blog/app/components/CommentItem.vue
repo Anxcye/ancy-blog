@@ -4,16 +4,16 @@
 <template>
   <div class="comment-item" :class="{ 'is-root': depth === 0, 'is-child': depth > 0 }" :id="`comment-${comment.id}`">
     <div class="comment-avatar">
-      <img v-if="comment.avatarUrl" :src="comment.avatarUrl" :alt="comment.nickname" />
-      <span v-else>{{ comment.nickname.charAt(0).toUpperCase() }}</span>
+      <img v-if="displayAvatarUrl" :src="displayAvatarUrl" :alt="displayName" />
+      <span v-else>{{ displayName.charAt(0).toUpperCase() }}</span>
     </div>
 
     <div class="comment-main">
       <div class="comment-header">
-        <a v-if="comment.website" :href="comment.website" target="_blank" rel="nofollow noopener" class="comment-author">
-          {{ comment.nickname }}
+        <a v-if="displayWebsite" :href="displayWebsite" target="_blank" rel="nofollow noopener" class="comment-author">
+          {{ displayName }}
         </a>
-        <span v-else class="comment-author">{{ comment.nickname }}</span>
+        <span v-else class="comment-author">{{ displayName }}</span>
 
         <span class="comment-badge" v-if="comment.isPinned">{{ t('comment.pinned') }}</span>
         <span class="comment-badge admin-badge" v-if="comment.isAuthor">{{ t('comment.authorBadge') }}</span>
@@ -24,7 +24,7 @@
       </div>
 
       <div class="comment-content markdown-body">
-        <span class="reply-target" v-if="comment.toCommentNickname">@{{ comment.toCommentNickname }}</span>
+        <span class="reply-target" v-if="displayToCommentNickname">@{{ displayToCommentNickname }}</span>
         <div class="comment-markdown" v-html="renderedContent"></div>
       </div>
 
@@ -70,6 +70,7 @@
 import { computed } from 'vue'
 import { useI18n } from 'vue-i18n'
 import type { CommentContentType, CommentThread } from '~/composables/useApi'
+import { useSiteStore } from '~/stores/site'
 import { renderCommentMarkdown } from '~/utils/commentMarkdown'
 
 const props = withDefaults(defineProps<{
@@ -92,6 +93,38 @@ const emit = defineEmits<{
 }>()
 
 const { t, locale } = useI18n()
+const siteStore = useSiteStore()
+
+const displayName = computed(() => {
+  if (props.comment.isAuthor) {
+    return siteStore.settings?.siteName || props.comment.nickname
+  }
+  return props.comment.nickname
+})
+
+const displayAvatarUrl = computed(() => {
+  if (props.comment.isAuthor && siteStore.settings?.avatarUrl) {
+    return siteStore.settings.avatarUrl
+  }
+  return props.comment.avatarUrl
+})
+
+const displayWebsite = computed(() => {
+  if (props.comment.isAuthor) {
+    return undefined
+  }
+  return props.comment.website
+})
+
+const displayToCommentNickname = computed(() => {
+  if (!props.comment.toCommentNickname) {
+    return ''
+  }
+  if (props.comment.toCommentIsAuthor) {
+    return siteStore.settings?.siteName || props.comment.toCommentNickname
+  }
+  return props.comment.toCommentNickname
+})
 
 function formatDate(dateStr: string) {
   const date = new Date(dateStr)

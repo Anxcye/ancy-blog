@@ -797,3 +797,10 @@
 - Fixed React admin moments editor hydration:
   - `frontend-admin-react/src/pages/content/MomentsPage.tsx` now uses a form-controlled `MomentContentEditor` component instead of nesting `TextArea` under an unmanaged wrapper `div`.
   - edit-mode drawer content now echoes correctly for existing moments, and markdown preview stays in sync with the current form value.
+- Expanded admin comment management:
+  - backend comment reads now expose moderation metadata including `userAgent`, `riskScore`, and `approvedAt`.
+  - added authenticated admin reply endpoint `POST /api/v1/admin/comments/{id}/replies`, which creates immediately approved threaded replies with `source=admin`.
+  - `frontend-admin-react/src/pages/interaction/InteractionPage.tsx` now provides a comment detail drawer with UA/IP/source/thread metadata and an inline admin reply form.
+- Updated public comment author presentation:
+  - `frontend-blog/app/components/CommentItem.vue` now maps `isAuthor` comments to site settings identity, so public blog comments show the site avatar and site name instead of raw admin nickname text like `Administrator`.
+  - reply target labels now also respect author identity, so `@Administrator`-style mentions render as the site name when the replied-to comment belongs to the author.

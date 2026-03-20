@@ -52,6 +52,8 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 - Public article comment lists must return recursive reply threads instead of flat reply pages.
 - Public comment payloads must exclude visitor privacy fields such as `email`, `ip`, and `user_agent`.
 - Comments support admin pinning on root comments and replies.
+- Admins can reply from the moderation center; admin replies are stored with `source=admin` and are immediately approved.
+- Public comment items with `isAuthor=true` should display the site-level avatar and site name instead of the raw stored commenter nickname/avatar.
 - Store `ip` in plaintext by project decision.
 - Record `user_agent` for moderation and abuse analysis.
 - Comment reactions are tracked via generic `reactions` records.

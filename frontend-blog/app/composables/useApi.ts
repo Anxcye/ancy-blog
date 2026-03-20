@@ -79,6 +79,7 @@ export interface Comment {
     website?: string
     avatarUrl?: string
     toCommentNickname?: string
+    toCommentIsAuthor?: boolean
     createdAt: string
 }
 

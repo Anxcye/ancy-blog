@@ -39,6 +39,7 @@ type PublicComment struct {
 	AvatarURL         string          `json:"avatarUrl,omitempty"`
 	ToCommentID       string          `json:"toCommentId,omitempty"`
 	ToCommentNickname string          `json:"toCommentNickname,omitempty"`
+	ToCommentIsAuthor bool            `json:"toCommentIsAuthor"`
 	CreatedAt         time.Time       `json:"createdAt"`
 	Children          []PublicComment `json:"children,omitempty"`
 }

@@ -10,7 +10,10 @@ export type CommentStatus = 'pending' | 'approved' | 'rejected' | 'spam' | 'dele
 export interface Comment {
   id: string;
   articleId: string;
+  contentType: 'article' | 'moment';
+  contentId: string;
   parentId?: string;
+  rootId?: string;
   content: string;
   status: CommentStatus;
   isPinned: boolean;
@@ -22,8 +25,12 @@ export interface Comment {
   avatarUrl?: string;
   source: string;
   ip: string;
+  userAgent?: string;
   riskScore: number;
   approvedAt?: string;
+  approvedBy?: string;
+  toCommentId?: string;
+  toCommentNickname?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -37,4 +44,8 @@ export interface CommentListParams {
 export interface CommentUpdatePayload {
   status?: CommentStatus;
   isPinned?: boolean;
+}
+
+export interface CommentReplyPayload {
+  content: string;
 }

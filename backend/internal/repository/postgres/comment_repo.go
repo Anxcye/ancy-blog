@@ -18,7 +18,7 @@ import (
 const commentSelectColumns = `
 SELECT id::text, COALESCE(article_id::text,''), content_type, content_id::text, COALESCE(parent_id::text,''), COALESCE(root_id::text,''),
        content, status, is_pinned, like_count, reply_count, nickname, COALESCE(email,''), COALESCE(website,''),
-       COALESCE(avatar_url,''), source, COALESCE(ip,''), COALESCE(user_agent,''), created_at, updated_at
+       COALESCE(avatar_url,''), source, COALESCE(ip,''), COALESCE(user_agent,''), risk_score, approved_at, approved_by::text, created_at, updated_at
 FROM comments`
 
 func (r *Repository) CreateComment(comment domain.Comment) (domain.Comment, error) {
@@ -37,15 +37,18 @@ func (r *Repository) CreateComment(comment domain.Comment) (domain.Comment, erro
 	if comment.ContentType == "article" {
 		comment.ArticleID = comment.ContentID
 	}
+	if comment.Status == "approved" && comment.ApprovedAt.IsZero() {
+		comment.ApprovedAt = time.Now().UTC()
+	}
 
 	var id string
 	var createdAt, updatedAt time.Time
 	err := r.db.QueryRow(`
-INSERT INTO comments (article_id, content_type, content_id, parent_id, root_id, content, status, is_pinned, nickname, email, website, avatar_url, source, ip, user_agent)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+INSERT INTO comments (article_id, content_type, content_id, parent_id, root_id, content, status, is_pinned, nickname, email, website, avatar_url, source, ip, user_agent, approved_at, approved_by)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17)
 RETURNING id::text, created_at, updated_at
 `, nullableUUID(comment.ArticleID), comment.ContentType, nullableUUID(comment.ContentID), nullableUUID(comment.ParentID), nullableUUID(comment.RootID), comment.Content, comment.Status, false, comment.Nickname,
-		nullableString(comment.Email), nullableString(comment.Website), nullableString(comment.AvatarURL), comment.Source, nullableString(comment.IP), nullableString(comment.UserAgent)).
+		nullableString(comment.Email), nullableString(comment.Website), nullableString(comment.AvatarURL), comment.Source, nullableString(comment.IP), nullableString(comment.UserAgent), nullableTime(comment.ApprovedAt), nullableUUID(comment.ApprovedBy)).
 		Scan(&id, &createdAt, &updatedAt)
 	if err != nil {
 		return domain.Comment{}, err
@@ -54,6 +57,7 @@ RETURNING id::text, created_at, updated_at
 	comment.IsPinned = "0"
 	comment.CreatedAt = createdAt
 	comment.UpdatedAt = updatedAt
+	r.bumpReplyCounters(comment.ParentID, comment.RootID)
 	return comment, nil
 }
 
@@ -172,29 +176,77 @@ WHERE deleted_at IS NULL`
 	return scanCommentRows(rows), total
 }
 
+func (r *Repository) GetCommentByID(id string) (domain.Comment, bool) {
+	row := r.db.QueryRow(commentSelectColumns+`
+WHERE id=$1 AND deleted_at IS NULL
+`, id)
+	comment, err := scanComment(row)
+	if err != nil {
+		return domain.Comment{}, false
+	}
+	return comment, true
+}
+
 func (r *Repository) UpdateCommentAdmin(id string, status, isPinned string) (domain.Comment, error) {
 	pinned := isPinned == "1" || strings.EqualFold(isPinned, "true")
-	var c domain.Comment
-	var b bool
-	err := r.db.QueryRow(`
+	row := r.db.QueryRow(`
 UPDATE comments
-SET status=$2, is_pinned=$3, updated_at=NOW()
+SET status=$2,
+    is_pinned=$3,
+    approved_at=CASE
+      WHEN $2='approved' THEN COALESCE(approved_at, NOW())
+      ELSE NULL
+    END,
+    updated_at=NOW()
 WHERE id=$1 AND deleted_at IS NULL
 RETURNING id::text, COALESCE(article_id::text,''), content_type, content_id::text, COALESCE(parent_id::text,''), COALESCE(root_id::text,''),
           content, status, is_pinned, like_count, reply_count, nickname, COALESCE(email,''), COALESCE(website,''),
-          COALESCE(avatar_url,''), source, COALESCE(ip,''), COALESCE(user_agent,''), created_at, updated_at
-`, id, status, pinned).Scan(&c.ID, &c.ArticleID, &c.ContentType, &c.ContentID, &c.ParentID, &c.RootID, &c.Content, &c.Status, &b, &c.LikeCount, &c.ReplyCount,
-		&c.Nickname, &c.Email, &c.Website, &c.AvatarURL, &c.Source, &c.IP, &c.UserAgent, &c.CreatedAt, &c.UpdatedAt)
+          COALESCE(avatar_url,''), source, COALESCE(ip,''), COALESCE(user_agent,''), risk_score, approved_at, approved_by::text, created_at, updated_at
+`, id, status, pinned)
+	c, err := scanComment(row)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return domain.Comment{}, apperr.ErrCommentNotFound
 		}
 		return domain.Comment{}, err
 	}
-	if b {
+	return c, nil
+}
+
+func (r *Repository) bumpReplyCounters(parentID, rootID string) {
+	if strings.TrimSpace(parentID) == "" {
+		return
+	}
+	_, _ = r.db.Exec(`UPDATE comments SET reply_count = reply_count + 1, updated_at=NOW() WHERE id=$1 AND deleted_at IS NULL`, parentID)
+	if strings.TrimSpace(rootID) != "" && rootID != parentID {
+		_, _ = r.db.Exec(`UPDATE comments SET reply_count = reply_count + 1, updated_at=NOW() WHERE id=$1 AND deleted_at IS NULL`, rootID)
+	}
+}
+
+type commentRowScanner interface {
+	Scan(dest ...any) error
+}
+
+func scanComment(scanner commentRowScanner) (domain.Comment, error) {
+	var c domain.Comment
+	var pinned bool
+	var approvedAt sql.NullTime
+	var approvedBy sql.NullString
+	err := scanner.Scan(&c.ID, &c.ArticleID, &c.ContentType, &c.ContentID, &c.ParentID, &c.RootID, &c.Content, &c.Status, &pinned, &c.LikeCount, &c.ReplyCount,
+		&c.Nickname, &c.Email, &c.Website, &c.AvatarURL, &c.Source, &c.IP, &c.UserAgent, &c.RiskScore, &approvedAt, &approvedBy, &c.CreatedAt, &c.UpdatedAt)
+	if err != nil {
+		return domain.Comment{}, err
+	}
+	if pinned {
 		c.IsPinned = "1"
 	} else {
 		c.IsPinned = "0"
+	}
+	if approvedAt.Valid {
+		c.ApprovedAt = approvedAt.Time
+	}
+	if approvedBy.Valid {
+		c.ApprovedBy = approvedBy.String
 	}
 	return c, nil
 }
@@ -204,15 +256,7 @@ func scanCommentRows(rows *sql.Rows) []domain.Comment {
 
 	items := make([]domain.Comment, 0)
 	for rows.Next() {
-		var c domain.Comment
-		var pinned bool
-		if err := rows.Scan(&c.ID, &c.ArticleID, &c.ContentType, &c.ContentID, &c.ParentID, &c.RootID, &c.Content, &c.Status, &pinned, &c.LikeCount, &c.ReplyCount,
-			&c.Nickname, &c.Email, &c.Website, &c.AvatarURL, &c.Source, &c.IP, &c.UserAgent, &c.CreatedAt, &c.UpdatedAt); err == nil {
-			if pinned {
-				c.IsPinned = "1"
-			} else {
-				c.IsPinned = "0"
-			}
+		if c, err := scanComment(rows); err == nil {
 			items = append(items, c)
 		}
 	}

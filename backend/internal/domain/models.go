@@ -70,8 +70,12 @@ type Comment struct {
 	Source            string    `json:"source"`
 	IP                string    `json:"ip,omitempty"`
 	UserAgent         string    `json:"userAgent,omitempty"`
+	RiskScore         int       `json:"riskScore"`
+	ApprovedAt        time.Time `json:"approvedAt,omitempty"`
+	ApprovedBy        string    `json:"approvedBy,omitempty"`
 	ToCommentID       string    `json:"toCommentId,omitempty"`
 	ToCommentNickname string    `json:"toCommentNickname,omitempty"`
+	ToCommentIsAuthor bool      `json:"toCommentIsAuthor"`
 	CreatedAt         time.Time `json:"createdAt"`
 	UpdatedAt         time.Time `json:"updatedAt"`
 }

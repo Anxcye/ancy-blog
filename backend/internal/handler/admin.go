@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"strings"
 
 	"github.com/anxcye/ancy-blog/backend/internal/apperr"
 	"github.com/anxcye/ancy-blog/backend/internal/domain"
@@ -208,6 +209,16 @@ func (h *AdminHandler) ListMoments(c *gin.Context) {
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.Moment]{Total: total, Rows: rows}})
 }
 
+func (h *AdminHandler) MomentDetail(c *gin.Context) {
+	id := c.Param("id")
+	moment, ok := h.articleService.GetMomentByID(id)
+	if !ok {
+		response.JSON(c, http.StatusNotFound, response.Envelope{Code: "MOMENT_NOT_FOUND", Message: "moment not found"})
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: moment})
+}
+
 func (h *AdminHandler) UpdateMoment(c *gin.Context) {
 	id := c.Param("id")
 	var req dto.MomentCreateRequest
@@ -286,6 +297,37 @@ func (h *AdminHandler) CommentUpdate(c *gin.Context) {
 		return
 	}
 	comment, err := h.commentService.UpdateCommentAdmin(id, req.Status, req.IsPinned)
+	if err != nil {
+		if errors.Is(err, apperr.ErrCommentNotFound) {
+			response.JSON(c, http.StatusNotFound, response.Envelope{Code: "COMMENT_NOT_FOUND", Message: "comment not found"})
+			return
+		}
+		badRequest(c, "VALIDATION_ERROR", err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: comment})
+}
+
+func (h *AdminHandler) CommentReply(c *gin.Context) {
+	id := c.Param("id")
+	var req dto.CommentReplyRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequest(c, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+	user := middleware.MustUser(c)
+	authorName := strings.TrimSpace(user.DisplayName)
+	if authorName == "" {
+		authorName = strings.TrimSpace(user.Username)
+	}
+	comment, err := h.commentService.ReplyToCommentAsAdmin(
+		id,
+		req.Content,
+		authorName,
+		user.ID,
+		clientIPFromRequest(c),
+		c.GetHeader("User-Agent"),
+	)
 	if err != nil {
 		if errors.Is(err, apperr.ErrCommentNotFound) {
 			response.JSON(c, http.StatusNotFound, response.Envelope{Code: "COMMENT_NOT_FOUND", Message: "comment not found"})

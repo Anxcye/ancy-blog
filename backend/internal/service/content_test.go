@@ -20,9 +20,11 @@ type contentRepoStub struct {
 	repository.ContentRepository
 
 	createArticleFunc             func(article domain.Article) (domain.Article, error)
+	createCommentFunc             func(comment domain.Comment) (domain.Comment, error)
 	updateCommentAdminFunc        func(id, status, isPinned string) (domain.Comment, error)
 	submitLinkFunc                func(link domain.Link) (domain.Link, error)
 	reviewLinkFunc                func(id, reviewStatus, reviewNote, relatedArticleID string) (domain.Link, error)
+	getCommentByIDFunc            func(id string) (domain.Comment, bool)
 	getArticleByIDFunc            func(id string) (domain.Article, bool)
 	getPublishedArticleBySlugFunc func(slug string) (domain.Article, bool)
 	getPublishedMomentByIDFunc    func(id, locale string) (domain.Moment, bool)
@@ -53,11 +55,25 @@ func (s *contentRepoStub) CreateArticle(article domain.Article) (domain.Article,
 	return article, nil
 }
 
+func (s *contentRepoStub) CreateComment(comment domain.Comment) (domain.Comment, error) {
+	if s.createCommentFunc != nil {
+		return s.createCommentFunc(comment)
+	}
+	return comment, nil
+}
+
 func (s *contentRepoStub) UpdateCommentAdmin(id, status, isPinned string) (domain.Comment, error) {
 	if s.updateCommentAdminFunc != nil {
 		return s.updateCommentAdminFunc(id, status, isPinned)
 	}
 	return domain.Comment{}, nil
+}
+
+func (s *contentRepoStub) GetCommentByID(id string) (domain.Comment, bool) {
+	if s.getCommentByIDFunc != nil {
+		return s.getCommentByIDFunc(id)
+	}
+	return domain.Comment{}, false
 }
 
 func (s *contentRepoStub) SubmitLink(link domain.Link) (domain.Link, error) {
@@ -318,6 +334,56 @@ func TestUpdateCommentAdminDefaultStatus(t *testing.T) {
 	svc := NewContentService(repo, nil)
 	if _, err := svc.UpdateCommentAdmin("c1", "", "0"); err != nil {
 		t.Fatalf("expected success, got error: %v", err)
+	}
+}
+
+func TestReplyToCommentAsAdmin(t *testing.T) {
+	repo := &contentRepoStub{
+		getSiteSettingsFunc: func() domain.SiteSettings {
+			return domain.SiteSettings{CommentEnabled: true}
+		},
+		getCommentByIDFunc: func(id string) (domain.Comment, bool) {
+			if id != "comment-1" {
+				t.Fatalf("unexpected target id %s", id)
+			}
+			return domain.Comment{
+				ID:          "comment-1",
+				ContentType: "article",
+				ContentID:   "article-1",
+				RootID:      "root-1",
+				Status:      "approved",
+			}, true
+		},
+		createCommentFunc: func(comment domain.Comment) (domain.Comment, error) {
+			if comment.ParentID != "comment-1" {
+				t.Fatalf("expected parent comment-1, got %s", comment.ParentID)
+			}
+			if comment.RootID != "root-1" {
+				t.Fatalf("expected root root-1, got %s", comment.RootID)
+			}
+			if comment.ContentType != "article" || comment.ContentID != "article-1" || comment.ArticleID != "article-1" {
+				t.Fatalf("unexpected target linkage: %#v", comment)
+			}
+			if comment.Source != "admin" || comment.Status != "approved" || comment.Nickname != "Moderator" {
+				t.Fatalf("unexpected admin reply payload: %#v", comment)
+			}
+			if comment.ApprovedBy != "admin-1" {
+				t.Fatalf("expected approvedBy admin-1, got %s", comment.ApprovedBy)
+			}
+			if comment.IP != "203.0.113.7" || comment.UserAgent != "admin-browser" {
+				t.Fatalf("expected admin request metadata, got %#v", comment)
+			}
+			comment.ID = "reply-1"
+			return comment, nil
+		},
+	}
+	svc := NewContentService(repo, nil)
+	reply, err := svc.ReplyToCommentAsAdmin("comment-1", "Thanks for the feedback.", "Moderator", "admin-1", "203.0.113.7", "admin-browser")
+	if err != nil {
+		t.Fatalf("expected success, got error: %v", err)
+	}
+	if reply.ID != "reply-1" {
+		t.Fatalf("expected created reply id, got %s", reply.ID)
 	}
 }
 

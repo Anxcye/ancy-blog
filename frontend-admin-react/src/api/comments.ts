@@ -7,7 +7,12 @@
 
 import { httpClient } from '../lib/http';
 import type { ApiResponse, PaginatedData } from '../types/api';
-import type { Comment, CommentListParams, CommentUpdatePayload } from '../types/comment';
+import type {
+  Comment,
+  CommentListParams,
+  CommentReplyPayload,
+  CommentUpdatePayload,
+} from '../types/comment';
 
 export async function listComments(params: CommentListParams): Promise<PaginatedData<Comment>> {
   const clean = Object.fromEntries(
@@ -21,5 +26,10 @@ export async function listComments(params: CommentListParams): Promise<Paginated
 
 export async function updateComment(id: string, payload: CommentUpdatePayload): Promise<Comment> {
   const res = await httpClient.put<ApiResponse<Comment>>(`/admin/comments/${id}`, payload);
+  return res.data.data;
+}
+
+export async function replyComment(id: string, payload: CommentReplyPayload): Promise<Comment> {
+  const res = await httpClient.post<ApiResponse<Comment>>(`/admin/comments/${id}/replies`, payload);
   return res.data.data;
 }

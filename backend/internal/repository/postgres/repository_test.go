@@ -30,6 +30,12 @@ func TestNullableUUID(t *testing.T) {
 	if nullableUUID(" ") != nil {
 		t.Fatalf("expected nil for blank uuid")
 	}
+	if nullableUUID("admin-1") != nil {
+		t.Fatalf("expected nil for invalid uuid")
+	}
+	if v, ok := nullableUUID("550e8400-e29b-41d4-a716-446655440000").(string); !ok || v == "" {
+		t.Fatalf("expected valid uuid passthrough")
+	}
 }
 
 func TestNullableTime(t *testing.T) {

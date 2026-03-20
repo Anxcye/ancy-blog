@@ -8,6 +8,8 @@ import (
 	"encoding/json"
 	"strings"
 	"time"
+
+	"github.com/google/uuid"
 )
 
 func normalizePagination(page, pageSize int) (int, int) {
@@ -32,6 +34,9 @@ func nullableString(v string) any {
 
 func nullableUUID(v string) any {
 	if strings.TrimSpace(v) == "" {
+		return nil
+	}
+	if _, err := uuid.Parse(v); err != nil {
 		return nil
 	}
 	return v
