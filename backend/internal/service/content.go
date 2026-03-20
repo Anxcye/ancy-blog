@@ -916,6 +916,103 @@ func (s *ContentService) ListTimeline(page, pageSize int, locale string) ([]doma
 	return s.repo.ListTimeline(page, pageSize, locale)
 }
 
+func (s *ContentService) RecordVisitEvents(events []domain.VisitEvent) (domain.AnalyticsIngestResult, error) {
+	if len(events) == 0 {
+		return domain.AnalyticsIngestResult{}, fmt.Errorf("%w: events are required", apperr.ErrValidation)
+	}
+	normalized := make([]domain.VisitEvent, 0, len(events))
+	now := time.Now().UTC()
+	for _, event := range events {
+		if strings.TrimSpace(event.EventID) == "" || strings.TrimSpace(event.VisitorID) == "" || strings.TrimSpace(event.SessionID) == "" {
+			return domain.AnalyticsIngestResult{}, fmt.Errorf("%w: eventId, visitorId, and sessionId are required", apperr.ErrValidation)
+		}
+		switch event.EventType {
+		case "page_view", "page_ping":
+		default:
+			return domain.AnalyticsIngestResult{}, fmt.Errorf("%w: invalid analytics event type", apperr.ErrValidation)
+		}
+		event.Path = normalizeAnalyticsPath(event.Path)
+		if event.Path == "" {
+			return domain.AnalyticsIngestResult{}, fmt.Errorf("%w: path is required", apperr.ErrValidation)
+		}
+		if event.OccurredAt.IsZero() {
+			event.OccurredAt = now
+		}
+		event.ReferrerHost = analyticsReferrerHost(event.Referrer)
+		if event.DeviceType == "" {
+			event.DeviceType = "unknown"
+		}
+		event.OccurredAt = event.OccurredAt.UTC()
+		normalized = append(normalized, event)
+	}
+	return s.repo.CreateVisitEvents(normalized)
+}
+
+func (s *ContentService) GetAnalyticsOverview(days int) (domain.AnalyticsOverview, error) {
+	return s.repo.GetAnalyticsOverview(normalizeAnalyticsDays(days))
+}
+
+func (s *ContentService) ListAnalyticsPages(page, pageSize, days int, path, contentType string) ([]domain.AnalyticsPathStat, int, error) {
+	return s.repo.ListAnalyticsPages(page, pageSize, normalizeAnalyticsDays(days), strings.TrimSpace(path), strings.TrimSpace(contentType))
+}
+
+func (s *ContentService) ListAnalyticsVisits(page, pageSize, days int, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot string) ([]domain.VisitEvent, int, error) {
+	return s.repo.ListAnalyticsVisits(
+		page,
+		pageSize,
+		normalizeAnalyticsDays(days),
+		strings.TrimSpace(path),
+		strings.TrimSpace(eventType),
+		strings.TrimSpace(visitorID),
+		strings.TrimSpace(sessionID),
+		strings.TrimSpace(contentType),
+		strings.TrimSpace(ip),
+		strings.TrimSpace(deviceType),
+		strings.TrimSpace(browserName),
+		strings.TrimSpace(osName),
+		strings.TrimSpace(isBot),
+	)
+}
+
+func normalizeAnalyticsDays(days int) int {
+	if days <= 0 {
+		return 7
+	}
+	if days > 90 {
+		return 90
+	}
+	return days
+}
+
+func normalizeAnalyticsPath(raw string) string {
+	value := strings.TrimSpace(raw)
+	if value == "" {
+		return ""
+	}
+	parsed, err := url.Parse(value)
+	if err == nil {
+		if parsed.Path != "" {
+			value = parsed.Path
+		}
+	}
+	if !strings.HasPrefix(value, "/") {
+		value = "/" + value
+	}
+	return value
+}
+
+func analyticsReferrerHost(raw string) string {
+	value := strings.TrimSpace(raw)
+	if value == "" {
+		return ""
+	}
+	parsed, err := url.Parse(value)
+	if err != nil {
+		return ""
+	}
+	return strings.ToLower(parsed.Hostname())
+}
+
 func buildCommentNode(
 	comment domain.Comment,
 	childrenByParent map[string][]domain.Comment,

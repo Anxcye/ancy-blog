@@ -1,0 +1,9 @@
+DROP INDEX IF EXISTS idx_visit_events_referrer_host_occurred_at;
+DROP INDEX IF EXISTS idx_visit_events_ip_occurred_at;
+DROP INDEX IF EXISTS idx_visit_events_content_occurred_at;
+DROP INDEX IF EXISTS idx_visit_events_session_occurred_at;
+DROP INDEX IF EXISTS idx_visit_events_visitor_occurred_at;
+DROP INDEX IF EXISTS idx_visit_events_path_occurred_at;
+DROP INDEX IF EXISTS idx_visit_events_event_type_occurred_at;
+DROP INDEX IF EXISTS idx_visit_events_occurred_at_desc;
+DROP TABLE IF EXISTS visit_events;

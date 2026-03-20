@@ -10,6 +10,7 @@ import { Navigate, RouterProvider, createBrowserRouter } from 'react-router-dom'
 
 import { AdminLayout } from './layouts/AdminLayout';
 import { ContentLayout } from './layouts/ContentLayout';
+import { AnalyticsPage } from './pages/analytics/AnalyticsPage';
 import { ArticleEditorPage } from './pages/content/ArticleEditorPage';
 import { ArticlesPage } from './pages/content/ArticlesPage';
 import { MomentsPage } from './pages/content/MomentsPage';
@@ -59,6 +60,9 @@ const router = createBrowserRouter([
 
       // Interaction module
       { path: 'interaction', element: <InteractionPage /> },
+
+      // Analytics module
+      { path: 'analytics', element: <AnalyticsPage /> },
 
       // Site module
       { path: 'site', element: <SitePage /> },

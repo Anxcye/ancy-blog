@@ -51,3 +51,28 @@ type SubmitLinkRequest struct {
 	Description  string `json:"description"`
 	ContactEmail string `json:"contactEmail"`
 }
+
+type AnalyticsEventsRequest struct {
+	Events []AnalyticsEventPayload `json:"events"`
+}
+
+type AnalyticsEventPayload struct {
+	EventID        string    `json:"eventId"`
+	EventType      string    `json:"eventType"`
+	OccurredAt     time.Time `json:"occurredAt"`
+	VisitorID      string    `json:"visitorId"`
+	SessionID      string    `json:"sessionId"`
+	Path           string    `json:"path"`
+	RouteName      string    `json:"routeName"`
+	PageTitle      string    `json:"pageTitle"`
+	Referrer       string    `json:"referrer"`
+	ContentType    string    `json:"contentType"`
+	ContentID      string    `json:"contentId"`
+	ContentSlug    string    `json:"contentSlug"`
+	Locale         string    `json:"locale"`
+	ScreenWidth    int       `json:"screenWidth"`
+	ScreenHeight   int       `json:"screenHeight"`
+	ViewportWidth  int       `json:"viewportWidth"`
+	ViewportHeight int       `json:"viewportHeight"`
+	Timezone       string    `json:"timezone"`
+}

@@ -24,6 +24,8 @@ type TranslationService struct{ core *ContentService }
 
 type TimelineService struct{ core *ContentService }
 
+type AnalyticsService struct{ core *ContentService }
+
 func NewArticleService(core *ContentService) *ArticleService { return &ArticleService{core: core} }
 func NewCommentService(core *ContentService) *CommentService { return &CommentService{core: core} }
 func NewLinkService(core *ContentService) *LinkService       { return &LinkService{core: core} }
@@ -35,6 +37,9 @@ func NewTranslationService(core *ContentService) *TranslationService {
 	return &TranslationService{core: core}
 }
 func NewTimelineService(core *ContentService) *TimelineService { return &TimelineService{core: core} }
+func NewAnalyticsService(core *ContentService) *AnalyticsService {
+	return &AnalyticsService{core: core}
+}
 
 func (s *ArticleService) CreateArticle(article domain.Article) (domain.Article, error) {
 	return s.core.CreateArticle(article)
@@ -255,4 +260,20 @@ func (s *TranslationService) UpsertTranslationContent(sourceType, sourceID, loca
 
 func (s *TimelineService) ListTimeline(page, pageSize int, locale string) ([]domain.TimelineItem, int) {
 	return s.core.ListTimeline(page, pageSize, locale)
+}
+
+func (s *AnalyticsService) RecordVisitEvents(events []domain.VisitEvent) (domain.AnalyticsIngestResult, error) {
+	return s.core.RecordVisitEvents(events)
+}
+
+func (s *AnalyticsService) GetAnalyticsOverview(days int) (domain.AnalyticsOverview, error) {
+	return s.core.GetAnalyticsOverview(days)
+}
+
+func (s *AnalyticsService) ListAnalyticsPages(page, pageSize, days int, path, contentType string) ([]domain.AnalyticsPathStat, int, error) {
+	return s.core.ListAnalyticsPages(page, pageSize, days, path, contentType)
+}
+
+func (s *AnalyticsService) ListAnalyticsVisits(page, pageSize, days int, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot string) ([]domain.VisitEvent, int, error) {
+	return s.core.ListAnalyticsVisits(page, pageSize, days, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot)
 }

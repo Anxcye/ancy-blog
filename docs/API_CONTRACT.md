@@ -107,6 +107,48 @@
 - Response: paginated article cards
 - Error Codes: CATEGORY_NOT_FOUND
 
+## Public - Analytics
+- ID: PUB-ANALYTICS-001
+- Method: POST
+- Path: /api/v1/public/analytics/events
+- Auth Required: No
+- Request:
+```json
+{
+  "events": [
+    {
+      "eventId": "evt_01",
+      "eventType": "page_view",
+      "occurredAt": "2026-03-20T12:34:56Z",
+      "visitorId": "visitor_01",
+      "sessionId": "session_01",
+      "path": "/articles/hello-world",
+      "routeName": "article-detail",
+      "pageTitle": "Hello World",
+      "referrer": "https://www.google.com/search?q=hello",
+      "contentType": "article",
+      "contentId": "hello-world",
+      "contentSlug": "hello-world",
+      "locale": "zh-CN",
+      "screenWidth": 1440,
+      "screenHeight": 900,
+      "viewportWidth": 1280,
+      "viewportHeight": 760,
+      "timezone": "Asia/Singapore"
+    }
+  ]
+}
+```
+- Response:
+```json
+{
+  "accepted": 1,
+  "deduplicated": 0
+}
+```
+- Error Codes: VALIDATION_ERROR
+- Notes: Backend enriches each event with IP, user agent, device/browser/OS inference, bot flag, and server receive time.
+
 ## Admin - Articles
 - ID: ADM-ARTICLE-001
 - Method: POST
@@ -229,6 +271,53 @@
 - Request: None
 - Response: moment detail
 - Error Codes: MOMENT_NOT_FOUND, AUTH_UNAUTHORIZED
+
+## Admin - Analytics
+- ID: ADM-ANALYTICS-001
+- Method: GET
+- Path: /api/v1/admin/analytics/overview
+- Auth Required: Yes
+- Request: query `days` (default `7`, max `90`)
+- Response:
+```json
+{
+  "rangeStart": "2026-03-14T00:00:00Z",
+  "rangeEnd": "2026-03-20T23:59:59Z",
+  "pageViews": 1024,
+  "uniqueVisitors": 312,
+  "uniqueIPs": 280,
+  "uniqueSessions": 401,
+  "topPaths": [
+    { "path": "/articles/hello-world", "pageViews": 180, "uniqueVisitors": 97 }
+  ],
+  "topReferrers": [
+    { "referrerHost": "www.google.com", "visits": 140 }
+  ],
+  "deviceBreakdown": [
+    { "deviceType": "mobile", "visits": 620 }
+  ],
+  "daily": [
+    { "date": "2026-03-20", "pageViews": 200, "uniqueVisitors": 84, "uniqueIPs": 79 }
+  ]
+}
+```
+- Error Codes: AUTH_UNAUTHORIZED
+
+- ID: ADM-ANALYTICS-002
+- Method: GET
+- Path: /api/v1/admin/analytics/pages
+- Auth Required: Yes
+- Request: query `page`, `pageSize`, `days` (default `7`), optional `path`, `contentType`
+- Response: paginated rows with `path`, `contentType`, `contentId`, `contentSlug`, `pageViews`, `uniqueVisitors`, `uniqueIPs`, `lastVisitedAt`
+- Error Codes: AUTH_UNAUTHORIZED
+
+- ID: ADM-ANALYTICS-003
+- Method: GET
+- Path: /api/v1/admin/analytics/visits
+- Auth Required: Yes
+- Request: query `page`, `pageSize`, `days` (default `7`), optional `path`, `eventType`, `visitorId`, `sessionId`, `contentType`, `ip`, `deviceType`, `browserName`, `osName`, `isBot`
+- Response: paginated raw analytics events including `path`, `occurredAt`, `visitorId`, `sessionId`, `ip`, `userAgent`, `deviceType`, `browserName`, `osName`, `referrer`, `contentType`, `contentId`, `contentSlug`
+- Error Codes: AUTH_UNAUTHORIZED
 
 ## Public/Admin - Comments
 - ID: PUB-COMMENT-001

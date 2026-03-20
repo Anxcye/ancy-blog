@@ -199,6 +199,83 @@ type TimelineItem struct {
 	PublishedAt  time.Time `json:"publishedAt"`
 }
 
+type VisitEvent struct {
+	ID             string    `json:"id"`
+	EventID        string    `json:"eventId"`
+	EventType      string    `json:"eventType"`
+	OccurredAt     time.Time `json:"occurredAt"`
+	ReceivedAt     time.Time `json:"receivedAt"`
+	VisitorID      string    `json:"visitorId"`
+	SessionID      string    `json:"sessionId"`
+	Path           string    `json:"path"`
+	RouteName      string    `json:"routeName,omitempty"`
+	PageTitle      string    `json:"pageTitle,omitempty"`
+	Referrer       string    `json:"referrer,omitempty"`
+	ReferrerHost   string    `json:"referrerHost,omitempty"`
+	ContentType    string    `json:"contentType,omitempty"`
+	ContentID      string    `json:"contentId,omitempty"`
+	ContentSlug    string    `json:"contentSlug,omitempty"`
+	Locale         string    `json:"locale,omitempty"`
+	ScreenWidth    int       `json:"screenWidth,omitempty"`
+	ScreenHeight   int       `json:"screenHeight,omitempty"`
+	ViewportWidth  int       `json:"viewportWidth,omitempty"`
+	ViewportHeight int       `json:"viewportHeight,omitempty"`
+	Timezone       string    `json:"timezone,omitempty"`
+	IP             string    `json:"ip,omitempty"`
+	UserAgent      string    `json:"userAgent,omitempty"`
+	DeviceType     string    `json:"deviceType,omitempty"`
+	BrowserName    string    `json:"browserName,omitempty"`
+	OSName         string    `json:"osName,omitempty"`
+	IsBot          bool      `json:"isBot"`
+	CreatedAt      time.Time `json:"createdAt"`
+}
+
+type AnalyticsIngestResult struct {
+	Accepted     int `json:"accepted"`
+	Deduplicated int `json:"deduplicated"`
+}
+
+type AnalyticsPathStat struct {
+	Path           string    `json:"path"`
+	ContentType    string    `json:"contentType,omitempty"`
+	ContentID      string    `json:"contentId,omitempty"`
+	ContentSlug    string    `json:"contentSlug,omitempty"`
+	PageViews      int       `json:"pageViews"`
+	UniqueVisitors int       `json:"uniqueVisitors"`
+	UniqueIPs      int       `json:"uniqueIPs"`
+	LastVisitedAt  time.Time `json:"lastVisitedAt"`
+}
+
+type AnalyticsReferrerStat struct {
+	ReferrerHost string `json:"referrerHost"`
+	Visits       int    `json:"visits"`
+}
+
+type AnalyticsDeviceStat struct {
+	DeviceType string `json:"deviceType"`
+	Visits     int    `json:"visits"`
+}
+
+type AnalyticsDailyStat struct {
+	Date           string `json:"date"`
+	PageViews      int    `json:"pageViews"`
+	UniqueVisitors int    `json:"uniqueVisitors"`
+	UniqueIPs      int    `json:"uniqueIPs"`
+}
+
+type AnalyticsOverview struct {
+	RangeStart      time.Time               `json:"rangeStart"`
+	RangeEnd        time.Time               `json:"rangeEnd"`
+	PageViews       int                     `json:"pageViews"`
+	UniqueVisitors  int                     `json:"uniqueVisitors"`
+	UniqueIPs       int                     `json:"uniqueIPs"`
+	UniqueSessions  int                     `json:"uniqueSessions"`
+	TopPaths        []AnalyticsPathStat     `json:"topPaths"`
+	TopReferrers    []AnalyticsReferrerStat `json:"topReferrers"`
+	DeviceBreakdown []AnalyticsDeviceStat   `json:"deviceBreakdown"`
+	Daily           []AnalyticsDailyStat    `json:"daily"`
+}
+
 type SlotContentItem struct {
 	ContentType string `json:"contentType"`
 	ID          string `json:"id"`

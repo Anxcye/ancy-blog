@@ -7,6 +7,7 @@
 
 import {
   AppstoreOutlined,
+  BarChartOutlined,
   DashboardOutlined,
   FileTextOutlined,
   GlobalOutlined,
@@ -32,6 +33,7 @@ function resolveKey(pathname: string): string {
   if (pathname.startsWith('/content/moments')) return 'moments';
   if (pathname.startsWith('/content/taxonomy')) return 'taxonomy';
   if (pathname.startsWith('/interaction')) return 'interaction';
+  if (pathname.startsWith('/analytics')) return 'analytics';
   if (pathname.startsWith('/site')) return 'site';
   if (pathname.startsWith('/system')) return 'system';
   return 'dashboard';
@@ -41,6 +43,7 @@ function resolveKey(pathname: string): string {
 function resolveMobileKey(pathname: string): string {
   if (pathname.startsWith('/content')) return 'content';
   if (pathname.startsWith('/interaction')) return 'interaction';
+  if (pathname.startsWith('/analytics')) return 'analytics';
   if (pathname.startsWith('/site')) return 'site';
   if (pathname.startsWith('/system')) return 'system';
   return 'dashboard';
@@ -51,6 +54,7 @@ const MOBILE_NAV = [
   { key: 'dashboard', path: '/', icon: <DashboardOutlined />, label: '工作台' },
   { key: 'content', path: '/content/articles', icon: <FileTextOutlined />, label: '内容' },
   { key: 'interaction', path: '/interaction', icon: <MessageOutlined />, label: '互动' },
+  { key: 'analytics', path: '/analytics', icon: <BarChartOutlined />, label: '统计' },
   { key: 'site', path: '/site', icon: <GlobalOutlined />, label: '站点' },
   { key: 'system', path: '/system', icon: <AppstoreOutlined />, label: '系统' },
 ];
@@ -112,6 +116,12 @@ export function AdminLayout(): ReactElement {
       icon: <MessageOutlined />,
       label: '互动中心',
       onClick: () => navigate('/interaction'),
+    },
+    {
+      key: 'analytics',
+      icon: <BarChartOutlined />,
+      label: '访客统计',
+      onClick: () => navigate('/analytics'),
     },
     {
       key: 'site',

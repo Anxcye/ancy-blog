@@ -804,3 +804,20 @@
 - Updated public comment author presentation:
   - `frontend-blog/app/components/CommentItem.vue` now maps `isAuthor` comments to site settings identity, so public blog comments show the site avatar and site name instead of raw admin nickname text like `Administrator`.
   - reply target labels now also respect author identity, so `@Administrator`-style mentions render as the site name when the replied-to comment belongs to the author.
+- Added first-phase visitor analytics:
+  - documented analytics product rules, data model, API contract, and architecture decision for browser-reported events with backend enrichment.
+  - added migration `000020_visit_events` plus schema baseline updates for raw visit-event storage with plaintext IP, path, referrer, device, browser, OS, and bot metadata.
+  - implemented public analytics ingest endpoint `POST /api/v1/public/analytics/events` and admin analytics endpoints for overview, aggregated paths, and raw visits.
+  - reused the existing Cloudflare-aware real-client IP extraction logic by moving it into shared handler metadata helpers for analytics, comments, links, and admin replies.
+  - added a client-only Nuxt analytics plugin that reports `page_view` and `page_ping` events after browser route entry, avoiding SSR-prefetch inflation.
+  - shipped a dedicated React admin analytics page with overview cards, top paths, referrer/device summaries, and recent raw visit events.
+  - validated the change with `go test ./...`, `pnpm --dir frontend-admin-react exec tsc -b --pretty false`, and `pnpm --dir frontend-blog exec tsc --noEmit -p tsconfig.json`.
+  - `pnpm --dir frontend-blog exec nuxi typecheck` could not complete in this environment because it attempted to resolve `vue-tsc` from the npm registry and failed with `ENOTFOUND registry.npmjs.org`.
+- Expanded analytics filtering:
+  - admin analytics raw-visit queries now support filtering by `ip`, `visitorId`, `sessionId`, `deviceType`, `browserName`, `osName`, `eventType`, `contentType`, `path`, and `isBot`.
+  - React admin analytics page now exposes those filters in the UI and uses backend pagination for the raw visit table.
+  - validated the filter update with `go test ./...` and `pnpm --dir frontend-admin-react exec tsc -b --pretty false`.
+- Improved analytics record visibility in admin:
+  - the raw visit table now provides a per-row detail action.
+  - added an analytics visit detail drawer showing full `IP`, `userAgent`, referrer, visitor/session ids, route/page metadata, locale/timezone, and screen/viewport dimensions.
+  - validated the UI change with `pnpm --dir frontend-admin-react exec tsc -b --pretty false`.

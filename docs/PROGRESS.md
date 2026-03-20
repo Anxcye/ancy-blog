@@ -114,6 +114,7 @@
 - [x] Implemented TMDB card rich rendering: backend TMDB API integration (service/tmdb package + TMDBService + admin endpoint `/admin/integrations/tmdb/:type/:id`), migration 000015 adds tmdb provider to integration_providers, admin fetch-on-insert with full metadata (poster/rating/overview/releaseDate), blog renders poster + rating + overview in responsive card layout with hover effects.
 - [x] Fixed translation-content management usability in `frontend-admin-react`: source metadata is exposed in translation rows, list editing now loads full translation detail, and translation rows use stable composite keys instead of a nonexistent `id` field.
 - [x] Restored AI disclosure editing in the React admin article editor by wiring `aiAssistLevel` into form defaults, edit hydration, and the metadata sidebar.
+- [x] Added visitor analytics events pipeline: documented analytics rules/contracts, created raw `visit_events` storage and migration, added public ingest plus admin analytics APIs, wired browser-side blog reporting, and shipped a dedicated React admin analytics page.
 
 ## Blocked
 - None.

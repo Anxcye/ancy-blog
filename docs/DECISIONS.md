@@ -50,3 +50,13 @@
   - `frontend-blog` remains an SSR Node service instead of static export.
   - `frontend-admin-react` is built as static assets and served behind the same reverse proxy layer.
   - Cloudflare caching and access policies should treat `example.com/api/*` and `admin.example.com/*` as dynamic/non-cacheable paths.
+
+## ADR-008: Visitor Analytics Collection Model
+- Date: 2026-03-20
+- Decision: Collect visitor analytics through an explicit browser-reported events API instead of deriving page metrics from generic backend request logs.
+- Rationale: The public blog runs with Nuxt SSR and server-side data prefetch, so counting backend content API calls would overstate real page visits and blur browser traffic with server/internal fetches.
+- Consequences:
+  - The blog frontend must report page events from the browser after route entry.
+  - The backend remains responsible for IP capture, user-agent parsing, bot detection, and persistent storage.
+  - Raw analytics events are queryable by admins as first-class application data.
+  - HTTP access logs remain optional for debugging/ops, but they are not the product analytics source of truth.

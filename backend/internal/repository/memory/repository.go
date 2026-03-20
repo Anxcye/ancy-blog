@@ -22,6 +22,7 @@ type Repository struct {
 	moments  map[string]domain.Moment
 	comments map[string]domain.Comment
 	links    map[string]domain.Link
+	visits   map[string]domain.VisitEvent
 
 	articleTranslations map[string]map[string]translationRecord
 	momentTranslations  map[string]map[string]translationRecord
@@ -56,6 +57,7 @@ func NewRepository() *Repository {
 		moments:             make(map[string]domain.Moment),
 		comments:            make(map[string]domain.Comment),
 		links:               make(map[string]domain.Link),
+		visits:              make(map[string]domain.VisitEvent),
 		articleTranslations: make(map[string]map[string]translationRecord),
 		momentTranslations:  make(map[string]map[string]translationRecord),
 		categories: []domain.Category{
@@ -1501,4 +1503,293 @@ func paginateTranslationContents(items []domain.TranslationContent, page, pageSi
 		end = total
 	}
 	return items[start:end], total
+}
+
+func (r *Repository) CreateVisitEvents(events []domain.VisitEvent) (domain.AnalyticsIngestResult, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	result := domain.AnalyticsIngestResult{}
+	now := time.Now().UTC()
+	for _, event := range events {
+		if _, exists := r.visits[event.EventID]; exists {
+			result.Deduplicated++
+			continue
+		}
+		event.ID = uuid.NewString()
+		event.ReceivedAt = now
+		event.CreatedAt = now
+		r.visits[event.EventID] = event
+		result.Accepted++
+	}
+	return result, nil
+}
+
+func (r *Repository) GetAnalyticsOverview(days int) (domain.AnalyticsOverview, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	start, end := analyticsRange(days)
+	overview := domain.AnalyticsOverview{
+		RangeStart:      start,
+		RangeEnd:        end.Add(-time.Nanosecond),
+		TopPaths:        []domain.AnalyticsPathStat{},
+		TopReferrers:    []domain.AnalyticsReferrerStat{},
+		DeviceBreakdown: []domain.AnalyticsDeviceStat{},
+		Daily:           []domain.AnalyticsDailyStat{},
+	}
+
+	pageViews := make([]domain.VisitEvent, 0)
+	visitorSet := map[string]struct{}{}
+	ipSet := map[string]struct{}{}
+	sessionSet := map[string]struct{}{}
+	pathAgg := map[string]*domain.AnalyticsPathStat{}
+	refAgg := map[string]int{}
+	deviceAgg := map[string]int{}
+	dailyAgg := map[string]*domain.AnalyticsDailyStat{}
+
+	for day := start; day.Before(end); day = day.Add(24 * time.Hour) {
+		key := day.Format("2006-01-02")
+		dailyAgg[key] = &domain.AnalyticsDailyStat{Date: key}
+	}
+
+	for _, event := range r.visits {
+		if event.EventType != "page_view" || event.OccurredAt.Before(start) || !event.OccurredAt.Before(end) {
+			continue
+		}
+		pageViews = append(pageViews, event)
+		visitorSet[event.VisitorID] = struct{}{}
+		ipSet[event.IP] = struct{}{}
+		sessionSet[event.SessionID] = struct{}{}
+
+		pathKey := strings.Join([]string{event.Path, event.ContentType, event.ContentID, event.ContentSlug}, "\x00")
+		item := pathAgg[pathKey]
+		if item == nil {
+			item = &domain.AnalyticsPathStat{
+				Path:        event.Path,
+				ContentType: event.ContentType,
+				ContentID:   event.ContentID,
+				ContentSlug: event.ContentSlug,
+			}
+			pathAgg[pathKey] = item
+		}
+		item.PageViews++
+		if item.LastVisitedAt.Before(event.OccurredAt) {
+			item.LastVisitedAt = event.OccurredAt
+		}
+
+		if event.ReferrerHost != "" {
+			refAgg[event.ReferrerHost]++
+		}
+		device := event.DeviceType
+		if device == "" {
+			device = "unknown"
+		}
+		deviceAgg[device]++
+
+		if day := dailyAgg[event.OccurredAt.UTC().Format("2006-01-02")]; day != nil {
+			day.PageViews++
+		}
+	}
+
+	for _, stat := range pathAgg {
+		uniqueVisitors := map[string]struct{}{}
+		uniqueIPs := map[string]struct{}{}
+		for _, event := range pageViews {
+			if event.Path == stat.Path && event.ContentType == stat.ContentType && event.ContentID == stat.ContentID && event.ContentSlug == stat.ContentSlug {
+				uniqueVisitors[event.VisitorID] = struct{}{}
+				uniqueIPs[event.IP] = struct{}{}
+			}
+		}
+		stat.UniqueVisitors = len(uniqueVisitors)
+		stat.UniqueIPs = len(uniqueIPs)
+		overview.TopPaths = append(overview.TopPaths, *stat)
+	}
+
+	for host, count := range refAgg {
+		overview.TopReferrers = append(overview.TopReferrers, domain.AnalyticsReferrerStat{ReferrerHost: host, Visits: count})
+	}
+	for device, count := range deviceAgg {
+		overview.DeviceBreakdown = append(overview.DeviceBreakdown, domain.AnalyticsDeviceStat{DeviceType: device, Visits: count})
+	}
+	for _, day := range dailyAgg {
+		uniqueVisitors := map[string]struct{}{}
+		uniqueIPs := map[string]struct{}{}
+		for _, event := range pageViews {
+			if event.OccurredAt.UTC().Format("2006-01-02") == day.Date {
+				uniqueVisitors[event.VisitorID] = struct{}{}
+				uniqueIPs[event.IP] = struct{}{}
+			}
+		}
+		day.UniqueVisitors = len(uniqueVisitors)
+		day.UniqueIPs = len(uniqueIPs)
+		overview.Daily = append(overview.Daily, *day)
+	}
+
+	sort.Slice(overview.TopPaths, func(i, j int) bool {
+		if overview.TopPaths[i].PageViews == overview.TopPaths[j].PageViews {
+			return overview.TopPaths[i].LastVisitedAt.After(overview.TopPaths[j].LastVisitedAt)
+		}
+		return overview.TopPaths[i].PageViews > overview.TopPaths[j].PageViews
+	})
+	sort.Slice(overview.TopReferrers, func(i, j int) bool { return overview.TopReferrers[i].Visits > overview.TopReferrers[j].Visits })
+	sort.Slice(overview.DeviceBreakdown, func(i, j int) bool { return overview.DeviceBreakdown[i].Visits > overview.DeviceBreakdown[j].Visits })
+	sort.Slice(overview.Daily, func(i, j int) bool { return overview.Daily[i].Date < overview.Daily[j].Date })
+
+	if len(overview.TopPaths) > 10 {
+		overview.TopPaths = overview.TopPaths[:10]
+	}
+	if len(overview.TopReferrers) > 10 {
+		overview.TopReferrers = overview.TopReferrers[:10]
+	}
+	if len(overview.DeviceBreakdown) > 10 {
+		overview.DeviceBreakdown = overview.DeviceBreakdown[:10]
+	}
+
+	overview.PageViews = len(pageViews)
+	overview.UniqueVisitors = len(visitorSet)
+	overview.UniqueIPs = len(ipSet)
+	overview.UniqueSessions = len(sessionSet)
+	return overview, nil
+}
+
+func (r *Repository) ListAnalyticsPages(page, pageSize, days int, path, contentType string) ([]domain.AnalyticsPathStat, int, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	start, end := analyticsRange(days)
+	aggregated := map[string]*domain.AnalyticsPathStat{}
+	visitorSets := map[string]map[string]struct{}{}
+	ipSets := map[string]map[string]struct{}{}
+
+	for _, event := range r.visits {
+		if event.EventType != "page_view" || event.OccurredAt.Before(start) || !event.OccurredAt.Before(end) {
+			continue
+		}
+		if path != "" && !strings.Contains(strings.ToLower(event.Path), strings.ToLower(path)) {
+			continue
+		}
+		if contentType != "" && event.ContentType != contentType {
+			continue
+		}
+		key := strings.Join([]string{event.Path, event.ContentType, event.ContentID, event.ContentSlug}, "\x00")
+		item := aggregated[key]
+		if item == nil {
+			item = &domain.AnalyticsPathStat{
+				Path:        event.Path,
+				ContentType: event.ContentType,
+				ContentID:   event.ContentID,
+				ContentSlug: event.ContentSlug,
+			}
+			aggregated[key] = item
+			visitorSets[key] = map[string]struct{}{}
+			ipSets[key] = map[string]struct{}{}
+		}
+		item.PageViews++
+		visitorSets[key][event.VisitorID] = struct{}{}
+		ipSets[key][event.IP] = struct{}{}
+		if item.LastVisitedAt.Before(event.OccurredAt) {
+			item.LastVisitedAt = event.OccurredAt
+		}
+	}
+
+	items := make([]domain.AnalyticsPathStat, 0, len(aggregated))
+	for key, item := range aggregated {
+		item.UniqueVisitors = len(visitorSets[key])
+		item.UniqueIPs = len(ipSets[key])
+		items = append(items, *item)
+	}
+	sort.Slice(items, func(i, j int) bool {
+		if items[i].PageViews == items[j].PageViews {
+			return items[i].LastVisitedAt.After(items[j].LastVisitedAt)
+		}
+		return items[i].PageViews > items[j].PageViews
+	})
+	return paginateAnalyticsPages(items, page, pageSize), len(items), nil
+}
+
+func (r *Repository) ListAnalyticsVisits(page, pageSize, days int, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot string) ([]domain.VisitEvent, int, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	start, end := analyticsRange(days)
+	items := make([]domain.VisitEvent, 0)
+	for _, event := range r.visits {
+		if event.OccurredAt.Before(start) || !event.OccurredAt.Before(end) {
+			continue
+		}
+		if path != "" && !strings.Contains(strings.ToLower(event.Path), strings.ToLower(path)) {
+			continue
+		}
+		if eventType != "" && event.EventType != eventType {
+			continue
+		}
+		if visitorID != "" && event.VisitorID != visitorID {
+			continue
+		}
+		if sessionID != "" && event.SessionID != sessionID {
+			continue
+		}
+		if contentType != "" && event.ContentType != contentType {
+			continue
+		}
+		if ip != "" && event.IP != ip {
+			continue
+		}
+		if deviceType != "" && event.DeviceType != deviceType {
+			continue
+		}
+		if browserName != "" && event.BrowserName != browserName {
+			continue
+		}
+		if osName != "" && event.OSName != osName {
+			continue
+		}
+		switch strings.ToLower(strings.TrimSpace(isBot)) {
+		case "true", "1", "yes":
+			if !event.IsBot {
+				continue
+			}
+		case "false", "0", "no":
+			if event.IsBot {
+				continue
+			}
+		}
+		items = append(items, event)
+	}
+	sort.Slice(items, func(i, j int) bool { return items[i].OccurredAt.After(items[j].OccurredAt) })
+	return paginateVisitEvents(items, page, pageSize), len(items), nil
+}
+
+func paginateAnalyticsPages(items []domain.AnalyticsPathStat, page, pageSize int) []domain.AnalyticsPathStat {
+	page, pageSize = normalizePagination(page, pageSize)
+	start := (page - 1) * pageSize
+	if start >= len(items) {
+		return []domain.AnalyticsPathStat{}
+	}
+	end := start + pageSize
+	if end > len(items) {
+		end = len(items)
+	}
+	return items[start:end]
+}
+
+func paginateVisitEvents(items []domain.VisitEvent, page, pageSize int) []domain.VisitEvent {
+	page, pageSize = normalizePagination(page, pageSize)
+	start := (page - 1) * pageSize
+	if start >= len(items) {
+		return []domain.VisitEvent{}
+	}
+	end := start + pageSize
+	if end > len(items) {
+		end = len(items)
+	}
+	return items[start:end]
+}
+
+func analyticsRange(days int) (time.Time, time.Time) {
+	now := time.Now().UTC()
+	end := now.Truncate(24 * time.Hour).Add(24 * time.Hour)
+	start := end.AddDate(0, 0, -days)
+	return start, end
 }

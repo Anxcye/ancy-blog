@@ -370,6 +370,50 @@ Indexes/Constraints:
 - Index: `(locale, updated_at DESC)`
 - Index: `(status, published_at DESC, updated_at DESC)`
 
+## Table: `visit_events`
+Purpose: Store raw visitor analytics events for page-path tracking and admin analytics queries.
+
+Fields:
+- `id`
+- `event_id` (required, client-generated idempotency key)
+- `event_type` (`page_view | page_ping`)
+- `occurred_at` (required, client event time)
+- `received_at` (required, server ingest time)
+- `visitor_id` (required, anonymous persistent visitor identifier)
+- `session_id` (required, anonymous session identifier)
+- `path` (required, normalized public page path)
+- `route_name` (nullable)
+- `page_title` (nullable)
+- `referrer` (nullable)
+- `referrer_host` (nullable)
+- `content_type` (nullable, e.g. `article | moment | site`)
+- `content_id` (nullable, freeform id or slug for analytics grouping)
+- `content_slug` (nullable)
+- `locale` (nullable)
+- `screen_width` (nullable)
+- `screen_height` (nullable)
+- `viewport_width` (nullable)
+- `viewport_height` (nullable)
+- `timezone` (nullable)
+- `ip` (required, plaintext storage by project decision)
+- `user_agent` (nullable)
+- `device_type` (`desktop | mobile | tablet | bot | unknown`)
+- `browser_name` (nullable)
+- `os_name` (nullable)
+- `is_bot` (required, default false)
+- `created_at`
+
+Indexes/Constraints:
+- Unique: `event_id`
+- Index: `(occurred_at DESC)`
+- Index: `(event_type, occurred_at DESC)`
+- Index: `(path, occurred_at DESC)`
+- Index: `(visitor_id, occurred_at DESC)`
+- Index: `(session_id, occurred_at DESC)`
+- Index: `(content_type, content_id, occurred_at DESC)`
+- Index: `(ip, occurred_at DESC)`
+- Index: `(referrer_host, occurred_at DESC)`
+
 ## Table: `reactions`
 Purpose: Generic reaction records for article/comment (like/upvote/love/etc.).
 

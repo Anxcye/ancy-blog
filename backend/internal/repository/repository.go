@@ -105,6 +105,11 @@ type ContentRepository interface {
 	UpsertTranslationContent(sourceType, sourceID, locale, title, summary, content, status string, publishedAt time.Time, translatedByJobID string) (domain.TranslationContent, error)
 
 	ListTimeline(page, pageSize int, locale string) ([]domain.TimelineItem, int)
+
+	CreateVisitEvents(events []domain.VisitEvent) (domain.AnalyticsIngestResult, error)
+	GetAnalyticsOverview(days int) (domain.AnalyticsOverview, error)
+	ListAnalyticsPages(page, pageSize, days int, path, contentType string) ([]domain.AnalyticsPathStat, int, error)
+	ListAnalyticsVisits(page, pageSize, days int, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot string) ([]domain.VisitEvent, int, error)
 }
 
 // CredentialStore persists admin credentials independently of the in-memory session layer.

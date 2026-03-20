@@ -8,7 +8,6 @@ import (
 	"crypto/sha256"
 	"errors"
 	"fmt"
-	"net"
 	"net/http"
 	"strings"
 	"time"
@@ -22,11 +21,12 @@ import (
 )
 
 type PublicHandler struct {
-	articleService  *service.ArticleService
-	commentService  *service.CommentService
-	linkService     *service.LinkService
-	siteService     *service.SiteService
-	timelineService *service.TimelineService
+	articleService   *service.ArticleService
+	analyticsService *service.AnalyticsService
+	commentService   *service.CommentService
+	linkService      *service.LinkService
+	siteService      *service.SiteService
+	timelineService  *service.TimelineService
 }
 
 func NewPublicHandler(
@@ -45,27 +45,9 @@ func NewPublicHandler(
 	}
 }
 
-func clientIPFromRequest(c *gin.Context) string {
-	if ip := strings.TrimSpace(c.GetHeader("CF-Connecting-IP")); ip != "" {
-		if parsed := net.ParseIP(ip); parsed != nil {
-			return parsed.String()
-		}
-	}
-	if xff := strings.TrimSpace(c.GetHeader("X-Forwarded-For")); xff != "" {
-		parts := strings.Split(xff, ",")
-		for _, part := range parts {
-			ip := strings.TrimSpace(part)
-			if parsed := net.ParseIP(ip); parsed != nil {
-				return parsed.String()
-			}
-		}
-	}
-	if ip := strings.TrimSpace(c.GetHeader("X-Real-IP")); ip != "" {
-		if parsed := net.ParseIP(ip); parsed != nil {
-			return parsed.String()
-		}
-	}
-	return c.ClientIP()
+func (h *PublicHandler) WithAnalyticsService(analyticsService *service.AnalyticsService) *PublicHandler {
+	h.analyticsService = analyticsService
+	return h
 }
 
 func (h *PublicHandler) Articles(c *gin.Context) {
@@ -103,6 +85,63 @@ func (h *PublicHandler) ArticleByCategory(c *gin.Context) {
 	pageSize := getIntQuery(c, "pageSize", 10)
 	rows, total := h.articleService.ListPublishedArticles(page, pageSize, categorySlug, "", "post")
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.Article]{Total: total, Rows: rows}})
+}
+
+func (h *PublicHandler) AnalyticsEvents(c *gin.Context) {
+	if h.analyticsService == nil {
+		response.JSON(c, http.StatusServiceUnavailable, response.Envelope{Code: "SERVICE_UNAVAILABLE", Message: "analytics service unavailable"})
+		return
+	}
+	var req dto.AnalyticsEventsRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		badRequest(c, "VALIDATION_ERROR", "invalid request body")
+		return
+	}
+	if len(req.Events) == 0 {
+		badRequest(c, "VALIDATION_ERROR", "events are required")
+		return
+	}
+
+	clientIP := clientIPFromRequest(c)
+	userAgent := c.GetHeader("User-Agent")
+	deviceType, browserName, osName, isBot := inferUAProfile(userAgent)
+
+	events := make([]domain.VisitEvent, 0, len(req.Events))
+	for _, item := range req.Events {
+		events = append(events, domain.VisitEvent{
+			EventID:        item.EventID,
+			EventType:      item.EventType,
+			OccurredAt:     item.OccurredAt,
+			VisitorID:      item.VisitorID,
+			SessionID:      item.SessionID,
+			Path:           item.Path,
+			RouteName:      item.RouteName,
+			PageTitle:      item.PageTitle,
+			Referrer:       item.Referrer,
+			ContentType:    item.ContentType,
+			ContentID:      item.ContentID,
+			ContentSlug:    item.ContentSlug,
+			Locale:         item.Locale,
+			ScreenWidth:    item.ScreenWidth,
+			ScreenHeight:   item.ScreenHeight,
+			ViewportWidth:  item.ViewportWidth,
+			ViewportHeight: item.ViewportHeight,
+			Timezone:       item.Timezone,
+			IP:             clientIP,
+			UserAgent:      userAgent,
+			DeviceType:     deviceType,
+			BrowserName:    browserName,
+			OSName:         osName,
+			IsBot:          isBot,
+		})
+	}
+
+	result, err := h.analyticsService.RecordVisitEvents(events)
+	if err != nil {
+		badRequest(c, "VALIDATION_ERROR", err.Error())
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: result})
 }
 
 func (h *PublicHandler) Moments(c *gin.Context) {

@@ -185,3 +185,24 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 - Redis is acceleration only; database remains source of truth.
 
 - When deployed behind a reverse proxy or CDN, moderation IP capture should prefer the real visitor IP headers (for example `CF-Connecting-IP`) over proxy hop addresses.
+
+## Analytics Rules
+- Visitor analytics uses explicit event ingestion, not generic API access counting.
+- Public page-visit analytics must be reported by the blog frontend from the browser after route entry so SSR data prefetch does not inflate page views.
+- Initial analytics event types:
+  - `page_view` for page entry and route transitions
+  - `page_ping` for ongoing active-page heartbeat
+- The analytics ingest API accepts page context from the frontend and enriches events on the backend with:
+  - visitor IP
+  - user agent
+  - inferred device type
+  - inferred browser name
+  - inferred operating system
+  - bot flag
+- Analytics stores visitor IP in plaintext by project decision.
+- Analytics should persist each accepted event as a raw visit record so admins can inspect every visit and visited path.
+- Admin analytics must support:
+  - overview metrics (`PV`, `UV`, unique IPs, sessions)
+  - path-level aggregation
+  - raw visit/event browsing
+- Analytics is a product/statistics domain; HTTP request logs may still exist for operations or debugging, but they are not the source of truth for visitor metrics.

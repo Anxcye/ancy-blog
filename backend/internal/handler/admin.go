@@ -21,6 +21,7 @@ import (
 
 type AdminHandler struct {
 	articleService     *service.ArticleService
+	analyticsService   *service.AnalyticsService
 	commentService     *service.CommentService
 	linkService        *service.LinkService
 	siteService        *service.SiteService
@@ -53,6 +54,11 @@ func NewAdminHandler(
 		authService:        authService,
 		tmdbService:        tmdbService,
 	}
+}
+
+func (h *AdminHandler) WithAnalyticsService(analyticsService *service.AnalyticsService) *AdminHandler {
+	h.analyticsService = analyticsService
+	return h
 }
 
 func (h *AdminHandler) CreateArticle(c *gin.Context) {
@@ -337,6 +343,66 @@ func (h *AdminHandler) CommentReply(c *gin.Context) {
 		return
 	}
 	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: comment})
+}
+
+func (h *AdminHandler) AnalyticsOverview(c *gin.Context) {
+	if h.analyticsService == nil {
+		response.JSON(c, http.StatusServiceUnavailable, response.Envelope{Code: "SERVICE_UNAVAILABLE", Message: "analytics service unavailable"})
+		return
+	}
+	days := getIntQuery(c, "days", 7)
+	overview, err := h.analyticsService.GetAnalyticsOverview(days)
+	if err != nil {
+		response.JSON(c, http.StatusInternalServerError, response.Envelope{Code: "INTERNAL_ERROR", Message: "failed to load analytics overview"})
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: overview})
+}
+
+func (h *AdminHandler) AnalyticsPages(c *gin.Context) {
+	if h.analyticsService == nil {
+		response.JSON(c, http.StatusServiceUnavailable, response.Envelope{Code: "SERVICE_UNAVAILABLE", Message: "analytics service unavailable"})
+		return
+	}
+	page := getIntQuery(c, "page", 1)
+	pageSize := getIntQuery(c, "pageSize", 20)
+	days := getIntQuery(c, "days", 7)
+	path := c.Query("path")
+	contentType := c.Query("contentType")
+
+	rows, total, err := h.analyticsService.ListAnalyticsPages(page, pageSize, days, path, contentType)
+	if err != nil {
+		response.JSON(c, http.StatusInternalServerError, response.Envelope{Code: "INTERNAL_ERROR", Message: "failed to load analytics pages"})
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.AnalyticsPathStat]{Total: total, Rows: rows}})
+}
+
+func (h *AdminHandler) AnalyticsVisits(c *gin.Context) {
+	if h.analyticsService == nil {
+		response.JSON(c, http.StatusServiceUnavailable, response.Envelope{Code: "SERVICE_UNAVAILABLE", Message: "analytics service unavailable"})
+		return
+	}
+	page := getIntQuery(c, "page", 1)
+	pageSize := getIntQuery(c, "pageSize", 20)
+	days := getIntQuery(c, "days", 7)
+	path := c.Query("path")
+	eventType := c.Query("eventType")
+	visitorID := c.Query("visitorId")
+	sessionID := c.Query("sessionId")
+	contentType := c.Query("contentType")
+	ip := c.Query("ip")
+	deviceType := c.Query("deviceType")
+	browserName := c.Query("browserName")
+	osName := c.Query("osName")
+	isBot := c.Query("isBot")
+
+	rows, total, err := h.analyticsService.ListAnalyticsVisits(page, pageSize, days, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot)
+	if err != nil {
+		response.JSON(c, http.StatusInternalServerError, response.Envelope{Code: "INTERNAL_ERROR", Message: "failed to load analytics visits"})
+		return
+	}
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: pageResult[domain.VisitEvent]{Total: total, Rows: rows}})
 }
 
 func (h *AdminHandler) ListLinkSubmissions(c *gin.Context) {
