@@ -17,6 +17,7 @@ type Config struct {
 	Auth        AuthConfig
 	DB          DBConfig
 	Redis       RedisConfig
+	Analytics   AnalyticsConfig
 	Translation TranslationConfig
 	CORS        CORSConfig
 }
@@ -67,6 +68,11 @@ type TranslationConfig struct {
 	PollIntervalMS int
 	BackoffBaseMS  int
 	BackoffMaxMS   int
+}
+
+type AnalyticsConfig struct {
+	IP2RegionV4XDBPath string
+	IP2RegionV6XDBPath string
 }
 
 func Load() (*Config, error) {
@@ -154,6 +160,10 @@ func Load() (*Config, error) {
 			DB:           redisDB,
 			PoolSize:     redisPoolSize,
 			MinIdleConns: redisMinIdle,
+		},
+		Analytics: AnalyticsConfig{
+			IP2RegionV4XDBPath: strings.TrimSpace(getEnv("IP2REGION_V4_XDB_PATH", "")),
+			IP2RegionV6XDBPath: strings.TrimSpace(getEnv("IP2REGION_V6_XDB_PATH", "")),
 		},
 		Translation: TranslationConfig{
 			WorkerEnabled:  parseBool(getEnv("TRANSLATION_WORKER_ENABLED", "true")),

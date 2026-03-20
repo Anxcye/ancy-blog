@@ -14,6 +14,7 @@ import (
 	rediscache "github.com/anxcye/ancy-blog/backend/internal/cache/redis"
 	"github.com/anxcye/ancy-blog/backend/internal/config"
 	"github.com/anxcye/ancy-blog/backend/internal/handler"
+	"github.com/anxcye/ancy-blog/backend/internal/ipgeo"
 	"github.com/anxcye/ancy-blog/backend/internal/repository"
 	"github.com/anxcye/ancy-blog/backend/internal/repository/postgres"
 	"github.com/anxcye/ancy-blog/backend/internal/service"
@@ -59,7 +60,19 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 		}
 	}
 
-	contentService := service.NewContentService(repo, cacheClient)
+	var ipResolver service.IPRegionResolver
+	if cfg.Analytics.IP2RegionV4XDBPath != "" || cfg.Analytics.IP2RegionV6XDBPath != "" {
+		ipResolver = ipgeo.NewIP2RegionResolver(cfg.Analytics.IP2RegionV4XDBPath, cfg.Analytics.IP2RegionV6XDBPath)
+		logger.Info(
+			"ip2region resolver configured",
+			"ipv4_path",
+			cfg.Analytics.IP2RegionV4XDBPath,
+			"ipv6_path",
+			cfg.Analytics.IP2RegionV6XDBPath,
+		)
+	}
+
+	contentService := service.NewContentService(repo, cacheClient).WithIPRegionResolver(ipResolver)
 	articleService := service.NewArticleService(contentService)
 	commentService := service.NewCommentService(contentService)
 	linkService := service.NewLinkService(contentService)

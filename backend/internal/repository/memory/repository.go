@@ -23,6 +23,7 @@ type Repository struct {
 	comments map[string]domain.Comment
 	links    map[string]domain.Link
 	visits   map[string]domain.VisitEvent
+	ipProfs  map[string]domain.IPProfile
 
 	articleTranslations map[string]map[string]translationRecord
 	momentTranslations  map[string]map[string]translationRecord
@@ -58,6 +59,7 @@ func NewRepository() *Repository {
 		comments:            make(map[string]domain.Comment),
 		links:               make(map[string]domain.Link),
 		visits:              make(map[string]domain.VisitEvent),
+		ipProfs:             make(map[string]domain.IPProfile),
 		articleTranslations: make(map[string]map[string]translationRecord),
 		momentTranslations:  make(map[string]map[string]translationRecord),
 		categories: []domain.Category{
@@ -1525,6 +1527,33 @@ func (r *Repository) CreateVisitEvents(events []domain.VisitEvent) (domain.Analy
 	return result, nil
 }
 
+func (r *Repository) GetIPProfile(ip string) (domain.IPProfile, bool, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
+	item, ok := r.ipProfs[strings.TrimSpace(ip)]
+	return item, ok, nil
+}
+
+func (r *Repository) UpsertIPProfile(profile domain.IPProfile) (domain.IPProfile, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	now := time.Now().UTC()
+	profile.IP = strings.TrimSpace(profile.IP)
+	if existing, ok := r.ipProfs[profile.IP]; ok {
+		profile.CreatedAt = existing.CreatedAt
+	} else {
+		profile.CreatedAt = now
+	}
+	if profile.ResolvedAt.IsZero() {
+		profile.ResolvedAt = now
+	}
+	profile.UpdatedAt = now
+	r.ipProfs[profile.IP] = profile
+	return profile, nil
+}
+
 func (r *Repository) GetAnalyticsOverview(days int) (domain.AnalyticsOverview, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
@@ -1708,13 +1737,14 @@ func (r *Repository) ListAnalyticsPages(page, pageSize, days int, path, contentT
 	return paginateAnalyticsPages(items, page, pageSize), len(items), nil
 }
 
-func (r *Repository) ListAnalyticsVisits(page, pageSize, days int, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot string) ([]domain.VisitEvent, int, error) {
+func (r *Repository) ListAnalyticsVisits(page, pageSize, days int, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot, countryName, regionName, cityName, isp string) ([]domain.VisitEvent, int, error) {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 
 	start, end := analyticsRange(days)
 	items := make([]domain.VisitEvent, 0)
 	for _, event := range r.visits {
+		event = hydrateVisitEventProfile(event, r.ipProfs[event.IP])
 		if event.OccurredAt.Before(start) || !event.OccurredAt.Before(end) {
 			continue
 		}
@@ -1745,6 +1775,18 @@ func (r *Repository) ListAnalyticsVisits(page, pageSize, days int, path, eventTy
 		if osName != "" && event.OSName != osName {
 			continue
 		}
+		if countryName != "" && event.CountryName != countryName {
+			continue
+		}
+		if regionName != "" && event.RegionName != regionName {
+			continue
+		}
+		if cityName != "" && event.CityName != cityName {
+			continue
+		}
+		if isp != "" && event.ISP != isp {
+			continue
+		}
 		switch strings.ToLower(strings.TrimSpace(isBot)) {
 		case "true", "1", "yes":
 			if !event.IsBot {
@@ -1759,6 +1801,25 @@ func (r *Repository) ListAnalyticsVisits(page, pageSize, days int, path, eventTy
 	}
 	sort.Slice(items, func(i, j int) bool { return items[i].OccurredAt.After(items[j].OccurredAt) })
 	return paginateVisitEvents(items, page, pageSize), len(items), nil
+}
+
+func hydrateVisitEventProfile(event domain.VisitEvent, profile domain.IPProfile) domain.VisitEvent {
+	if event.CountryCode == "" {
+		event.CountryCode = profile.CountryCode
+	}
+	if event.CountryName == "" {
+		event.CountryName = profile.CountryName
+	}
+	if event.RegionName == "" {
+		event.RegionName = profile.RegionName
+	}
+	if event.CityName == "" {
+		event.CityName = profile.CityName
+	}
+	if event.ISP == "" {
+		event.ISP = profile.ISP
+	}
+	return event
 }
 
 func paginateAnalyticsPages(items []domain.AnalyticsPathStat, page, pageSize int) []domain.AnalyticsPathStat {

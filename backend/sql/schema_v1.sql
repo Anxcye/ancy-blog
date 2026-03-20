@@ -394,6 +394,29 @@ CREATE INDEX IF NOT EXISTS idx_visit_events_ip_occurred_at
 CREATE INDEX IF NOT EXISTS idx_visit_events_referrer_host_occurred_at
     ON visit_events (referrer_host, occurred_at DESC);
 
+CREATE TABLE IF NOT EXISTS ip_profiles (
+    ip VARCHAR(64) PRIMARY KEY,
+    country_code VARCHAR(16),
+    country_name VARCHAR(128),
+    region_name VARCHAR(128),
+    city_name VARCHAR(128),
+    isp VARCHAR(128),
+    raw_region VARCHAR(255),
+    source VARCHAR(32) NOT NULL DEFAULT 'ip2region',
+    resolved_at TIMESTAMPTZ NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_ip_profiles_country_name
+    ON ip_profiles (country_name);
+CREATE INDEX IF NOT EXISTS idx_ip_profiles_region_name
+    ON ip_profiles (region_name);
+CREATE INDEX IF NOT EXISTS idx_ip_profiles_city_name
+    ON ip_profiles (city_name);
+CREATE INDEX IF NOT EXISTS idx_ip_profiles_isp
+    ON ip_profiles (isp);
+
 -- =========================
 -- Optional seed data
 -- =========================

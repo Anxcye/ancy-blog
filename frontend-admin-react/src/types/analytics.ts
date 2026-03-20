@@ -69,6 +69,11 @@ export interface AnalyticsVisit {
   viewportHeight?: number;
   timezone?: string;
   ip: string;
+  countryCode?: string;
+  countryName?: string;
+  regionName?: string;
+  cityName?: string;
+  isp?: string;
   userAgent?: string;
   deviceType?: string;
   browserName?: string;
@@ -93,4 +98,8 @@ export interface AnalyticsVisitListParams extends AnalyticsPageListParams {
   browserName?: string;
   osName?: string;
   isBot?: string;
+  countryName?: string;
+  regionName?: string;
+  cityName?: string;
+  isp?: string;
 }

@@ -396,8 +396,12 @@ func (h *AdminHandler) AnalyticsVisits(c *gin.Context) {
 	browserName := c.Query("browserName")
 	osName := c.Query("osName")
 	isBot := c.Query("isBot")
+	countryName := c.Query("countryName")
+	regionName := c.Query("regionName")
+	cityName := c.Query("cityName")
+	isp := c.Query("isp")
 
-	rows, total, err := h.analyticsService.ListAnalyticsVisits(page, pageSize, days, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot)
+	rows, total, err := h.analyticsService.ListAnalyticsVisits(page, pageSize, days, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot, countryName, regionName, cityName, isp)
 	if err != nil {
 		response.JSON(c, http.StatusInternalServerError, response.Envelope{Code: "INTERNAL_ERROR", Message: "failed to load analytics visits"})
 		return

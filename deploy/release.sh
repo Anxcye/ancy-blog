@@ -15,6 +15,8 @@ if [[ ! -f .env ]]; then
   exit 1
 fi
 
+./sync-ip2region.sh
+
 docker compose --env-file .env pull backend frontend-blog admin
 docker compose --env-file .env up -d postgres redis
 docker compose --env-file .env run --rm backend /app/migrate -action up

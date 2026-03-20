@@ -821,3 +821,13 @@
   - the raw visit table now provides a per-row detail action.
   - added an analytics visit detail drawer showing full `IP`, `userAgent`, referrer, visitor/session ids, route/page metadata, locale/timezone, and screen/viewport dimensions.
   - validated the UI change with `pnpm --dir frontend-admin-react exec tsc -b --pretty false`.
+- Added offline IP geography enrichment for analytics:
+  - introduced migration `000021_ip_profiles` and schema updates for cached IP-to-region metadata (`country`, `region`, `city`, `ISP`) keyed by plaintext IP.
+  - added separate `IP2REGION_V4_XDB_PATH` / `IP2REGION_V6_XDB_PATH` backend configuration and an `ip2region`-backed resolver that reads xdb files from disk without loading them fully into memory.
+  - analytics ingest now best-effort caches lookup results, and admin raw-visit queries can filter by `countryName`, `regionName`, `cityName`, and `isp`.
+  - React admin analytics now displays visit geography in the list and detail drawer, and exposes corresponding filter inputs.
+  - `.gitignore` now excludes runtime `backend/runtime-data/ip/*.xdb` files so the xdb database is managed outside git.
+- Automated ip2region runtime data sync:
+  - added `deploy/sync-ip2region.sh` to download or refresh the official `ip2region_v4.xdb` and `ip2region_v6.xdb` files into `backend/runtime-data/ip/`.
+  - wired `deploy/release.sh` to sync the xdb files before image pull and container restart, so future deploy/update flows automatically keep the runtime data in place.
+  - mounted `backend/runtime-data/ip/` into the backend container and documented the new env knobs in deployment and backend README files.

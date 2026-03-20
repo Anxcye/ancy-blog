@@ -111,12 +111,15 @@ export function AnalyticsPage(): ReactElement {
     {
       title: '来源',
       key: 'source',
-      width: 180,
+      width: 220,
       render: (_value, record) => (
         <Space direction="vertical" size={0}>
           <Typography.Text>{record.ip}</Typography.Text>
           <Typography.Text type="secondary" style={{ fontSize: 12 }}>
             {record.referrerHost || 'direct'}
+          </Typography.Text>
+          <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+            {[record.countryName, record.regionName, record.cityName].filter(Boolean).join(' / ') || '—'}
           </Typography.Text>
         </Space>
       ),
@@ -377,6 +380,38 @@ export function AnalyticsPage(): ReactElement {
                   ]}
                 />
               </Col>
+              <Col xs={24} md={8} xl={4}>
+                <Input
+                  allowClear
+                  placeholder="国家"
+                  value={draftFilters.countryName}
+                  onChange={(e) => setDraftFilters((prev) => ({ ...prev, countryName: e.target.value || undefined }))}
+                />
+              </Col>
+              <Col xs={24} md={8} xl={4}>
+                <Input
+                  allowClear
+                  placeholder="省/州"
+                  value={draftFilters.regionName}
+                  onChange={(e) => setDraftFilters((prev) => ({ ...prev, regionName: e.target.value || undefined }))}
+                />
+              </Col>
+              <Col xs={24} md={8} xl={4}>
+                <Input
+                  allowClear
+                  placeholder="城市"
+                  value={draftFilters.cityName}
+                  onChange={(e) => setDraftFilters((prev) => ({ ...prev, cityName: e.target.value || undefined }))}
+                />
+              </Col>
+              <Col xs={24} md={8} xl={4}>
+                <Input
+                  allowClear
+                  placeholder="ISP"
+                  value={draftFilters.isp}
+                  onChange={(e) => setDraftFilters((prev) => ({ ...prev, isp: e.target.value || undefined }))}
+                />
+              </Col>
               <Col xs={24} md={24} xl={8}>
                 <Space>
                   <Button
@@ -439,6 +474,11 @@ export function AnalyticsPage(): ReactElement {
                   <Typography.Text code>{activeVisit.sessionId}</Typography.Text>
                 </Descriptions.Item>
                 <Descriptions.Item label="IP">{activeVisit.ip || '—'}</Descriptions.Item>
+                <Descriptions.Item label="归属地">
+                  {[activeVisit.countryName, activeVisit.regionName, activeVisit.cityName].filter(Boolean).join(' / ') || '—'}
+                </Descriptions.Item>
+                <Descriptions.Item label="国家代码">{activeVisit.countryCode || '—'}</Descriptions.Item>
+                <Descriptions.Item label="ISP">{activeVisit.isp || '—'}</Descriptions.Item>
                 <Descriptions.Item label="来源页面">{activeVisit.referrer || '—'}</Descriptions.Item>
                 <Descriptions.Item label="来源主机">{activeVisit.referrerHost || 'direct'}</Descriptions.Item>
                 <Descriptions.Item label="设备画像">

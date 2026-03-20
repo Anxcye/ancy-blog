@@ -115,6 +115,7 @@
 - [x] Fixed translation-content management usability in `frontend-admin-react`: source metadata is exposed in translation rows, list editing now loads full translation detail, and translation rows use stable composite keys instead of a nonexistent `id` field.
 - [x] Restored AI disclosure editing in the React admin article editor by wiring `aiAssistLevel` into form defaults, edit hydration, and the metadata sidebar.
 - [x] Added visitor analytics events pipeline: documented analytics rules/contracts, created raw `visit_events` storage and migration, added public ingest plus admin analytics APIs, wired browser-side blog reporting, and shipped a dedicated React admin analytics page.
+- [x] Added offline IP geography enrichment for analytics: introduced cached `ip_profiles` storage and migration, wired `ip2region` xdb lookup configuration, and enabled admin filtering/display for country/region/city/ISP on raw visits.
 
 ## Blocked
 - None.

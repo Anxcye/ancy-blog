@@ -43,6 +43,7 @@ yarn-error.log*
 # Build outputs
 build/
 out/
+backend/runtime-data/ip/*.xdb
 
 .claude/
 # Deploy local overrides

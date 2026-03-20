@@ -40,11 +40,15 @@ services:
       DB_HOST: postgres
       DB_PORT: 5432
       REDIS_ADDR: redis:6379
+      IP2REGION_V4_XDB_PATH: ${IP2REGION_V4_XDB_PATH:-/app/runtime-data/ip/ip2region_v4.xdb}
+      IP2REGION_V6_XDB_PATH: ${IP2REGION_V6_XDB_PATH:-/app/runtime-data/ip/ip2region_v6.xdb}
     depends_on:
       postgres:
         condition: service_healthy
       redis:
         condition: service_started
+    volumes:
+      - ../backend/runtime-data/ip:/app/runtime-data/ip:ro
     networks:
       - edge
       - data

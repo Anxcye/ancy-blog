@@ -199,10 +199,12 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
   - inferred browser name
   - inferred operating system
   - bot flag
+- Analytics may enrich visitor IPs into cached geographic metadata (`country`, `region`, `city`, `ISP`) through an offline IP database.
 - Analytics stores visitor IP in plaintext by project decision.
 - Analytics should persist each accepted event as a raw visit record so admins can inspect every visit and visited path.
 - Admin analytics must support:
   - overview metrics (`PV`, `UV`, unique IPs, sessions)
   - path-level aggregation
   - raw visit/event browsing
+- Geographic filtering depends on cached offline IP lookup data and is best-effort rather than guaranteed accurate.
 - Analytics is a product/statistics domain; HTTP request logs may still exist for operations or debugging, but they are not the source of truth for visitor metrics.

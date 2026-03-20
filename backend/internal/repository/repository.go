@@ -107,9 +107,11 @@ type ContentRepository interface {
 	ListTimeline(page, pageSize int, locale string) ([]domain.TimelineItem, int)
 
 	CreateVisitEvents(events []domain.VisitEvent) (domain.AnalyticsIngestResult, error)
+	GetIPProfile(ip string) (domain.IPProfile, bool, error)
+	UpsertIPProfile(profile domain.IPProfile) (domain.IPProfile, error)
 	GetAnalyticsOverview(days int) (domain.AnalyticsOverview, error)
 	ListAnalyticsPages(page, pageSize, days int, path, contentType string) ([]domain.AnalyticsPathStat, int, error)
-	ListAnalyticsVisits(page, pageSize, days int, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot string) ([]domain.VisitEvent, int, error)
+	ListAnalyticsVisits(page, pageSize, days int, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot, countryName, regionName, cityName, isp string) ([]domain.VisitEvent, int, error)
 }
 
 // CredentialStore persists admin credentials independently of the in-memory session layer.

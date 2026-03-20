@@ -315,8 +315,8 @@
 - Method: GET
 - Path: /api/v1/admin/analytics/visits
 - Auth Required: Yes
-- Request: query `page`, `pageSize`, `days` (default `7`), optional `path`, `eventType`, `visitorId`, `sessionId`, `contentType`, `ip`, `deviceType`, `browserName`, `osName`, `isBot`
-- Response: paginated raw analytics events including `path`, `occurredAt`, `visitorId`, `sessionId`, `ip`, `userAgent`, `deviceType`, `browserName`, `osName`, `referrer`, `contentType`, `contentId`, `contentSlug`
+- Request: query `page`, `pageSize`, `days` (default `7`), optional `path`, `eventType`, `visitorId`, `sessionId`, `contentType`, `ip`, `deviceType`, `browserName`, `osName`, `isBot`, `countryName`, `regionName`, `cityName`, `isp`
+- Response: paginated raw analytics events including `path`, `occurredAt`, `visitorId`, `sessionId`, `ip`, `countryCode`, `countryName`, `regionName`, `cityName`, `isp`, `userAgent`, `deviceType`, `browserName`, `osName`, `referrer`, `contentType`, `contentId`, `contentSlug`
 - Error Codes: AUTH_UNAUTHORIZED
 
 ## Public/Admin - Comments

@@ -49,12 +49,14 @@
 5. Create `deploy/caddy/certs/origin.pem` and `deploy/caddy/certs/origin.key` from the Cloudflare Origin Certificate.
 6. Copy `deploy/.env.example` to `deploy/.env` and fill all secrets. The default `IMAGE_NAMESPACE` is already `anxcye/ancy-blog`.
 7. If the server needs custom redirects or environment-specific Caddy rules, place them in `deploy/caddy/local/*.caddy`.
+8. Review the `ip2region` sync settings in `deploy/.env`. The default setup auto-downloads `ip2region_v4.xdb` and `ip2region_v6.xdb` into `backend/runtime-data/ip/` during each release.
 
 ## Initial Deploy
 ```bash
 cd deploy
 cp .env.example .env
 # edit .env
+./sync-ip2region.sh
 ./release.sh
 ```
 
@@ -65,6 +67,10 @@ IMAGE_NAMESPACE=anxcye/ancy-blog
 APP_IMAGE_TAG=v1.0.0
 ORIGIN_CERT_FILE=/etc/caddy/certs/origin.pem
 ORIGIN_KEY_FILE=/etc/caddy/certs/origin.key
+IP2REGION_AUTO_SYNC=true
+IP2REGION_SOURCE_REF=master
+IP2REGION_V4_XDB_PATH=/app/runtime-data/ip/ip2region_v4.xdb
+IP2REGION_V6_XDB_PATH=/app/runtime-data/ip/ip2region_v6.xdb
 ```
 
 ## Upgrade Flow
@@ -87,10 +93,11 @@ cd deploy
 2. `git pull --ff-only` or `git checkout <ref>`
 3. If `<ref>` is provided, update `deploy/.env` so `APP_IMAGE_TAG=<ref>`
 4. PostgreSQL backup
-5. Image pull from GHCR
-6. Database migration
-7. Service restart
-8. Basic smoke checks for blog, admin, and the public site API
+5. Sync `ip2region` runtime data files into `backend/runtime-data/ip/`
+6. Image pull from GHCR
+7. Database migration
+8. Service restart
+9. Basic smoke checks for blog, admin, and the public site API
 
 `deploy/release.sh` remains the lower-level script that only handles the container release itself.
 
@@ -125,6 +132,12 @@ Run the lower-level release script without pulling git:
 ```bash
 cd deploy
 ./release.sh
+```
+
+Refresh the offline IP databases manually:
+```bash
+cd deploy
+./sync-ip2region.sh
 ```
 
 Add server-local Caddy overrides without changing tracked files:
@@ -166,6 +179,12 @@ EOF
 
 ### Runtime
 - `CORS_ALLOWED_ORIGINS`
+- `IP2REGION_AUTO_SYNC`
+- `IP2REGION_SOURCE_REF`
+- `IP2REGION_V4_URL`
+- `IP2REGION_V6_URL`
+- `IP2REGION_V4_XDB_PATH`
+- `IP2REGION_V6_XDB_PATH`
 - `TRANSLATION_WORKER_ENABLED`
 - `TRANSLATION_WORKER_POLL_INTERVAL_MS`
 - `TRANSLATION_WORKER_BACKOFF_BASE_MS`

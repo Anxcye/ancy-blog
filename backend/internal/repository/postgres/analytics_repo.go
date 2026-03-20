@@ -14,13 +14,88 @@ import (
 )
 
 const analyticsVisitSelectColumns = `
-SELECT id::text, event_id, event_type, occurred_at, received_at, visitor_id, session_id, path,
-       COALESCE(route_name,''), COALESCE(page_title,''), COALESCE(referrer,''), COALESCE(referrer_host,''),
-       COALESCE(content_type,''), COALESCE(content_id,''), COALESCE(content_slug,''), COALESCE(locale,''),
-       COALESCE(screen_width,0), COALESCE(screen_height,0), COALESCE(viewport_width,0), COALESCE(viewport_height,0),
-       COALESCE(timezone,''), ip, COALESCE(user_agent,''), COALESCE(device_type,''), COALESCE(browser_name,''),
-       COALESCE(os_name,''), is_bot, created_at
-FROM visit_events`
+SELECT ve.id::text, ve.event_id, ve.event_type, ve.occurred_at, ve.received_at, ve.visitor_id, ve.session_id, ve.path,
+       COALESCE(ve.route_name,''), COALESCE(ve.page_title,''), COALESCE(ve.referrer,''), COALESCE(ve.referrer_host,''),
+       COALESCE(ve.content_type,''), COALESCE(ve.content_id,''), COALESCE(ve.content_slug,''), COALESCE(ve.locale,''),
+       COALESCE(ve.screen_width,0), COALESCE(ve.screen_height,0), COALESCE(ve.viewport_width,0), COALESCE(ve.viewport_height,0),
+       COALESCE(ve.timezone,''), ve.ip, COALESCE(ipf.country_code,''), COALESCE(ipf.country_name,''), COALESCE(ipf.region_name,''),
+       COALESCE(ipf.city_name,''), COALESCE(ipf.isp,''), COALESCE(ve.user_agent,''), COALESCE(ve.device_type,''), COALESCE(ve.browser_name,''),
+       COALESCE(ve.os_name,''), ve.is_bot, ve.created_at
+FROM visit_events ve
+LEFT JOIN ip_profiles ipf ON ipf.ip = ve.ip`
+
+func (r *Repository) GetIPProfile(ip string) (domain.IPProfile, bool, error) {
+	var item domain.IPProfile
+	err := r.db.QueryRow(`
+SELECT ip, COALESCE(country_code,''), COALESCE(country_name,''), COALESCE(region_name,''), COALESCE(city_name,''),
+       COALESCE(isp,''), COALESCE(raw_region,''), COALESCE(source,''), resolved_at, created_at, updated_at
+FROM ip_profiles
+WHERE ip = $1
+`, strings.TrimSpace(ip)).Scan(
+		&item.IP,
+		&item.CountryCode,
+		&item.CountryName,
+		&item.RegionName,
+		&item.CityName,
+		&item.ISP,
+		&item.RawRegion,
+		&item.Source,
+		&item.ResolvedAt,
+		&item.CreatedAt,
+		&item.UpdatedAt,
+	)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return domain.IPProfile{}, false, nil
+		}
+		return domain.IPProfile{}, false, err
+	}
+	return item, true, nil
+}
+
+func (r *Repository) UpsertIPProfile(profile domain.IPProfile) (domain.IPProfile, error) {
+	err := r.db.QueryRow(`
+INSERT INTO ip_profiles (
+    ip, country_code, country_name, region_name, city_name, isp, raw_region, source, resolved_at
+)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+ON CONFLICT (ip) DO UPDATE
+SET country_code = EXCLUDED.country_code,
+    country_name = EXCLUDED.country_name,
+    region_name = EXCLUDED.region_name,
+    city_name = EXCLUDED.city_name,
+    isp = EXCLUDED.isp,
+    raw_region = EXCLUDED.raw_region,
+    source = EXCLUDED.source,
+    resolved_at = EXCLUDED.resolved_at,
+    updated_at = NOW()
+RETURNING ip, COALESCE(country_code,''), COALESCE(country_name,''), COALESCE(region_name,''), COALESCE(city_name,''),
+          COALESCE(isp,''), COALESCE(raw_region,''), COALESCE(source,''), resolved_at, created_at, updated_at
+`,
+		strings.TrimSpace(profile.IP),
+		nullableString(profile.CountryCode),
+		nullableString(profile.CountryName),
+		nullableString(profile.RegionName),
+		nullableString(profile.CityName),
+		nullableString(profile.ISP),
+		nullableString(profile.RawRegion),
+		nullableString(profile.Source),
+		profile.ResolvedAt.UTC(),
+	).Scan(
+		&profile.IP,
+		&profile.CountryCode,
+		&profile.CountryName,
+		&profile.RegionName,
+		&profile.CityName,
+		&profile.ISP,
+		&profile.RawRegion,
+		&profile.Source,
+		&profile.ResolvedAt,
+		&profile.CreatedAt,
+		&profile.UpdatedAt,
+	)
+	return profile, err
+}
 
 func (r *Repository) CreateVisitEvents(events []domain.VisitEvent) (domain.AnalyticsIngestResult, error) {
 	result := domain.AnalyticsIngestResult{}
@@ -254,22 +329,22 @@ LIMIT $` + strconv.Itoa(len(queryArgs)-1) + ` OFFSET $` + strconv.Itoa(len(query
 	return items, total, nil
 }
 
-func (r *Repository) ListAnalyticsVisits(page, pageSize, days int, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot string) ([]domain.VisitEvent, int, error) {
+func (r *Repository) ListAnalyticsVisits(page, pageSize, days int, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot, countryName, regionName, cityName, isp string) ([]domain.VisitEvent, int, error) {
 	page, pageSize = normalizePagination(page, pageSize)
 	offset := (page - 1) * pageSize
 	start, end := analyticsRange(days)
 
-	whereClause, args := analyticsWhereClause(start, end, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot, false)
+	whereClause, args := analyticsVisitWhereClause(start, end, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot, countryName, regionName, cityName, isp)
 
 	var total int
-	if err := r.db.QueryRow(`SELECT COUNT(*) FROM visit_events WHERE `+whereClause, args...).Scan(&total); err != nil {
+	if err := r.db.QueryRow(`SELECT COUNT(*) FROM visit_events ve LEFT JOIN ip_profiles ipf ON ipf.ip = ve.ip WHERE `+whereClause, args...).Scan(&total); err != nil {
 		return []domain.VisitEvent{}, 0, err
 	}
 
 	queryArgs := append(args, pageSize, offset)
 	query := analyticsVisitSelectColumns + `
 WHERE ` + whereClause + `
-ORDER BY occurred_at DESC
+ORDER BY ve.occurred_at DESC
 LIMIT $` + strconv.Itoa(len(queryArgs)-1) + ` OFFSET $` + strconv.Itoa(len(queryArgs))
 	rows, err := r.db.Query(query, queryArgs...)
 	if err != nil {
@@ -283,6 +358,70 @@ func analyticsRange(days int) (time.Time, time.Time) {
 	end := now.Truncate(24 * time.Hour).Add(24 * time.Hour)
 	start := end.AddDate(0, 0, -days)
 	return start, end
+}
+
+func analyticsVisitWhereClause(start, end time.Time, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot, countryName, regionName, cityName, isp string) (string, []any) {
+	conditions := []string{"ve.occurred_at >= $1", "ve.occurred_at < $2"}
+	args := []any{start, end}
+	if strings.TrimSpace(path) != "" {
+		args = append(args, "%"+strings.TrimSpace(path)+"%")
+		conditions = append(conditions, "ve.path ILIKE $"+strconv.Itoa(len(args)))
+	}
+	if strings.TrimSpace(eventType) != "" {
+		args = append(args, strings.TrimSpace(eventType))
+		conditions = append(conditions, "ve.event_type = $"+strconv.Itoa(len(args)))
+	}
+	if strings.TrimSpace(visitorID) != "" {
+		args = append(args, strings.TrimSpace(visitorID))
+		conditions = append(conditions, "ve.visitor_id = $"+strconv.Itoa(len(args)))
+	}
+	if strings.TrimSpace(sessionID) != "" {
+		args = append(args, strings.TrimSpace(sessionID))
+		conditions = append(conditions, "ve.session_id = $"+strconv.Itoa(len(args)))
+	}
+	if strings.TrimSpace(contentType) != "" {
+		args = append(args, strings.TrimSpace(contentType))
+		conditions = append(conditions, "ve.content_type = $"+strconv.Itoa(len(args)))
+	}
+	if strings.TrimSpace(ip) != "" {
+		args = append(args, strings.TrimSpace(ip))
+		conditions = append(conditions, "ve.ip = $"+strconv.Itoa(len(args)))
+	}
+	if strings.TrimSpace(deviceType) != "" {
+		args = append(args, strings.TrimSpace(deviceType))
+		conditions = append(conditions, "ve.device_type = $"+strconv.Itoa(len(args)))
+	}
+	if strings.TrimSpace(browserName) != "" {
+		args = append(args, strings.TrimSpace(browserName))
+		conditions = append(conditions, "ve.browser_name = $"+strconv.Itoa(len(args)))
+	}
+	if strings.TrimSpace(osName) != "" {
+		args = append(args, strings.TrimSpace(osName))
+		conditions = append(conditions, "ve.os_name = $"+strconv.Itoa(len(args)))
+	}
+	if strings.TrimSpace(countryName) != "" {
+		args = append(args, strings.TrimSpace(countryName))
+		conditions = append(conditions, "ipf.country_name = $"+strconv.Itoa(len(args)))
+	}
+	if strings.TrimSpace(regionName) != "" {
+		args = append(args, strings.TrimSpace(regionName))
+		conditions = append(conditions, "ipf.region_name = $"+strconv.Itoa(len(args)))
+	}
+	if strings.TrimSpace(cityName) != "" {
+		args = append(args, strings.TrimSpace(cityName))
+		conditions = append(conditions, "ipf.city_name = $"+strconv.Itoa(len(args)))
+	}
+	if strings.TrimSpace(isp) != "" {
+		args = append(args, strings.TrimSpace(isp))
+		conditions = append(conditions, "ipf.isp = $"+strconv.Itoa(len(args)))
+	}
+	switch strings.ToLower(strings.TrimSpace(isBot)) {
+	case "true", "1", "yes":
+		conditions = append(conditions, "ve.is_bot = TRUE")
+	case "false", "0", "no":
+		conditions = append(conditions, "ve.is_bot = FALSE")
+	}
+	return strings.Join(conditions, " AND "), args
 }
 
 func analyticsWhereClause(start, end time.Time, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot string, pageViewsOnly bool) (string, []any) {
@@ -372,6 +511,11 @@ func scanVisitEventRows(rows *sql.Rows) []domain.VisitEvent {
 			&item.ViewportHeight,
 			&item.Timezone,
 			&item.IP,
+			&item.CountryCode,
+			&item.CountryName,
+			&item.RegionName,
+			&item.CityName,
+			&item.ISP,
 			&item.UserAgent,
 			&item.DeviceType,
 			&item.BrowserName,

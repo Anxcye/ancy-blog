@@ -60,3 +60,14 @@
   - The backend remains responsible for IP capture, user-agent parsing, bot detection, and persistent storage.
   - Raw analytics events are queryable by admins as first-class application data.
   - HTTP access logs remain optional for debugging/ops, but they are not the product analytics source of truth.
+
+## ADR-009: Offline IP Geography Enrichment
+- Date: 2026-03-20
+- Decision: Use `ip2region` xdb files as an offline IP-enrichment source, cache lookup results in `ip_profiles`, and keep the xdb file out of git as runtime data.
+- Rationale: The project already stores plaintext visitor IPs by decision, and admin analytics needs country/region/city/ISP filtering without adding synchronous online API dependencies or large in-memory caches.
+- Consequences:
+  - Runtime configuration should provide `IP2REGION_V4_XDB_PATH` and optionally `IP2REGION_V6_XDB_PATH`.
+  - Analytics ingest best-effort enriches new IPs into cached region records.
+  - Admin analytics visit queries may filter by `countryName`, `regionName`, `cityName`, and `isp`.
+  - Deployment automation should keep the xdb files refreshed outside git before container release.
+  - Geographic metadata quality depends on the deployed xdb data file and may lag real-world IP ownership changes.

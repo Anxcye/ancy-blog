@@ -19,13 +19,23 @@ import (
 	"github.com/anxcye/ancy-blog/backend/internal/repository"
 )
 
+type IPRegionResolver interface {
+	Lookup(ip string) (domain.IPProfile, bool, error)
+}
+
 type ContentService struct {
-	repo  repository.ContentRepository
-	cache cache.Cache
+	repo       repository.ContentRepository
+	cache      cache.Cache
+	ipResolver IPRegionResolver
 }
 
 func NewContentService(repo repository.ContentRepository, cacheClient cache.Cache) *ContentService {
 	return &ContentService{repo: repo, cache: cacheClient}
+}
+
+func (s *ContentService) WithIPRegionResolver(resolver IPRegionResolver) *ContentService {
+	s.ipResolver = resolver
+	return s
 }
 
 const (
@@ -943,6 +953,7 @@ func (s *ContentService) RecordVisitEvents(events []domain.VisitEvent) (domain.A
 			event.DeviceType = "unknown"
 		}
 		event.OccurredAt = event.OccurredAt.UTC()
+		s.enrichVisitEventIPProfile(&event)
 		normalized = append(normalized, event)
 	}
 	return s.repo.CreateVisitEvents(normalized)
@@ -956,7 +967,7 @@ func (s *ContentService) ListAnalyticsPages(page, pageSize, days int, path, cont
 	return s.repo.ListAnalyticsPages(page, pageSize, normalizeAnalyticsDays(days), strings.TrimSpace(path), strings.TrimSpace(contentType))
 }
 
-func (s *ContentService) ListAnalyticsVisits(page, pageSize, days int, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot string) ([]domain.VisitEvent, int, error) {
+func (s *ContentService) ListAnalyticsVisits(page, pageSize, days int, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot, countryName, regionName, cityName, isp string) ([]domain.VisitEvent, int, error) {
 	return s.repo.ListAnalyticsVisits(
 		page,
 		pageSize,
@@ -971,7 +982,52 @@ func (s *ContentService) ListAnalyticsVisits(page, pageSize, days int, path, eve
 		strings.TrimSpace(browserName),
 		strings.TrimSpace(osName),
 		strings.TrimSpace(isBot),
+		strings.TrimSpace(countryName),
+		strings.TrimSpace(regionName),
+		strings.TrimSpace(cityName),
+		strings.TrimSpace(isp),
 	)
+}
+
+func (s *ContentService) enrichVisitEventIPProfile(event *domain.VisitEvent) {
+	if event == nil || s.ipResolver == nil || strings.TrimSpace(event.IP) == "" {
+		return
+	}
+
+	if profile, ok, err := s.repo.GetIPProfile(event.IP); err == nil && ok {
+		applyIPProfileToVisitEvent(event, profile)
+		return
+	}
+
+	profile, found, err := s.ipResolver.Lookup(event.IP)
+	if err != nil || !found {
+		return
+	}
+	if profile.IP == "" {
+		profile.IP = event.IP
+	}
+	if profile.Source == "" {
+		profile.Source = "ip2region"
+	}
+	if profile.ResolvedAt.IsZero() {
+		profile.ResolvedAt = time.Now().UTC()
+	}
+	if saved, saveErr := s.repo.UpsertIPProfile(profile); saveErr == nil {
+		applyIPProfileToVisitEvent(event, saved)
+		return
+	}
+	applyIPProfileToVisitEvent(event, profile)
+}
+
+func applyIPProfileToVisitEvent(event *domain.VisitEvent, profile domain.IPProfile) {
+	if event == nil {
+		return
+	}
+	event.CountryCode = profile.CountryCode
+	event.CountryName = profile.CountryName
+	event.RegionName = profile.RegionName
+	event.CityName = profile.CityName
+	event.ISP = profile.ISP
 }
 
 func normalizeAnalyticsDays(days int) int {

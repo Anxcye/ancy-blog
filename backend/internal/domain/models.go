@@ -222,12 +222,31 @@ type VisitEvent struct {
 	ViewportHeight int       `json:"viewportHeight,omitempty"`
 	Timezone       string    `json:"timezone,omitempty"`
 	IP             string    `json:"ip,omitempty"`
+	CountryCode    string    `json:"countryCode,omitempty"`
+	CountryName    string    `json:"countryName,omitempty"`
+	RegionName     string    `json:"regionName,omitempty"`
+	CityName       string    `json:"cityName,omitempty"`
+	ISP            string    `json:"isp,omitempty"`
 	UserAgent      string    `json:"userAgent,omitempty"`
 	DeviceType     string    `json:"deviceType,omitempty"`
 	BrowserName    string    `json:"browserName,omitempty"`
 	OSName         string    `json:"osName,omitempty"`
 	IsBot          bool      `json:"isBot"`
 	CreatedAt      time.Time `json:"createdAt"`
+}
+
+type IPProfile struct {
+	IP          string    `json:"ip"`
+	CountryCode string    `json:"countryCode,omitempty"`
+	CountryName string    `json:"countryName,omitempty"`
+	RegionName  string    `json:"regionName,omitempty"`
+	CityName    string    `json:"cityName,omitempty"`
+	ISP         string    `json:"isp,omitempty"`
+	RawRegion   string    `json:"rawRegion,omitempty"`
+	Source      string    `json:"source,omitempty"`
+	ResolvedAt  time.Time `json:"resolvedAt"`
+	CreatedAt   time.Time `json:"createdAt"`
+	UpdatedAt   time.Time `json:"updatedAt"`
 }
 
 type AnalyticsIngestResult struct {

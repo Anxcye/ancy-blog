@@ -274,6 +274,6 @@ func (s *AnalyticsService) ListAnalyticsPages(page, pageSize, days int, path, co
 	return s.core.ListAnalyticsPages(page, pageSize, days, path, contentType)
 }
 
-func (s *AnalyticsService) ListAnalyticsVisits(page, pageSize, days int, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot string) ([]domain.VisitEvent, int, error) {
-	return s.core.ListAnalyticsVisits(page, pageSize, days, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot)
+func (s *AnalyticsService) ListAnalyticsVisits(page, pageSize, days int, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot, countryName, regionName, cityName, isp string) ([]domain.VisitEvent, int, error) {
+	return s.core.ListAnalyticsVisits(page, pageSize, days, path, eventType, visitorID, sessionID, contentType, ip, deviceType, browserName, osName, isBot, countryName, regionName, cityName, isp)
 }

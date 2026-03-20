@@ -396,6 +396,11 @@ Fields:
 - `viewport_height` (nullable)
 - `timezone` (nullable)
 - `ip` (required, plaintext storage by project decision)
+- `country_code` (derived at query time from `ip_profiles`, nullable in API response)
+- `country_name` (derived at query time from `ip_profiles`, nullable in API response)
+- `region_name` (derived at query time from `ip_profiles`, nullable in API response)
+- `city_name` (derived at query time from `ip_profiles`, nullable in API response)
+- `isp` (derived at query time from `ip_profiles`, nullable in API response)
 - `user_agent` (nullable)
 - `device_type` (`desktop | mobile | tablet | bot | unknown`)
 - `browser_name` (nullable)
@@ -413,6 +418,29 @@ Indexes/Constraints:
 - Index: `(content_type, content_id, occurred_at DESC)`
 - Index: `(ip, occurred_at DESC)`
 - Index: `(referrer_host, occurred_at DESC)`
+
+## Table: `ip_profiles`
+Purpose: Cache offline IP-to-region lookup results so admin analytics can filter by geographic metadata without re-reading the xdb file on every query.
+
+Fields:
+- `ip` (required, PK, plaintext)
+- `country_code` (nullable)
+- `country_name` (nullable)
+- `region_name` (nullable)
+- `city_name` (nullable)
+- `isp` (nullable)
+- `raw_region` (nullable, original ip2region payload)
+- `source` (required, default `ip2region`)
+- `resolved_at` (required)
+- `created_at`
+- `updated_at`
+
+Indexes/Constraints:
+- Primary key: `ip`
+- Index: `(country_name)`
+- Index: `(region_name)`
+- Index: `(city_name)`
+- Index: `(isp)`
 
 ## Table: `reactions`
 Purpose: Generic reaction records for article/comment (like/upvote/love/etc.).

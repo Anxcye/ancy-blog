@@ -8,6 +8,7 @@ This is the Go API backend for the rewritten blog platform, built with Gin.
 
 ## Run Locally
 ```bash
+./deploy/sync-ip2region.sh
 cd backend
 cp .env.example .env
 make run
@@ -15,6 +16,7 @@ make run
 
 Or run directly:
 ```bash
+./deploy/sync-ip2region.sh
 cd backend
 go run ./cmd/server
 ```
@@ -79,6 +81,8 @@ go test -tags=integration ./internal/server -run TestAPISmokeFlow -count=1
 - `REDIS_DB` (default: `0`)
 - `REDIS_POOL_SIZE` (default: `10`)
 - `REDIS_MIN_IDLE_CONNS` (default: `2`)
+- `IP2REGION_V4_XDB_PATH` (default: `./runtime-data/ip/ip2region_v4.xdb`)
+- `IP2REGION_V6_XDB_PATH` (default: `./runtime-data/ip/ip2region_v6.xdb`)
 - `TRANSLATION_WORKER_ENABLED` (default: `true`)
 - `TRANSLATION_WORKER_POLL_INTERVAL_MS` (default: `3000`)
 - `TRANSLATION_WORKER_BACKOFF_BASE_MS` (default: `3000`)
