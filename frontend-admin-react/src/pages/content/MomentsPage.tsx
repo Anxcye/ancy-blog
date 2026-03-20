@@ -24,7 +24,7 @@ import {
   message,
 } from 'antd';
 import type { ReactElement } from 'react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 
 import {
   batchDeleteMoments,
@@ -49,11 +49,91 @@ const STATUS_LABEL: Record<string, string> = {
   archived: '已归档',
 };
 
+type EditorMode = 'write' | 'preview';
+
+interface MomentContentEditorProps {
+  value?: string;
+  onChange?: (value: string) => void;
+  mode: EditorMode;
+  onModeChange: (mode: EditorMode) => void;
+}
+
 function fmtDate(iso?: string): string {
   if (!iso) return '—';
   const d = new Date(iso);
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+function MomentContentEditor({
+  value = '',
+  onChange,
+  mode,
+  onModeChange,
+}: MomentContentEditorProps): ReactElement {
+  const previewHtml = renderMarkdown(value);
+
+  return (
+    <div style={{ border: '1px solid #d9d9d9', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: 12,
+          padding: '10px 12px',
+          borderBottom: '1px solid #f0f0f0',
+          background: '#fafafa',
+        }}
+      >
+        <Segmented<EditorMode>
+          size="small"
+          value={mode}
+          onChange={(value) => onModeChange(value)}
+          options={[
+            { label: 'Write', value: 'write' },
+            { label: 'Preview', value: 'preview' },
+          ]}
+        />
+        <Typography.Text type="secondary" style={{ fontSize: 12 }}>
+          支持 Markdown，见{' '}
+          <a
+            href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
+            target="_blank"
+            rel="noreferrer"
+          >
+            GitHub Markdown 指南
+          </a>
+        </Typography.Text>
+      </div>
+
+      {mode === 'write' ? (
+        <Input.TextArea
+          variant="borderless"
+          rows={10}
+          placeholder="分享一个想法、一句话、一段文字..."
+          showCount
+          maxLength={2000}
+          style={{ padding: '12px 14px' }}
+          value={value}
+          onChange={(event) => onChange?.(event.target.value)}
+        />
+      ) : (
+        <div
+          dangerouslySetInnerHTML={{
+            __html: previewHtml || '<p style="color:#999">暂无预览内容。</p>',
+          }}
+          style={{
+            minHeight: 240,
+            padding: '12px 14px',
+            lineHeight: 1.8,
+            color: '#1f1f1f',
+            background: '#fff',
+          }}
+        />
+      )}
+    </div>
+  );
 }
 
 export function MomentsPage(): ReactElement {
@@ -77,7 +157,7 @@ export function MomentsPage(): ReactElement {
       editingMoment ? updateMoment(editingMoment.id, values) : createMoment(values),
     onSuccess: () => {
       messageApi.success(editingMoment ? '瞬间已保存' : '瞬间已发布');
-      setDrawerOpen(false);
+      closeDrawer();
       queryClient.invalidateQueries({ queryKey: ['moments'] });
     },
     onError: () => messageApi.error('保存失败，请重试'),
@@ -113,30 +193,27 @@ export function MomentsPage(): ReactElement {
     onError: () => messageApi.error('状态更新失败'),
   });
 
-  // Populate form when opening the drawer in edit mode
-  useEffect(() => {
-    if (drawerOpen) {
-      if (editingMoment) {
-        form.setFieldsValue({ content: editingMoment.content, status: editingMoment.status });
-      } else {
-        form.resetFields();
-        form.setFieldValue('status', 'published');
-      }
-      setEditorMode('write');
-    }
-  }, [drawerOpen, editingMoment, form]);
-
   function openCreate(): void {
     setEditingMoment(null);
+    form.resetFields();
+    form.setFieldValue('status', 'published');
+    setEditorMode('write');
     setDrawerOpen(true);
   }
 
   function openEdit(moment: Moment): void {
     setEditingMoment(moment);
+    form.setFieldsValue({ content: moment.content, status: moment.status });
+    setEditorMode('write');
     setDrawerOpen(true);
   }
 
-  const previewHtml = renderMarkdown(Form.useWatch('content', form) ?? '');
+  function closeDrawer(): void {
+    setDrawerOpen(false);
+    setEditingMoment(null);
+    setEditorMode('write');
+    form.resetFields();
+  }
 
   const batchPending = batchDelMut.isPending || batchStatusMut.isPending;
 
@@ -314,10 +391,10 @@ export function MomentsPage(): ReactElement {
         title={editingMoment ? '编辑瞬间' : '发布瞬间'}
         width={720}
         open={drawerOpen}
-        onClose={() => setDrawerOpen(false)}
+        onClose={closeDrawer}
         extra={
           <Space>
-            <Button onClick={() => setDrawerOpen(false)}>取消</Button>
+            <Button onClick={closeDrawer}>取消</Button>
             <Button type="primary" loading={saveMut.isPending} onClick={() => form.submit()}>
               保存
             </Button>
@@ -335,63 +412,7 @@ export function MomentsPage(): ReactElement {
             label="内容"
             rules={[{ required: true, message: '请填写内容' }]}
           >
-            <div style={{ border: '1px solid #d9d9d9', borderRadius: 12, overflow: 'hidden', background: '#fff' }}>
-              <div
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  gap: 12,
-                  padding: '10px 12px',
-                  borderBottom: '1px solid #f0f0f0',
-                  background: '#fafafa',
-                }}
-              >
-                <Segmented<'write' | 'preview'>
-                  size="small"
-                  value={editorMode}
-                  onChange={(value) => setEditorMode(value)}
-                  options={[
-                    { label: 'Write', value: 'write' },
-                    { label: 'Preview', value: 'preview' },
-                  ]}
-                />
-                <Typography.Text type="secondary" style={{ fontSize: 12 }}>
-                  支持 Markdown，见{' '}
-                  <a
-                    href="https://docs.github.com/en/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    GitHub Markdown 指南
-                  </a>
-                </Typography.Text>
-              </div>
-
-              {editorMode === 'write' ? (
-                <Input.TextArea
-                  variant="borderless"
-                  rows={10}
-                  placeholder="分享一个想法、一句话、一段文字..."
-                  showCount
-                  maxLength={2000}
-                  style={{ padding: '12px 14px' }}
-                />
-              ) : (
-                <div
-                  dangerouslySetInnerHTML={{
-                    __html: previewHtml || '<p style=\"color:#999\">暂无预览内容。</p>',
-                  }}
-                  style={{
-                    minHeight: 240,
-                    padding: '12px 14px',
-                    lineHeight: 1.8,
-                    color: '#1f1f1f',
-                    background: '#fff',
-                  }}
-                />
-              )}
-            </div>
+            <MomentContentEditor mode={editorMode} onModeChange={setEditorMode} />
           </Form.Item>
 
           <Form.Item name="status" label="状态">

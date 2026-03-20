@@ -791,3 +791,9 @@
 - Restored AI disclosure editing in `frontend-admin-react` article editor by adding the missing `aiAssistLevel` form field, edit-mode hydration, and default value handling.
 - Fixed deploy/update.sh so syncing APP_IMAGE_TAG preserves real newline characters in deploy/.env instead of writing literal `\\n` text.
 - Refined article detail metadata so publish time is primary, update time only appears after meaningful post-publish edits, category is inline, and AI disclosure now has hoverable explanations.
+
+---
+## 2026-03-20
+- Fixed React admin moments editor hydration:
+  - `frontend-admin-react/src/pages/content/MomentsPage.tsx` now uses a form-controlled `MomentContentEditor` component instead of nesting `TextArea` under an unmanaged wrapper `div`.
+  - edit-mode drawer content now echoes correctly for existing moments, and markdown preview stays in sync with the current form value.
