@@ -22,6 +22,57 @@ function fmtDate(iso?: string): string {
   return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())} ${p(d.getHours())}:${p(d.getMinutes())}`;
 }
 
+function fmtDuration(seconds?: number): string {
+  if (!seconds || seconds <= 0) return '0s';
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainSeconds = seconds % 60;
+  if (hours > 0) return `${hours}h ${minutes}m ${remainSeconds}s`;
+  if (minutes > 0) return `${minutes}m ${remainSeconds}s`;
+  return `${remainSeconds}s`;
+}
+
+function hashString(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i += 1) {
+    hash = ((hash << 5) - hash) + input.charCodeAt(i);
+    hash |= 0;
+  }
+  return Math.abs(hash);
+}
+
+function tokenColors(value: string): { background: string; border: string; text: string } {
+  const hash = hashString(value);
+  const hue = hash % 360;
+  return {
+    background: `hsl(${hue} 75% 96%)`,
+    border: `hsl(${hue} 60% 78%)`,
+    text: `hsl(${hue} 65% 28%)`,
+  };
+}
+
+function renderIdToken(value: string, secondary = false): ReactElement {
+  const colors = tokenColors(value);
+  return (
+    <Typography.Text
+      code
+      style={{
+        display: 'inline-block',
+        margin: 0,
+        padding: secondary ? '1px 6px' : '2px 8px',
+        borderRadius: 999,
+        fontSize: secondary ? 12 : 13,
+        lineHeight: 1.6,
+        color: colors.text,
+        background: colors.background,
+        border: `1px solid ${colors.border}`,
+      }}
+    >
+      {value}
+    </Typography.Text>
+  );
+}
+
 export function AnalyticsPage(): ReactElement {
   const [days, setDays] = useState(7);
   const [pathKeyword, setPathKeyword] = useState('');
@@ -68,6 +119,13 @@ export function AnalyticsPage(): ReactElement {
     { title: 'UV', dataIndex: 'uniqueVisitors', key: 'uniqueVisitors', width: 90 },
     { title: 'IP', dataIndex: 'uniqueIPs', key: 'uniqueIPs', width: 90 },
     {
+      title: '累计停留',
+      dataIndex: 'activeDurationSeconds',
+      key: 'activeDurationSeconds',
+      width: 120,
+      render: (value: number) => fmtDuration(value),
+    },
+    {
       title: '最近访问',
       dataIndex: 'lastVisitedAt',
       key: 'lastVisitedAt',
@@ -98,13 +156,20 @@ export function AnalyticsPage(): ReactElement {
       ),
     },
     {
+      title: '停留时长',
+      dataIndex: 'activeDurationSeconds',
+      key: 'activeDurationSeconds',
+      width: 120,
+      render: (value: number) => fmtDuration(value),
+    },
+    {
       title: '访客',
       key: 'visitor',
       width: 220,
       render: (_value, record) => (
         <Space direction="vertical" size={0}>
-          <Typography.Text code>{record.visitorId}</Typography.Text>
-          <Typography.Text type="secondary" style={{ fontSize: 12 }}>{record.sessionId}</Typography.Text>
+          {renderIdToken(record.visitorId)}
+          {renderIdToken(record.sessionId, true)}
         </Space>
       ),
     },
@@ -160,7 +225,7 @@ export function AnalyticsPage(): ReactElement {
         <div>
           <Typography.Title level={3} style={{ marginBottom: 4 }}>访客统计</Typography.Title>
           <Typography.Text type="secondary">
-            查看最近访问趋势、热门路径和每一次上报到后端的访问事件。
+            查看最近访问趋势、热门路径，以及每次页面访问的来源和停留时长。
           </Typography.Text>
         </div>
 
@@ -459,6 +524,8 @@ export function AnalyticsPage(): ReactElement {
               <Descriptions bordered size="small" column={1}>
                 <Descriptions.Item label="发生时间">{fmtDate(activeVisit.occurredAt)}</Descriptions.Item>
                 <Descriptions.Item label="接收时间">{fmtDate(activeVisit.receivedAt)}</Descriptions.Item>
+                <Descriptions.Item label="最后活跃时间">{fmtDate(activeVisit.lastEngagedAt)}</Descriptions.Item>
+                <Descriptions.Item label="活跃时长">{fmtDuration(activeVisit.activeDurationSeconds)}</Descriptions.Item>
                 <Descriptions.Item label="路径">{activeVisit.path}</Descriptions.Item>
                 <Descriptions.Item label="事件类型">{activeVisit.eventType}</Descriptions.Item>
                 <Descriptions.Item label="内容类型">{activeVisit.contentType || 'site'}</Descriptions.Item>
@@ -468,10 +535,10 @@ export function AnalyticsPage(): ReactElement {
                 <Descriptions.Item label="页面标题">{activeVisit.pageTitle || '—'}</Descriptions.Item>
                 <Descriptions.Item label="Route Name">{activeVisit.routeName || '—'}</Descriptions.Item>
                 <Descriptions.Item label="Visitor ID">
-                  <Typography.Text code>{activeVisit.visitorId}</Typography.Text>
+                  {renderIdToken(activeVisit.visitorId)}
                 </Descriptions.Item>
                 <Descriptions.Item label="Session ID">
-                  <Typography.Text code>{activeVisit.sessionId}</Typography.Text>
+                  {renderIdToken(activeVisit.sessionId)}
                 </Descriptions.Item>
                 <Descriptions.Item label="IP">{activeVisit.ip || '—'}</Descriptions.Item>
                 <Descriptions.Item label="归属地">

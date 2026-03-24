@@ -148,6 +148,7 @@
 ```
 - Error Codes: VALIDATION_ERROR
 - Notes: Backend enriches each event with IP, user agent, device/browser/OS inference, bot flag, and server receive time.
+- Notes: `page_ping` does not create a new raw visit row; it updates the latest matching `page_view` for the same `sessionId + path` with `lastEngagedAt` and active duration.
 
 ## Admin - Articles
 - ID: ADM-ARTICLE-001

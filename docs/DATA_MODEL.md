@@ -371,7 +371,7 @@ Indexes/Constraints:
 - Index: `(status, published_at DESC, updated_at DESC)`
 
 ## Table: `visit_events`
-Purpose: Store raw visitor analytics events for page-path tracking and admin analytics queries.
+Purpose: Store page-view analytics records for admin analytics queries, while `page_ping` heartbeats update engagement fields on the matching `page_view` row.
 
 Fields:
 - `id`
@@ -379,6 +379,8 @@ Fields:
 - `event_type` (`page_view | page_ping`)
 - `occurred_at` (required, client event time)
 - `received_at` (required, server ingest time)
+- `last_engaged_at` (nullable, latest active heartbeat time for the page view; defaults to `occurred_at` on insert)
+- `active_duration_seconds` (required, accumulated active duration derived from heartbeats)
 - `visitor_id` (required, anonymous persistent visitor identifier)
 - `session_id` (required, anonymous session identifier)
 - `path` (required, normalized public page path)
@@ -415,6 +417,7 @@ Indexes/Constraints:
 - Index: `(path, occurred_at DESC)`
 - Index: `(visitor_id, occurred_at DESC)`
 - Index: `(session_id, occurred_at DESC)`
+- Partial Index: `(session_id, path, occurred_at DESC)` where `event_type = 'page_view'`
 - Index: `(content_type, content_id, occurred_at DESC)`
 - Index: `(ip, occurred_at DESC)`
 - Index: `(referrer_host, occurred_at DESC)`

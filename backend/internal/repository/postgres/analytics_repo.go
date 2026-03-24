@@ -6,6 +6,7 @@ package postgres
 
 import (
 	"database/sql"
+	"errors"
 	"strconv"
 	"strings"
 	"time"
@@ -14,7 +15,7 @@ import (
 )
 
 const analyticsVisitSelectColumns = `
-SELECT ve.id::text, ve.event_id, ve.event_type, ve.occurred_at, ve.received_at, ve.visitor_id, ve.session_id, ve.path,
+SELECT ve.id::text, ve.event_id, ve.event_type, ve.occurred_at, ve.received_at, COALESCE(ve.last_engaged_at, ve.occurred_at), COALESCE(ve.active_duration_seconds, 0), ve.visitor_id, ve.session_id, ve.path,
        COALESCE(ve.route_name,''), COALESCE(ve.page_title,''), COALESCE(ve.referrer,''), COALESCE(ve.referrer_host,''),
        COALESCE(ve.content_type,''), COALESCE(ve.content_id,''), COALESCE(ve.content_slug,''), COALESCE(ve.locale,''),
        COALESCE(ve.screen_width,0), COALESCE(ve.screen_height,0), COALESCE(ve.viewport_width,0), COALESCE(ve.viewport_height,0),
@@ -116,13 +117,13 @@ func (r *Repository) CreateVisitEvents(events []domain.VisitEvent) (domain.Analy
 	stmt, err := tx.Prepare(`
 INSERT INTO visit_events (
     event_id, event_type, occurred_at, visitor_id, session_id, path, route_name, page_title, referrer, referrer_host,
-    content_type, content_id, content_slug, locale, screen_width, screen_height, viewport_width, viewport_height,
+    last_engaged_at, active_duration_seconds, content_type, content_id, content_slug, locale, screen_width, screen_height, viewport_width, viewport_height,
     timezone, ip, user_agent, device_type, browser_name, os_name, is_bot
 )
 VALUES (
     $1,$2,$3,$4,$5,$6,$7,$8,$9,$10,
     $11,$12,$13,$14,$15,$16,$17,$18,
-    $19,$20,$21,$22,$23,$24,$25
+    $19,$20,$21,$22,$23,$24,$25,$26,$27
 )
 ON CONFLICT (event_id) DO NOTHING
 `)
@@ -132,6 +133,20 @@ ON CONFLICT (event_id) DO NOTHING
 	defer stmt.Close()
 
 	for _, event := range events {
+		if event.EventType == "page_ping" {
+			updated, updateErr := applyPagePingToLatestView(tx, event)
+			if updateErr != nil {
+				err = updateErr
+				return result, err
+			}
+			if updated {
+				result.Accepted++
+			} else {
+				result.Deduplicated++
+			}
+			continue
+		}
+
 		execResult, execErr := stmt.Exec(
 			event.EventID,
 			event.EventType,
@@ -143,6 +158,8 @@ ON CONFLICT (event_id) DO NOTHING
 			nullableString(event.PageTitle),
 			nullableString(event.Referrer),
 			nullableString(event.ReferrerHost),
+			event.OccurredAt.UTC(),
+			0,
 			nullableString(event.ContentType),
 			nullableString(event.ContentID),
 			nullableString(event.ContentSlug),
@@ -175,6 +192,42 @@ ON CONFLICT (event_id) DO NOTHING
 	return result, err
 }
 
+func applyPagePingToLatestView(tx *sql.Tx, event domain.VisitEvent) (bool, error) {
+	var updatedID string
+	err := tx.QueryRow(`
+WITH latest_view AS (
+  SELECT id
+  FROM visit_events
+  WHERE event_type = 'page_view'
+    AND session_id = $1
+    AND path = $2
+    AND occurred_at <= $3
+  ORDER BY occurred_at DESC
+  LIMIT 1
+)
+UPDATE visit_events ve
+SET last_engaged_at = GREATEST(COALESCE(ve.last_engaged_at, ve.occurred_at), $3),
+    active_duration_seconds = GREATEST(
+        COALESCE(ve.active_duration_seconds, 0),
+        GREATEST(0, EXTRACT(EPOCH FROM ($3 - ve.occurred_at)))::INTEGER
+    )
+FROM latest_view
+WHERE ve.id = latest_view.id
+RETURNING ve.id::text
+`,
+		event.SessionID,
+		event.Path,
+		event.OccurredAt.UTC(),
+	).Scan(&updatedID)
+	if err == nil {
+		return true, nil
+	}
+	if errors.Is(err, sql.ErrNoRows) {
+		return false, nil
+	}
+	return false, err
+}
+
 func (r *Repository) GetAnalyticsOverview(days int) (domain.AnalyticsOverview, error) {
 	start, end := analyticsRange(days)
 	overview := domain.AnalyticsOverview{
@@ -198,6 +251,8 @@ WHERE event_type='page_view' AND occurred_at >= $1 AND occurred_at < $2
 	topPathRows, err := r.db.Query(`
 SELECT path, COALESCE(content_type,''), COALESCE(content_id,''), COALESCE(content_slug,''),
        COUNT(*) AS page_views, COUNT(DISTINCT visitor_id) AS unique_visitors, COUNT(DISTINCT ip) AS unique_ips,
+       COALESCE(SUM(active_duration_seconds), 0) AS active_duration_seconds,
+       MAX(COALESCE(last_engaged_at, occurred_at)) AS last_engaged_at,
        MAX(occurred_at) AS last_visited_at
 FROM visit_events
 WHERE event_type='page_view' AND occurred_at >= $1 AND occurred_at < $2
@@ -211,7 +266,7 @@ LIMIT 10
 	defer topPathRows.Close()
 	for topPathRows.Next() {
 		var item domain.AnalyticsPathStat
-		if scanErr := topPathRows.Scan(&item.Path, &item.ContentType, &item.ContentID, &item.ContentSlug, &item.PageViews, &item.UniqueVisitors, &item.UniqueIPs, &item.LastVisitedAt); scanErr == nil {
+		if scanErr := topPathRows.Scan(&item.Path, &item.ContentType, &item.ContentID, &item.ContentSlug, &item.PageViews, &item.UniqueVisitors, &item.UniqueIPs, &item.ActiveDuration, &item.LastEngagedAt, &item.LastVisitedAt); scanErr == nil {
 			overview.TopPaths = append(overview.TopPaths, item)
 		}
 	}
@@ -307,6 +362,8 @@ SELECT COUNT(*) FROM (
 	query := `
 SELECT path, COALESCE(content_type,''), COALESCE(content_id,''), COALESCE(content_slug,''),
        COUNT(*) AS page_views, COUNT(DISTINCT visitor_id) AS unique_visitors, COUNT(DISTINCT ip) AS unique_ips,
+       COALESCE(SUM(active_duration_seconds), 0) AS active_duration_seconds,
+       MAX(COALESCE(last_engaged_at, occurred_at)) AS last_engaged_at,
        MAX(occurred_at) AS last_visited_at
 FROM visit_events
 WHERE ` + whereClause + `
@@ -322,7 +379,7 @@ LIMIT $` + strconv.Itoa(len(queryArgs)-1) + ` OFFSET $` + strconv.Itoa(len(query
 	items := make([]domain.AnalyticsPathStat, 0)
 	for rows.Next() {
 		var item domain.AnalyticsPathStat
-		if scanErr := rows.Scan(&item.Path, &item.ContentType, &item.ContentID, &item.ContentSlug, &item.PageViews, &item.UniqueVisitors, &item.UniqueIPs, &item.LastVisitedAt); scanErr == nil {
+		if scanErr := rows.Scan(&item.Path, &item.ContentType, &item.ContentID, &item.ContentSlug, &item.PageViews, &item.UniqueVisitors, &item.UniqueIPs, &item.ActiveDuration, &item.LastEngagedAt, &item.LastVisitedAt); scanErr == nil {
 			items = append(items, item)
 		}
 	}
@@ -494,6 +551,8 @@ func scanVisitEventRows(rows *sql.Rows) []domain.VisitEvent {
 			&item.EventType,
 			&item.OccurredAt,
 			&item.ReceivedAt,
+			&item.LastEngagedAt,
+			&item.ActiveDuration,
 			&item.VisitorID,
 			&item.SessionID,
 			&item.Path,

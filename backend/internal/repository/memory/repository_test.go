@@ -141,3 +141,35 @@ func TestTranslationContentCRUD(t *testing.T) {
 		t.Fatalf("expected one translation content row, count=%d len=%d", count, len(items))
 	}
 }
+
+func TestCreateVisitEventsAggregatesPagePingIntoPageView(t *testing.T) {
+	repo := NewRepository()
+	now := time.Now().UTC()
+
+	result, err := repo.CreateVisitEvents([]domain.VisitEvent{
+		{EventID: "view-1", EventType: "page_view", OccurredAt: now, VisitorID: "visitor-1", SessionID: "session-1", Path: "/articles/test"},
+		{EventID: "evt-1", EventType: "page_ping", OccurredAt: now, VisitorID: "visitor-1", SessionID: "session-1", Path: "/articles/test"},
+		{EventID: "evt-2", EventType: "page_ping", OccurredAt: now.Add(2 * time.Minute), VisitorID: "visitor-1", SessionID: "session-1", Path: "/articles/test"},
+		{EventID: "evt-3", EventType: "page_ping", OccurredAt: now.Add(6 * time.Minute), VisitorID: "visitor-1", SessionID: "session-1", Path: "/articles/test"},
+	})
+	if err != nil {
+		t.Fatalf("expected create visit events success, got error: %v", err)
+	}
+	if result.Accepted != 4 || result.Deduplicated != 0 {
+		t.Fatalf("unexpected ingest result: %+v", result)
+	}
+
+	visits, total, err := repo.ListAnalyticsVisits(1, 20, 7, "/articles/test", "page_view", "", "session-1", "", "", "", "", "", "", "", "", "", "")
+	if err != nil {
+		t.Fatalf("expected list analytics visits success, got error: %v", err)
+	}
+	if total != 1 || len(visits) != 1 {
+		t.Fatalf("expected 1 persisted page view, total=%d len=%d", total, len(visits))
+	}
+	if visits[0].ActiveDuration != 360 {
+		t.Fatalf("expected active duration 360 seconds, got %d", visits[0].ActiveDuration)
+	}
+	if !visits[0].LastEngagedAt.Equal(now.Add(6 * time.Minute)) {
+		t.Fatalf("expected last engaged at updated by ping, got %s", visits[0].LastEngagedAt)
+	}
+}

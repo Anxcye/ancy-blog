@@ -68,3 +68,12 @@ func TestEnsureJSONText(t *testing.T) {
 		t.Fatalf("expected valid json unchanged, got %s", got)
 	}
 }
+
+func TestNullableInt(t *testing.T) {
+	if nullableInt(0) != nil {
+		t.Fatalf("expected zero int to become nil")
+	}
+	if v, ok := nullableInt(3).(int); !ok || v != 3 {
+		t.Fatalf("expected positive int passthrough")
+	}
+}

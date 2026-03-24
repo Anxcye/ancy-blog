@@ -352,6 +352,8 @@ CREATE TABLE IF NOT EXISTS visit_events (
     event_type VARCHAR(32) NOT NULL CHECK (event_type IN ('page_view', 'page_ping')),
     occurred_at TIMESTAMPTZ NOT NULL,
     received_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_engaged_at TIMESTAMPTZ,
+    active_duration_seconds INTEGER NOT NULL DEFAULT 0,
     visitor_id VARCHAR(128) NOT NULL,
     session_id VARCHAR(128) NOT NULL,
     path VARCHAR(512) NOT NULL,
@@ -393,6 +395,9 @@ CREATE INDEX IF NOT EXISTS idx_visit_events_ip_occurred_at
     ON visit_events (ip, occurred_at DESC);
 CREATE INDEX IF NOT EXISTS idx_visit_events_referrer_host_occurred_at
     ON visit_events (referrer_host, occurred_at DESC);
+CREATE INDEX IF NOT EXISTS idx_visit_events_page_view_session_path_occurred_at
+    ON visit_events (session_id, path, occurred_at DESC)
+    WHERE event_type = 'page_view';
 
 CREATE TABLE IF NOT EXISTS ip_profiles (
     ip VARCHAR(64) PRIMARY KEY,

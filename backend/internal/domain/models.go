@@ -205,6 +205,8 @@ type VisitEvent struct {
 	EventType      string    `json:"eventType"`
 	OccurredAt     time.Time `json:"occurredAt"`
 	ReceivedAt     time.Time `json:"receivedAt"`
+	LastEngagedAt  time.Time `json:"lastEngagedAt,omitempty"`
+	ActiveDuration int       `json:"activeDurationSeconds"`
 	VisitorID      string    `json:"visitorId"`
 	SessionID      string    `json:"sessionId"`
 	Path           string    `json:"path"`
@@ -262,6 +264,8 @@ type AnalyticsPathStat struct {
 	PageViews      int       `json:"pageViews"`
 	UniqueVisitors int       `json:"uniqueVisitors"`
 	UniqueIPs      int       `json:"uniqueIPs"`
+	ActiveDuration int       `json:"activeDurationSeconds"`
+	LastEngagedAt  time.Time `json:"lastEngagedAt"`
 	LastVisitedAt  time.Time `json:"lastVisitedAt"`
 }
 

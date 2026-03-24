@@ -839,3 +839,9 @@
   - added `deploy/sync-ip2region.sh` to download or refresh the official `ip2region_v4.xdb` and `ip2region_v6.xdb` files into `backend/runtime-data/ip/`.
   - wired `deploy/release.sh` to sync the xdb files before image pull and container restart, so future deploy/update flows automatically keep the runtime data in place.
   - mounted `backend/runtime-data/ip/` into the backend container and documented the new env knobs in deployment and backend README files.
+- Reduced analytics `page_ping` storage growth:
+  - lowered the blog heartbeat interval from 15 seconds to 60 seconds so long-lived tabs emit fewer heartbeats by default.
+  - backend analytics ingest now treats `page_ping` as an update to the latest matching `page_view`, filling `last_engaged_at` and `active_duration_seconds` instead of creating unbounded raw rows.
+  - added migration `000022_visit_event_ping_window_index` plus schema baseline updates for engagement columns and a partial PostgreSQL index that keeps page-view session/path lookup efficient.
+  - updated the React admin analytics page so raw visits and top paths show accumulated active duration directly.
+  - updated product rules, data model, and API contract to document the new heartbeat persistence behavior.

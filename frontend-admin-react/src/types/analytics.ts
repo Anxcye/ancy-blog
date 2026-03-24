@@ -13,6 +13,8 @@ export interface AnalyticsPathStat {
   pageViews: number;
   uniqueVisitors: number;
   uniqueIPs: number;
+  activeDurationSeconds: number;
+  lastEngagedAt: string;
   lastVisitedAt: string;
 }
 
@@ -52,6 +54,8 @@ export interface AnalyticsVisit {
   eventType: string;
   occurredAt: string;
   receivedAt: string;
+  lastEngagedAt: string;
+  activeDurationSeconds: number;
   visitorId: string;
   sessionId: string;
   path: string;

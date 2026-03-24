@@ -1518,13 +1518,58 @@ func (r *Repository) CreateVisitEvents(events []domain.VisitEvent) (domain.Analy
 			result.Deduplicated++
 			continue
 		}
+		if event.EventType == "page_ping" {
+			if r.applyPagePingLocked(event) {
+				result.Accepted++
+			} else {
+				result.Deduplicated++
+			}
+			continue
+		}
 		event.ID = uuid.NewString()
 		event.ReceivedAt = now
 		event.CreatedAt = now
+		event.LastEngagedAt = event.OccurredAt
+		event.ActiveDuration = 0
 		r.visits[event.EventID] = event
 		result.Accepted++
 	}
 	return result, nil
+}
+
+func (r *Repository) applyPagePingLocked(event domain.VisitEvent) bool {
+	var matchedID string
+	var matched domain.VisitEvent
+	for _, existing := range r.visits {
+		if existing.EventType != "page_view" {
+			continue
+		}
+		if strings.TrimSpace(existing.SessionID) != strings.TrimSpace(event.SessionID) || strings.TrimSpace(existing.Path) != strings.TrimSpace(event.Path) {
+			continue
+		}
+		if existing.OccurredAt.After(event.OccurredAt) {
+			continue
+		}
+		if matchedID == "" || existing.OccurredAt.After(matched.OccurredAt) {
+			matchedID = existing.EventID
+			matched = existing
+		}
+	}
+	if matchedID == "" {
+		return false
+	}
+	if event.OccurredAt.After(matched.LastEngagedAt) {
+		matched.LastEngagedAt = event.OccurredAt
+	}
+	duration := int(event.OccurredAt.Sub(matched.OccurredAt).Seconds())
+	if duration < 0 {
+		duration = 0
+	}
+	if duration > matched.ActiveDuration {
+		matched.ActiveDuration = duration
+	}
+	r.visits[matchedID] = matched
+	return true
 }
 
 func (r *Repository) GetIPProfile(ip string) (domain.IPProfile, bool, error) {
@@ -1605,6 +1650,10 @@ func (r *Repository) GetAnalyticsOverview(days int) (domain.AnalyticsOverview, e
 		item.PageViews++
 		if item.LastVisitedAt.Before(event.OccurredAt) {
 			item.LastVisitedAt = event.OccurredAt
+		}
+		item.ActiveDuration += event.ActiveDuration
+		if item.LastEngagedAt.Before(event.LastEngagedAt) {
+			item.LastEngagedAt = event.LastEngagedAt
 		}
 
 		if event.ReferrerHost != "" {
@@ -1717,6 +1766,10 @@ func (r *Repository) ListAnalyticsPages(page, pageSize, days int, path, contentT
 		item.PageViews++
 		visitorSets[key][event.VisitorID] = struct{}{}
 		ipSets[key][event.IP] = struct{}{}
+		item.ActiveDuration += event.ActiveDuration
+		if item.LastEngagedAt.Before(event.LastEngagedAt) {
+			item.LastEngagedAt = event.LastEngagedAt
+		}
 		if item.LastVisitedAt.Before(event.OccurredAt) {
 			item.LastVisitedAt = event.OccurredAt
 		}

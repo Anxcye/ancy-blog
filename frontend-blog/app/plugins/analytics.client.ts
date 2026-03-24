@@ -28,7 +28,7 @@ const VISITOR_KEY = 'ancy_blog_visitor_id'
 const SESSION_KEY = 'ancy_blog_session_id'
 const SESSION_AT_KEY = 'ancy_blog_session_last_seen_at'
 const SESSION_TTL_MS = 30 * 60 * 1000
-const PING_INTERVAL_MS = 15_000
+const PING_INTERVAL_MS = 60_000
 
 function randomId(prefix: string): string {
   if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {

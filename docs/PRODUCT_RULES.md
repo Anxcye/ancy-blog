@@ -192,6 +192,7 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 - Initial analytics event types:
   - `page_view` for page entry and route transitions
   - `page_ping` for ongoing active-page heartbeat
+    - backend updates the latest `page_view` for the same `session_id + path` with a newer active timestamp and duration instead of creating another raw row
 - The analytics ingest API accepts page context from the frontend and enriches events on the backend with:
   - visitor IP
   - user agent
@@ -201,7 +202,7 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
   - bot flag
 - Analytics may enrich visitor IPs into cached geographic metadata (`country`, `region`, `city`, `ISP`) through an offline IP database.
 - Analytics stores visitor IP in plaintext by project decision.
-- Analytics should persist each accepted event as a raw visit record so admins can inspect every visit and visited path.
+- Analytics should persist each accepted `page_view` as a raw visit record, and use `page_ping` to update that record's `last_engaged_at` and active duration instead of inserting unbounded heartbeat rows.
 - Admin analytics must support:
   - overview metrics (`PV`, `UV`, unique IPs, sessions)
   - path-level aggregation
