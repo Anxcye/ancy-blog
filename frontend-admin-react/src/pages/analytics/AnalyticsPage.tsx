@@ -54,22 +54,30 @@ function tokenColors(value: string): { background: string; border: string; text:
 function renderIdToken(value: string, secondary = false): ReactElement {
   const colors = tokenColors(value);
   return (
-    <Typography.Text
-      code
-      style={{
-        display: 'inline-block',
-        margin: 0,
-        padding: secondary ? '1px 6px' : '2px 8px',
-        borderRadius: 999,
-        fontSize: secondary ? 12 : 13,
-        lineHeight: 1.6,
-        color: colors.text,
-        background: colors.background,
-        border: `1px solid ${colors.border}`,
-      }}
-    >
-      {value}
-    </Typography.Text>
+    <Space size={6} style={{ alignItems: 'center' }}>
+      <span
+        aria-hidden="true"
+        style={{
+          width: secondary ? 7 : 9,
+          height: secondary ? 7 : 9,
+          borderRadius: '50%',
+          background: colors.text,
+          boxShadow: `0 0 0 2px ${colors.background}`,
+          flex: '0 0 auto',
+        }}
+      />
+      <Typography.Text
+        code
+        style={{
+          margin: 0,
+          fontSize: secondary ? 12 : 13,
+          lineHeight: 1.6,
+          color: secondary ? 'rgba(0, 0, 0, 0.65)' : undefined,
+        }}
+      >
+        {value}
+      </Typography.Text>
+    </Space>
   );
 }
 
