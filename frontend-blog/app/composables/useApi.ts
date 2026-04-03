@@ -141,6 +141,37 @@ export interface TimelineItem {
     publishedAt: string
 }
 
+// ── Gallery types ──────────────────────────────────────────────────
+export interface GalleryPhotoPublic {
+    id: string
+    title?: string
+    slug: string
+    description?: string
+    locationName?: string
+    locationCity?: string
+    takenAt?: string
+    cameraMake?: string
+    cameraModel?: string
+    lensModel?: string
+    focalLength?: string
+    aperture?: string
+    shutterSpeed?: string
+    iso?: string
+    width: number
+    height: number
+    placeholderData?: string
+    displayUrl: string
+    largeUrl: string
+    tagSlugs?: string[]
+    createdAt: string
+}
+
+export interface GalleryTag {
+    id: string
+    name: string
+    slug: string
+}
+
 // ── Composable ────────────────────────────────────────────────────
 export function useApi() {
     const config = useRuntimeConfig()
@@ -262,5 +293,17 @@ export function useApi() {
         /** Submit a friend link */
         submitLink: (payload: LinkSubmissionPayload) =>
             apiFetch<{ id: string }>('/public/links/submissions', { method: 'POST', body: payload }),
+
+        /** Fetch published gallery photos */
+        listGalleryPhotos: (params?: { page?: number; pageSize?: number; tag?: string }) =>
+            apiFetch<PaginatedData<GalleryPhotoPublic>>('/public/gallery/photos', { params }),
+
+        /** Fetch a single published gallery photo by slug */
+        getGalleryPhoto: (slug: string) =>
+            apiFetch<GalleryPhotoPublic>(`/public/gallery/photos/${slug}`),
+
+        /** Fetch gallery tags */
+        getGalleryTags: () =>
+            apiFetch<GalleryTag[]>('/public/gallery/tags'),
     }
 }

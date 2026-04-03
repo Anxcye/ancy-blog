@@ -4,14 +4,16 @@
         "articles": "Articles",
         "moments": "Moments",
         "timeline": "Timeline",
-        "links": "Links"
+        "links": "Links",
+        "gallery": "Gallery"
     },
     "navDisplay": {
         "home": "Harbor",
         "articles": "Chapters",
         "moments": "Fragments",
         "timeline": "Footsteps",
-        "links": "Neighbors"
+        "links": "Neighbors",
+        "gallery": "Snapshots"
     },
     "home": {
         "heroSubtitle": "Code & Thoughts",
@@ -158,5 +160,27 @@
     "meta": {
         "darkMode": "Switch to dark mode",
         "lightMode": "Switch to light mode"
+    },
+    "gallery": {
+        "title": "Gallery",
+        "subtitle": "Capturing moments through light",
+        "eyebrow": "GALLERY",
+        "total": "{n} photos",
+        "noPhotos": "No photos yet",
+        "allTags": "All",
+        "details": "Details",
+        "close": "Close",
+        "prev": "Previous",
+        "next": "Next",
+        "camera": "Camera",
+        "lens": "Lens",
+        "focalLength": "Focal Length",
+        "aperture": "Aperture",
+        "shutterSpeed": "Shutter Speed",
+        "iso": "ISO",
+        "takenAt": "Taken",
+        "location": "Location",
+        "contextLabel": "{cities}",
+        "contextLabelMore": "{cities} +{n}"
     }
 }

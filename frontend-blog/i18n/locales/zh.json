@@ -4,14 +4,16 @@
         "articles": "文章",
         "moments": "瞬间",
         "timeline": "时间轴",
-        "links": "链接"
+        "links": "链接",
+        "gallery": "画廊"
     },
     "navDisplay": {
         "home": "归处",
         "articles": "篇章",
         "moments": "片刻",
         "timeline": "履迹",
-        "links": "友邻"
+        "links": "友邻",
+        "gallery": "光影"
     },
     "home": {
         "heroSubtitle": "写代码，也写想法",
@@ -158,5 +160,27 @@
     "meta": {
         "darkMode": "切换深色模式",
         "lightMode": "切换浅色模式"
+    },
+    "gallery": {
+        "title": "画廊",
+        "subtitle": "用光影记录生活",
+        "eyebrow": "GALLERY",
+        "total": "共 {n} 张",
+        "noPhotos": "暂无照片",
+        "allTags": "全部",
+        "details": "详情",
+        "close": "关闭",
+        "prev": "上一张",
+        "next": "下一张",
+        "camera": "相机",
+        "lens": "镜头",
+        "focalLength": "焦距",
+        "aperture": "光圈",
+        "shutterSpeed": "快门速度",
+        "iso": "ISO",
+        "takenAt": "拍摄时间",
+        "location": "地点",
+        "contextLabel": "{cities}",
+        "contextLabelMore": "{cities} +{n}"
     }
 }
