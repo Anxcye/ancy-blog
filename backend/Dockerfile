@@ -7,7 +7,7 @@ FROM golang:1.24-alpine AS builder
 
 WORKDIR /src
 
-RUN apk add --no-cache git ca-certificates
+RUN apk add --no-cache git ca-certificates gcc musl-dev
 
 ARG TARGETOS=linux
 ARG TARGETARCH=amd64
@@ -17,8 +17,8 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /out/server ./cmd/server && \
-    CGO_ENABLED=0 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /out/migrate ./cmd/migrate
+RUN CGO_ENABLED=1 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /out/server ./cmd/server && \
+    CGO_ENABLED=1 GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o /out/migrate ./cmd/migrate
 
 FROM alpine:3.22
 
