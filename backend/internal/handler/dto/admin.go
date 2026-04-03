@@ -153,3 +153,41 @@ type UpsertTranslationContentRequest struct {
 	PublishedAt       time.Time `json:"publishedAt"`
 	TranslatedByJobID string    `json:"translatedByJobId"`
 }
+
+// --------------- Gallery ---------------
+
+type GalleryPhotoUpsertRequest struct {
+	Title           string    `json:"title"`
+	Slug            string    `json:"slug"`
+	Description     string    `json:"description"`
+	Status          string    `json:"status"`
+	LocationName    string    `json:"locationName"`
+	LocationCity    string    `json:"locationCity"`
+	LocationState   string    `json:"locationState"`
+	LocationCountry string    `json:"locationCountry"`
+	TakenAt         time.Time `json:"takenAt"`
+	CameraMake      string    `json:"cameraMake"`
+	CameraModel     string    `json:"cameraModel"`
+	LensModel       string    `json:"lensModel"`
+	FocalLength     string    `json:"focalLength"`
+	Aperture        string    `json:"aperture"`
+	ShutterSpeed    string    `json:"shutterSpeed"`
+	ISO             string    `json:"iso"`
+	TakenAtDisplay  bool      `json:"takenAtDisplay"`
+	CameraDisplay   bool      `json:"cameraDisplay"`
+	LocationDisplay bool      `json:"locationDisplay"`
+	ExifDisplay     bool      `json:"exifDisplay"`
+	TagsDisplay     bool      `json:"tagsDisplay"`
+	SortOrder       int       `json:"sortOrder"`
+	TagSlugs        []string  `json:"tagSlugs"`
+}
+
+type GalleryPhotoBatchStatusRequest struct {
+	IDs    []string `json:"ids"`
+	Status string   `json:"status"`
+}
+
+type GalleryTagCreateRequest struct {
+	Name string `json:"name"`
+	Slug string `json:"slug"`
+}

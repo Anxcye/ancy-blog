@@ -845,3 +845,10 @@
   - added migration `000022_visit_event_ping_window_index` plus schema baseline updates for engagement columns and a partial PostgreSQL index that keeps page-view session/path lookup efficient.
   - updated the React admin analytics page so raw visits and top paths show accumulated active duration directly.
   - updated product rules, data model, and API contract to document the new heartbeat persistence behavior.
+
+---
+## 2026-04-03
+### Summary
+- Defined the built-in gallery module product scope and documented it in `docs/GALLERY_REQUIREMENTS.md`.
+- Updated `docs/PRODUCT_RULES.md` with gallery routing, visibility, EXIF/GPS privacy, metadata-display, upload, and article-integration rules.
+- Added the gallery implementation item to `docs/PROGRESS.md`.

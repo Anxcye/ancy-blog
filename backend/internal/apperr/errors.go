@@ -23,4 +23,8 @@ var (
 	ErrTranslationJobNotFound = errors.New("translation job not found")
 
 	ErrSlugAlreadyExists = errors.New("slug already exists")
+
+	ErrGalleryPhotoNotFound = errors.New("gallery photo not found")
+	ErrGalleryTagNotFound   = errors.New("gallery tag not found")
+	ErrPhotoHasReferences   = errors.New("photo is referenced by articles and cannot be deleted")
 )

@@ -1,6 +1,7 @@
 # Progress Board
 
 ## Todo
+- [ ] Gallery: implement built-in photo gallery module (R2-backed assets, EXIF/GPS processing, tag filtering, masonry stream, photo viewer, article reuse, and admin batch upload/review).
 - [ ] Blog: 404 / error pages for frontend-blog.
 - [ ] Blog: 关于我页面 (article content_kind=page renderer).
 - [ ] Blog: 评论回复功能 (threaded replies).

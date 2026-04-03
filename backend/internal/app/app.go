@@ -18,6 +18,7 @@ import (
 	"github.com/anxcye/ancy-blog/backend/internal/repository"
 	"github.com/anxcye/ancy-blog/backend/internal/repository/postgres"
 	"github.com/anxcye/ancy-blog/backend/internal/service"
+	"github.com/anxcye/ancy-blog/backend/internal/storage"
 	"github.com/anxcye/ancy-blog/backend/internal/worker"
 )
 
@@ -26,6 +27,7 @@ type App struct {
 	PublicHandler     *handler.PublicHandler
 	AdminHandler      *handler.AdminHandler
 	UploadHandler     *handler.UploadHandler
+	GalleryHandler    *handler.GalleryHandler
 	AuthService       *service.AuthService
 	TranslationWorker *worker.TranslationWorker
 }
@@ -83,6 +85,17 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 	analyticsService := service.NewAnalyticsService(contentService)
 	aiAssistService := service.NewAIAssistService(articleService, integrationService)
 	tmdbService := service.NewTMDBService(integrationService)
+
+	// Gallery service (uses pgRepo directly as GalleryRepository)
+	galleryService := service.NewGalleryService(pgRepo).
+		WithUploaderFactory(func() (storage.Uploader, error) {
+			provider, ok := integrationService.GetIntegrationProviderForRuntime("cloudflare_r2")
+			if !ok || !provider.Enabled {
+				return nil, errors.New("cloudflare_r2 provider is disabled or missing")
+			}
+			return storage.NewR2UploaderFromConfigJSON(provider.ConfigJSON)
+		})
+
 	var translationWorker *worker.TranslationWorker
 	if cfg.Translation.WorkerEnabled {
 		translationWorker = worker.NewTranslationWorker(
@@ -100,6 +113,7 @@ func New(cfg *config.Config, logger *slog.Logger) (*App, error) {
 		PublicHandler:     handler.NewPublicHandler(articleService, commentService, linkService, siteService, timelineService).WithAnalyticsService(analyticsService),
 		AdminHandler:      handler.NewAdminHandler(articleService, commentService, linkService, siteService, integrationService, translationService, aiAssistService, authService, tmdbService).WithAnalyticsService(analyticsService),
 		UploadHandler:     handler.NewUploadHandler(nil, integrationService),
+		GalleryHandler:    handler.NewGalleryHandler(galleryService),
 		AuthService:       authService,
 		TranslationWorker: translationWorker,
 	}, nil

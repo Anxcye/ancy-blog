@@ -137,6 +137,7 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 - Default menu items:
   - Home
   - Articles
+  - Gallery
   - Moments
   - Timeline
   - Links
@@ -163,6 +164,33 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 - Closing the moment detail modal must preserve the current feed state and scroll context instead of refetching the list.
 - Moment comments reuse the same public threaded comment components as article comments.
 - Moment content is authored and stored as Markdown source, then rendered as Markdown on the public blog and in admin preview.
+
+## Gallery Rules
+- Gallery is a built-in public module under `/gallery`, not a separately deployed site.
+- Public photo URLs use `/gallery/{slug}`.
+- Gallery uses a global masonry photo stream with tag filtering; albums are out of scope for v1.
+- Gallery cards and viewer images must preserve original photo aspect ratios.
+- Opening a photo from the gallery stream should use a card-to-viewer transition; direct entry to `/gallery/{slug}` should render the viewer immediately without relying on the source-card animation.
+- Desktop stream cards show only concise hover metadata; full metadata appears in the viewer side panel.
+- Mobile viewer metadata is opened from a top-left details button; the top-right close button returns to the gallery stream.
+- Gallery metadata fields are public only when the field has a value and its per-photo display switch is enabled; hidden fields should be omitted by public APIs.
+- Recommended per-photo display switches:
+  - `taken_at_display`
+  - `camera_display`
+  - `location_display`
+  - `exif_display`
+  - `tags_display`
+- Photo statuses:
+  - `draft`: not publicly visible
+  - `published`: listed in gallery and usable by articles
+  - `hidden`: excluded from gallery stream but still usable by explicit article references
+- Admin gallery upload supports batch file/folder upload, draft review, per-photo metadata editing, batch publish, and retry/removal for failed items.
+- Upload processing must extract a whitelist of EXIF fields, reverse-geocode GPS into city-level location data, then remove GPS and non-whitelisted EXIF data from stored image assets.
+- Precise original GPS coordinates should not be stored by default; public UI should show city-level or manually edited location text only.
+- Public gallery and article image rendering should use a blurred placeholder plus optimized display/large assets stored on Cloudflare R2, not raw original camera files.
+- Articles should reference gallery photos through stable gallery photo identity rather than hardcoded final image URLs whenever possible.
+- Hard deletion should be blocked or safely degraded when a gallery photo is already referenced by articles.
+- Detailed gallery requirements are tracked in `docs/GALLERY_REQUIREMENTS.md`.
 
 ## Caching Rules (Redis)
 - Cache read-heavy site data:

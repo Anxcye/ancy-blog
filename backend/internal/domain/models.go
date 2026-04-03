@@ -363,3 +363,75 @@ type TranslationContent struct {
 	CreatedAt         time.Time `json:"createdAt"`
 	UpdatedAt         time.Time `json:"updatedAt"`
 }
+
+// =========================
+// Gallery
+// =========================
+
+type GalleryPhoto struct {
+	ID               string    `json:"id"`
+	Title            string    `json:"title"`
+	Slug             string    `json:"slug"`
+	Description      string    `json:"description"`
+	Status           string    `json:"status"`
+	LocationName     string    `json:"locationName"`
+	LocationCity     string    `json:"locationCity"`
+	LocationState    string    `json:"locationState"`
+	LocationCountry  string    `json:"locationCountry"`
+	TakenAt          time.Time `json:"takenAt,omitempty"`
+	CameraMake       string    `json:"cameraMake"`
+	CameraModel      string    `json:"cameraModel"`
+	LensModel        string    `json:"lensModel"`
+	FocalLength      string    `json:"focalLength"`
+	Aperture         string    `json:"aperture"`
+	ShutterSpeed     string    `json:"shutterSpeed"`
+	ISO              string    `json:"iso"`
+	Width            int       `json:"width"`
+	Height           int       `json:"height"`
+	TakenAtDisplay   bool      `json:"takenAtDisplay"`
+	CameraDisplay    bool      `json:"cameraDisplay"`
+	LocationDisplay  bool      `json:"locationDisplay"`
+	ExifDisplay      bool      `json:"exifDisplay"`
+	TagsDisplay      bool      `json:"tagsDisplay"`
+	PlaceholderData  string    `json:"placeholderData,omitempty"`
+	DisplayURL       string    `json:"displayUrl"`
+	LargeURL         string    `json:"largeUrl"`
+	ProcessingStatus string    `json:"processingStatus"`
+	ProcessingError  string    `json:"processingError,omitempty"`
+	SortOrder        int       `json:"sortOrder"`
+	ArticleRefCount  int       `json:"articleRefCount"`
+	TagSlugs         []string  `json:"tagSlugs,omitempty"`
+	CreatedAt        time.Time `json:"createdAt"`
+	UpdatedAt        time.Time `json:"updatedAt"`
+}
+
+// GalleryPhotoPublic is the public-facing subset. Hidden metadata fields are omitted at the service layer.
+type GalleryPhotoPublic struct {
+	ID              string    `json:"id"`
+	Title           string    `json:"title,omitempty"`
+	Slug            string    `json:"slug"`
+	Description     string    `json:"description,omitempty"`
+	LocationName    string    `json:"locationName,omitempty"`
+	LocationCity    string    `json:"locationCity,omitempty"`
+	TakenAt         time.Time `json:"takenAt,omitempty"`
+	CameraMake      string    `json:"cameraMake,omitempty"`
+	CameraModel     string    `json:"cameraModel,omitempty"`
+	LensModel       string    `json:"lensModel,omitempty"`
+	FocalLength     string    `json:"focalLength,omitempty"`
+	Aperture        string    `json:"aperture,omitempty"`
+	ShutterSpeed    string    `json:"shutterSpeed,omitempty"`
+	ISO             string    `json:"iso,omitempty"`
+	Width           int       `json:"width"`
+	Height          int       `json:"height"`
+	PlaceholderData string    `json:"placeholderData,omitempty"`
+	DisplayURL      string    `json:"displayUrl"`
+	LargeURL        string    `json:"largeUrl"`
+	TagSlugs        []string  `json:"tagSlugs,omitempty"`
+	CreatedAt       time.Time `json:"createdAt"`
+}
+
+type GalleryTag struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	Slug string `json:"slug"`
+}

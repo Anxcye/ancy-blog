@@ -74,6 +74,11 @@ func NewHTTPServer(cfg *config.Config, logger *slog.Logger) (*HTTPServer, error)
 			pub.GET("/site/nav", container.PublicHandler.SiteNav)
 			pub.GET("/site/slots/:slotKey", container.PublicHandler.SiteSlotContent)
 			pub.GET("/timeline", container.PublicHandler.Timeline)
+
+			// Gallery public
+			pub.GET("/gallery/photos", container.GalleryHandler.PublicPhotos)
+			pub.GET("/gallery/photos/:slug", container.GalleryHandler.PublicPhotoBySlug)
+			pub.GET("/gallery/tags", container.GalleryHandler.PublicGalleryTags)
 		}
 
 		admin := api.Group("/admin")
@@ -145,6 +150,18 @@ func NewHTTPServer(cfg *config.Config, logger *slog.Logger) (*HTTPServer, error)
 			admin.POST("/ai/slug", container.AdminHandler.SuggestSlug)
 
 			admin.GET("/integrations/tmdb/:type/:id", container.AdminHandler.GetTMDBMetadata)
+
+			// Gallery admin
+			admin.GET("/gallery/photos", container.GalleryHandler.ListPhotos)
+			admin.GET("/gallery/photos/:id", container.GalleryHandler.PhotoDetail)
+			admin.POST("/gallery/photos", container.GalleryHandler.CreatePhoto)
+			admin.PUT("/gallery/photos/:id", container.GalleryHandler.UpdatePhoto)
+			admin.DELETE("/gallery/photos/:id", container.GalleryHandler.DeletePhoto)
+			admin.POST("/gallery/photos/batch-status", container.GalleryHandler.BatchUpdatePhotoStatus)
+			admin.POST("/gallery/photos/upload", container.GalleryHandler.UploadPhoto)
+			admin.GET("/gallery/tags", container.GalleryHandler.ListGalleryTags)
+			admin.POST("/gallery/tags", container.GalleryHandler.CreateGalleryTag)
+			admin.DELETE("/gallery/tags/:id", container.GalleryHandler.DeleteGalleryTag)
 
 			admin.POST("/upload/image", container.UploadHandler.UploadImage)
 		}
