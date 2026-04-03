@@ -483,3 +483,78 @@ Indexes/Constraints:
   - `categoryName`
   - `content`
   - `publishedAt`
+
+---
+
+## Gallery Module (migration 000023)
+
+### `gallery_tags`
+| Column | Type | Constraints |
+|--------|------|-------------|
+| `id` | UUID | PK, default `gen_random_uuid()` |
+| `name` | VARCHAR(128) | NOT NULL, UNIQUE |
+| `slug` | VARCHAR(128) | NOT NULL, UNIQUE |
+| `created_at` | TIMESTAMPTZ | NOT NULL, default NOW() |
+| `updated_at` | TIMESTAMPTZ | NOT NULL, default NOW() |
+| `deleted_at` | TIMESTAMPTZ | Soft delete |
+
+### `gallery_photos`
+| Column | Type | Constraints |
+|--------|------|-------------|
+| `id` | UUID | PK, default `gen_random_uuid()` |
+| `title` | VARCHAR(256) | NOT NULL, default '' |
+| `slug` | VARCHAR(256) | NOT NULL, UNIQUE |
+| `description` | TEXT | NOT NULL, default '' |
+| `status` | VARCHAR(16) | NOT NULL, default 'draft', CHECK IN ('draft','published','hidden') |
+| `location_name` | VARCHAR(256) | NOT NULL, default '' |
+| `location_city` | VARCHAR(128) | NOT NULL, default '' |
+| `location_state` | VARCHAR(128) | NOT NULL, default '' |
+| `location_country` | VARCHAR(128) | NOT NULL, default '' |
+| `taken_at` | TIMESTAMPTZ | Nullable, EXIF shooting time |
+| `camera_make` | VARCHAR(128) | NOT NULL, default '' |
+| `camera_model` | VARCHAR(128) | NOT NULL, default '' |
+| `lens_model` | VARCHAR(256) | NOT NULL, default '' |
+| `focal_length` | VARCHAR(32) | NOT NULL, default '' |
+| `aperture` | VARCHAR(32) | NOT NULL, default '' |
+| `shutter_speed` | VARCHAR(32) | NOT NULL, default '' |
+| `iso` | VARCHAR(16) | NOT NULL, default '' |
+| `width` | INTEGER | NOT NULL, default 0 |
+| `height` | INTEGER | NOT NULL, default 0 |
+| `taken_at_display` | BOOLEAN | NOT NULL, default TRUE |
+| `camera_display` | BOOLEAN | NOT NULL, default TRUE |
+| `location_display` | BOOLEAN | NOT NULL, default TRUE |
+| `exif_display` | BOOLEAN | NOT NULL, default TRUE |
+| `tags_display` | BOOLEAN | NOT NULL, default TRUE |
+| `placeholder_data` | TEXT | NOT NULL, default '', BlurHash string |
+| `display_url` | TEXT | NOT NULL, default '', 800px optimized |
+| `large_url` | TEXT | NOT NULL, default '', 2400px cleaned |
+| `processing_status` | VARCHAR(32) | NOT NULL, default 'pending', CHECK IN ('pending','processing','completed','failed') |
+| `processing_error` | TEXT | NOT NULL, default '' |
+| `sort_order` | INTEGER | NOT NULL, default 0 |
+| `article_ref_count` | INTEGER | NOT NULL, default 0, denormalized deletion guard |
+| `created_at` | TIMESTAMPTZ | NOT NULL, default NOW() |
+| `updated_at` | TIMESTAMPTZ | NOT NULL, default NOW() |
+| `deleted_at` | TIMESTAMPTZ | Soft delete |
+
+Indexes:
+- `(status, sort_order DESC, taken_at DESC NULLS LAST, created_at DESC)` WHERE deleted_at IS NULL
+- `(slug)` WHERE deleted_at IS NULL
+- `(processing_status)` WHERE deleted_at IS NULL
+
+### `gallery_photo_tags`
+| Column | Type | Constraints |
+|--------|------|-------------|
+| `photo_id` | UUID | FK → gallery_photos(id) ON DELETE CASCADE |
+| `tag_id` | UUID | FK → gallery_tags(id) ON DELETE CASCADE |
+| `created_at` | TIMESTAMPTZ | NOT NULL, default NOW() |
+
+Primary Key: `(photo_id, tag_id)`
+Index: `(tag_id, photo_id)`
+
+### Gallery Design Notes
+- Gallery tags are separate from article tags (different taxonomy, different lifecycle).
+- No raw GPS coordinates stored in database (privacy by design).
+- GPS extracted from EXIF for reverse geocoding only, then discarded.
+- `article_ref_count` prevents accidental deletion of photos used in articles.
+- `processing_status` tracks image processing pipeline state.
+- Display switch booleans control which metadata fields appear in public API responses.

@@ -992,3 +992,141 @@
 ### Article Pin / Featured (migration 000009)
 - `isPinned` (bool) — pinned articles sort first in `ListArticles`; shown as badge in admin.
 - `isFeatured` (bool) — featured flag for frontend showcase use; shown as badge in admin.
+
+---
+
+## Gallery Module (migration 000023)
+
+### Public Gallery Endpoints
+
+#### PUB-GAL-001 — List Published Photos
+- **Route**: `GET /api/v1/public/gallery/photos`
+- **Query**: `page`, `pageSize`, `tag` (gallery tag slug)
+- **Response**: paginated `{ total, rows: GalleryPhotoPublic[] }`
+- **Notes**: Only published photos. Display-switch rules applied — metadata fields are omitted from response when their switch is disabled or value is empty.
+
+#### PUB-GAL-002 — Get Published Photo by Slug
+- **Route**: `GET /api/v1/public/gallery/photos/:slug`
+- **Response**: `GalleryPhotoPublic`
+- **Notes**: Returns published or hidden photos. Draft photos return 404. Display-switch rules applied.
+
+#### PUB-GAL-003 — List Gallery Tags
+- **Route**: `GET /api/v1/public/gallery/tags`
+- **Response**: `GalleryTag[]`
+
+### Admin Gallery Endpoints
+
+#### ADM-GAL-001 — List All Photos
+- **Route**: `GET /api/v1/admin/gallery/photos`
+- **Query**: `page`, `pageSize`, `status`, `tag`, `keyword`
+- **Response**: paginated `{ total, rows: GalleryPhoto[] }` (full admin view, all metadata and switches)
+
+#### ADM-GAL-002 — Get Photo Detail
+- **Route**: `GET /api/v1/admin/gallery/photos/:id`
+- **Response**: `GalleryPhoto` (full admin view)
+
+#### ADM-GAL-003 — Create Photo (metadata only)
+- **Route**: `POST /api/v1/admin/gallery/photos`
+- **Body**: `GalleryPhotoUpsertRequest`
+- **Response**: `GalleryPhoto`
+
+#### ADM-GAL-004 — Update Photo
+- **Route**: `PUT /api/v1/admin/gallery/photos/:id`
+- **Body**: `GalleryPhotoUpsertRequest`
+- **Response**: `GalleryPhoto`
+
+#### ADM-GAL-005 — Delete Photo
+- **Route**: `DELETE /api/v1/admin/gallery/photos/:id`
+- **Notes**: Blocked with 409 if `articleRefCount > 0`.
+
+#### ADM-GAL-006 — Batch Update Photo Status
+- **Route**: `POST /api/v1/admin/gallery/photos/batch-status`
+- **Body**: `{ ids: string[], status: "draft"|"published"|"hidden" }`
+- **Response**: `{ updated: number }`
+
+#### ADM-GAL-007 — Upload Photo
+- **Route**: `POST /api/v1/admin/gallery/photos/upload`
+- **Body**: multipart form, field `file` (image, max 50MB)
+- **Response**: `GalleryPhoto` (draft, with EXIF extracted, display/large/placeholder assets generated)
+- **Processing**: Extracts EXIF whitelisted fields, generates display (800px), large (2400px), BlurHash placeholder. Uploads assets to R2.
+
+#### ADM-GAL-008 — List Gallery Tags
+- **Route**: `GET /api/v1/admin/gallery/tags`
+- **Response**: `GalleryTag[]`
+
+#### ADM-GAL-009 — Create Gallery Tag
+- **Route**: `POST /api/v1/admin/gallery/tags`
+- **Body**: `{ name, slug }`
+- **Response**: `GalleryTag`
+
+#### ADM-GAL-010 — Delete Gallery Tag
+- **Route**: `DELETE /api/v1/admin/gallery/tags/:id`
+
+### Gallery DTOs
+
+**GalleryPhotoPublic** (public response — display-switch filtered):
+```json
+{
+  "id": "uuid",
+  "title": "string?",
+  "slug": "string",
+  "description": "string?",
+  "locationName": "string?",
+  "locationCity": "string?",
+  "takenAt": "datetime?",
+  "cameraMake": "string?",
+  "cameraModel": "string?",
+  "lensModel": "string?",
+  "focalLength": "string?",
+  "aperture": "string?",
+  "shutterSpeed": "string?",
+  "iso": "string?",
+  "width": "int",
+  "height": "int",
+  "placeholderData": "string?",
+  "displayUrl": "string",
+  "largeUrl": "string",
+  "tagSlugs": ["string"],
+  "createdAt": "datetime"
+}
+```
+
+**GalleryPhoto** (admin response — full metadata):
+```json
+{
+  "id": "uuid",
+  "title": "string",
+  "slug": "string",
+  "description": "string",
+  "status": "draft|published|hidden",
+  "locationName": "string",
+  "locationCity": "string",
+  "locationState": "string",
+  "locationCountry": "string",
+  "takenAt": "datetime?",
+  "cameraMake": "string",
+  "cameraModel": "string",
+  "lensModel": "string",
+  "focalLength": "string",
+  "aperture": "string",
+  "shutterSpeed": "string",
+  "iso": "string",
+  "width": "int",
+  "height": "int",
+  "takenAtDisplay": "bool",
+  "cameraDisplay": "bool",
+  "locationDisplay": "bool",
+  "exifDisplay": "bool",
+  "tagsDisplay": "bool",
+  "placeholderData": "string",
+  "displayUrl": "string",
+  "largeUrl": "string",
+  "processingStatus": "pending|processing|completed|failed",
+  "processingError": "string",
+  "sortOrder": "int",
+  "articleRefCount": "int",
+  "tagSlugs": ["string"],
+  "createdAt": "datetime",
+  "updatedAt": "datetime"
+}
+```
