@@ -395,12 +395,12 @@ useSeoMeta({ title: t('gallery.title') })
 /* ── Masonry grid ── */
 .masonry-grid {
   columns: 3;
-  column-gap: 16px;
+  column-gap: 4px;
 }
 
 .masonry-item {
   break-inside: avoid;
-  margin-bottom: 16px;
+  margin-bottom: 4px;
   animation: fadeUp 0.5s var(--ease-smooth) both;
   text-decoration: none;
   display: block;
@@ -421,7 +421,6 @@ useSeoMeta({ title: t('gallery.title') })
 .photo-card {
   position: relative;
   width: 100%;
-  border-radius: var(--radius-md);
   overflow: hidden;
   background: var(--bg-secondary);
   cursor: pointer;
@@ -506,7 +505,6 @@ useSeoMeta({ title: t('gallery.title') })
   );
   background-size: 200% 100%;
   animation: shimmer 1.4s linear infinite;
-  border-radius: var(--radius-md);
 }
 
 @keyframes shimmer {
@@ -524,20 +522,20 @@ useSeoMeta({ title: t('gallery.title') })
 @media (max-width: 900px) {
   .masonry-grid {
     columns: 2;
-    column-gap: 12px;
+    column-gap: 4px;
   }
   .masonry-item {
-    margin-bottom: 12px;
+    margin-bottom: 4px;
   }
 }
 
-@media (max-width: 520px) {
+@media (max-width: 320px) {
   .masonry-grid {
     columns: 1;
-    column-gap: 0;
+    column-gap: 3px;
   }
   .masonry-item {
-    margin-bottom: 12px;
+    margin-bottom: 3px;
   }
   /* On mobile, show a subtle bottom bar instead of hover overlay */
   .photo-overlay {

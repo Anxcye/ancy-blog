@@ -4,7 +4,17 @@
      Related: composables/useApi.ts, pages/gallery/index.vue. -->
 <template>
   <div class="photo-viewer">
-    <!-- Close button -->
+    <canvas
+      v-if="photo?.placeholderData"
+      :ref="(el) => renderBackdropBlurHash(el as HTMLCanvasElement | null, photo?.placeholderData || '')"
+      class="viewer-backdrop-canvas"
+      width="32"
+      height="32"
+      aria-hidden="true"
+    />
+    <div class="viewer-backdrop-tint" aria-hidden="true" />
+
+    <!-- Viewer close button -->
     <NuxtLink :to="localePath('/gallery')" class="viewer-close" :aria-label="t('gallery.close')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
         <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
@@ -16,21 +26,25 @@
       {{ t('gallery.details') }}
     </button>
 
+    <!-- Desktop panel restore -->
+    <button
+      v-if="panelCollapsed"
+      class="viewer-panel-restore"
+      type="button"
+      :aria-label="t('gallery.details')"
+      @click="panelCollapsed = false"
+    >
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="9 18 15 12 9 6" />
+      </svg>
+    </button>
+
     <!-- Main image area -->
     <div class="viewer-main" @click="detailOpen = false">
       <div
         v-if="photo"
         class="viewer-stage"
-        :style="{ aspectRatio: photo.width && photo.height ? `${photo.width} / ${photo.height}` : undefined }"
       >
-        <canvas
-          v-if="photo.placeholderData"
-          ref="placeholderCanvasRef"
-          class="viewer-placeholder"
-          width="32"
-          height="32"
-        />
-
         <img
           :src="photo.displayUrl"
           :alt="photo.title || photo.slug"
@@ -56,9 +70,21 @@
     </div>
 
     <!-- Detail panel -->
-    <aside class="viewer-panel" :class="{ open: detailOpen }">
+    <aside class="viewer-panel" :class="{ open: detailOpen, collapsed: panelCollapsed }">
       <div class="panel-scroll" v-if="photo">
-        <p class="panel-heading">{{ formatPhotoName() }}</p>
+        <div class="panel-topbar">
+          <p class="panel-heading">{{ formatPhotoName() }}</p>
+          <button
+            type="button"
+            class="panel-action-btn"
+            aria-label="Collapse details"
+            @click="panelCollapsed = true"
+          >
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="15 18 9 12 15 6" />
+            </svg>
+          </button>
+        </div>
         <p v-if="photo.description" class="panel-desc">{{ photo.description }}</p>
 
         <div class="detail-section">
@@ -166,9 +192,9 @@ const { getGalleryPhoto, getGalleryTags } = useApi()
 
 const slug = route.params.slug as string
 const detailOpen = ref(false)
+const panelCollapsed = ref(false)
 const displayLoaded = ref(false)
 const largeReady = ref(false)
-const placeholderCanvasRef = ref<HTMLCanvasElement | null>(null)
 
 // Fetch photo and tags in parallel
 const [{ data: photo }, { data: galleryTags }] = await Promise.all([
@@ -184,8 +210,6 @@ watch(
 
     if (!currentPhoto) return
 
-    await nextTick()
-    renderBlurHash(currentPhoto.placeholderData || '')
     preloadDisplayImage(currentPhoto.displayUrl)
   },
   { immediate: true }
@@ -247,27 +271,34 @@ function formatFileSize(bytes?: number) {
   return `${(bytes / 1024 / 1024).toFixed(2)} MB`
 }
 
-function renderBlurHash(hash: string) {
-  if (!placeholderCanvasRef.value || !import.meta.client || !hash) return
+function renderBackdropBlurHash(canvas: HTMLCanvasElement | null, hash: string) {
+  renderBlurHashToCanvas(canvas, hash, '#d8d8d8')
+}
 
-  const canvas = placeholderCanvasRef.value
+function renderBlurHashToCanvas(
+  canvas: HTMLCanvasElement | null,
+  hash: string,
+  fallbackColor: string,
+  width = 32,
+  height = 32
+) {
+  if (!canvas || !import.meta.client || !hash) return
+
   const ctx = canvas.getContext('2d')
   if (!ctx) return
 
   try {
-    const width = 32
-    const height = 32
     const pixels = decode(hash, width, height)
     const imageData = ctx.createImageData(width, height)
     imageData.data.set(pixels)
     ctx.putImageData(imageData, 0, 0)
   } catch {
-    ctx.fillStyle = '#e5e7eb'
-    ctx.fillRect(0, 0, 32, 32)
+    ctx.fillStyle = fallbackColor
+    ctx.fillRect(0, 0, width, height)
   }
 }
 
-function handleDisplayLoaded() {
+async function handleDisplayLoaded() {
   displayLoaded.value = true
   preloadLargeImage()
 }
@@ -309,6 +340,8 @@ if (import.meta.client) {
     if (e.key === 'Escape') {
       if (detailOpen.value) {
         detailOpen.value = false
+      } else if (!panelCollapsed.value) {
+        panelCollapsed.value = true
       } else {
         navigateTo(localePath('/gallery'))
       }
@@ -325,13 +358,35 @@ if (import.meta.client) {
   z-index: 100;
   display: flex;
   background: var(--bg);
+  overflow: hidden;
+}
+
+.viewer-backdrop-canvas {
+  position: fixed;
+  inset: -40px;
+  z-index: 0;
+  width: calc(100% + 80px);
+  height: calc(100% + 80px);
+  object-fit: cover;
+  filter: blur(32px) saturate(1.55) brightness(0.98);
+  transform: scale(1.25);
+  opacity: 0.95;
+}
+
+.viewer-backdrop-tint {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  background:
+    radial-gradient(circle at 50% 20%, color-mix(in srgb, var(--surface) 16%, transparent), transparent 48%),
+    linear-gradient(120deg, color-mix(in srgb, var(--bg) 42%, transparent), color-mix(in srgb, var(--bg) 20%, transparent));
 }
 
 /* ── Close button ── */
 .viewer-close {
   position: fixed;
   top: 16px;
-  right: 16px;
+  left: 16px;
   z-index: 110;
   width: 40px;
   height: 40px;
@@ -347,6 +402,39 @@ if (import.meta.client) {
   text-decoration: none;
   transition: all var(--dur-fast);
   cursor: pointer;
+}
+
+.viewer-panel-restore {
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  z-index: 110;
+  width: 40px;
+  height: 40px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: none;
+  background: color-mix(in srgb, var(--surface) 52%, transparent);
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  box-shadow:
+    0 18px 40px color-mix(in srgb, #000 14%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #fff 30%, transparent);
+  color: var(--text);
+  cursor: pointer;
+  transition: background var(--dur-fast), transform var(--dur-fast);
+}
+
+.viewer-panel-restore:hover {
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  transform: scale(1.06);
+}
+
+.viewer-panel-restore svg {
+  width: 18px;
+  height: 18px;
 }
 
 .viewer-close:hover {
@@ -385,39 +473,29 @@ if (import.meta.client) {
 
 /* ── Main image area ── */
 .viewer-main {
+  position: relative;
+  z-index: 1;
   flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
+  padding: 8px;
   overflow: hidden;
   min-width: 0;
 }
 
 .viewer-stage {
   position: relative;
-  max-width: 100%;
-  max-height: 100%;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  background: var(--bg-secondary);
-  box-shadow: var(--shadow-lg);
-}
-
-.viewer-placeholder {
-  position: absolute;
-  inset: 0;
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  overflow: hidden;
+  background: transparent;
 }
 
 .viewer-image {
   display: block;
   width: 100%;
-  height: auto;
-  max-width: 100%;
-  max-height: 100%;
+  height: 100%;
   object-fit: contain;
 }
 
@@ -449,17 +527,71 @@ if (import.meta.client) {
 
 /* ── Detail panel ── */
 .viewer-panel {
-  width: 360px;
+  position: relative;
+  z-index: 2;
+  width: 312px;
   flex-shrink: 0;
+  margin: 12px 12px 12px 0;
+  border-radius: 28px;
   overflow-y: auto;
-  transition: transform var(--dur-slow) var(--ease-smooth);
+  background: color-mix(in srgb, var(--surface) 46%, transparent);
+  backdrop-filter: blur(26px) saturate(1.35);
+  -webkit-backdrop-filter: blur(26px) saturate(1.35);
+  box-shadow:
+    0 24px 56px color-mix(in srgb, #000 16%, transparent),
+    inset 0 1px 0 color-mix(in srgb, #fff 28%, transparent);
+  transition:
+    width var(--dur-slow) var(--ease-smooth),
+    margin var(--dur-slow) var(--ease-smooth),
+    opacity var(--dur-fast),
+    transform var(--dur-slow) var(--ease-smooth);
+}
+
+.viewer-panel.collapsed {
+  width: 0;
+  margin-right: 0;
+  opacity: 0;
+  transform: translateX(24px);
+  pointer-events: none;
 }
 
 .panel-scroll {
-  padding: 32px 28px 36px;
+  padding: 18px 18px 36px 28px;
   display: flex;
   flex-direction: column;
   gap: 24px;
+}
+
+.panel-topbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 14px;
+}
+
+.panel-action-btn {
+  width: 34px;
+  height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 28%, transparent);
+  color: var(--text);
+  cursor: pointer;
+  text-decoration: none;
+  transition: background var(--dur-fast), transform var(--dur-fast);
+}
+
+.panel-action-btn:hover {
+  background: color-mix(in srgb, var(--surface) 46%, transparent);
+  transform: scale(1.05);
+}
+
+.panel-action-btn svg {
+  width: 17px;
+  height: 17px;
 }
 
 .panel-heading {
@@ -550,11 +682,25 @@ if (import.meta.client) {
 
   .viewer-details-toggle {
     display: block;
+    left: auto;
+    right: 16px;
+  }
+
+  .viewer-panel-restore {
+    display: none;
   }
 
   .viewer-main {
     flex: 1;
-    padding: 60px 12px 12px;
+    padding: 56px 4px 4px;
+  }
+
+  .panel-action-btn {
+    display: none;
+  }
+
+  .panel-topbar {
+    grid-template-columns: minmax(0, 1fr);
   }
 
   .viewer-panel {
@@ -564,9 +710,19 @@ if (import.meta.client) {
     right: 0;
     width: 100%;
     height: 70vh;
+    margin: 0;
     border-radius: var(--radius-xl) var(--radius-xl) 0 0;
     transform: translateY(100%);
+    opacity: 1;
     z-index: 120;
+  }
+
+  .viewer-panel.collapsed {
+    width: 100%;
+    margin-right: 0;
+    opacity: 1;
+    transform: translateY(100%);
+    pointer-events: auto;
   }
 
   .viewer-panel.open {

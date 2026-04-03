@@ -61,7 +61,17 @@ This guide governs both frontend apps:
   - prefer light roster rows over heavy grid cards;
   - keep the submission form collapsed behind a clear CTA by default.
 - Gallery masonry cards should use a subtle image zoom on hover and compact bottom metadata text over a dark gradient, with no bordered or boxed overlay container.
+- Gallery masonry stream should use tight inter-photo spacing and square-corner photo tiles so the stream reads more like a continuous photo wall than separate cards.
 - Gallery photo viewer details should use typography, spacing, and font-weight hierarchy for section separation, not border lines or card-like background blocks in the right panel.
+- Gallery photo viewer images should stay shadowless and square-cornered to preserve the original photo silhouette.
+- Gallery photo viewer should keep image edge spacing tight so the photo occupies more of the viewport.
+- Gallery photo viewer stage should fill the available main area, and the image itself should use `object-fit: contain` inside that full-size stage to avoid accidental shrink-wrapping.
+- Gallery photo viewer should use only the full-screen BlurHash wash behind the photo, not a second BlurHash layer inside the main image stage.
+- Gallery photo viewer should render the current photo's BlurHash as a full-screen blurred backdrop, and place metadata on a floating translucent frosted-glass panel with generous outer margins, rounded corners, and a desktop collapse toggle so the image can reclaim more viewport space.
+- Gallery routes (`/gallery` and locale-prefixed variants) should force dark mode while active, then restore the user's previous theme preference after navigating away, so the gallery consistently reads on a black cinematic background without permanently changing site theme.
+- Desktop gallery viewer actions should be visually grouped inside the floating metadata panel header when the panel is expanded; external chrome should be kept minimal and only appear as a restore control after collapse.
+- In the gallery viewer, keep the global close action as a floating top-left window control outside the metadata panel; the desktop metadata panel header should only carry the collapse action on the right.
+- On mobile gallery viewer, avoid putting action buttons inside the bottom-sheet metadata panel; use external window-level controls and gesture/tap collapse instead.
 
 ## Responsive & SEO Constraints
 - Mobile-first layout and touch targets >= `40px`.

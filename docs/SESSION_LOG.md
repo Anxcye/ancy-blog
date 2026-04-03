@@ -865,6 +865,23 @@
 - Updated gallery upload API/product docs to document HEIC/HEIF acceptance and JPEG-normalized derived assets.
 - Validated the change with `go test ./...` and `pnpm --dir frontend-admin-react exec tsc -b --pretty false`.
 - Reworked default gallery photo naming again so auto-created titles use `IMG` plus an 8-char random uppercase token derived from internal photo identity, avoiding original filenames, sequential counters, and metadata-heavy fallback titles.
+- Refined the gallery photo viewer so the current BlurHash fills the background with a soft blurred wash, while the right-side detail panel uses a translucent frosted-glass surface for a more premium reading feel.
+- Removed the gallery photo viewer image shadow and corner rounding so the large photo renders with a clean original-edge presentation.
+- Reduced the gallery photo viewer main-stage padding so the large image sits closer to the viewport edges and occupies more screen space.
+- Fixed the gallery photo viewer stage sizing so the image renders inside a full-size main-area stage instead of a shrink-wrapped aspect-ratio box that created excessive whitespace.
+- Removed the in-stage gallery BlurHash placeholder so the photo viewer only shows a single full-screen BlurHash background layer behind the main image.
+- Fixed the gallery viewer backdrop implementation so BlurHash is painted when the backdrop canvas mounts, and reduced the overlay tint strength to keep the blurred image wash visible behind the main photo.
+- Changed the gallery viewer metadata panel from an edge-attached sidebar to a floating rounded glass card with desktop collapse/expand support, allowing the main image to occupy more width when metadata is hidden.
+- Reduced the metadata panel glass opacity and moved desktop collapse/close controls into the panel header, leaving only a lightweight restore button outside after the panel is collapsed.
+- Moved the gallery viewer close action back outside the metadata panel to the window-level top-left corner, leaving only the collapse control inside the panel header.
+- Removed the in-panel collapse button from the mobile gallery bottom sheet so mobile viewer controls stay outside the panel and do not duplicate actions.
+- Reverted the experimental gallery image zoom/pan interaction and removed the panzoom-specific runtime code so the viewer returns to a plain bounded image display.
+- Narrowed the desktop gallery metadata panel width so the main image gets a larger share of the viewer layout.
+- Reduced the desktop gallery metadata panel outer margin by half to tighten the distance from the viewport edge.
+- Added a client-side gallery route theme override so `/gallery` and `/en/gallery` force dark mode while active and restore the previous `colorMode.preference` after leaving the gallery.
+- Tightened the public gallery masonry gutters and removed photo card corner radii so the stream reads as denser square-edged photo tiles.
+- Lowered the gallery single-column breakpoint to 320px so narrow-but-normal mobile screens keep a multi-column masonry layout longer.
+- Reduced gallery viewer image-stage padding on both desktop and mobile so the photo occupies more of the available viewport.
 
 ---
 ## 2026-04-03 (session 2) — Gallery Implementation
