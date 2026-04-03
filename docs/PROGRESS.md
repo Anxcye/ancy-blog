@@ -15,6 +15,7 @@
 - [ ] Gallery: refine hover/viewer visual treatment and expose original upload file size in public photo metadata.
 
 ## Done
+- [x] Fixed production backend container startup for CGO-enabled builds by installing `libstdc++` and `libgcc` in the runtime image.
 - [x] Fixed admin comment moderation update regression: `PUT /api/v1/admin/comments/:id` now updates status reliably in PostgreSQL without parameter type inference failures.
 - [x] Extended site settings with configurable favicon URL, wired through admin settings and runtime public head metadata.
 - [x] Upgraded admin comment management with detail view, moderation metadata, and admin reply support.

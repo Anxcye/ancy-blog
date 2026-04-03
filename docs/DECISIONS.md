@@ -71,3 +71,12 @@
   - Admin analytics visit queries may filter by `countryName`, `regionName`, `cityName`, and `isp`.
   - Deployment automation should keep the xdb files refreshed outside git before container release.
   - Geographic metadata quality depends on the deployed xdb data file and may lag real-world IP ownership changes.
+
+## ADR-010: CGO Runtime Dependencies in Backend Images
+- Date: 2026-04-03
+- Decision: Keep `CGO_ENABLED=1` for backend builds that depend on HEIF decoding, and install the matching C/C++ runtime libraries (`libstdc++`, `libgcc`) in the final Alpine runtime image.
+- Rationale: The gallery HEIC/HEIF pipeline depends on CGO-backed libraries; without the C++ runtime shared objects, the server binary fails at container startup even though the build stage succeeds.
+- Consequences:
+  - Backend runtime images must include the shared libraries required by CGO-linked binaries.
+  - Future dependency additions that introduce CGO should be validated against the final runtime image, not only the build stage.
+  - If a feature can remain pure Go, `CGO_ENABLED=0` is still preferable for simpler runtime portability.

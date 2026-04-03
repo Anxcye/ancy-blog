@@ -922,3 +922,11 @@
 - Replaced the previous single-pass scrolled-state header blur with a layered `backdrop-filter + mask-image` stack inspired by Afilmory's `LinearBlur` implementation.
 - Kept the existing header content and navigation structure intact while strengthening the background tint only after scrolling.
 - Updated `docs/FRONTEND_STYLE_GUIDE.md` and `docs/PROGRESS.md` to document the new header visual behavior.
+
+---
+## 2026-04-03 (session 4)
+### Summary
+- Investigated a production upgrade incident from `v1.0.10` to `v1.1.2` where the blog appeared empty after `deploy/update.sh`.
+- Verified the PostgreSQL data volume and records were intact, and traced the outage to the backend container failing at startup with missing `libstdc++.so.6` and `libgcc_s.so.1`.
+- Fixed `backend/Dockerfile` by installing `libstdc++` and `libgcc` in the final Alpine runtime image so CGO-enabled gallery/HEIF builds can start successfully.
+- Recorded the CGO runtime packaging decision in `docs/DECISIONS.md` and marked the production startup fix as done in `docs/PROGRESS.md`.

@@ -24,7 +24,7 @@ FROM alpine:3.22
 
 WORKDIR /app
 
-RUN apk add --no-cache ca-certificates tzdata && \
+RUN apk add --no-cache ca-certificates tzdata libstdc++ libgcc && \
     addgroup -S app && \
     adduser -S -G app app
 
