@@ -1,7 +1,6 @@
 # Progress Board
 
 ## Todo
-- [ ] Gallery: implement built-in photo gallery module (R2-backed assets, EXIF/GPS processing, tag filtering, masonry stream, photo viewer, article reuse, and admin batch upload/review).
 - [ ] Blog: 404 / error pages for frontend-blog.
 - [ ] Blog: 关于我页面 (article content_kind=page renderer).
 - [ ] Blog: 评论回复功能 (threaded replies).
@@ -119,6 +118,7 @@
 - [x] Added visitor analytics events pipeline: documented analytics rules/contracts, created raw `visit_events` storage and migration, added public ingest plus admin analytics APIs, wired browser-side blog reporting, and shipped a dedicated React admin analytics page.
 - [x] Added offline IP geography enrichment for analytics: introduced cached `ip_profiles` storage and migration, wired `ip2region` xdb lookup configuration, and enabled admin filtering/display for country/region/city/ISP on raw visits.
 - [x] Controlled analytics `page_ping` storage growth: reduced frontend heartbeat frequency, changed backend heartbeats to update `page_view` engagement duration instead of inserting new rows, and added a partial PostgreSQL index for page-view session/path lookups.
+- [x] Implemented Gallery module end-to-end: migration 000023 (gallery_tags, gallery_photos, gallery_photo_tags), domain models, repository with tag-join filtering, service with display-switch projection, admin CRUD/upload/batch handlers, image processing pipeline (EXIF extraction, resize, BlurHash), admin React gallery management page (table + drawer editor + tag inline create + batch status), public Nuxt gallery stream page (masonry layout, tag filtering, BlurHash placeholders, floating context label, infinite scroll) and photo viewer page (large image + frosted-glass detail panel), i18n zh/en, API contract and data model docs updated.
 
 ## Blocked
 - None.

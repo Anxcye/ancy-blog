@@ -852,3 +852,35 @@
 - Defined the built-in gallery module product scope and documented it in `docs/GALLERY_REQUIREMENTS.md`.
 - Updated `docs/PRODUCT_RULES.md` with gallery routing, visibility, EXIF/GPS privacy, metadata-display, upload, and article-integration rules.
 - Added the gallery implementation item to `docs/PROGRESS.md`.
+
+---
+## 2026-04-03 (session 2) — Gallery Implementation
+### Summary
+- Implemented the full Gallery module across all three application layers.
+
+### Backend (Go)
+- Migration 000023: `gallery_tags`, `gallery_photos`, `gallery_photo_tags` tables with indexes.
+- Domain models: `GalleryPhoto`, `GalleryPhotoPublic`, `GalleryTag` in `domain/models.go`.
+- Repository: `GalleryRepository` interface + PostgreSQL implementation with dynamic WHERE, tag-join filtering, batch loaders.
+- Service: `GalleryService` with display-switch projection (`toPublicPhoto`), lazy R2 uploader factory.
+- Handlers: admin CRUD (create/update/delete/list/detail/batch-status/upload) + public read (photos/photos-by-slug/tags).
+- Image processing: `gallery/processor.go` with EXIF extraction (whitelisted fields), image resize (large 2400px + display 800px JPEG), BlurHash placeholder generation.
+- Routes wired in `server/http.go`, DI in `app/app.go`.
+
+### Admin Frontend (React)
+- Types: `types/gallery.ts` (GalleryPhoto, GalleryTag, GalleryPhotoFormValues, etc.).
+- API module: `api/gallery.ts` (listGalleryPhotos, getGalleryPhoto, createGalleryPhoto, updateGalleryPhoto, deleteGalleryPhoto, batchUpdatePhotoStatus, uploadGalleryPhoto, listGalleryTags, createGalleryTag, deleteGalleryTag).
+- Gallery page: `pages/gallery/GalleryPage.tsx` — table with thumbnail/title/status/processing/camera/tags/dimensions columns, filter toolbar (keyword + status + tag), batch action bar (publish/draft/hidden), upload button, Drawer-based photo editor with metadata/EXIF/display-switches/tags.
+- Routing: `/gallery` route added in `App.tsx`.
+- Navigation: Gallery menu item (CameraOutlined) added to sider menu and mobile bottom nav in `AdminLayout.tsx`.
+
+### Public Frontend (Nuxt3/Vue3)
+- API: gallery types + endpoints added to `composables/useApi.ts` (listGalleryPhotos, getGalleryPhoto, getGalleryTags).
+- Gallery stream: `pages/gallery/index.vue` — masonry/waterfall layout preserving aspect ratios, tag filter pills, BlurHash placeholders, floating context label (city summary), hover overlay with camera/location/tags chips, infinite scroll, responsive (3→2→1 columns), frosted-glass visual style.
+- Photo viewer: `pages/gallery/[slug].vue` — full-screen viewer with large image, frosted-glass side panel (title, description, location, camera, EXIF grid, tags), mobile bottom-sheet layout, Escape key navigation.
+- i18n: gallery keys added to both `zh.json` and `en.json` (nav, navDisplay, gallery section).
+
+### Docs
+- Updated `API_CONTRACT.md` with gallery endpoints (PUB-GAL-001 through PUB-GAL-003, ADM-GAL-001 through ADM-GAL-010).
+- Updated `DATA_MODEL.md` with gallery table schemas.
+- Updated `PROGRESS.md` — gallery moved from Todo to Done.
