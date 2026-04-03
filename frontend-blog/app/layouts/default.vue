@@ -6,16 +6,24 @@
   <div class="site-wrap">
     <!-- ── Header ── -->
     <header class="site-header" :class="{ 'site-header--scrolled': scrolled }">
+      <div class="header-blur-stack" aria-hidden="true">
+        <div
+          v-for="layer in headerBlurLayers"
+          :key="layer.zIndex"
+          class="header-blur-layer"
+          :style="layer"
+        />
+      </div>
       <div class="header-inner container container--wide">
 
-        <!-- Mobile menu button (first in DOM for left position) -->
+        <!-- Mobile menu button, first in DOM for left-side placement. -->
         <button class="icon-btn menu-btn" @click="mobileOpen = !mobileOpen" aria-label="菜单">
           <span class="menu-icon" :class="{ open: mobileOpen }">
             <span /><span /><span />
           </span>
         </button>
 
-        <!-- Left: Avatar / brand -->
+        <!-- Left: avatar brand link. -->
         <NuxtLink :to="localePath('/')" class="header-brand" :aria-label="t('nav.home')">
           <div class="header-avatar">
             <img
@@ -28,7 +36,7 @@
           </div>
         </NuxtLink>
 
-        <!-- Center: Nav -->
+        <!-- Center: primary navigation. -->
         <nav class="header-nav" aria-label="主导航">
           <div
             v-for="(item, i) in navItems"
@@ -39,7 +47,7 @@
             <a v-if="item.isExternal" :href="item.to" target="_blank" class="nav-link">{{ item.label }}</a>
             <NuxtLink v-else :to="localePath(item.to)" class="nav-link">{{ item.label }}</NuxtLink>
 
-            <!-- Dropdown -->
+            <!-- Dropdown navigation. -->
             <div v-if="item.children && item.children.length" class="nav-dropdown">
               <template v-for="child in item.children" :key="child.key">
                 <a v-if="child.isExternal" :href="child.to" target="_blank" class="dropdown-link">{{ child.label }}</a>
@@ -49,14 +57,14 @@
           </div>
         </nav>
 
-        <!-- Right: Theme + Lang -->
+        <!-- Right: language and theme controls. -->
         <div class="header-actions">
-          <!-- Language switch -->
+          <!-- Language switch. -->
           <button class="icon-btn lang-btn" @click="toggleLocale" :title="locale === 'zh' ? 'English' : '中文'">
             <span class="lang-label">{{ locale === 'zh' ? 'EN' : 'ZH' }}</span>
           </button>
 
-          <!-- Theme toggle -->
+          <!-- Theme toggle. -->
           <button
             class="icon-btn theme-btn"
             @click="toggleColorMode"
@@ -75,12 +83,12 @@
         </div>
       </div>
 
-      <!-- Mobile drawer -->
+      <!-- Mobile drawer. -->
       <Transition name="mobile-nav">
         <div v-if="mobileOpen" class="mobile-nav-overlay" @click="mobileOpen = false">
           <div class="mobile-nav" @click.stop>
             <template v-for="item in navItems" :key="item.key">
-              <!-- Primary nav item -->
+              <!-- Primary nav item. -->
               <div class="mobile-nav-section">
                 <a v-if="item.isExternal" :href="item.to" target="_blank" class="mobile-nav-primary" @click="mobileOpen = false">
                   {{ item.label }}
@@ -89,7 +97,7 @@
                   {{ item.label }}
                 </NuxtLink>
 
-                <!-- Secondary nav items (children) -->
+                <!-- Secondary nav items. -->
                 <div v-if="item.children?.length" class="mobile-nav-secondary">
                   <template v-for="child in item.children" :key="child.key">
                     <a v-if="child.isExternal" :href="child.to" target="_blank" class="mobile-nav-link" @click="mobileOpen = false">
@@ -115,7 +123,7 @@
     <!-- ── Footer ── -->
     <footer class="site-footer">
       <div class="container footer-container">
-        <!-- Left: Footer rows -->
+        <!-- Left: footer rows. -->
         <div class="footer-left">
           <div v-if="footerRows.length" class="footer-rows">
             <div v-for="row in footerRows" :key="row.rowNum" class="footer-row">
@@ -131,14 +139,14 @@
             </div>
           </div>
 
-          <!-- Copyright -->
+          <!-- Copyright. -->
           <p class="footer-copy">
             © {{ new Date().getFullYear() }}
             <a href="https://github.com/anxcye/ancy-blog" target="_blank" class="footer-accent">{{ siteSettings?.siteName || 'Ancy Blog' }}</a>
           </p>
         </div>
 
-        <!-- Right: Social links -->
+        <!-- Right: social links. -->
         <div v-if="siteStore.socialLinks?.length" class="footer-right">
           <a
             v-for="link in siteStore.socialLinks"
@@ -165,7 +173,7 @@ const colorMode = useColorMode()
 const { getSiteSettings, getCategories } = useApi()
 const siteStore = useSiteStore()
 
-// ── Site settings (avatar / site name for header) ─────────────────
+// ── Site settings for header identity ──────────────────────────────
 const { data: siteSettings } = await useAsyncData('site-settings', getSiteSettings, {
   server: true,
   lazy: false,
@@ -195,7 +203,7 @@ function mapNav(n: any): any {
 
   let children = n.children?.length ? n.children.map(mapNav) : undefined
 
-  // Auto-inject categories: if key is 'articles' and no children, show category dropdown
+  // Auto-inject categories when the articles nav item has no manual children.
   if (n.key === 'articles' && !children && categories.value?.length) {
     children = categories.value.map((cat: any) => ({
       key: `cat-${cat.slug}`,
@@ -205,7 +213,7 @@ function mapNav(n: any): any {
     }))
   }
 
-  // Or if targetType is 'category' with no targetValue and no children, inject all categories
+  // Expand a category nav placeholder into all categories when no explicit target is set.
   if (n.targetType === 'category' && !n.targetValue && !children && categories.value?.length) {
     children = categories.value.map((cat: any) => ({
       key: `cat-${cat.slug}`,
@@ -239,6 +247,58 @@ const navItems = computed(() => {
   }
   return defaultNavItems.value
 })
+
+const headerBlurLayers = computed(() => {
+  const steps = 8
+  const falloffPercentage = 100
+  const mainPercentage = 100 - falloffPercentage
+  const stepSize = falloffPercentage / steps
+  const blurFactor = 0.5
+  const blurStrength = scrolled.value ? 128 : 72
+  const blurBase = Math.pow(blurStrength / blurFactor, 1 / (steps - 1))
+
+  const getBlurFilter = (index: number) => `blur(${blurFactor * blurBase ** (steps - index - 1)}px)`
+  const createMask = (stops: Array<[number, number]>) =>
+    `linear-gradient(to bottom, ${stops
+      .map(([alpha, position]) => `rgba(0, 0, 0, ${alpha}) ${position}%`)
+      .join(', ')})`
+
+  const firstLayerMask = createMask([
+    [1, mainPercentage],
+    [1, mainPercentage + stepSize],
+    [0, mainPercentage + stepSize * 2],
+  ])
+
+  const layers: Array<Record<string, string | number>> = [
+    {
+      zIndex: 2,
+      backdropFilter: getBlurFilter(1),
+      WebkitBackdropFilter: getBlurFilter(1),
+      maskImage: firstLayerMask,
+      WebkitMaskImage: firstLayerMask,
+    },
+  ]
+
+  for (let index = 0; index < steps - 2; index += 1) {
+    const maskImage = createMask([
+      [0, mainPercentage + index * stepSize],
+      [1, mainPercentage + (index + 1) * stepSize],
+      [1, mainPercentage + (index + 2) * stepSize],
+      [0, mainPercentage + (index + 3) * stepSize],
+    ])
+
+    layers.push({
+      zIndex: index + 3,
+      backdropFilter: getBlurFilter(index + 2),
+      WebkitBackdropFilter: getBlurFilter(index + 2),
+      maskImage,
+      WebkitMaskImage: maskImage,
+    })
+  }
+
+  return layers
+})
+
 
 const footerRows = computed(() => {
   const footer = siteStore.footer
@@ -311,25 +371,31 @@ function getNavLabel(key: string, fallback: string) {
   left: 0;
   right: 0;
   z-index: 100;
+  isolation: isolate;
   height: var(--header-h);
   background: transparent;
-  transition: background var(--dur-base) var(--ease-smooth),
-              box-shadow var(--dur-base) var(--ease-smooth),
-              backdrop-filter var(--dur-base) var(--ease-smooth);
 }
 
-.site-header--scrolled {
-  background: rgba(var(--bg-rgb, 248,249,252), 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
-  box-shadow: 0 1px 0 var(--border);
+.header-blur-stack {
+  pointer-events: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: -1;
+  height: calc(var(--header-h) + 24px);
+  overflow: hidden;
+  transform-origin: top;
 }
 
-.dark .site-header--scrolled {
-  background: rgba(15,17,23, 0.85);
+.header-blur-layer {
+  position: absolute;
+  inset: 0;
 }
 
 .header-inner {
+  position: relative;
+  z-index: 1;
   height: 100%;
   display: flex;
   align-items: center;

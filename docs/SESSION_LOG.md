@@ -914,3 +914,11 @@
 - Updated `API_CONTRACT.md` with gallery endpoints (PUB-GAL-001 through PUB-GAL-003, ADM-GAL-001 through ADM-GAL-010).
 - Updated `DATA_MODEL.md` with gallery table schemas.
 - Updated `PROGRESS.md` — gallery moved from Todo to Done.
+
+---
+## 2026-04-03 (session 3)
+### Summary
+- Implemented a progressive top-down blur backdrop for the public blog fixed header in `frontend-blog/app/layouts/default.vue`.
+- Replaced the previous single-pass scrolled-state header blur with a layered `backdrop-filter + mask-image` stack inspired by Afilmory's `LinearBlur` implementation.
+- Kept the existing header content and navigation structure intact while strengthening the background tint only after scrolling.
+- Updated `docs/FRONTEND_STYLE_GUIDE.md` and `docs/PROGRESS.md` to document the new header visual behavior.

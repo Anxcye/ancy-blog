@@ -27,6 +27,7 @@ This guide governs both frontend apps:
 ## Hero & Navigation
 - Home top section is a full `100vh` hero.
 - Header layout: left small avatar, centered nav, right day/night switch.
+- Public blog header should use a layered top-down progressive backdrop blur behind the fixed shell, so the area closest to the viewport top is most blurred and fades into clear content below.
 - Hero body split:
   - left: intro text from site settings + social links row;
   - right: profile avatar.

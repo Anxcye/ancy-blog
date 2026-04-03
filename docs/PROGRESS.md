@@ -122,6 +122,7 @@
 - [x] Controlled analytics `page_ping` storage growth: reduced frontend heartbeat frequency, changed backend heartbeats to update `page_view` engagement duration instead of inserting new rows, and added a partial PostgreSQL index for page-view session/path lookups.
 - [x] Implemented Gallery module end-to-end: migration 000023 (gallery_tags, gallery_photos, gallery_photo_tags), domain models, repository with tag-join filtering, service with display-switch projection, admin CRUD/upload/batch handlers, image processing pipeline (EXIF extraction, resize, BlurHash), admin React gallery management page (table + drawer editor + tag inline create + batch status), public Nuxt gallery stream page (masonry layout, tag filtering, BlurHash placeholders, floating context label, infinite scroll) and photo viewer page (large image + frosted-glass detail panel), i18n zh/en, API contract and data model docs updated.
 - [x] Added HEIC/HEIF support to gallery uploads by falling back to `goheif` for HEIF decode and container EXIF extraction, while keeping generated `display`/`large` assets normalized to JPEG.
+- [x] Added a layered progressive top-down blur treatment to the public blog fixed header shell.
 
 ## Blocked
 - None.
