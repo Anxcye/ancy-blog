@@ -852,6 +852,19 @@
 - Defined the built-in gallery module product scope and documented it in `docs/GALLERY_REQUIREMENTS.md`.
 - Updated `docs/PRODUCT_RULES.md` with gallery routing, visibility, EXIF/GPS privacy, metadata-display, upload, and article-integration rules.
 - Added the gallery implementation item to `docs/PROGRESS.md`.
+- Fixed two gallery rollout issues found after implementation:
+  - seeded a `gallery` public navigation item and added the frontend fallback nav entry so `/gallery` is discoverable from the blog header
+  - changed auto-generated upload slugs to use `photo-{date}-{random-id}` instead of deriving them from original local filenames
+- Refined public gallery presentation:
+  - masonry cards now apply a mild image zoom on hover and show a bottom glass metadata block with filename, asset specs, camera, and exposure lines
+  - photo viewer metadata is reorganized into grouped detail sections inspired by a desktop photo-inspector layout
+  - public gallery responses now expose `locationCountry` when location display is enabled, so the viewer can show country and city separately
+- Removed border-based separators from gallery hover metadata and the viewer side panel, and added original upload `fileSizeBytes` to gallery photo storage/public DTOs so the UI can display file size from backend data.
+- Simplified gallery visual hierarchy again: removed boxed overlay/panel backgrounds from hover metadata and viewer-side sections, and shifted section separation to font size, font weight, and spacing only.
+- Added HEIC/HEIF upload support to the gallery pipeline by introducing `goheif` as a decoder/EXIF fallback and widening the admin upload file picker to accept `.heic` and `.heif` files.
+- Updated gallery upload API/product docs to document HEIC/HEIF acceptance and JPEG-normalized derived assets.
+- Validated the change with `go test ./...` and `pnpm --dir frontend-admin-react exec tsc -b --pretty false`.
+- Reworked default gallery photo naming again so auto-created titles use `IMG` plus an 8-char random uppercase token derived from internal photo identity, avoiding original filenames, sequential counters, and metadata-heavy fallback titles.
 
 ---
 ## 2026-04-03 (session 2) — Gallery Implementation

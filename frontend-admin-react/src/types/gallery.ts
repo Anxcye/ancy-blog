@@ -25,6 +25,7 @@ export interface GalleryPhoto {
   aperture: string;
   shutterSpeed: string;
   iso: string;
+  fileSizeBytes: number;
   width: number;
   height: number;
   takenAtDisplay: boolean;

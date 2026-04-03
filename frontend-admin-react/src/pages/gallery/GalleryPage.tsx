@@ -9,7 +9,6 @@ import {
   DeleteOutlined,
   EditOutlined,
   PlusOutlined,
-  ReloadOutlined,
   UploadOutlined,
 } from '@ant-design/icons';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -43,7 +42,6 @@ import {
   listGalleryPhotos,
   listGalleryTags,
   updateGalleryPhoto,
-  uploadGalleryPhoto,
 } from '../../api/gallery';
 import { useAuthStore } from '../../store/auth';
 import type {
@@ -413,7 +411,7 @@ export function GalleryPage(): ReactElement {
         </Typography.Title>
         <Upload
           name="file"
-          accept="image/*"
+          accept="image/*,.heic,.heif"
           showUploadList={false}
           action="/api/v1/admin/gallery/photos/upload"
           headers={{ Authorization: `Bearer ${accessToken}` }}

@@ -15,6 +15,7 @@ import (
 
 	"github.com/buckket/go-blurhash"
 	"github.com/disintegration/imaging"
+	"github.com/jdeng/goheif"
 	"github.com/rwcarlsen/goexif/exif"
 )
 
@@ -58,11 +59,10 @@ const (
 func ExtractExif(data []byte) ExifData {
 	result := ExifData{}
 
-	r := bytes.NewReader(data)
-	x, err := exif.Decode(r)
+	x, err := decodeExifMetadata(data)
 	if err != nil {
-		// No EXIF data, try to get dimensions from image decoding
-		if img, _, err2 := image.DecodeConfig(bytes.NewReader(data)); err2 == nil {
+		// No EXIF data, try to get dimensions from image decoding.
+		if img, err2 := decodeImageConfig(data); err2 == nil {
 			result.Width = img.Width
 			result.Height = img.Height
 		}
@@ -138,7 +138,7 @@ func ExtractExif(data []byte) ExifData {
 
 // ProcessImage generates display, large, and placeholder assets from the source image.
 func ProcessImage(data []byte) (*ProcessedAssets, error) {
-	src, err := imaging.Decode(bytes.NewReader(data), imaging.AutoOrientation(true))
+	src, err := decodeSourceImage(data)
 	if err != nil {
 		return nil, fmt.Errorf("failed to decode image: %w", err)
 	}
@@ -201,4 +201,39 @@ func cleanExifString(s string) string {
 	s = strings.Trim(s, "\"")
 	s = strings.TrimSpace(s)
 	return s
+}
+
+func decodeSourceImage(data []byte) (image.Image, error) {
+	src, err := imaging.Decode(bytes.NewReader(data), imaging.AutoOrientation(true))
+	if err == nil {
+		return src, nil
+	}
+	heifImage, heifErr := goheif.Decode(bytes.NewReader(data))
+	if heifErr == nil {
+		return heifImage, nil
+	}
+	return nil, err
+}
+
+func decodeImageConfig(data []byte) (image.Config, error) {
+	cfg, _, err := image.DecodeConfig(bytes.NewReader(data))
+	if err == nil {
+		return cfg, nil
+	}
+	heifCfg, heifErr := goheif.DecodeConfig(bytes.NewReader(data))
+	if heifErr == nil {
+		return heifCfg, nil
+	}
+	return image.Config{}, err
+}
+
+func decodeExifMetadata(data []byte) (*exif.Exif, error) {
+	if x, err := exif.Decode(bytes.NewReader(data)); err == nil {
+		return x, nil
+	}
+	exifBytes, err := goheif.ExtractExif(bytes.NewReader(data))
+	if err != nil || len(exifBytes) == 0 {
+		return nil, err
+	}
+	return exif.Decode(bytes.NewReader(exifBytes))
 }

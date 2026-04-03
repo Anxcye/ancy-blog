@@ -486,7 +486,7 @@ Indexes/Constraints:
 
 ---
 
-## Gallery Module (migration 000023)
+## Gallery Module (migrations 000023, 000025)
 
 ### `gallery_tags`
 | Column | Type | Constraints |
@@ -518,6 +518,7 @@ Indexes/Constraints:
 | `aperture` | VARCHAR(32) | NOT NULL, default '' |
 | `shutter_speed` | VARCHAR(32) | NOT NULL, default '' |
 | `iso` | VARCHAR(16) | NOT NULL, default '' |
+| `file_size_bytes` | BIGINT | NOT NULL, default 0, original upload file size |
 | `width` | INTEGER | NOT NULL, default 0 |
 | `height` | INTEGER | NOT NULL, default 0 |
 | `taken_at_display` | BOOLEAN | NOT NULL, default TRUE |

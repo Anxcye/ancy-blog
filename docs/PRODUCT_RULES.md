@@ -168,6 +168,8 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
 ## Gallery Rules
 - Gallery is a built-in public module under `/gallery`, not a separately deployed site.
 - Public photo URLs use `/gallery/{slug}`.
+- Auto-generated photo slugs must not be derived from original local filenames, because filenames may expose private information.
+- When uploaded photos have no manually edited title, the system should generate a random-looking unique `IMGxxxxxxxx` display title from internal photo identity, and must not fall back to original filenames or sequential counters in public UI.
 - Gallery uses a global masonry photo stream with tag filtering; albums are out of scope for v1.
 - Gallery cards and viewer images must preserve original photo aspect ratios.
 - Opening a photo from the gallery stream should use a card-to-viewer transition; direct entry to `/gallery/{slug}` should render the viewer immediately without relying on the source-card animation.
@@ -186,6 +188,7 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
   - `hidden`: excluded from gallery stream but still usable by explicit article references
 - Admin gallery upload supports batch file/folder upload, draft review, per-photo metadata editing, batch publish, and retry/removal for failed items.
 - Upload processing must extract a whitelist of EXIF fields, reverse-geocode GPS into city-level location data, then remove GPS and non-whitelisted EXIF data from stored image assets.
+- Admin photo upload should accept common camera/phone image formats including JPEG, PNG, WebP, HEIC, and HEIF; generated public `display`/`large` assets are normalized to JPEG.
 - Precise original GPS coordinates should not be stored by default; public UI should show city-level or manually edited location text only.
 - Public gallery and article image rendering should use a blurred placeholder plus optimized display/large assets stored on Cloudflare R2, not raw original camera files.
 - Articles should reference gallery photos through stable gallery photo identity rather than hardcoded final image URLs whenever possible.

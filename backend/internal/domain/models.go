@@ -386,6 +386,7 @@ type GalleryPhoto struct {
 	Aperture         string    `json:"aperture"`
 	ShutterSpeed     string    `json:"shutterSpeed"`
 	ISO              string    `json:"iso"`
+	FileSizeBytes    int64     `json:"fileSizeBytes"`
 	Width            int       `json:"width"`
 	Height           int       `json:"height"`
 	TakenAtDisplay   bool      `json:"takenAtDisplay"`
@@ -413,6 +414,7 @@ type GalleryPhotoPublic struct {
 	Description     string    `json:"description,omitempty"`
 	LocationName    string    `json:"locationName,omitempty"`
 	LocationCity    string    `json:"locationCity,omitempty"`
+	LocationCountry string    `json:"locationCountry,omitempty"`
 	TakenAt         time.Time `json:"takenAt,omitempty"`
 	CameraMake      string    `json:"cameraMake,omitempty"`
 	CameraModel     string    `json:"cameraModel,omitempty"`
@@ -421,6 +423,7 @@ type GalleryPhotoPublic struct {
 	Aperture        string    `json:"aperture,omitempty"`
 	ShutterSpeed    string    `json:"shutterSpeed,omitempty"`
 	ISO             string    `json:"iso,omitempty"`
+	FileSizeBytes   int64     `json:"fileSizeBytes,omitempty"`
 	Width           int       `json:"width"`
 	Height          int       `json:"height"`
 	PlaceholderData string    `json:"placeholderData,omitempty"`

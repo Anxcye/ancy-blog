@@ -180,6 +180,16 @@
         "iso": "ISO",
         "takenAt": "拍摄时间",
         "location": "地点",
+        "basicInformation": "Basic information",
+        "shootingParameters": "Shooting Parameters",
+        "equipmentInformation": "Equipment Information",
+        "filename": "Filename",
+        "fileSize": "File Size",
+        "fileType": "File Type",
+        "resolution": "Resolution",
+        "pixels": "Pixels",
+        "country": "Country",
+        "city": "City",
         "contextLabel": "{cities}",
         "contextLabelMore": "{cities} +{n}"
     }

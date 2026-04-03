@@ -149,6 +149,7 @@ export interface GalleryPhotoPublic {
     description?: string
     locationName?: string
     locationCity?: string
+    locationCountry?: string
     takenAt?: string
     cameraMake?: string
     cameraModel?: string
@@ -157,6 +158,7 @@ export interface GalleryPhotoPublic {
     aperture?: string
     shutterSpeed?: string
     iso?: string
+    fileSizeBytes?: number
     width: number
     height: number
     placeholderData?: string

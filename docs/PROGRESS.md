@@ -11,6 +11,8 @@
 - [ ] Add API rate limiting for auth/comment/AI/translation-create endpoints.
 - [ ] Add frontend i18n routing and SEO output (`/` default zh, `/en/*` english).
 - [ ] Blog: particle background (sparse petal/dot animation, accent-tinted).
+- [ ] Gallery: fix public nav discoverability and privacy-safe auto slug generation.
+- [ ] Gallery: refine hover/viewer visual treatment and expose original upload file size in public photo metadata.
 
 ## Done
 - [x] Fixed admin comment moderation update regression: `PUT /api/v1/admin/comments/:id` now updates status reliably in PostgreSQL without parameter type inference failures.
@@ -119,6 +121,7 @@
 - [x] Added offline IP geography enrichment for analytics: introduced cached `ip_profiles` storage and migration, wired `ip2region` xdb lookup configuration, and enabled admin filtering/display for country/region/city/ISP on raw visits.
 - [x] Controlled analytics `page_ping` storage growth: reduced frontend heartbeat frequency, changed backend heartbeats to update `page_view` engagement duration instead of inserting new rows, and added a partial PostgreSQL index for page-view session/path lookups.
 - [x] Implemented Gallery module end-to-end: migration 000023 (gallery_tags, gallery_photos, gallery_photo_tags), domain models, repository with tag-join filtering, service with display-switch projection, admin CRUD/upload/batch handlers, image processing pipeline (EXIF extraction, resize, BlurHash), admin React gallery management page (table + drawer editor + tag inline create + batch status), public Nuxt gallery stream page (masonry layout, tag filtering, BlurHash placeholders, floating context label, infinite scroll) and photo viewer page (large image + frosted-glass detail panel), i18n zh/en, API contract and data model docs updated.
+- [x] Added HEIC/HEIF support to gallery uploads by falling back to `goheif` for HEIF decode and container EXIF extraction, while keeping generated `display`/`large` assets normalized to JPEG.
 
 ## Blocked
 - None.

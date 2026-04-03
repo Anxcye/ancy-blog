@@ -60,6 +60,8 @@ This guide governs both frontend apps:
   - place any editorial intro ahead of the directory list;
   - prefer light roster rows over heavy grid cards;
   - keep the submission form collapsed behind a clear CTA by default.
+- Gallery masonry cards should use a subtle image zoom on hover and compact bottom metadata text over a dark gradient, with no bordered or boxed overlay container.
+- Gallery photo viewer details should use typography, spacing, and font-weight hierarchy for section separation, not border lines or card-like background blocks in the right panel.
 
 ## Responsive & SEO Constraints
 - Mobile-first layout and touch targets >= `40px`.

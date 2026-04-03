@@ -1046,9 +1046,9 @@
 
 #### ADM-GAL-007 — Upload Photo
 - **Route**: `POST /api/v1/admin/gallery/photos/upload`
-- **Body**: multipart form, field `file` (image, max 50MB)
+- **Body**: multipart form, field `file` (`jpeg/png/webp/heic/heif`, max 50MB)
 - **Response**: `GalleryPhoto` (draft, with EXIF extracted, display/large/placeholder assets generated)
-- **Processing**: Extracts EXIF whitelisted fields, generates display (800px), large (2400px), BlurHash placeholder. Uploads assets to R2.
+- **Processing**: Extracts EXIF whitelisted fields (including HEIC/HEIF container EXIF), generates display (800px), large (2400px), BlurHash placeholder, and stores display/large as JPEG assets in R2.
 
 #### ADM-GAL-008 — List Gallery Tags
 - **Route**: `GET /api/v1/admin/gallery/tags`
@@ -1073,6 +1073,7 @@
   "description": "string?",
   "locationName": "string?",
   "locationCity": "string?",
+  "locationCountry": "string?",
   "takenAt": "datetime?",
   "cameraMake": "string?",
   "cameraModel": "string?",
@@ -1081,6 +1082,7 @@
   "aperture": "string?",
   "shutterSpeed": "string?",
   "iso": "string?",
+  "fileSizeBytes": "int?",
   "width": "int",
   "height": "int",
   "placeholderData": "string?",
@@ -1111,6 +1113,7 @@
   "aperture": "string",
   "shutterSpeed": "string",
   "iso": "string",
+  "fileSizeBytes": "int",
   "width": "int",
   "height": "int",
   "takenAtDisplay": "bool",

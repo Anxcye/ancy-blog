@@ -82,23 +82,15 @@
               :height="photo.height"
               class="photo-img"
               loading="lazy"
-              @load="($event.target as HTMLImageElement)?.classList.add('loaded')"
             />
 
             <!-- Hover overlay (desktop) -->
             <div class="photo-overlay">
               <div class="overlay-info">
-                <span v-if="photo.locationCity" class="overlay-chip">
-                  <svg class="overlay-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-                  {{ photo.locationCity }}
-                </span>
-                <span v-if="photo.cameraModel" class="overlay-chip">
-                  <svg class="overlay-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
-                  {{ photo.cameraModel }}
-                </span>
-                <span v-if="photo.tagSlugs?.length" class="overlay-chip overlay-tags">
-                  {{ photo.tagSlugs.slice(0, 2).map(s => getTagName(s)).join(', ') }}
-                </span>
+                <div class="overlay-name">{{ formatPhotoName(photo) }}</div>
+                <div class="overlay-spec">{{ formatPhotoAssetLine(photo) }}</div>
+                <div v-if="formatCameraLine(photo)" class="overlay-camera">{{ formatCameraLine(photo) }}</div>
+                <div v-if="formatExposureLine(photo)" class="overlay-exposure">{{ formatExposureLine(photo) }}</div>
               </div>
             </div>
           </div>
@@ -121,6 +113,7 @@
 </template>
 
 <script setup lang="ts">
+import { decode } from 'blurhash'
 import type { GalleryPhotoPublic, GalleryTag } from '~/composables/useApi'
 
 const { t, locale } = useI18n()
@@ -226,20 +219,62 @@ const contextLabel = computed(() => {
 })
 
 // ── BlurHash rendering ────────────────────────────────────────────
-function renderBlurHash(canvas: HTMLCanvasElement | null, _hash: string) {
-  // BlurHash decoding would require a client-side library.
-  // For SSR safety, we just set a neutral background; the placeholder canvas
-  // acts as a subtle aspect-ratio holder until the real image loads.
-  if (!canvas || !import.meta.client) return
+function renderBlurHash(canvas: HTMLCanvasElement | null, hash: string) {
+  if (!canvas || !import.meta.client || !hash) return
   const ctx = canvas.getContext('2d')
   if (!ctx) return
-  ctx.fillStyle = '#e5e7eb'
-  ctx.fillRect(0, 0, 32, 32)
+
+  try {
+    const width = 32
+    const height = 32
+    const pixels = decode(hash, width, height)
+    const imageData = ctx.createImageData(width, height)
+    imageData.data.set(pixels)
+    ctx.putImageData(imageData, 0, 0)
+  } catch {
+    ctx.fillStyle = '#e5e7eb'
+    ctx.fillRect(0, 0, 32, 32)
+  }
 }
 
 // ── Helpers ───────────────────────────────────────────────────────
 function getTagName(slug: string) {
   return galleryTags.value?.find(t => t.slug === slug)?.name ?? slug
+}
+
+function formatPhotoName(photo: GalleryPhotoPublic) {
+  if (photo.title?.trim()) {
+    return photo.title.trim()
+  }
+  return formatFallbackPhotoName(photo.slug)
+}
+
+function formatFallbackPhotoName(slug: string) {
+  const token = slug.replace(/[^a-zA-Z0-9]/g, '').slice(-8).toUpperCase()
+  return `IMG${token || '00000000'}`
+}
+
+function formatPhotoAssetLine(photo: GalleryPhotoPublic) {
+  const type = photo.displayUrl.split('.').pop()?.toUpperCase() || 'JPEG'
+  const resolution = photo.width && photo.height ? `${photo.width} × ${photo.height}` : ''
+  return [type, resolution, formatFileSize(photo.fileSizeBytes)].filter(Boolean).join(' · ')
+}
+
+function formatFileSize(bytes?: number) {
+  if (!bytes || bytes <= 0) return ''
+  if (bytes < 1024) return `${bytes} B`
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+  return `${(bytes / 1024 / 1024).toFixed(2)} MB`
+}
+
+function formatCameraLine(photo: GalleryPhotoPublic) {
+  return [photo.cameraMake, photo.cameraModel].filter(Boolean).join(' ')
+}
+
+function formatExposureLine(photo: GalleryPhotoPublic) {
+  return [photo.focalLength, photo.aperture, photo.shutterSpeed, photo.iso ? `ISO ${photo.iso}` : '']
+    .filter(Boolean)
+    .join(' · ')
 }
 
 // ── SEO ──────────────────────────────────────────────────────────
@@ -406,12 +441,11 @@ useSeoMeta({ title: t('gallery.title') })
   width: 100%;
   height: 100%;
   object-fit: cover;
-  opacity: 0;
-  transition: opacity 0.4s var(--ease-smooth);
+  transition: transform 360ms var(--ease-smooth);
 }
 
-.photo-img.loaded {
-  opacity: 1;
+.masonry-item:hover .photo-img {
+  transform: scale(1.04);
 }
 
 /* ── Hover overlay (frosted glass) ── */
@@ -420,13 +454,13 @@ useSeoMeta({ title: t('gallery.title') })
   inset: 0;
   display: flex;
   align-items: flex-end;
-  padding: 12px;
+  padding: 16px 18px;
   opacity: 0;
   transition: opacity var(--dur-base) var(--ease-smooth);
   background: linear-gradient(
     to top,
-    rgba(0, 0, 0, 0.45) 0%,
-    rgba(0, 0, 0, 0.1) 40%,
+    rgba(0, 0, 0, 0.72) 0%,
+    rgba(0, 0, 0, 0.24) 55%,
     transparent 100%
   );
 }
@@ -436,35 +470,30 @@ useSeoMeta({ title: t('gallery.title') })
 }
 
 .overlay-info {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
+  width: 100%;
+  color: rgba(255, 255, 255, 0.92);
 }
 
-.overlay-chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 10px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.18);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
-  color: #fff;
+.overlay-name {
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.35;
+  letter-spacing: -0.02em;
+}
+
+.overlay-spec,
+.overlay-camera,
+.overlay-exposure {
+  margin-top: 5px;
   font-size: 11px;
-  font-weight: 500;
-  white-space: nowrap;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.78);
 }
 
-.overlay-icon {
-  width: 12px;
-  height: 12px;
-  flex-shrink: 0;
-}
-
-.overlay-tags {
-  font-style: italic;
-  opacity: 0.85;
+.overlay-camera {
+  color: #fff;
+  font-size: 12px;
+  font-weight: 700;
 }
 
 /* ── Skeleton ── */

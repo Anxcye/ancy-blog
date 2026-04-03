@@ -227,6 +227,7 @@ function mapNav(n: any): any {
 const defaultNavItems = computed(() => [
   { key: 'home',     to: '/',         label: getNavLabel('home', t('nav.home')), isExternal: false },
   { key: 'articles', to: '/articles', label: getNavLabel('articles', t('nav.articles')), isExternal: false },
+  { key: 'gallery',  to: '/gallery',  label: getNavLabel('gallery', t('nav.gallery')), isExternal: false },
   { key: 'moments',  to: '/moments',  label: getNavLabel('moments', t('nav.moments')), isExternal: false },
   { key: 'timeline', to: '/timeline', label: getNavLabel('timeline', t('nav.timeline')), isExternal: false },
   { key: 'links',    to: '/friends',  label: getNavLabel('links', t('nav.links')), isExternal: false },

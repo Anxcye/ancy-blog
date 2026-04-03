@@ -35,11 +35,11 @@ INSERT INTO gallery_photos
    location_name, location_city, location_state, location_country,
    taken_at,
    camera_make, camera_model, lens_model, focal_length, aperture, shutter_speed, iso,
-   width, height,
+   file_size_bytes, width, height,
    taken_at_display, camera_display, location_display, exif_display, tags_display,
    placeholder_data, display_url, large_url,
    processing_status, processing_error, sort_order)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23,$24,$25,$26,$27,$28,$29,$30)
 RETURNING id::text, taken_at, created_at, updated_at
 `,
 		photo.Title, photo.Slug, photo.Description, photo.Status,
@@ -47,7 +47,7 @@ RETURNING id::text, taken_at, created_at, updated_at
 		nullableTime(photo.TakenAt),
 		photo.CameraMake, photo.CameraModel, photo.LensModel, photo.FocalLength,
 		photo.Aperture, photo.ShutterSpeed, photo.ISO,
-		photo.Width, photo.Height,
+		photo.FileSizeBytes, photo.Width, photo.Height,
 		photo.TakenAtDisplay, photo.CameraDisplay, photo.LocationDisplay, photo.ExifDisplay, photo.TagsDisplay,
 		photo.PlaceholderData, photo.DisplayURL, photo.LargeURL,
 		photo.ProcessingStatus, photo.ProcessingError, photo.SortOrder,
@@ -91,8 +91,9 @@ SET title=$2, slug=$3, description=$4, status=$5,
     taken_at=$10,
     camera_make=$11, camera_model=$12, lens_model=$13, focal_length=$14,
     aperture=$15, shutter_speed=$16, iso=$17,
-    taken_at_display=$18, camera_display=$19, location_display=$20, exif_display=$21, tags_display=$22,
-    sort_order=$23, updated_at=NOW()
+    file_size_bytes=$18,
+    taken_at_display=$19, camera_display=$20, location_display=$21, exif_display=$22, tags_display=$23,
+    sort_order=$24, updated_at=NOW()
 WHERE id=$1 AND deleted_at IS NULL
 RETURNING taken_at, updated_at
 `, id,
@@ -101,6 +102,7 @@ RETURNING taken_at, updated_at
 		nullableTime(photo.TakenAt),
 		photo.CameraMake, photo.CameraModel, photo.LensModel, photo.FocalLength,
 		photo.Aperture, photo.ShutterSpeed, photo.ISO,
+		photo.FileSizeBytes,
 		photo.TakenAtDisplay, photo.CameraDisplay, photo.LocationDisplay, photo.ExifDisplay, photo.TagsDisplay,
 		photo.SortOrder,
 	).Scan(&takenAt, &updatedAt)
@@ -396,7 +398,7 @@ func photoColumns() string {
   location_name, location_city, location_state, location_country,
   taken_at,
   camera_make, camera_model, lens_model, focal_length, aperture, shutter_speed, iso,
-  width, height,
+  file_size_bytes, width, height,
   taken_at_display, camera_display, location_display, exif_display, tags_display,
   placeholder_data, display_url, large_url,
   processing_status, processing_error, sort_order, article_ref_count,
@@ -409,7 +411,7 @@ func photoColumnsAliased(alias string) string {
 		"location_name", "location_city", "location_state", "location_country",
 		"taken_at",
 		"camera_make", "camera_model", "lens_model", "focal_length", "aperture", "shutter_speed", "iso",
-		"width", "height",
+		"file_size_bytes", "width", "height",
 		"taken_at_display", "camera_display", "location_display", "exif_display", "tags_display",
 		"placeholder_data", "display_url", "large_url",
 		"processing_status", "processing_error", "sort_order", "article_ref_count",
@@ -429,7 +431,7 @@ func (r *Repository) scanPhoto(query string, args ...any) (domain.GalleryPhoto, 
 		&p.LocationName, &p.LocationCity, &p.LocationState, &p.LocationCountry,
 		&takenAt,
 		&p.CameraMake, &p.CameraModel, &p.LensModel, &p.FocalLength, &p.Aperture, &p.ShutterSpeed, &p.ISO,
-		&p.Width, &p.Height,
+		&p.FileSizeBytes, &p.Width, &p.Height,
 		&p.TakenAtDisplay, &p.CameraDisplay, &p.LocationDisplay, &p.ExifDisplay, &p.TagsDisplay,
 		&p.PlaceholderData, &p.DisplayURL, &p.LargeURL,
 		&p.ProcessingStatus, &p.ProcessingError, &p.SortOrder, &p.ArticleRefCount,
@@ -461,7 +463,7 @@ func (r *Repository) scanPhotoRows(rows *sql.Rows) []domain.GalleryPhoto {
 			&p.LocationName, &p.LocationCity, &p.LocationState, &p.LocationCountry,
 			&takenAt,
 			&p.CameraMake, &p.CameraModel, &p.LensModel, &p.FocalLength, &p.Aperture, &p.ShutterSpeed, &p.ISO,
-			&p.Width, &p.Height,
+			&p.FileSizeBytes, &p.Width, &p.Height,
 			&p.TakenAtDisplay, &p.CameraDisplay, &p.LocationDisplay, &p.ExifDisplay, &p.TagsDisplay,
 			&p.PlaceholderData, &p.DisplayURL, &p.LargeURL,
 			&p.ProcessingStatus, &p.ProcessingError, &p.SortOrder, &p.ArticleRefCount,

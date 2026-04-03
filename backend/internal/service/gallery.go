@@ -119,6 +119,7 @@ func toPublicPhoto(p domain.GalleryPhoto) domain.GalleryPhotoPublic {
 		Title:           p.Title,
 		Slug:            p.Slug,
 		Description:     p.Description,
+		FileSizeBytes:   p.FileSizeBytes,
 		Width:           p.Width,
 		Height:          p.Height,
 		PlaceholderData: p.PlaceholderData,
@@ -132,6 +133,7 @@ func toPublicPhoto(p domain.GalleryPhoto) domain.GalleryPhotoPublic {
 	if p.LocationDisplay {
 		pub.LocationName = p.LocationName
 		pub.LocationCity = p.LocationCity
+		pub.LocationCountry = p.LocationCountry
 	}
 	if p.CameraDisplay {
 		pub.CameraMake = p.CameraMake

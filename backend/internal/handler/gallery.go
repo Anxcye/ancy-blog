@@ -86,6 +86,7 @@ func (h *GalleryHandler) UpdatePhoto(c *gin.Context) {
 		badRequest(c, "VALIDATION_ERROR", "invalid request body")
 		return
 	}
+	existingPhoto, _ := h.galleryService.GetPhotoByID(id)
 	photo, err := h.galleryService.UpdatePhoto(id, domain.GalleryPhoto{
 		Title:           req.Title,
 		Slug:            req.Slug,
@@ -103,6 +104,7 @@ func (h *GalleryHandler) UpdatePhoto(c *gin.Context) {
 		Aperture:        req.Aperture,
 		ShutterSpeed:    req.ShutterSpeed,
 		ISO:             req.ISO,
+		FileSizeBytes:   existingPhoto.FileSizeBytes,
 		TakenAtDisplay:  req.TakenAtDisplay,
 		CameraDisplay:   req.CameraDisplay,
 		LocationDisplay: req.LocationDisplay,
@@ -231,10 +233,10 @@ func (h *GalleryHandler) UploadPhoto(c *gin.Context) {
 		ext = ".jpg"
 	}
 	datePrefix := time.Now().UTC().Format("200601")
-	baseName := strings.TrimSuffix(file.Filename, ext)
-	slug := slugify(baseName) + "-" + photoID[:8]
+	slug := generateUploadPhotoSlug(photoID, exifData.TakenAt)
 
 	photo := domain.GalleryPhoto{
+		Title:           generateUploadPhotoTitle(photoID),
 		Slug:            slug,
 		Status:          "draft",
 		CameraMake:      exifData.CameraMake,
@@ -244,6 +246,7 @@ func (h *GalleryHandler) UploadPhoto(c *gin.Context) {
 		Aperture:        exifData.Aperture,
 		ShutterSpeed:    exifData.ShutterSpeed,
 		ISO:             exifData.ISO,
+		FileSizeBytes:   int64(len(rawData)),
 		TakenAt:         exifData.TakenAt,
 		TakenAtDisplay:  true,
 		CameraDisplay:   true,
@@ -385,4 +388,23 @@ func slugify(s string) string {
 		s = "photo"
 	}
 	return s
+}
+
+func generateUploadPhotoSlug(photoID string, takenAt time.Time) string {
+	datePart := time.Now().UTC().Format("20060102")
+	if !takenAt.IsZero() {
+		datePart = takenAt.UTC().Format("20060102")
+	}
+	return fmt.Sprintf("photo-%s-%s", datePart, strings.ReplaceAll(photoID, "-", "")[:12])
+}
+
+func generateUploadPhotoTitle(photoID string) string {
+	compactID := strings.ToUpper(strings.ReplaceAll(photoID, "-", ""))
+	if len(compactID) > 8 {
+		compactID = compactID[:8]
+	}
+	if compactID == "" {
+		return "IMG00000000"
+	}
+	return "IMG" + compactID
 }
