@@ -16,6 +16,7 @@ import { ArticlesPage } from './pages/content/ArticlesPage';
 import { MomentsPage } from './pages/content/MomentsPage';
 import { TaxonomyPage } from './pages/content/TaxonomyPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { GalleryPage } from './pages/gallery/GalleryPage';
 import { InteractionPage } from './pages/interaction/InteractionPage';
 import { LoginPage } from './pages/LoginPage';
 import { SitePage } from './pages/site/SitePage';
@@ -60,6 +61,9 @@ const router = createBrowserRouter([
 
       // Interaction module
       { path: 'interaction', element: <InteractionPage /> },
+
+      // Gallery module
+      { path: 'gallery', element: <GalleryPage /> },
 
       // Analytics module
       { path: 'analytics', element: <AnalyticsPage /> },

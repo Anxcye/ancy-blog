@@ -8,6 +8,7 @@
 import {
   AppstoreOutlined,
   BarChartOutlined,
+  CameraOutlined,
   DashboardOutlined,
   FileTextOutlined,
   GlobalOutlined,
@@ -32,6 +33,7 @@ function resolveKey(pathname: string): string {
   if (pathname.startsWith('/content/articles')) return 'articles';
   if (pathname.startsWith('/content/moments')) return 'moments';
   if (pathname.startsWith('/content/taxonomy')) return 'taxonomy';
+  if (pathname.startsWith('/gallery')) return 'gallery';
   if (pathname.startsWith('/interaction')) return 'interaction';
   if (pathname.startsWith('/analytics')) return 'analytics';
   if (pathname.startsWith('/site')) return 'site';
@@ -42,6 +44,7 @@ function resolveKey(pathname: string): string {
 // Resolve mobile bottom nav active key (content section collapses to one tab)
 function resolveMobileKey(pathname: string): string {
   if (pathname.startsWith('/content')) return 'content';
+  if (pathname.startsWith('/gallery')) return 'gallery';
   if (pathname.startsWith('/interaction')) return 'interaction';
   if (pathname.startsWith('/analytics')) return 'analytics';
   if (pathname.startsWith('/site')) return 'site';
@@ -53,6 +56,7 @@ function resolveMobileKey(pathname: string): string {
 const MOBILE_NAV = [
   { key: 'dashboard', path: '/', icon: <DashboardOutlined />, label: '工作台' },
   { key: 'content', path: '/content/articles', icon: <FileTextOutlined />, label: '内容' },
+  { key: 'gallery', path: '/gallery', icon: <CameraOutlined />, label: '画廊' },
   { key: 'interaction', path: '/interaction', icon: <MessageOutlined />, label: '互动' },
   { key: 'analytics', path: '/analytics', icon: <BarChartOutlined />, label: '统计' },
   { key: 'site', path: '/site', icon: <GlobalOutlined />, label: '站点' },
@@ -110,6 +114,12 @@ export function AdminLayout(): ReactElement {
           onClick: () => navigate('/content/taxonomy'),
         },
       ],
+    },
+    {
+      key: 'gallery',
+      icon: <CameraOutlined />,
+      label: '画廊',
+      onClick: () => navigate('/gallery'),
     },
     {
       key: 'interaction',
