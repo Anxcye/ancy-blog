@@ -318,7 +318,7 @@ function getNavLabel(key: string, fallback: string) {
 }
 
 .site-header--scrolled {
-  background: rgba(var(--bg-rgb, 249,249,247), 0.85);
+  background: rgba(var(--bg-rgb, 248,249,252), 0.85);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 1px 0 var(--border);
@@ -410,7 +410,7 @@ function getNavLabel(key: string, fallback: string) {
   left: 50%;
   transform: translateX(-50%) translateY(4px);
   min-width: 120px;
-  background: rgba(var(--bg-rgb, 249,249,247), 0.75);
+  background: rgba(var(--bg-rgb, 248,249,252), 0.75);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
   border: 1px solid rgba(var(--border-rgb, 0,0,0), 0.08);

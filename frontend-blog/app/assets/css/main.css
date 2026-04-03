@@ -9,10 +9,10 @@
 ══════════════════════════════════════════════════════ */
 :root {
     /* Backgrounds */
-    --bg: #f9f9f7;
-    --bg-secondary: #f2f2ef;
+    --bg: #f8f9fc;
+    --bg-secondary: #f0f2f7;
     --surface: #ffffff;
-    --surface-hover: #f4f4f1;
+    --surface-hover: #f1f3f8;
 
     /* Text */
     --text: #1a1a1a;
@@ -61,7 +61,7 @@
     --surface: #1a1c25;
     --surface-hover: #1f2130;
 
-    --text: #e8e8e6;
+    --text: #e8eaf0;
     --text-muted: #8b8fa8;
     --text-subtle: #5c5f72;
 
