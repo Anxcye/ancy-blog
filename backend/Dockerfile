@@ -7,7 +7,7 @@ FROM golang:1.24-alpine AS builder
 
 WORKDIR /src
 
-RUN apk add --no-cache git ca-certificates gcc musl-dev
+RUN apk add --no-cache git ca-certificates build-base
 
 ARG TARGETOS=linux
 ARG TARGETARCH=amd64
