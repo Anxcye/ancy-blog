@@ -5,6 +5,7 @@
 package handler
 
 import (
+	"bytes"
 	"errors"
 	"fmt"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/anxcye/ancy-blog/backend/internal/apperr"
 	"github.com/anxcye/ancy-blog/backend/internal/domain"
+	galleryproc "github.com/anxcye/ancy-blog/backend/internal/gallery"
 	"github.com/anxcye/ancy-blog/backend/internal/handler/dto"
 	"github.com/anxcye/ancy-blog/backend/internal/response"
 	"github.com/anxcye/ancy-blog/backend/internal/service"
@@ -181,7 +183,7 @@ func (h *GalleryHandler) BatchUpdatePhotoStatus(c *gin.Context) {
 }
 
 // UploadPhoto handles POST /admin/gallery/photos/upload
-// Accepts multipart file, creates a draft photo record and triggers processing.
+// Accepts multipart file, extracts EXIF, generates display/placeholder assets, creates draft record.
 func (h *GalleryHandler) UploadPhoto(c *gin.Context) {
 	uploader, err := h.galleryService.GetUploader()
 	if err != nil {
@@ -211,35 +213,88 @@ func (h *GalleryHandler) UploadPhoto(c *gin.Context) {
 	}
 	defer src.Close()
 
+	rawData, err := galleryproc.ReadAll(src)
+	if err != nil {
+		response.JSON(c, http.StatusInternalServerError, response.Envelope{Code: "UPLOAD_IO_ERROR", Message: "failed to read uploaded file"})
+		return
+	}
+
+	// Extract EXIF metadata
+	exifData := galleryproc.ExtractExif(rawData)
+
+	// Process image: generate display, large, and placeholder
+	assets, procErr := galleryproc.ProcessImage(rawData)
+
+	photoID := uuid.NewString()
 	ext := path.Ext(file.Filename)
 	if ext == "" {
 		ext = ".jpg"
 	}
-	photoID := uuid.NewString()
-	objectKey := fmt.Sprintf("gallery/large/%s/%s%s", time.Now().UTC().Format("200601"), photoID, ext)
-
-	url, err := uploader.Upload(c.Request.Context(), objectKey, src, contentType)
-	if err != nil {
-		response.JSON(c, http.StatusInternalServerError, response.Envelope{Code: "UPLOAD_FAILED", Message: err.Error()})
-		return
-	}
-
-	// Generate a slug from filename
+	datePrefix := time.Now().UTC().Format("200601")
 	baseName := strings.TrimSuffix(file.Filename, ext)
 	slug := slugify(baseName) + "-" + photoID[:8]
 
-	photo, createErr := h.galleryService.CreatePhoto(domain.GalleryPhoto{
-		Slug:             slug,
-		Status:           "draft",
-		LargeURL:         url,
-		ProcessingStatus: "pending",
-	})
+	photo := domain.GalleryPhoto{
+		Slug:            slug,
+		Status:          "draft",
+		CameraMake:      exifData.CameraMake,
+		CameraModel:     exifData.CameraModel,
+		LensModel:       exifData.LensModel,
+		FocalLength:     exifData.FocalLength,
+		Aperture:        exifData.Aperture,
+		ShutterSpeed:    exifData.ShutterSpeed,
+		ISO:             exifData.ISO,
+		TakenAt:         exifData.TakenAt,
+		TakenAtDisplay:  true,
+		CameraDisplay:   true,
+		LocationDisplay: true,
+		ExifDisplay:     true,
+		TagsDisplay:     true,
+	}
+
+	if procErr != nil {
+		// Processing failed, but still upload the original as large
+		largeKey := fmt.Sprintf("gallery/large/%s/%s%s", datePrefix, photoID, ext)
+		largeURL, uploadErr := uploader.Upload(c.Request.Context(), largeKey, bytes.NewReader(rawData), contentType)
+		if uploadErr != nil {
+			response.JSON(c, http.StatusInternalServerError, response.Envelope{Code: "UPLOAD_FAILED", Message: uploadErr.Error()})
+			return
+		}
+		photo.LargeURL = largeURL
+		photo.Width = exifData.Width
+		photo.Height = exifData.Height
+		photo.ProcessingStatus = "failed"
+		photo.ProcessingError = procErr.Error()
+	} else {
+		// Upload large asset
+		largeKey := fmt.Sprintf("gallery/large/%s/%s.jpg", datePrefix, photoID)
+		largeURL, err := uploader.Upload(c.Request.Context(), largeKey, bytes.NewReader(assets.Large), "image/jpeg")
+		if err != nil {
+			response.JSON(c, http.StatusInternalServerError, response.Envelope{Code: "UPLOAD_FAILED", Message: err.Error()})
+			return
+		}
+		// Upload display asset
+		displayKey := fmt.Sprintf("gallery/display/%s/%s.jpg", datePrefix, photoID)
+		displayURL, err := uploader.Upload(c.Request.Context(), displayKey, bytes.NewReader(assets.Display), "image/jpeg")
+		if err != nil {
+			response.JSON(c, http.StatusInternalServerError, response.Envelope{Code: "UPLOAD_FAILED", Message: err.Error()})
+			return
+		}
+		photo.LargeURL = largeURL
+		photo.DisplayURL = displayURL
+		photo.PlaceholderData = assets.PlaceholderHash
+		photo.Width = assets.LargeWidth
+		photo.Height = assets.LargeHeight
+		photo.ProcessingStatus = "completed"
+	}
+
+	created, createErr := h.galleryService.CreatePhoto(photo)
 	if createErr != nil {
 		response.JSON(c, http.StatusInternalServerError, response.Envelope{Code: "CREATE_FAILED", Message: createErr.Error()})
 		return
 	}
 
-	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: photo})
+	response.JSON(c, http.StatusOK, response.Envelope{Code: "OK", Message: "success", Data: created})
 }
 
 // CreateGalleryTag handles POST /admin/gallery/tags
