@@ -930,3 +930,10 @@
 - Verified the PostgreSQL data volume and records were intact, and traced the outage to the backend container failing at startup with missing `libstdc++.so.6` and `libgcc_s.so.1`.
 - Fixed `backend/Dockerfile` by installing `libstdc++` and `libgcc` in the final Alpine runtime image so CGO-enabled gallery/HEIF builds can start successfully.
 - Recorded the CGO runtime packaging decision in `docs/DECISIONS.md` and marked the production startup fix as done in `docs/PROGRESS.md`.
+
+---
+## 2026-04-05 (session 1)
+### Summary
+- Narrowed the public gallery masonry stream in `frontend-blog/app/pages/gallery/index.vue` by introducing a page-scoped max-width override for the gallery container.
+- Kept the existing 3-column masonry layout, spacing, and responsive breakpoints unchanged so the adjustment only affects the overall visual density of the image flow.
+- Updated the gallery layout based on follow-up feedback by reverting the container-width override and switching the masonry stream to a denser responsive column set: `4` columns on desktop, `3` on tablet, `2` on mobile, and `1` on very narrow screens.

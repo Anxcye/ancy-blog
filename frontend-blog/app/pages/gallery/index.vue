@@ -394,7 +394,7 @@ useSeoMeta({ title: t('gallery.title') })
 
 /* ── Masonry grid ── */
 .masonry-grid {
-  columns: 3;
+  columns: 4;
   column-gap: 4px;
 }
 
@@ -520,6 +520,16 @@ useSeoMeta({ title: t('gallery.title') })
 
 /* ── Responsive ── */
 @media (max-width: 900px) {
+  .masonry-grid {
+    columns: 3;
+    column-gap: 4px;
+  }
+  .masonry-item {
+    margin-bottom: 4px;
+  }
+}
+
+@media (max-width: 640px) {
   .masonry-grid {
     columns: 2;
     column-gap: 4px;
