@@ -466,6 +466,10 @@
   "avatarUrl": "https://...",
   "faviconUrl": "https://...",
   "heroIntroMd": "Hi, I build things.",
+  "heroQuotes": [
+    { "locale": "zh-CN", "text": "把问题写清楚，也把路上的光留下来。" },
+    { "locale": "en-US", "text": "Clarify the problem, and keep a little light from the road." }
+  ],
   "defaultLocale": "en",
   "commentEnabled": true,
   "commentRequireApproval": false,
@@ -540,7 +544,8 @@
 - Error Codes: VALIDATION_ERROR, AUTH_UNAUTHORIZED
 - Notes:
   - Supports partial update payloads; omitted fields keep their previous values.
-  - Supported fields include `siteName`, `avatarUrl`, `faviconUrl`, `heroIntroMd`, locale, comment policy, friend-link submission policy, and SEO metadata.
+  - Supported fields include `siteName`, `avatarUrl`, `faviconUrl`, `heroIntroMd`, `heroQuotes`, locale, comment policy, friend-link submission policy, and SEO metadata.
+  - `heroQuotes` is an array of localized quote candidates: `{ locale, text }`. Public frontends may randomly choose one matching the active locale.
   - Invalidate `site:settings:{locale}` cache after successful update.
 
 - ID: ADM-SITE-002

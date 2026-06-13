@@ -67,6 +67,22 @@ import type {
 // 1. Site settings tab
 // ─────────────────────────────────────────────
 
+function formatHeroQuoteLines(quotes: SiteSettings['heroQuotes'], locale: string): string {
+  return (quotes || [])
+    .filter((quote) => quote.locale === locale)
+    .map((quote) => quote.text)
+    .join('\n');
+}
+
+function parseHeroQuoteLines(value: unknown, locale: string): NonNullable<SiteSettings['heroQuotes']> {
+  if (typeof value !== 'string') return [];
+  return value
+    .split('\n')
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((text) => ({ locale, text }));
+}
+
 function SettingsTab(): ReactElement {
   const [messageApi, ctx] = message.useMessage();
   const [form] = Form.useForm();
@@ -77,7 +93,12 @@ function SettingsTab(): ReactElement {
   });
 
   useEffect(() => {
-    if (data) form.setFieldsValue(data);
+    if (!data) return;
+    form.setFieldsValue({
+      ...data,
+      heroQuotesZh: formatHeroQuoteLines(data.heroQuotes, 'zh-CN'),
+      heroQuotesEn: formatHeroQuoteLines(data.heroQuotes, 'en-US'),
+    });
   }, [data, form]);
 
   const saveMut = useMutation({
@@ -94,10 +115,17 @@ function SettingsTab(): ReactElement {
           form={form}
           layout="vertical"
           disabled={isLoading}
-          onFinish={(vals) => saveMut.mutate({
-            ...(data as SiteSettings),
-            ...vals,
-          })}
+          onFinish={(vals) => {
+            const { heroQuotesZh, heroQuotesEn, ...rest } = vals;
+            saveMut.mutate({
+              ...(data as SiteSettings),
+              ...rest,
+              heroQuotes: [
+                ...parseHeroQuoteLines(heroQuotesZh, 'zh-CN'),
+                ...parseHeroQuoteLines(heroQuotesEn, 'en-US'),
+              ],
+            });
+          }}
         >
           <Form.Item
             name="siteName"
@@ -139,6 +167,20 @@ function SettingsTab(): ReactElement {
 
           <Form.Item name="siteDescription" label="站点描述">
             <Input.TextArea rows={2} placeholder="简短描述，用于搜索引擎和分享卡片" />
+          </Form.Item>
+          <Form.Item
+            name="heroQuotesZh"
+            label="首页引语候选（中文）"
+            extra="一行一句，前台中文页面会随机展示其中一条。"
+          >
+            <Input.TextArea rows={4} placeholder={'把问题写清楚，也把路上的光留下来。'} />
+          </Form.Item>
+          <Form.Item
+            name="heroQuotesEn"
+            label="首页引语候选（English）"
+            extra="One quote per line. English pages randomly pick one candidate."
+          >
+            <Input.TextArea rows={4} placeholder={'Clarify the problem, and keep a little light from the road.'} />
           </Form.Item>
           <Form.Item name="seoKeywords" label="SEO 关键词">
             <Input placeholder="用英文逗号分隔，如: blog, tech, golang" />

@@ -197,7 +197,7 @@ function renderMomentContent(content: string): string {
   background: color-mix(in srgb, var(--accent) 7%, var(--bg-secondary));
   color: var(--text-subtle);
   font-size: 12px;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
 }
 
 .dialog-content {

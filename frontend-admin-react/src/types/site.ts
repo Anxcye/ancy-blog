@@ -11,6 +11,7 @@ export interface SiteSettings {
   avatarUrl?: string;
   faviconUrl?: string;
   heroIntroMd?: string;
+  heroQuotes?: Array<{ locale: string; text: string }>;
   defaultLocale: string;
   commentEnabled: boolean;
   commentRequireApproval: boolean;

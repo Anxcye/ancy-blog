@@ -134,6 +134,26 @@ cd deploy
 ./release.sh
 ```
 
+## Local Development Infrastructure
+Local Docker infrastructure is separated from the production deployment stack under `deploy/dev/`.
+
+Start local PostgreSQL and Redis, then run backend migrations:
+```bash
+./deploy/dev/dev-env.sh up
+```
+
+Reset the local development database and Redis data:
+```bash
+./deploy/dev/dev-env.sh reset
+```
+
+Stop local development containers without deleting data:
+```bash
+./deploy/dev/dev-env.sh stop
+```
+
+This local stack uses its own Compose project name and named volumes, so development resets do not touch the production deployment Compose resources.
+
 Refresh the offline IP databases manually:
 ```bash
 cd deploy

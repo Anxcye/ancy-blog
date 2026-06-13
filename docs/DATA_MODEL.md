@@ -177,6 +177,7 @@ Fields:
 - `avatar_url` (nullable)
 - `favicon_url` (nullable)
 - `hero_intro_md` (nullable, short markdown text for homepage center intro)
+- `hero_quotes` (jsonb, localized homepage quote candidates, default `[]`)
 - `default_locale` (required, default `en`)
 - `comment_enabled` (required, default `true`)
 - `comment_require_approval` (required, default `false`)

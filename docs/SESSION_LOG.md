@@ -937,3 +937,40 @@
 - Narrowed the public gallery masonry stream in `frontend-blog/app/pages/gallery/index.vue` by introducing a page-scoped max-width override for the gallery container.
 - Kept the existing 3-column masonry layout, spacing, and responsive breakpoints unchanged so the adjustment only affects the overall visual density of the image flow.
 - Updated the gallery layout based on follow-up feedback by reverting the container-width override and switching the masonry stream to a denser responsive column set: `4` columns on desktop, `3` on tablet, `2` on mobile, and `1` on very narrow screens.
+
+---
+## 2026-06-13
+### Summary
+- Stopped the currently running local development PostgreSQL and Redis containers.
+- Added a separated local development infrastructure workflow under `deploy/dev/`.
+- Created `deploy/dev/compose.yml` for PostgreSQL and Redis only, with an isolated Compose project name and development named volumes.
+- Added `deploy/dev/dev-env.sh` with `up`, `reset`, `stop`, `down`, `status`, `logs`, and `migrate` commands.
+- Documented the local development workflow in `deploy/dev/README.md` and `docs/DEPLOYMENT.md`.
+
+---
+## 2026-06-13 (session 2)
+### Summary
+- Reworked the public blog homepage toward a literary paper-and-ink visual direction inspired by atmospheric personal blogs.
+- Replaced the old centered slogan-only hero with an avatar-led intro using the existing configurable `heroIntroMd` field and `siteDescription` as supporting copy.
+- Added quiet paper-mark atmospheric motion with reduced-motion support, quote/stat/social blocks, and editorial homepage sections for recent writing, latest moment, and gallery preview.
+- Removed the client-side random accent mutation and replaced the deprecated `UNotifications` root usage with `UApp` to reduce first-paint layout/style shifts.
+- Updated the global public blog typography and color tokens with Newsreader/Noto Serif SC display treatment, warm paper background, low-saturation accents, and softer shadows.
+- Converted the site shell toward floating pill navigation and quieter footer styling, and softened article card typography for the remaining list pages.
+- Updated `docs/FRONTEND_STYLE_GUIDE.md` and `docs/PROGRESS.md`; verified `frontend-blog` with `pnpm run build`.
+
+---
+## 2026-06-13 (session 3)
+### Summary
+- Added `heroQuotes` as localized homepage quote candidates in site settings.
+- Created migration `000026_site_hero_quotes` and updated PostgreSQL/memory repositories, site settings DTOs, and API response types.
+- Added admin site settings fields for Chinese and English quote candidates, one quote per line.
+- Updated the public homepage to randomly select one configured quote for the active locale, with i18n fallback text when no candidate exists.
+- Removed homepage hero stats from the public hero and refined the below-fold editorial sections toward smaller magazine-like typography.
+- Updated product rules, data model, API contract, frontend style guide, progress, and session log.
+
+---
+## 2026-06-13 (session 4)
+### Summary
+- Lowered the homepage quote and social-link group so it sits more clearly in the lower half of the hero.
+- Reduced the social icon buttons to a quieter secondary scale and recorded the hero spacing guidance in the frontend style guide.
+- Restored the public blog's rotating accent palette through SSR-applied accent classes, avoiding client-side first-paint color shifts.

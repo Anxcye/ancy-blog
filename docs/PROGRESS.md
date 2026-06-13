@@ -15,6 +15,9 @@
 - [ ] Gallery: refine hover/viewer visual treatment and expose original upload file size in public photo metadata.
 
 ## Done
+- [x] Added localized configurable homepage quote candidates (`heroQuotes`) with PostgreSQL migration, admin editing fields, API contract/data-model docs, and public frontend random selection by active locale.
+- [x] Reworked public blog homepage toward a literary paper-and-ink direction with quiet paper-mark atmosphere, floating pill navigation, editorial recent-writing list, moments/gallery previews, and refined typography/color tokens.
+- [x] Added separated local development Docker infrastructure under `deploy/dev/` with one-command start, reset, stop, status, logs, and migration workflow.
 - [x] Fixed production backend container startup for CGO-enabled builds by installing `libstdc++` and `libgcc` in the runtime image.
 - [x] Fixed admin comment moderation update regression: `PUT /api/v1/admin/comments/:id` now updates status reliably in PostgreSQL without parameter type inference failures.
 - [x] Extended site settings with configurable favicon URL, wired through admin settings and runtime public head metadata.

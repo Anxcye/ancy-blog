@@ -16,8 +16,22 @@
         "gallery": "光影"
     },
     "home": {
-        "heroSubtitle": "写代码，也写想法",
+        "heroKicker": "Code, Light & Notes",
+        "heroSubtitle": "写代码，也收藏生活里的微光。",
+        "heroDescription": "在代码、影像和日常之间，记录一些缓慢生长的东西。",
+        "heroQuote": "把问题写清楚，也把路上的光留下来。",
+        "articleCount": "{n} 篇",
+        "momentCount": "{n} 念",
+        "photoCount": "{n} 影",
+        "socialLinks": "社交链接",
+        "recentWritingEyebrow": "Recent Writing",
         "recentArticles": "近期文章",
+        "musingsEyebrow": "Musings",
+        "musingsTitle": "手记",
+        "galleryEyebrow": "Snapshots",
+        "galleryTitle": "光影",
+        "postLabel": "文章",
+        "pageLabel": "页面",
         "viewAll": "查看全部",
         "readMore": "阅读全文",
         "noArticles": "暂无文章"

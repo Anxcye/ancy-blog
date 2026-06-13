@@ -46,10 +46,11 @@ export default defineNuxtConfig({
   // ── Google Fonts (fallback for better typography) ────────────────
   googleFonts: {
     families: {
-      'Inter': [400, 500, 600],
+      'Inter': [400, 500, 600, 700],
+      'Newsreader': [400, 500, 600, 700],
       'Noto+Serif+SC': [400, 500, 700],
     },
-    display: 'swap',
+    display: 'optional',
     preload: false,
   },
 

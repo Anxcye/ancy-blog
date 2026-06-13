@@ -19,21 +19,21 @@ This guide governs both frontend apps:
 - Keep visual hierarchy simple; reduce heavy shadows and noisy decorations.
 
 ## Public Blog Visual Direction
-- Tone: restrained, quiet, editorial, generous whitespace.
-- Base background: `#f8f8f8` with subtle grain texture.
-- Accent system: one random accent per page load from a soft palette, injected via CSS variable (`--accent-color`).
-- Gradient: a very light accent gradient appears near the top-lower area, fading into background.
+- Tone: restrained, literary, atmospheric, editorial, and personal.
+- Base background: warm paper (`#fbfaf6`) with subtle grain, soft radial washes, and low-contrast ink text.
+- Typography pairs a practical sans-serif UI font with serif/display typography for editorial headings and poetic hero copy.
+- Accent system uses a low-saturation rotating palette selected during SSR, so the public blog can vary between teal, rose, violet, amber, and sky without client-side first-paint color jumps.
+- Prefer thin dividers, translucent surfaces, and list-like editorial layouts over heavy cards and strong shadows.
 
 ## Hero & Navigation
-- Home top section is a full `100vh` hero.
-- Header layout: left small avatar, centered nav, right day/night switch.
+- Home top section should feel like a personal atelier: avatar anchor, configurable hero slogan from site settings, optional site description, localized random quote, and social links.
+- Home quote and social links should sit in the lower half of the hero with enough vertical air, so the primary identity copy stays dominant and the social actions feel secondary.
+- Home should reveal editorial content below the fold through recent writing, fragments/moments, and gallery previews instead of ending the first viewport as an isolated poster.
+- Header layout: left floating avatar button, centered floating pill nav, right circular utility buttons.
 - Public blog header should use a layered top-down progressive backdrop blur behind the fixed shell, so the area closest to the viewport top is most blurred and fades into clear content below.
-- Hero body split:
-  - left: intro text from site settings + social links row;
-  - right: profile avatar.
-- Add a softly floating down-arrow at hero bottom.
 - Navigation wording should be literary and brand-toned, not generic labels.
 - Navigation display copy may be more literary than page titles, but should remain understandable on first read.
+- Homepage atmospheric motion may use quiet paper marks, light washes, or slow-focus glow, must stay behind content, and must respect `prefers-reduced-motion`.
 - Moments page should read as a quiet vertical note stream, not a dashboard timeline or masonry grid.
 - Timeline page should behave like grouped editorial chronology, not a generic product timeline:
   - group entries by month or another clear time anchor;
@@ -46,7 +46,7 @@ This guide governs both frontend apps:
 - Use spring-like easing for interactions and page entry.
 - Entry pattern: `slide-up + fade` with `40-60ms` stagger.
 - Hover/click: mild lift and press feedback; keep calm and short (`200-400ms`).
-- Particle layer: sparse petal-like particles, very low density (about one visible fall event per ~3s), tinted by current accent.
+- Particle layer: sparse paper-fiber, light-dust, or petal-like motion, low density, tinted softly by the current accent.
 - Comment composer triggers can use stronger spring feedback than article cards, but still need a restrained editorial shell.
 - Comment thread lists may use responsive masonry/waterfall stacking when cards have uneven heights.
 - Moments detail should open in a route-driven modal instead of expanding inline inside the feed.
@@ -97,8 +97,8 @@ This guide governs both frontend apps:
 - Respect `prefers-reduced-motion` for particle and spring effects.
 - Any style-direction change must update this file and be logged in `docs/SESSION_LOG.md`.
 
-- Homepage hero social links should use circular icon buttons rather than plain glyph links.
-- Homepage hero secondary line should stay on one line on wider screens by scaling typography down with available width; mobile may wrap naturally.
+- Homepage hero social links should use small circular low-saturation icon buttons rather than plain glyph links or high-saturation brand-color badges.
+- Homepage recent writing should read like an editorial index/list, not a dense card grid.
 - Article detail metadata should read as one compact editorial line:
   - publish time first;
   - update time only when it meaningfully differs from publish time;

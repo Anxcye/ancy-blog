@@ -187,7 +187,7 @@ useArticleSeo(article.value, siteSettings.value || null)
   font-weight: 800;
   line-height: 1.25;
   margin-bottom: 16px;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 
 .article-meta {

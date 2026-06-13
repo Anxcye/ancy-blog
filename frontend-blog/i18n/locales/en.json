@@ -16,8 +16,22 @@
         "gallery": "Snapshots"
     },
     "home": {
-        "heroSubtitle": "Code & Thoughts",
+        "heroKicker": "Code, Light & Notes",
+        "heroSubtitle": "I write code and collect small lights from ordinary days.",
+        "heroDescription": "A quiet notebook between software, images, and everyday life.",
+        "heroQuote": "Clarify the problem, and keep a little light from the road.",
+        "articleCount": "{n} writings",
+        "momentCount": "{n} musings",
+        "photoCount": "{n} photos",
+        "socialLinks": "Social links",
+        "recentWritingEyebrow": "Recent Writing",
         "recentArticles": "Recent Articles",
+        "musingsEyebrow": "Musings",
+        "musingsTitle": "Notes",
+        "galleryEyebrow": "Snapshots",
+        "galleryTitle": "Light",
+        "postLabel": "Post",
+        "pageLabel": "Page",
         "viewAll": "View All",
         "readMore": "Read More",
         "noArticles": "No articles yet"

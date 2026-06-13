@@ -319,7 +319,7 @@ useSeoMeta({ title: t('nav.articles') })
 .hero-eyebrow {
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--accent);
 }
@@ -339,7 +339,7 @@ useSeoMeta({ title: t('nav.articles') })
 .page-title {
   font-size: clamp(1.8rem, 4vw, 2.8rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   margin: 0;
 }
 
@@ -492,7 +492,7 @@ useSeoMeta({ title: t('nav.articles') })
 .article-index {
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
   color: var(--text-subtle);
   opacity: 0.45;
   min-width: 26px;
@@ -560,7 +560,7 @@ useSeoMeta({ title: t('nav.articles') })
 
 .meta-date {
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.01em;
+  letter-spacing: 0;
 }
 
 .meta-views {

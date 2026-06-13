@@ -18,7 +18,7 @@
         <time class="card-date" :datetime="article.publishedAt">
           {{ formatDate(article.publishedAt || article.createdAt) }}
         </time>
-        <span v-if="article.isPinned" class="card-pin" title="置顶">📌</span>
+        <span v-if="article.isPinned" class="card-pin" title="置顶">Pinned</span>
       </div>
 
       <!-- Title -->
@@ -72,16 +72,16 @@ function formatDate(iso?: string): string {
 
 <style scoped>
 .article-card {
-  background: var(--surface);
+  background: color-mix(in srgb, var(--surface) 76%, transparent);
   border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
+  border-radius: var(--radius-md);
   overflow: hidden;
   transition: border-color var(--dur-base), box-shadow var(--dur-base), transform var(--dur-base) var(--ease-spring);
 }
 
 .article-card:hover {
   border-color: var(--border-strong);
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
   transform: translateY(-2px);
 }
 
@@ -108,19 +108,24 @@ function formatDate(iso?: string): string {
   color: var(--accent-text);
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
   font-size: 11px;
 }
 
 .card-date { color: var(--text-subtle); }
-.card-pin { font-size: 12px; }
+.card-pin {
+  color: var(--accent-text);
+  font-size: 11px;
+  font-weight: 650;
+}
 
 .card-title-link { display: block; }
 .card-title {
-  font-size: 1.15rem;
-  font-weight: 700;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  font-weight: 600;
   color: var(--text);
-  line-height: 1.4;
+  line-height: 1.48;
   margin-bottom: 8px;
   transition: color var(--dur-fast);
 }
@@ -153,7 +158,7 @@ function formatDate(iso?: string): string {
 .card-tag {
   font-size: 11px;
   color: var(--text-subtle);
-  background: var(--bg-secondary);
+  background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
   padding: 2px 8px;
   border-radius: 99px;
   border: 1px solid var(--border);

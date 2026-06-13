@@ -303,7 +303,7 @@ useSeoMeta({
 .hero-eyebrow {
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--accent);
 }
@@ -323,7 +323,7 @@ useSeoMeta({
 .page-title {
   font-size: clamp(1.8rem, 4vw, 2.8rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   margin: 0;
 }
 
@@ -433,7 +433,7 @@ useSeoMeta({
 
 .moment-date {
   font-size: 12px;
-  letter-spacing: 0.08em;
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--text-subtle);
 }

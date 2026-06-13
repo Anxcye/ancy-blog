@@ -598,7 +598,7 @@ if (import.meta.client) {
   margin: 0;
   font-size: 1.2rem;
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
   color: var(--text);
 }
 
@@ -617,7 +617,7 @@ if (import.meta.client) {
   margin: 0 0 12px;
   font-size: 0.82rem;
   font-weight: 800;
-  letter-spacing: 0.02em;
+  letter-spacing: 0;
   color: var(--text);
 }
 

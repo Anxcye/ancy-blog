@@ -300,7 +300,7 @@ useSeoMeta({ title: t('gallery.title') })
 .hero-eyebrow {
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--accent);
 }
@@ -318,7 +318,7 @@ useSeoMeta({ title: t('gallery.title') })
 .page-title {
   font-size: clamp(1.8rem, 4vw, 2.8rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   margin: 0;
 }
 
@@ -477,7 +477,7 @@ useSeoMeta({ title: t('gallery.title') })
   font-size: 14px;
   font-weight: 800;
   line-height: 1.35;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
 }
 
 .overlay-spec,

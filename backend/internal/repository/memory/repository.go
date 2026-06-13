@@ -75,6 +75,7 @@ func NewRepository() *Repository {
 			AvatarURL:             "",
 			FaviconURL:            "",
 			HeroIntroMD:           "Hi, I build things.",
+			HeroQuotes:            []domain.LocalizedText{},
 			DefaultLocale:         "en",
 			CommentEnabled:        true,
 			LinkSubmissionEnabled: true,

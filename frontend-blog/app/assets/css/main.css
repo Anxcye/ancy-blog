@@ -8,30 +8,36 @@
    1. Design Tokens — Light Mode
 ══════════════════════════════════════════════════════ */
 :root {
+    /* Typography */
+    --font-sans: -apple-system, BlinkMacSystemFont, 'Inter', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    --font-serif: 'Noto Serif SC', 'Songti SC', 'SimSun', serif;
+    --font-display: 'Newsreader', 'Noto Serif SC', serif;
+
     /* Backgrounds */
-    --bg: #f8f9fc;
-    --bg-secondary: #f0f2f7;
-    --surface: #ffffff;
-    --surface-hover: #f1f3f8;
+    --bg: #fbfaf6;
+    --bg-secondary: #f2efe8;
+    --surface: #fffefa;
+    --surface-hover: #f5f1ea;
 
     /* Text */
-    --text: #1a1a1a;
-    --text-muted: #6b7280;
-    --text-subtle: #9ca3af;
+    --text: #27231f;
+    --text-muted: #756f68;
+    --text-subtle: #aaa29a;
 
     /* Borders */
-    --border: rgba(0, 0, 0, 0.08);
-    --border-strong: rgba(0, 0, 0, 0.14);
+    --border: rgba(65, 52, 38, 0.10);
+    --border-strong: rgba(65, 52, 38, 0.18);
 
-    /* Accent — injected per load from soft palette */
-    --accent: #2AA889;
-    --accent-soft: rgba(42, 168, 137, 0.10);
-    --accent-text: #1e9170;
+    /* Accent */
+    --accent: #c77887;
+    --accent-soft: rgba(199, 120, 135, 0.12);
+    --accent-text: #a95f70;
+    --accent-ink: #bd7080;
 
     /* Shadows */
-    --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.07);
-    --shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.08);
+    --shadow-sm: 0 8px 28px rgba(73, 60, 44, 0.06);
+    --shadow-md: 0 18px 54px rgba(73, 60, 44, 0.10);
+    --shadow-lg: 0 28px 90px rgba(73, 60, 44, 0.12);
 
     /* Radius */
     --radius-sm: 6px;
@@ -56,21 +62,22 @@
    2. Dark Mode Tokens
 ══════════════════════════════════════════════════════ */
 .dark {
-    --bg: #0f1117;
-    --bg-secondary: #161820;
-    --surface: #1a1c25;
-    --surface-hover: #1f2130;
+    --bg: #11100f;
+    --bg-secondary: #191715;
+    --surface: #1c1917;
+    --surface-hover: #25211e;
 
-    --text: #e8eaf0;
-    --text-muted: #8b8fa8;
-    --text-subtle: #5c5f72;
+    --text: #eee9df;
+    --text-muted: #b1a89b;
+    --text-subtle: #70685f;
 
-    --border: rgba(255, 255, 255, 0.07);
-    --border-strong: rgba(255, 255, 255, 0.12);
+    --border: rgba(255, 244, 224, 0.08);
+    --border-strong: rgba(255, 244, 224, 0.15);
 
-    --accent: #35c9a3;
-    --accent-soft: rgba(53, 201, 163, 0.12);
-    --accent-text: #35c9a3;
+    --accent: #d88a98;
+    --accent-soft: rgba(216, 138, 152, 0.13);
+    --accent-text: #f0a6b3;
+    --accent-ink: #f0a6b3;
 
     --shadow-sm: 0 1px 4px rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 20px rgba(0, 0, 0, 0.4);
@@ -95,7 +102,7 @@ html {
 }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Inter', sans-serif;
+    font-family: var(--font-sans);
     background: var(--bg);
     color: var(--text);
     line-height: 1.7;
@@ -105,13 +112,12 @@ body {
         color var(--dur-base) var(--ease-smooth);
     /* Xuan paper texture — layered organic noise */
     background-image:
-        /* Fine fiber texture */
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n1'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n1)' opacity='0.06'/%3E%3C/svg%3E"),
-        /* Coarse paper grain */
-        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n2'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n2)' opacity='0.03'/%3E%3C/svg%3E"),
-        /* Subtle dot pattern */
-        radial-gradient(circle, rgba(0, 0, 0, 0.02) 1px, transparent 1px);
-    background-size: 400px 400px, 200px 200px, 32px 32px;
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n1'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='5' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n1)' opacity='0.045'/%3E%3C/svg%3E"),
+        url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n2'%3E%3CfeTurbulence type='turbulence' baseFrequency='0.5' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n2)' opacity='0.025'/%3E%3C/svg%3E"),
+        radial-gradient(circle at 18% 12%, rgba(199, 120, 135, 0.08), transparent 24rem),
+        radial-gradient(circle at 82% 58%, rgba(114, 145, 172, 0.08), transparent 28rem),
+        radial-gradient(circle, rgba(65, 52, 38, 0.018) 1px, transparent 1px);
+    background-size: 400px 400px, 200px 200px, auto, auto, 32px 32px;
 }
 
 /* Top accent glow — fixed banner that follows the accent color */
@@ -132,7 +138,7 @@ body::before {
 
 .dark body::before {
     background: radial-gradient(ellipse 80% 240px at 50% -60px,
-            rgba(53, 201, 163, 0.08) 0%,
+            var(--accent-soft) 0%,
             transparent 70%);
 }
 
@@ -162,14 +168,14 @@ h1 {
     font-size: clamp(1.75rem, 4vw, 2.5rem);
     font-weight: 700;
     line-height: 1.2;
-    letter-spacing: -0.02em;
+    letter-spacing: 0;
 }
 
 h2 {
     font-size: clamp(1.4rem, 3vw, 1.875rem);
     font-weight: 700;
     line-height: 1.3;
-    letter-spacing: -0.01em;
+    letter-spacing: 0;
 }
 
 h3 {
@@ -289,35 +295,84 @@ p {
 }
 
 /* ══════════════════════════════════════════════════════
-   10. Accent color injector — JS sets --accent on <html>
-       Soft palette presets live here as fallbacks
+   10. Accent color presets — SSR applies one class on <html>
 ══════════════════════════════════════════════════════ */
 .accent-teal {
-    --accent: #2AA889;
-    --accent-soft: rgba(42, 168, 137, 0.10);
-    --accent-text: #1e9170;
+    --accent: #7f9f94;
+    --accent-soft: rgba(127, 159, 148, 0.12);
+    --accent-text: #668377;
+    --accent-hover: #6f8f84;
+    --accent-ink: #6f8f84;
 }
 
 .accent-rose {
     --accent: #e8738a;
     --accent-soft: rgba(232, 115, 138, 0.10);
     --accent-text: #d05c75;
+    --accent-hover: #d7627a;
+    --accent-ink: #d05c75;
 }
 
 .accent-violet {
-    --accent: #8b5cf6;
-    --accent-soft: rgba(139, 92, 246, 0.10);
-    --accent-text: #7c3aed;
+    --accent: #9a8fad;
+    --accent-soft: rgba(154, 143, 173, 0.12);
+    --accent-text: #80738f;
+    --accent-hover: #897f9d;
+    --accent-ink: #80738f;
 }
 
 .accent-amber {
-    --accent: #d97706;
-    --accent-soft: rgba(217, 119, 6, 0.10);
-    --accent-text: #b45309;
+    --accent: #b99a68;
+    --accent-soft: rgba(185, 154, 104, 0.12);
+    --accent-text: #8e744d;
+    --accent-hover: #a98b5b;
+    --accent-ink: #8e744d;
 }
 
 .accent-sky {
-    --accent: #0ea5e9;
-    --accent-soft: rgba(14, 165, 233, 0.10);
-    --accent-text: #0284c7;
+    --accent: #7f9fb4;
+    --accent-soft: rgba(127, 159, 180, 0.12);
+    --accent-text: #5f8198;
+    --accent-hover: #6f8fa6;
+    --accent-ink: #5f8198;
+}
+
+.dark.accent-teal {
+    --accent: #8eb4a7;
+    --accent-soft: rgba(142, 180, 167, 0.13);
+    --accent-text: #a9d1c3;
+    --accent-hover: #9ec6b9;
+    --accent-ink: #a9d1c3;
+}
+
+.dark.accent-rose {
+    --accent: #d88a98;
+    --accent-soft: rgba(216, 138, 152, 0.13);
+    --accent-text: #f0a6b3;
+    --accent-hover: #e99cab;
+    --accent-ink: #f0a6b3;
+}
+
+.dark.accent-violet {
+    --accent: #ada2c5;
+    --accent-soft: rgba(173, 162, 197, 0.13);
+    --accent-text: #c9bde3;
+    --accent-hover: #bfb2d8;
+    --accent-ink: #c9bde3;
+}
+
+.dark.accent-amber {
+    --accent: #c8aa75;
+    --accent-soft: rgba(200, 170, 117, 0.13);
+    --accent-text: #e0c28f;
+    --accent-hover: #d9ba83;
+    --accent-ink: #e0c28f;
+}
+
+.dark.accent-sky {
+    --accent: #8eb2c8;
+    --accent-soft: rgba(142, 178, 200, 0.13);
+    --accent-text: #acd0e6;
+    --accent-hover: #9dc3da;
+    --accent-ink: #acd0e6;
 }

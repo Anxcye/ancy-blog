@@ -366,7 +366,7 @@ useSeoMeta({ title: t('timeline.title') })
 .hero-eyebrow {
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--accent);
 }
@@ -386,7 +386,7 @@ useSeoMeta({ title: t('timeline.title') })
 .page-title {
   font-size: clamp(1.8rem, 4vw, 2.8rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   margin: 0;
 }
 
@@ -469,7 +469,7 @@ useSeoMeta({ title: t('timeline.title') })
 
 .group-kicker {
   font-size: 11px;
-  letter-spacing: 0.16em;
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--text-subtle);
 }
@@ -478,7 +478,7 @@ useSeoMeta({ title: t('timeline.title') })
   margin: 0;
   font-size: clamp(1.12rem, 2vw, 1.48rem);
   font-weight: 800;
-  letter-spacing: -0.03em;
+  letter-spacing: 0;
   color: var(--text);
 }
 
@@ -579,7 +579,7 @@ useSeoMeta({ title: t('timeline.title') })
   font-size: 11px;
   color: var(--text-subtle);
   font-variant-numeric: tabular-nums;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
 }
 
 .tl-text {

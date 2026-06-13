@@ -51,7 +51,7 @@ useIntersectionObserver(target, ([entry]) => {
 
 .no-more {
   opacity: 0.6;
-  letter-spacing: 0.05em;
+  letter-spacing: 0;
 }
 
 .spinner {

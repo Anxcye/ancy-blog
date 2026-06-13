@@ -13,42 +13,53 @@ import (
 
 func (r *Repository) GetSiteSettings() domain.SiteSettings {
 	var s domain.SiteSettings
+	var heroQuotesRaw []byte
 	err := r.db.QueryRow(`
 SELECT site_name, COALESCE(avatar_url,''), COALESCE(favicon_url,''), COALESCE(hero_intro_md,''), default_locale,
        comment_enabled, comment_require_approval, link_submission_enabled,
-       COALESCE(site_description,''), COALESCE(seo_keywords,''), COALESCE(og_image_url,'')
+       COALESCE(site_description,''), COALESCE(seo_keywords,''), COALESCE(og_image_url,''), COALESCE(hero_quotes, '[]'::jsonb)
 FROM site_settings ORDER BY created_at ASC LIMIT 1`).
 		Scan(&s.SiteName, &s.AvatarURL, &s.FaviconURL, &s.HeroIntroMD, &s.DefaultLocale,
 			&s.CommentEnabled, &s.CommentRequireApproval, &s.LinkSubmissionEnabled,
-			&s.SiteDescription, &s.SeoKeywords, &s.OgImageURL)
+			&s.SiteDescription, &s.SeoKeywords, &s.OgImageURL, &heroQuotesRaw)
 	if err != nil {
 		return domain.SiteSettings{SiteName: "Ancy Blog", DefaultLocale: "en", CommentEnabled: true, LinkSubmissionEnabled: true}
+	}
+	if len(heroQuotesRaw) > 0 {
+		_ = json.Unmarshal(heroQuotesRaw, &s.HeroQuotes)
+	}
+	if s.HeroQuotes == nil {
+		s.HeroQuotes = []domain.LocalizedText{}
 	}
 	return s
 }
 
 func (r *Repository) UpdateSiteSettings(settings domain.SiteSettings) domain.SiteSettings {
 	var id string
+	if settings.HeroQuotes == nil {
+		settings.HeroQuotes = []domain.LocalizedText{}
+	}
+	heroQuotesRaw, _ := json.Marshal(settings.HeroQuotes)
 	err := r.db.QueryRow(`SELECT id::text FROM site_settings ORDER BY created_at ASC LIMIT 1`).Scan(&id)
 	if err != nil {
 		_ = r.db.QueryRow(`
 INSERT INTO site_settings (site_name, avatar_url, hero_intro_md, default_locale,
-    favicon_url, comment_enabled, comment_require_approval, link_submission_enabled, site_description, seo_keywords, og_image_url)
-VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING id::text
-`, settings.SiteName, nullableString(settings.AvatarURL), nullableString(settings.FaviconURL), nullableString(settings.HeroIntroMD), settings.DefaultLocale,
+    favicon_url, comment_enabled, comment_require_approval, link_submission_enabled, site_description, seo_keywords, og_image_url, hero_quotes)
+VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING id::text
+`, settings.SiteName, nullableString(settings.AvatarURL), nullableString(settings.HeroIntroMD), settings.DefaultLocale, nullableString(settings.FaviconURL),
 			settings.CommentEnabled, settings.CommentRequireApproval, settings.LinkSubmissionEnabled,
-			nullableString(settings.SiteDescription), nullableString(settings.SeoKeywords), nullableString(settings.OgImageURL)).Scan(&id)
+			nullableString(settings.SiteDescription), nullableString(settings.SeoKeywords), nullableString(settings.OgImageURL), heroQuotesRaw).Scan(&id)
 		return settings
 	}
 	_, _ = r.db.Exec(`
 UPDATE site_settings
 SET site_name=$2, avatar_url=$3, favicon_url=$4, hero_intro_md=$5, default_locale=$6,
     comment_enabled=$7, comment_require_approval=$8, link_submission_enabled=$9,
-    site_description=$10, seo_keywords=$11, og_image_url=$12, updated_at=NOW()
+    site_description=$10, seo_keywords=$11, og_image_url=$12, hero_quotes=$13, updated_at=NOW()
 WHERE id=$1
 `, id, settings.SiteName, nullableString(settings.AvatarURL), nullableString(settings.FaviconURL), nullableString(settings.HeroIntroMD), settings.DefaultLocale,
 		settings.CommentEnabled, settings.CommentRequireApproval, settings.LinkSubmissionEnabled,
-		nullableString(settings.SiteDescription), nullableString(settings.SeoKeywords), nullableString(settings.OgImageURL))
+		nullableString(settings.SiteDescription), nullableString(settings.SeoKeywords), nullableString(settings.OgImageURL), heroQuotesRaw)
 	return settings
 }
 

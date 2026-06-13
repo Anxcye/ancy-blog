@@ -172,6 +172,7 @@ CREATE TABLE IF NOT EXISTS site_settings (
     site_name VARCHAR(128) NOT NULL,
     avatar_url TEXT,
     hero_intro_md TEXT,
+    hero_quotes JSONB NOT NULL DEFAULT '[]'::jsonb,
     default_locale VARCHAR(16) NOT NULL DEFAULT 'en',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -309,4 +310,3 @@ WHERE NOT EXISTS (SELECT 1 FROM integration_providers WHERE provider_key = 'clou
 INSERT INTO integration_providers (provider_type, provider_key, name, enabled, config_json, meta_json)
 SELECT 'llm', 'openai_compatible', 'OpenAI Compatible', FALSE, '{}'::jsonb, '{}'::jsonb
 WHERE NOT EXISTS (SELECT 1 FROM integration_providers WHERE provider_key = 'openai_compatible');
-

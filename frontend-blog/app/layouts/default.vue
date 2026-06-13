@@ -399,7 +399,8 @@ function getNavLabel(key: string, fallback: string) {
   height: 100%;
   display: flex;
   align-items: center;
-  gap: 0;
+  justify-content: space-between;
+  gap: 18px;
 }
 
 /* ── Brand / Avatar ── */
@@ -407,19 +408,24 @@ function getNavLabel(key: string, fallback: string) {
   display: flex;
   align-items: center;
   flex-shrink: 0;
-  transition: opacity var(--dur-fast);
+  padding: 5px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 68%, transparent);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  transition: opacity var(--dur-fast), transform var(--dur-base) var(--ease-spring);
 }
-.header-brand:hover { opacity: 0.75; }
+.header-brand:hover { opacity: 0.86; transform: translateY(-1px); }
 
 .header-avatar {
-  width: 30px;
-  height: 30px;
+  width: 34px;
+  height: 34px;
   border-radius: 50%;
   overflow: hidden;
   background: var(--accent-soft);
   display: grid;
   place-items: center;
-  border: 1.5px solid var(--border);
+  border: 0;
 }
 
 .header-avatar img { width: 100%; height: 100%; object-fit: cover; }
@@ -433,11 +439,18 @@ function getNavLabel(key: string, fallback: string) {
 
 /* ── Nav ── */
 .header-nav {
-  flex: 1;
+  flex: 0 1 auto;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 2px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--surface) 72%, transparent);
+  box-shadow: var(--shadow-sm);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 @keyframes nav-spring {
@@ -453,10 +466,10 @@ function getNavLabel(key: string, fallback: string) {
 
 .nav-link {
   display: block;
-  padding: 6px 12px;
-  border-radius: var(--radius-sm);
+  padding: 7px 14px;
+  border-radius: 999px;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 650;
   color: var(--text-muted);
   transition: color var(--dur-fast), background var(--dur-fast);
   position: relative;
@@ -467,7 +480,7 @@ function getNavLabel(key: string, fallback: string) {
 
 .nav-link:hover, .nav-link.router-link-active {
   color: var(--text);
-  background: var(--surface-hover);
+  background: color-mix(in srgb, var(--accent-soft) 58%, var(--surface));
 }
 
 /* Nav dropdown styling */
@@ -477,13 +490,13 @@ function getNavLabel(key: string, fallback: string) {
   left: 50%;
   transform: translateX(-50%) translateY(4px);
   min-width: 120px;
-  background: rgba(var(--bg-rgb, 248,249,252), 0.75);
+  background: color-mix(in srgb, var(--surface) 84%, transparent);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(var(--border-rgb, 0,0,0), 0.08);
-  border-radius: 8px;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04);
-  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow-md);
+  padding: 6px;
   display: flex;
   flex-direction: column;
   gap: 0;
@@ -536,43 +549,39 @@ function getNavLabel(key: string, fallback: string) {
 }
 
 .nav-link.router-link-active::after {
-  content: '';
-  position: absolute;
-  bottom: 2px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 16px;
-  height: 2px;
-  background: var(--accent);
-  border-radius: 2px;
+  content: none;
 }
 
 /* ── Actions ── */
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   flex-shrink: 0;
 }
 
 .icon-btn {
-  width: 36px;
-  height: 36px;
-  border-radius: var(--radius-md);
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
   display: grid;
   place-items: center;
   color: var(--text-muted);
-  transition: color var(--dur-fast), background var(--dur-fast);
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 64%, transparent);
+  box-shadow: var(--shadow-sm);
+  transition: color var(--dur-fast), background var(--dur-fast), transform var(--dur-base) var(--ease-spring);
   -webkit-tap-highlight-color: transparent;
 }
 
 .icon-btn:hover {
   color: var(--text);
   background: var(--surface-hover);
+  transform: translateY(-1px);
 }
 
 .theme-icon svg { width: 16px; height: 16px; }
-.lang-label { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; }
+.lang-label { font-size: 11px; font-weight: 700; letter-spacing: 0; }
 
 /* ── Mobile hamburger ── */
 .menu-btn { display: none; }
@@ -692,10 +701,10 @@ function getNavLabel(key: string, fallback: string) {
 
 /* ── Footer ── */
 .site-footer {
-  padding: 48px 0 32px;
-  margin-top: 80px;
-  background: var(--accent-soft);
-  border-top: 1px solid var(--accent);
+  padding: 58px 0 38px;
+  margin-top: 72px;
+  background: color-mix(in srgb, var(--bg-secondary) 55%, transparent);
+  border-top: 1px solid var(--border);
 }
 
 .footer-container {
@@ -724,8 +733,9 @@ function getNavLabel(key: string, fallback: string) {
 }
 
 .footer-row:first-child {
-  font-size: 16px;
-  font-weight: 500;
+  font-family: var(--font-serif);
+  font-size: 17px;
+  font-weight: 600;
 }
 
 .footer-link {

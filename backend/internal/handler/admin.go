@@ -455,6 +455,17 @@ func (h *AdminHandler) UpdateSiteSettings(c *gin.Context) {
 	if req.HeroIntroMD != nil {
 		current.HeroIntroMD = *req.HeroIntroMD
 	}
+	if req.HeroQuotes != nil {
+		current.HeroQuotes = make([]domain.LocalizedText, 0, len(*req.HeroQuotes))
+		for _, quote := range *req.HeroQuotes {
+			locale := strings.TrimSpace(quote.Locale)
+			text := strings.TrimSpace(quote.Text)
+			if locale == "" || text == "" {
+				continue
+			}
+			current.HeroQuotes = append(current.HeroQuotes, domain.LocalizedText{Locale: locale, Text: text})
+		}
+	}
 	if req.DefaultLocale != nil {
 		current.DefaultLocale = *req.DefaultLocale
 	}

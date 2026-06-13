@@ -178,6 +178,7 @@ CREATE TABLE IF NOT EXISTS site_settings (
     avatar_url TEXT,
     favicon_url TEXT,
     hero_intro_md TEXT,
+    hero_quotes JSONB NOT NULL DEFAULT '[]'::jsonb,
     default_locale VARCHAR(16) NOT NULL DEFAULT 'en',
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()

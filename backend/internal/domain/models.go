@@ -115,17 +115,23 @@ type Tag struct {
 }
 
 type SiteSettings struct {
-	SiteName               string `json:"siteName"`
-	AvatarURL              string `json:"avatarUrl,omitempty"`
-	FaviconURL             string `json:"faviconUrl,omitempty"`
-	HeroIntroMD            string `json:"heroIntroMd,omitempty"`
-	DefaultLocale          string `json:"defaultLocale"`
-	CommentEnabled         bool   `json:"commentEnabled"`
-	CommentRequireApproval bool   `json:"commentRequireApproval"`
-	LinkSubmissionEnabled  bool   `json:"linkSubmissionEnabled"`
-	SiteDescription        string `json:"siteDescription,omitempty"`
-	SeoKeywords            string `json:"seoKeywords,omitempty"`
-	OgImageURL             string `json:"ogImageUrl,omitempty"`
+	SiteName               string          `json:"siteName"`
+	AvatarURL              string          `json:"avatarUrl,omitempty"`
+	FaviconURL             string          `json:"faviconUrl,omitempty"`
+	HeroIntroMD            string          `json:"heroIntroMd,omitempty"`
+	HeroQuotes             []LocalizedText `json:"heroQuotes,omitempty"`
+	DefaultLocale          string          `json:"defaultLocale"`
+	CommentEnabled         bool            `json:"commentEnabled"`
+	CommentRequireApproval bool            `json:"commentRequireApproval"`
+	LinkSubmissionEnabled  bool            `json:"linkSubmissionEnabled"`
+	SiteDescription        string          `json:"siteDescription,omitempty"`
+	SeoKeywords            string          `json:"seoKeywords,omitempty"`
+	OgImageURL             string          `json:"ogImageUrl,omitempty"`
+}
+
+type LocalizedText struct {
+	Locale string `json:"locale"`
+	Text   string `json:"text"`
 }
 
 // TranslationPolicy holds the global auto-translation configuration stored in site_settings.

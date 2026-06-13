@@ -253,7 +253,7 @@ useSeoMeta({ title: () => `${t('friends.title')} - ${t('nav.links')}` })
 .hero-eyebrow {
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.18em;
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--accent);
 }
@@ -273,7 +273,7 @@ useSeoMeta({ title: () => `${t('friends.title')} - ${t('nav.links')}` })
 .page-title {
   font-size: clamp(1.8rem, 4vw, 2.8rem);
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: 0;
   margin: 0;
 }
 
@@ -332,7 +332,7 @@ useSeoMeta({ title: () => `${t('friends.title')} - ${t('nav.links')}` })
   margin: 0 0 8px;
   font-size: 11px;
   font-weight: 700;
-  letter-spacing: 0.16em;
+  letter-spacing: 0;
   text-transform: uppercase;
   color: var(--text-muted);
 }
@@ -341,7 +341,7 @@ useSeoMeta({ title: () => `${t('friends.title')} - ${t('nav.links')}` })
   margin: 0;
   font-size: clamp(1.1rem, 2vw, 1.45rem);
   font-weight: 700;
-  letter-spacing: -0.01em;
+  letter-spacing: 0;
 }
 
 .section-note,

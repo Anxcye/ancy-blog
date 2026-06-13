@@ -82,6 +82,7 @@ Technical schema details belong to `docs/DATA_MODEL.md`.
   - `avatar_url`
   - `favicon_url`
   - `hero_intro_md` (short intro on homepage center, Markdown enabled)
+  - `hero_quotes` (localized homepage quote candidates; public frontend randomly displays one matching the active locale)
 - Footer content is fully configurable by admin.
   - Supports plain text (`link_type=none`)
   - Supports internal links (`link_type=internal`, target article by slug)

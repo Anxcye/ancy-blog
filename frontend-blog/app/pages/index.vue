@@ -1,110 +1,215 @@
 <!-- File: app/pages/index.vue
-     Purpose: Homepage — full-height hero + recent article grid.
+     Purpose: Homepage with atmospheric hero, recent writing, moments, and gallery preview.
      Module: frontend-blog/pages, presentation layer.
      Related: layouts/default.vue, components/ArticleCard.vue, composables/useApi.ts. -->
 <template>
   <div class="home">
+    <section class="home-hero">
+      <div class="atelier-field" aria-hidden="true">
+        <span class="paper-mark paper-mark--one" />
+        <span class="paper-mark paper-mark--two" />
+        <span class="paper-mark paper-mark--three" />
+      </div>
 
-    <!-- ═══ Hero ════════════════════════════════════════════════════ -->
-    <section class="hero">
       <div class="hero-inner container">
-        <!-- Main title with embedded avatar -->
-        <h1 class="hero-title">
-          <span class="title-line">
-            <span v-for="(char, i) in 'Hi, I\'m'.split('')" :key="`hi-${i}`" class="char char-muted" :style="{ animationDelay: `${i * 50}ms` }">{{ char === ' ' ? '\u00A0' : char }}</span>
-            <img
-              v-if="siteSettings?.avatarUrl"
-              :src="siteSettings.avatarUrl"
-              :alt="siteSettings?.siteName"
-              class="title-avatar"
-              :style="{ animationDelay: '400ms' }"
-            />
-            <span v-for="(char, i) in (siteSettings?.siteName || 'Ancy').split('')" :key="`name-${i}`" class="char char-name" :style="{ animationDelay: `${(i + 9) * 50}ms` }">{{ char }}</span>
-          </span>
-          <span class="title-line title-line-subtitle">
-            <span v-for="(char, i) in (siteSettings?.heroIntroMd || t('home.heroSubtitle')).split('')" :key="`intro-${i}`" class="char char-gradient" :style="{ animationDelay: `${i * 50}ms` }">{{ char === ' ' ? '\u00A0' : char }}</span>
-          </span>
-        </h1>
+        <div class="hero-avatar-wrap">
+          <img
+            v-if="siteSettings?.avatarUrl"
+            :src="siteSettings.avatarUrl"
+            :alt="siteSettings?.siteName"
+            class="hero-avatar"
+          />
+          <span v-else class="hero-avatar-fallback">{{ siteInitial }}</span>
+        </div>
 
-        <!-- Floating social links -->
-        <div v-if="socialLinks.length" class="hero-socials">
+        <div class="hero-copy">
+          <p class="hero-kicker">{{ t('home.heroKicker') }}</p>
+          <h1 class="hero-title">
+            <span>Hi, I'm </span>
+            <strong>{{ displayName }}</strong>
+          </h1>
+          <p class="hero-slogan">
+            {{ heroSlogan }}
+          </p>
+          <p v-if="heroDescription" class="hero-description">
+            {{ heroDescription }}
+          </p>
+        </div>
+
+        <div class="hero-quote">
+          <span class="quote-mark">「</span>
+          <span>{{ heroQuote }}</span>
+          <span class="quote-mark">」</span>
+        </div>
+
+        <div v-if="socialLinks.length" class="hero-socials" :aria-label="t('home.socialLinks')">
           <a
             v-for="link in socialLinks"
             :key="link.id"
             :href="link.url"
             target="_blank"
-            class="social-icon"
+            rel="noreferrer"
+            class="social-link"
             :title="link.title"
           >
             <img v-if="link.iconKey" :src="link.iconKey" :alt="link.title" class="social-icon-img" />
+            <span v-else>{{ link.title.slice(0, 1) }}</span>
           </a>
         </div>
       </div>
-
-      <!-- Down arrow -->
-      <div class="hero-arrow">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
-          <path d="M12 5v14M5 12l7 7 7-7"/>
-        </svg>
-      </div>
     </section>
 
-    <!-- ═══ Recent articles ══════════════════════════════════════════ -->
-    <section class="recent-section">
-      <div class="container">
-        <div class="section-header">
-          <h2 class="section-title">{{ t('home.recentArticles') }}</h2>
-          <NuxtLink :to="localePath('/articles')" class="section-more">
-            {{ t('home.viewAll') }}
-            <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
-              <path d="M3 8h10M9 4l4 4-4 4"/>
-            </svg>
-          </NuxtLink>
-        </div>
-
-        <!-- Loading skeletons -->
-        <div v-if="pending" class="article-grid">
-          <div v-for="n in 6" :key="n" class="skeleton-card">
-            <div class="skeleton-line" style="height: 14px; width: 40%;" />
-            <div class="skeleton-line" style="height: 22px; width: 85%; margin-top: 8px;" />
-            <div class="skeleton-line" style="height: 14px; width: 65%; margin-top: 6px;" />
+    <section class="home-overview">
+      <div class="container container--wide overview-grid">
+        <section class="writing-panel">
+          <div class="section-header editorial-header">
+            <div>
+              <p class="section-eyebrow">{{ t('home.recentWritingEyebrow') }}</p>
+              <h2 class="section-title">{{ t('home.recentArticles') }}</h2>
+            </div>
+            <NuxtLink :to="localePath('/articles')" class="section-more">
+              {{ t('home.viewAll') }}
+              <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+                <path d="M3 8h10M9 4l4 4-4 4" />
+              </svg>
+            </NuxtLink>
           </div>
-        </div>
 
-        <!-- Articles -->
-        <div v-else-if="articles?.rows?.length" class="article-grid">
-          <ArticleCard
-            v-for="(article, i) in articles.rows"
-            :key="article.id"
-            :article="article"
-            :featured="i === 0 && !!article.coverImage"
-            class="grid-item"
-            :style="{ animationDelay: `${i * 60}ms` }"
-          />
-        </div>
+          <div v-if="pending" class="writing-list">
+            <div v-for="n in 5" :key="n" class="writing-skeleton" />
+          </div>
 
-        <!-- Empty -->
-        <div v-else class="empty-state">
-          <p>{{ t('home.noArticles') }}</p>
-        </div>
+          <ol v-else-if="articles?.rows?.length" class="writing-list">
+            <li v-for="(article, i) in articles.rows.slice(0, 5)" :key="article.id" class="writing-item">
+              <NuxtLink :to="localePath(`/articles/${article.slug}`)" class="writing-link">
+                <span class="writing-index">{{ String(i + 1).padStart(2, '0') }}</span>
+                <span class="writing-main">
+                  <span class="writing-title">{{ article.title }}</span>
+                  <span class="writing-meta">
+                    {{ formatArticleMeta(article) }}
+                  </span>
+                </span>
+                <span class="writing-arrow">→</span>
+              </NuxtLink>
+            </li>
+          </ol>
+
+          <div v-else class="empty-state">
+            <p>{{ t('home.noArticles') }}</p>
+          </div>
+        </section>
+
+        <aside class="side-panel">
+          <section class="musing-card">
+            <div class="section-header compact">
+              <div>
+                <p class="section-eyebrow">{{ t('home.musingsEyebrow') }}</p>
+                <h2 class="section-title">{{ t('home.musingsTitle') }}</h2>
+              </div>
+              <NuxtLink :to="localePath('/moments')" class="section-more">
+                {{ t('home.viewAll') }}
+              </NuxtLink>
+            </div>
+            <blockquote v-if="latestMoment" class="moment-preview">
+              {{ normalizeMoment(latestMoment.content) }}
+            </blockquote>
+            <p v-else class="side-empty">{{ t('moments.empty') }}</p>
+          </section>
+
+          <section class="gallery-strip">
+            <div class="section-header compact">
+              <div>
+                <p class="section-eyebrow">{{ t('home.galleryEyebrow') }}</p>
+                <h2 class="section-title">{{ t('home.galleryTitle') }}</h2>
+              </div>
+              <NuxtLink :to="localePath('/gallery')" class="section-more">
+                {{ t('home.viewAll') }}
+              </NuxtLink>
+            </div>
+
+            <div v-if="photos?.rows?.length" class="photo-row">
+              <NuxtLink
+                v-for="photo in photos.rows.slice(0, 3)"
+                :key="photo.id"
+                :to="localePath(`/gallery/${photo.slug}`)"
+                class="photo-thumb"
+              >
+                <img :src="photo.displayUrl" :alt="photo.title || photo.slug" loading="lazy" />
+              </NuxtLink>
+            </div>
+            <p v-else class="side-empty">{{ t('gallery.noPhotos') }}</p>
+          </section>
+        </aside>
       </div>
     </section>
   </div>
 </template>
 
 <script setup lang="ts">
-const { t } = useI18n()
-const localePath = useLocalePath()
-const { listArticles, getSiteSettings, getSocialLinks } = useApi()
+import type { ArticleCard, Moment } from '~/composables/useApi'
 
-// ── Fetch data ───────────────────────────────────────────────────
-const [{ data: siteSettings }, { data: socialLinks }, { data: articles, pending }] = await Promise.all([
+const { t, locale } = useI18n()
+const localePath = useLocalePath()
+const { listArticles, listMoments, listGalleryPhotos, getSiteSettings, getSocialLinks } = useApi()
+
+const [
+  { data: siteSettings },
+  { data: socialLinks },
+  { data: articles, pending },
+  { data: moments },
+  { data: photos },
+] = await Promise.all([
   useAsyncData('site-settings', getSiteSettings),
   useAsyncData('social-links', getSocialLinks, { default: () => [] }),
-  useAsyncData('home-articles', () => listArticles({ pageSize: 6 })),
+  useAsyncData('home-articles', () => listArticles({ pageSize: 5 })),
+  useAsyncData('home-moments', () => listMoments({ pageSize: 1 })),
+  useAsyncData('home-gallery', () => listGalleryPhotos({ pageSize: 3 })),
 ])
 
-// ── SEO ────────────────────────────────────────────────────────────
+const heroSlogan = computed(() => siteSettings.value?.heroIntroMd?.trim() || t('home.heroSubtitle'))
+const heroDescription = computed(() => siteSettings.value?.siteDescription?.trim() || t('home.heroDescription'))
+const heroQuoteRandom = useState('home-hero-quote-random', () => Math.random())
+const heroQuote = computed(() => {
+  const targetLocale = locale.value === 'en' ? 'en-US' : 'zh-CN'
+  const quotes = (siteSettings.value?.heroQuotes || [])
+    .filter((quote) => quote.locale === targetLocale && quote.text.trim())
+    .map((quote) => quote.text.trim())
+
+  if (!quotes.length) return t('home.heroQuote')
+  return quotes[Math.floor(heroQuoteRandom.value * quotes.length) % quotes.length]
+})
+const displayName = computed(() => {
+  const raw = siteSettings.value?.siteName?.trim() || 'Ancy'
+  const parts = raw.split(/\s+/)
+  return parts.length > 1 ? parts[parts.length - 1] : raw
+})
+const siteInitial = computed(() => (siteSettings.value?.siteName || 'A').slice(0, 1).toUpperCase())
+const latestMoment = computed(() => moments.value?.rows?.[0] || null)
+
+function formatArticleMeta(article: ArticleCard) {
+  const type = article.contentKind === 'page' ? t('home.pageLabel') : t('home.postLabel')
+  const date = formatDate(article.publishedAt || article.createdAt)
+  const category = article.categorySlug ? ` · ${article.categorySlug}` : ''
+  return `${type} · ${date}${category}`
+}
+
+function formatDate(iso?: string): string {
+  if (!iso) return ''
+  return new Date(iso).toLocaleDateString('zh-CN', {
+    month: 'short',
+    day: 'numeric',
+  })
+}
+
+function normalizeMoment(content: Moment['content']) {
+  return content
+    .replace(/<[^>]+>/g, '')
+    .replace(/[#>*_`~-]/g, '')
+    .replace(/\s+/g, ' ')
+    .trim()
+    .slice(0, 96)
+}
+
 useSeoMeta({
   title: siteSettings.value?.siteName || 'Ancy Blog',
   description: siteSettings.value?.siteDescription || '',
@@ -114,279 +219,518 @@ useSeoMeta({
 </script>
 
 <style scoped>
-/* ═══ Hero ═══════════════════════════════════════════════════════ */
-.hero {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 120px 0 80px;
+.home {
   position: relative;
-}
-
-.hero-inner {
-  width: min(100%, 1200px);
-  margin: 0 auto;
-  text-align: center;
-  position: relative;
-}
-
-/* ── Title ── */
-.hero-title {
-  width: 100%;
-  font-size: clamp(3rem, 8vw, 5rem);
-  font-weight: 800;
-  line-height: 1.1;
-  margin: 0;
-}
-
-.char {
-  display: inline-block;
-  opacity: 0;
-  transform: translateY(20px) scale(0.8);
-  animation: char-spring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-.char-muted { color: var(--text-muted); font-weight: 600; }
-.char-name  { color: var(--text); }
-.char-gradient {
-  background: linear-gradient(135deg, var(--accent), var(--accent-text));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-@keyframes char-spring {
-  0% { opacity: 0; transform: translateY(20px) scale(0.8); }
-  60% { opacity: 1; transform: translateY(-4px) scale(1.05); }
-  100% { opacity: 1; transform: translateY(0) scale(1); }
-}
-
-.title-line {
-  display: block;
-  margin-bottom: 1em;
-}
-
-.title-line-subtitle {
-  display: block;
-  width: 100%;
-  margin-bottom: 0;
-  padding-bottom: 0.12em;
-  font-size: clamp(2.4rem, 6vw, 5rem);
-  line-height: 1.12;
-  white-space: nowrap;
-}
-
-.title-avatar {
-  display: inline-block;
-  width: 0.9em;
-  height: 0.9em;
-  border-radius: 50%;
-  object-fit: cover;
-  vertical-align: -0.15em;
-  margin: 0 0.15em;
-  border: 3px solid var(--accent);
-  box-shadow: 0 4px 20px rgba(var(--accent-rgb, 31,143,138), 0.3);
-  opacity: 0;
-  animation: char-spring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-}
-
-.title-gradient {
-  background: linear-gradient(135deg, var(--accent), var(--accent-text));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-/* ── Floating socials ── */
-.hero-socials {
-  display: flex;
-  gap: 16px;
-  justify-content: center;
-  margin-top: 120px;
-}
-
-.social-icon {
-  width: 44px;
-  height: 44px;
-  display: grid;
-  place-items: center;
-  color: var(--text-muted);
-  border-radius: 999px;
-  clip-path: circle(50%);
-  transition: transform 0.3s var(--ease-out), color 0.3s var(--ease-out), filter 0.3s var(--ease-out);
-  opacity: 0;
-  animation: char-spring 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-  animation-delay: 1s;
   overflow: hidden;
 }
 
-.social-icon:hover {
-  color: var(--accent-text);
-  transform: translateY(-4px) scale(1.05);
-  filter: saturate(1.08);
+.home::before,
+.home::after {
+  content: '';
+  position: fixed;
+  pointer-events: none;
+  border-radius: 999px;
+  filter: blur(18px);
+  opacity: 0.5;
+  z-index: 0;
 }
 
-.social-icon svg {
-  width: 20px;
-  height: 20px;
+.home::before {
+  width: 420px;
+  height: 420px;
+  left: 8%;
+  top: 58dvh;
+  background: radial-gradient(circle, rgba(199, 120, 135, 0.12), transparent 64%);
+}
+
+.home::after {
+  width: 520px;
+  height: 520px;
+  right: 5%;
+  top: 70dvh;
+  background: radial-gradient(circle, rgba(128, 165, 194, 0.13), transparent 68%);
+}
+
+.home-hero {
+  min-height: 92dvh;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  padding: 116px 0 120px;
+}
+
+.atelier-field {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.atelier-field::before,
+.atelier-field::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid rgba(125, 111, 93, 0.08);
+  transform: rotate(-8deg);
+}
+
+.atelier-field::before {
+  width: 420px;
+  height: 88px;
+  left: 12%;
+  bottom: 12%;
+}
+
+.atelier-field::after {
+  width: 560px;
+  height: 120px;
+  right: 9%;
+  bottom: 2%;
+  opacity: 0.7;
+}
+
+.paper-mark {
+  position: absolute;
+  width: clamp(180px, 18vw, 360px);
+  height: clamp(180px, 18vw, 360px);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle, rgba(199, 120, 135, 0.12), transparent 58%),
+    radial-gradient(circle at 70% 70%, rgba(127, 159, 180, 0.10), transparent 62%);
+  filter: blur(18px);
+  opacity: 0.58;
+  animation: paper-breathe 9s ease-in-out infinite;
+}
+
+.paper-mark--one {
+  left: 18%;
+  bottom: 2%;
+}
+
+.paper-mark--two {
+  right: 20%;
+  bottom: 8%;
+  animation-delay: -3s;
+}
+
+.paper-mark--three {
+  right: -3%;
+  top: 20%;
+  opacity: 0.34;
+  animation-delay: -5s;
+}
+
+@keyframes paper-breathe {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(0, -10px, 0) scale(1.04); }
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.hero-avatar-wrap {
+  width: 112px;
+  height: 112px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 34px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--surface) 74%, transparent);
+  box-shadow:
+    0 0 0 12px rgba(255, 255, 255, 0.36),
+    0 20px 80px rgba(88, 96, 110, 0.16);
+  animation: avatar-rise 720ms var(--ease-smooth) both;
+}
+
+.hero-avatar,
+.hero-avatar-fallback {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+}
+
+.hero-avatar {
+  object-fit: cover;
+}
+
+.hero-avatar-fallback {
+  display: grid;
+  place-items: center;
+  background: var(--accent-soft);
+  color: var(--accent-text);
+  font-size: 2.2rem;
+  font-family: var(--font-display);
+}
+
+@keyframes avatar-rise {
+  from { opacity: 0; transform: translateY(18px) scale(0.96); }
+  to { opacity: 1; transform: none; }
+}
+
+.hero-kicker,
+.section-eyebrow {
+  font-family: var(--font-display);
+  color: var(--text-subtle);
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.hero-kicker {
+  margin-bottom: 10px;
+  font-size: 0.78rem;
+}
+
+.hero-title {
+  font-size: clamp(2.55rem, 5.6vw, 5.35rem);
+  font-family: var(--font-display);
+  font-weight: 650;
+  line-height: 0.98;
+  color: var(--text);
+  letter-spacing: 0;
+}
+
+.hero-title span {
+  color: var(--text-muted);
+  font-weight: 520;
+}
+
+.hero-title strong {
+  color: var(--accent-ink);
+  font-weight: 760;
+  font-style: italic;
+}
+
+.hero-slogan {
+  max-width: 860px;
+  margin: 20px auto 0;
+  font-size: clamp(1.42rem, 3.25vw, 3.1rem);
+  line-height: 1.18;
+  font-weight: 520;
+  text-wrap: balance;
+  color: var(--text);
+}
+
+.hero-description {
+  max-width: 760px;
+  margin: 18px auto 0;
+  color: var(--text-muted);
+  font-size: clamp(0.95rem, 1.4vw, 1.08rem);
+  letter-spacing: 0;
+  text-transform: uppercase;
+}
+
+.hero-quote {
+  margin-top: 176px;
+  color: var(--text-subtle);
+  font-family: var(--font-serif);
+  font-size: 0.98rem;
+  font-style: italic;
+}
+
+.quote-mark {
+  color: color-mix(in srgb, var(--accent) 55%, var(--text-subtle));
+}
+
+.hero-socials {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 52px;
+}
+
+.social-link {
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--surface) 70%, transparent);
+  color: var(--text-muted);
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--dur-base) var(--ease-spring), border-color var(--dur-base), color var(--dur-base);
+  overflow: hidden;
+}
+
+.social-link:hover {
+  transform: translateY(-4px);
+  color: var(--accent-text);
+  border-color: color-mix(in srgb, var(--accent) 38%, var(--border));
 }
 
 .social-icon-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  border-radius: 999px;
+  filter: saturate(0.68) contrast(0.92);
+  opacity: 0.78;
+  transition: filter var(--dur-base), opacity var(--dur-base);
 }
 
-@media (max-width: 640px) {
-  .hero {
-    min-height: 100vh;
-    padding: 80px 0 60px;
-  }
-
-  .title-avatar {
-    width: 0.8em;
-    height: 0.8em;
-  }
-
-  .title-line-subtitle {
-    white-space: normal;
-    font-size: clamp(1.5rem, 7vw, 2.35rem);
-    line-height: 1.18;
-    text-wrap: balance;
-  }
+.social-link:hover .social-icon-img {
+  filter: none;
+  opacity: 1;
 }
 
-/* ── Down arrow ── */
-.hero-arrow {
-  position: absolute;
-  bottom: 32px;
-  left: 50%;
-  transform: translateX(-50%);
-  opacity: 0;
-  animation: arrow-fade 1s 1.2s forwards, float 2.5s 1.2s ease-in-out infinite;
+.home-overview {
+  position: relative;
+  z-index: 1;
+  padding: 4px 0 90px;
 }
 
-@keyframes arrow-fade {
-  to { opacity: 0.4; }
+.overview-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.24fr) minmax(240px, 0.68fr);
+  gap: clamp(38px, 8vw, 118px);
+  align-items: start;
 }
-
-.hero-arrow svg { width: 24px; height: 24px; color: var(--text-muted); }
-
-@keyframes float {
-  0%, 100% { transform: translateX(-50%) translateY(0); }
-  50%       { transform: translateX(-50%) translateY(6px); }
-}
-
-/* ═══ Recent articles ═════════════════════════════════════════════ */
-.recent-section { padding: 64px 0 80px; }
 
 .section-header {
   display: flex;
-  align-items: baseline;
+  align-items: flex-end;
   justify-content: space-between;
-  margin-bottom: 32px;
+  gap: 24px;
+  margin-bottom: 18px;
+}
+
+.section-header.compact {
+  align-items: flex-start;
+  margin-bottom: 18px;
+}
+
+.section-eyebrow {
+  margin-bottom: 5px;
+  font-size: 0.66rem;
+  color: var(--text-subtle);
 }
 
 .section-title {
-  font-size: 1.25rem;
-  font-weight: 700;
-  position: relative;
-}
-
-.section-title::after {
-  content: '';
-  display: block;
-  width: 32px;
-  height: 3px;
-  background: var(--accent);
-  border-radius: 2px;
-  margin-top: 6px;
+  font-family: var(--font-serif);
+  font-size: clamp(1.36rem, 2.2vw, 1.82rem);
+  font-weight: 500;
+  line-height: 1.2;
+  color: var(--text);
 }
 
 .section-more {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 4px;
-  font-size: 13px;
-  font-weight: 600;
+  gap: 6px;
   color: var(--accent-text);
-  transition: gap var(--dur-fast);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
 }
 
-.section-more:hover { gap: 8px; }
-.section-more svg { width: 14px; height: 14px; }
+.section-more svg {
+  width: 14px;
+  height: 14px;
+}
 
-/* ── Article grid ── */
-.article-grid {
+.writing-list {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+}
+
+.writing-item {
+  border-top: 1px solid var(--border);
+}
+
+.writing-item:last-child {
+  border-bottom: 1px solid var(--border);
+}
+
+.writing-link {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
+  grid-template-columns: 42px minmax(0, 1fr) 20px;
+  gap: 14px;
+  align-items: center;
+  padding: 14px 0;
+  transition: color var(--dur-base), transform var(--dur-base) var(--ease-spring);
 }
 
-.grid-item {
-  animation: card-in 0.5s var(--ease-spring) both;
+.writing-link:hover {
+  color: var(--accent-text);
+  transform: translateX(6px);
 }
 
-@keyframes card-in {
-  from { opacity: 0; transform: translateY(20px); }
-  to   { opacity: 1; transform: none; }
+.writing-index {
+  font-family: var(--font-display);
+  color: color-mix(in srgb, var(--accent) 70%, var(--text-subtle));
+  font-size: 0.82rem;
+  font-style: italic;
 }
 
-/* ── Skeleton ── */
-.skeleton-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  padding: 20px 24px;
+.writing-main {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.skeleton-line {
-  background: linear-gradient(
-    90deg,
-    var(--bg-secondary) 25%,
-    var(--surface-hover) 50%,
-    var(--bg-secondary) 75%
-  );
-  background-size: 200% 100%;
-  border-radius: var(--radius-sm);
+.writing-title {
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: clamp(0.94rem, 1.55vw, 1.12rem);
+  font-weight: 560;
+  line-height: 1.55;
+}
+
+.writing-link:hover .writing-title {
+  color: var(--accent-text);
+}
+
+.writing-meta {
+  color: var(--text-subtle);
+  font-size: 0.74rem;
+}
+
+.writing-arrow {
+  color: var(--text-subtle);
+  transition: transform var(--dur-base);
+}
+
+.writing-link:hover .writing-arrow {
+  transform: translateX(5px);
+}
+
+.writing-skeleton {
+  height: 74px;
+  border-top: 1px solid var(--border);
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--surface-hover) 70%, transparent), transparent);
+  background-size: 220% 100%;
   animation: shimmer 1.4s infinite;
 }
 
 @keyframes shimmer {
-  from { background-position: 200% 0; }
-  to   { background-position: -200% 0; }
+  from { background-position: 220% 0; }
+  to { background-position: -220% 0; }
 }
 
-/* ── Empty ── */
-.empty-state {
-  text-align: center;
-  padding: 64px 0;
+.side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+
+.musing-card,
+.gallery-strip {
+  position: relative;
+  padding: 0 0 0 24px;
+  border-left: 1px solid var(--border);
+  background: transparent;
+  box-shadow: none;
+}
+
+.musing-card::before {
+  content: '';
+  position: absolute;
+  top: 28px;
+  left: -12px;
+  width: 82px;
+  height: 18px;
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  border-radius: 50%;
+  transform: rotate(-6deg);
+  opacity: 0.55;
+}
+
+.moment-preview {
+  color: var(--text-muted);
+  font-family: var(--font-serif);
+  font-size: 0.92rem;
+  line-height: 1.9;
+}
+
+.photo-row {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+
+.photo-thumb {
+  aspect-ratio: 4 / 5;
+  overflow: hidden;
+  border-radius: var(--radius-sm);
+  background: var(--bg-secondary);
+}
+
+.photo-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: saturate(0.82);
+  transition: transform var(--dur-slow) var(--ease-smooth), filter var(--dur-base);
+}
+
+.photo-thumb:hover img {
+  transform: scale(1.05);
+  filter: saturate(1.04);
+}
+
+.empty-state,
+.side-empty {
   color: var(--text-subtle);
-  font-size: 15px;
+  font-size: 0.82rem;
+  line-height: 1.8;
 }
 
-/* ── Mobile ── */
-@media (max-width: 640px) {
-  .hero-inner {
+@media (max-width: 820px) {
+  .home-hero {
+    min-height: 84dvh;
+    padding: 96px 0 76px;
+  }
+
+  .hero-avatar-wrap {
+    width: 92px;
+    height: 92px;
+    margin-bottom: 28px;
+  }
+
+  .hero-avatar,
+  .hero-avatar-fallback {
+    width: 78px;
+    height: 78px;
+  }
+
+  .hero-description {
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  .hero-quote {
+    margin-top: 76px;
+  }
+
+  .overview-grid {
     grid-template-columns: 1fr;
-    text-align: center;
-    gap: 32px;
   }
 
-  .hero-right {
-    order: -1;
-    display: flex;
-    justify-content: center;
+  .writing-link {
+    grid-template-columns: 42px minmax(0, 1fr) 20px;
+    gap: 12px;
   }
 
-  .hero-avatar-wrap { width: 120px; height: 120px; }
-  .hero-avatar, .hero-avatar-placeholder { width: 120px; height: 120px; }
-  .hero-avatar-placeholder { font-size: 42px; }
+  .musing-card,
+  .gallery-strip {
+    padding: 22px;
+  }
+}
 
-  .hero-socials { justify-content: center; }
-
-  .article-grid { grid-template-columns: 1fr; }
+@media (prefers-reduced-motion: reduce) {
+  .paper-mark,
+  .hero-avatar-wrap,
+  .writing-skeleton {
+    animation: none;
+  }
 }
 </style>
