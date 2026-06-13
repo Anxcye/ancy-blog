@@ -974,3 +974,4 @@
 - Lowered the homepage quote and social-link group so it sits more clearly in the lower half of the hero.
 - Reduced the social icon buttons to a quieter secondary scale and recorded the hero spacing guidance in the frontend style guide.
 - Restored the public blog's rotating accent palette through SSR-applied accent classes, avoiding client-side first-paint color shifts.
+- Fixed frontend Docker builds by pinning Corepack to `pnpm@10.15.0`, avoiding pnpm 11 build-script approval failures during GHCR image publishing.
