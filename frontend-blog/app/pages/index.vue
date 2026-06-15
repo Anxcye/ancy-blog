@@ -12,20 +12,18 @@
       </div>
 
       <div class="hero-inner container">
-        <div class="hero-avatar-wrap">
-          <img
-            v-if="siteSettings?.avatarUrl"
-            :src="siteSettings.avatarUrl"
-            :alt="siteSettings?.siteName"
-            class="hero-avatar"
-          />
-          <span v-else class="hero-avatar-fallback">{{ siteInitial }}</span>
-        </div>
-
         <div class="hero-copy">
-          <p class="hero-kicker">{{ t('home.heroKicker') }}</p>
           <h1 class="hero-title">
-            <span>Hi, I'm </span>
+            <span>Hi, I'm</span>
+            <span class="hero-avatar-wrap">
+              <img
+                v-if="siteSettings?.avatarUrl"
+                :src="siteSettings.avatarUrl"
+                :alt="siteSettings?.siteName"
+                class="hero-avatar"
+              />
+              <span v-else class="hero-avatar-fallback">{{ siteInitial }}</span>
+            </span>
             <strong>{{ displayName }}</strong>
           </h1>
           <p class="hero-slogan">
@@ -36,7 +34,7 @@
           </p>
         </div>
 
-        <div class="hero-quote">
+        <div v-if="heroQuote" class="hero-quote">
           <span class="quote-mark">「</span>
           <span>{{ heroQuote }}</span>
           <span class="quote-mark">」</span>
@@ -175,7 +173,7 @@ const heroQuote = computed(() => {
     .filter((quote) => quote.locale === targetLocale && quote.text.trim())
     .map((quote) => quote.text.trim())
 
-  if (!quotes.length) return t('home.heroQuote')
+  if (!quotes.length) return ''
   return quotes[Math.floor(heroQuoteRandom.value * quotes.length) % quotes.length]
 })
 const displayName = computed(() => {
@@ -261,38 +259,14 @@ useSeoMeta({
 }
 
 .atelier-field {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  overflow: hidden;
   pointer-events: none;
-}
-
-.atelier-field::before,
-.atelier-field::after {
-  content: '';
-  position: absolute;
-  border-radius: 50%;
-  border: 1px solid rgba(125, 111, 93, 0.08);
-  transform: rotate(-8deg);
-}
-
-.atelier-field::before {
-  width: 420px;
-  height: 88px;
-  left: 12%;
-  bottom: 12%;
-}
-
-.atelier-field::after {
-  width: 560px;
-  height: 120px;
-  right: 9%;
-  bottom: 2%;
-  opacity: 0.7;
+  z-index: 0;
 }
 
 .paper-mark {
-  position: absolute;
+  position: fixed;
   width: clamp(180px, 18vw, 360px);
   height: clamp(180px, 18vw, 360px);
   border-radius: 999px;
@@ -306,12 +280,12 @@ useSeoMeta({
 
 .paper-mark--one {
   left: 18%;
-  bottom: 2%;
+  bottom: 8dvh;
 }
 
 .paper-mark--two {
   right: 20%;
-  bottom: 8%;
+  bottom: 14dvh;
   animation-delay: -3s;
 }
 
@@ -334,26 +308,28 @@ useSeoMeta({
   flex-direction: column;
   align-items: center;
   text-align: center;
+  transform: translateY(10dvh);
 }
 
 .hero-avatar-wrap {
-  width: 112px;
-  height: 112px;
-  display: grid;
+  width: clamp(56px, 7.2vw, 84px);
+  height: clamp(56px, 7.2vw, 84px);
+  display: inline-grid;
   place-items: center;
-  margin-bottom: 34px;
+  flex: 0 0 auto;
   border-radius: 50%;
   background: color-mix(in srgb, var(--surface) 74%, transparent);
   box-shadow:
-    0 0 0 12px rgba(255, 255, 255, 0.36),
-    0 20px 80px rgba(88, 96, 110, 0.16);
+    0 0 0 clamp(6px, 0.78vw, 10px) rgba(255, 255, 255, 0.36),
+    0 16px 54px rgba(88, 96, 110, 0.15);
+  vertical-align: middle;
   animation: avatar-rise 720ms var(--ease-smooth) both;
 }
 
 .hero-avatar,
 .hero-avatar-fallback {
-  width: 96px;
-  height: 96px;
+  width: calc(100% - 14px);
+  height: calc(100% - 14px);
   border-radius: 50%;
 }
 
@@ -366,7 +342,7 @@ useSeoMeta({
   place-items: center;
   background: var(--accent-soft);
   color: var(--accent-text);
-  font-size: 2.2rem;
+  font-size: clamp(1.35rem, 2.4vw, 2rem);
   font-family: var(--font-display);
 }
 
@@ -375,7 +351,6 @@ useSeoMeta({
   to { opacity: 1; transform: none; }
 }
 
-.hero-kicker,
 .section-eyebrow {
   font-family: var(--font-display);
   color: var(--text-subtle);
@@ -383,12 +358,12 @@ useSeoMeta({
   text-transform: uppercase;
 }
 
-.hero-kicker {
-  margin-bottom: 10px;
-  font-size: 0.78rem;
-}
-
 .hero-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: clamp(10px, 1.2vw, 18px);
   font-size: clamp(2.55rem, 5.6vw, 5.35rem);
   font-family: var(--font-display);
   font-weight: 650;
@@ -444,6 +419,10 @@ useSeoMeta({
   justify-content: center;
   flex-wrap: wrap;
   gap: 12px;
+  margin-top: clamp(148px, 20dvh, 232px);
+}
+
+.hero-quote + .hero-socials {
   margin-top: 52px;
 }
 
@@ -631,19 +610,6 @@ useSeoMeta({
   box-shadow: none;
 }
 
-.musing-card::before {
-  content: '';
-  position: absolute;
-  top: 28px;
-  left: -12px;
-  width: 82px;
-  height: 18px;
-  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
-  border-radius: 50%;
-  transform: rotate(-6deg);
-  opacity: 0.55;
-}
-
 .moment-preview {
   color: var(--text-muted);
   font-family: var(--font-serif);
@@ -690,16 +656,19 @@ useSeoMeta({
     padding: 96px 0 76px;
   }
 
+  .hero-inner {
+    transform: translateY(5dvh);
+  }
+
   .hero-avatar-wrap {
-    width: 92px;
-    height: 92px;
-    margin-bottom: 28px;
+    width: 56px;
+    height: 56px;
   }
 
   .hero-avatar,
   .hero-avatar-fallback {
-    width: 78px;
-    height: 78px;
+    width: 46px;
+    height: 46px;
   }
 
   .hero-description {
@@ -709,6 +678,14 @@ useSeoMeta({
 
   .hero-quote {
     margin-top: 76px;
+  }
+
+  .hero-socials {
+    margin-top: 116px;
+  }
+
+  .hero-quote + .hero-socials {
+    margin-top: 42px;
   }
 
   .overview-grid {

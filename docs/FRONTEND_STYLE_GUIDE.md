@@ -26,14 +26,18 @@ This guide governs both frontend apps:
 - Prefer thin dividers, translucent surfaces, and list-like editorial layouts over heavy cards and strong shadows.
 
 ## Hero & Navigation
-- Home top section should feel like a personal atelier: avatar anchor, configurable hero slogan from site settings, optional site description, localized random quote, and social links.
+- Home top section should feel like a personal atelier: inline avatar identity lockup, configurable hero slogan from site settings, optional site description, optional localized random quote from backend settings, and social links.
 - Home quote and social links should sit in the lower half of the hero with enough vertical air, so the primary identity copy stays dominant and the social actions feel secondary.
+- When the homepage quote is absent, keep social links near the lower hero area rather than directly under the primary copy.
+- The homepage hero content group should sit slightly below optical center, around one tenth of the viewport lower on desktop, so the fixed header and empty paper space do not make the identity feel too high.
 - Home should reveal editorial content below the fold through recent writing, fragments/moments, and gallery previews instead of ending the first viewport as an isolated poster.
 - Header layout: left floating avatar button, centered floating pill nav, right circular utility buttons.
 - Public blog header should use a layered top-down progressive backdrop blur behind the fixed shell, so the area closest to the viewport top is most blurred and fades into clear content below.
 - Navigation wording should be literary and brand-toned, not generic labels.
 - Navigation display copy may be more literary than page titles, but should remain understandable on first read.
 - Homepage atmospheric motion may use quiet paper marks, light washes, or slow-focus glow, must stay behind content, and must respect `prefers-reduced-motion`.
+- Homepage paper-mark glows should be fixed to the viewport background, not attached to scrolling content.
+- Avoid standalone outline ellipse decorations on the homepage; prefer paper texture, light washes, and typography for atmosphere.
 - Moments page should read as a quiet vertical note stream, not a dashboard timeline or masonry grid.
 - Timeline page should behave like grouped editorial chronology, not a generic product timeline:
   - group entries by month or another clear time anchor;

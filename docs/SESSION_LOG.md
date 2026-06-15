@@ -975,3 +975,14 @@
 - Reduced the social icon buttons to a quieter secondary scale and recorded the hero spacing guidance in the frontend style guide.
 - Restored the public blog's rotating accent palette through SSR-applied accent classes, avoiding client-side first-paint color shifts.
 - Fixed frontend Docker builds by pinning Corepack to `pnpm@10.15.0`, avoiding pnpm 11 build-script approval failures during GHCR image publishing.
+
+---
+## 2026-06-15
+### Summary
+- Adjusted the public homepage hero identity line so the avatar sits inline between "I'm" and the display name.
+- Kept the inline avatar dimensions fixed and responsive to reduce first-paint layout movement while preserving the editorial hero style.
+- Removed the homepage hero kicker line and made the hero quote render only when backend quote candidates exist for the active locale.
+- Moved homepage social links lower when the optional quote is absent, keeping the action row closer to the bottom of the hero.
+- Shifted the homepage hero content group downward by roughly ten viewport-height units on desktop, with a smaller mobile offset, so the title and social links sit below optical center.
+- Removed standalone outline ellipse decorations from the homepage hero background and side-panel heading area.
+- Fixed homepage paper-mark glows to the viewport background so they no longer scroll with the hero content.
